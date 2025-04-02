@@ -78,7 +78,7 @@ body {
 
 .sidebar-toggle {
   position: absolute;
-  top: 10px;
+  top: -15px;
   right: 10px;
   background: rgba(255, 255, 255, 0.15);
   border: none;
@@ -91,6 +91,7 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s;
+  z-index: 101;
 }
 
 .sidebar-toggle:hover {
@@ -180,10 +181,11 @@ body {
   overflow: hidden;
   width: 100%;
   transition: opacity 0.2s;
+  cursor: default;
 }
 
 .dashboard-card.dragging, .card.dragging {
-  opacity: 0.5;
+  opacity: 1;
 }
 
 .card-header {
@@ -612,24 +614,6 @@ body {
   bottom: 20%;
   width: 1px;
   background-color: rgba(0,0,0,0.06);
-}
-
-/* 拖拽手柄 */
-.drag-handle {
-  cursor: grab;
-  color: #999;
-  font-size: 18px;
-  user-select: none;
-  padding: 5px;
-  transition: color 0.2s;
-}
-
-.drag-handle:hover {
-  color: #333;
-}
-
-.drag-handle:active {
-  cursor: grabbing;
 }
 
 /* 搜索和筛选区域 */
@@ -1376,18 +1360,26 @@ body {
 }
 
 .btn-punch {
-  background-color: #3498db;
-  color: white;
-  border: none;
+  background-color: #f0f9ff;
+  color: #3498db;
+  border: 1px solid #b3e5fc;
   padding: 4px 10px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .btn-punch:hover {
-  background-color: #2980b9;
+  background-color: #e3f2fd;
+  border-color: #3498db;
+}
+
+.btn-punch i {
+  font-size: 14px;
 }
 
 .btn-expense {
@@ -1404,10 +1396,33 @@ body {
   background-color: #e9ecef;
 }
 
+.btn-leave {
+  background-color: #fff5f5;
+  color: #e74c3c;
+  border: 1px solid #ffcdd2;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-leave:hover {
+  background-color: #ffe3e3;
+  border-color: #e74c3c;
+}
+
+.btn-leave i {
+  font-size: 14px;
+}
+
 .btn-batch-punch {
-  background-color: #2ecc71;
-  color: white;
-  border: none;
+  background-color: #f0f9ff;
+  color: #3498db;
+  border: 1px solid #b3e5fc;
   padding: 6px 12px;
   border-radius: 4px;
   display: flex;
@@ -1415,11 +1430,12 @@ body {
   gap: 5px;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .btn-batch-punch:hover {
-  background-color: #27ae60;
+  background-color: #e3f2fd;
+  border-color: #3498db;
 }
 
 /* 数据统计样式 */
@@ -1579,4 +1595,4 @@ body {
 
 .stat-highlight-primary {
   color: #3498db;
-} 
+} /* 确保管理员信息区域垂直居中 */ .campus-info .user-info { display: flex; align-items: center; height: 100% !important; } .campus-info .campus-name { display: flex; align-items: center; height: 100% !important; } .campus-info-content > div > div:first-child { display: flex !important; align-items: center !important; min-height: 50px !important; }

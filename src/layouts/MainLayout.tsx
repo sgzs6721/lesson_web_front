@@ -188,25 +188,34 @@ const MainLayout: React.FC = () => {
                   display: 'flex', 
                   alignItems: 'center',
                   height: '100%',
-                  padding: '0 5px'
+                  padding: '0 15px',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  marginTop: 'auto',
+                  marginBottom: 'auto'
                 }}>
                   <div className="user-avatar" style={{ 
-                    height: '36px', 
-                    width: '36px', 
+                    height: '44px', 
+                    width: '44px', 
                     display: 'flex', 
                     alignItems: 'center', 
-                    justifyContent: 'center' 
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '2px solid rgba(255, 255, 255, 0.5)',
+                    borderRadius: '50%'
                   }}>{username.charAt(0).toUpperCase()}</div>
                   <div style={{ 
                     color: 'white',
-                    marginLeft: '10px',
+                    marginLeft: '12px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    height: '36px'
+                    height: '44px',
+                    lineHeight: '1.2'
                   }}>
-                    <div style={{ fontWeight: 600, lineHeight: '18px' }}>{username}</div>
-                    <div style={{ fontSize: '12px', opacity: '0.9', lineHeight: '18px' }}>超级管理员</div>
+                    <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '2px' }}>{username}</div>
+                    <div style={{ fontSize: '13px', opacity: '0.9' }}>超级管理员</div>
                   </div>
                   <div className={`dropdown-content ${showDropdown ? 'show' : ''}`}>
                     <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/profile'); }}>设置</a>

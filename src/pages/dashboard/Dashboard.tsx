@@ -108,154 +108,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // 拖动功能
-  useEffect(() => {
-    const cards = document.querySelectorAll('.dashboard-card');
-    let activeCard: HTMLElement | null = null;
-    let initialX: number, initialY: number;
-    let offsetX: number, offsetY: number;
-    
-    // Show all drag handles
-    const dragHandles = document.querySelectorAll('.drag-handle');
-    dragHandles.forEach(handle => {
-      (handle as HTMLElement).style.display = 'block';
-    });
-    
-    // Add event listeners for drag handles
-    dragHandles.forEach(handle => {
-      const dragHandle = handle as HTMLElement;
-      
-      // Mouse events for desktop
-      dragHandle.addEventListener('mousedown', startDrag);
-      
-      // Touch events for mobile
-      dragHandle.addEventListener('touchstart', startDragTouch);
-    });
-    
-    function startDrag(e: MouseEvent) {
-      e.preventDefault();
-      const target = e.target as HTMLElement;
-      activeCard = target.closest('.dashboard-card') as HTMLElement;
-      
-      if (!activeCard) return;
-      
-      // Store initial positions
-      initialX = e.clientX;
-      initialY = e.clientY;
-      
-      // Set the initial offset
-      const cardRect = activeCard.getBoundingClientRect();
-      offsetX = initialX - cardRect.left;
-      offsetY = initialY - cardRect.top;
-      
-      // Add dragging class
-      activeCard.classList.add('dragging');
-      
-      // Set initial position
-      activeCard.style.position = 'absolute';
-      activeCard.style.zIndex = '1000';
-      moveCard(e.clientX, e.clientY);
-      
-      // Add event listeners for drag movement
-      document.addEventListener('mousemove', drag);
-      document.addEventListener('mouseup', endDrag);
-    }
-    
-    function startDragTouch(e: TouchEvent) {
-      const target = e.target as HTMLElement;
-      activeCard = target.closest('.dashboard-card') as HTMLElement;
-      
-      if (!activeCard || e.touches.length === 0) return;
-      
-      // Store initial positions
-      initialX = e.touches[0].clientX;
-      initialY = e.touches[0].clientY;
-      
-      // Set the initial offset
-      const cardRect = activeCard.getBoundingClientRect();
-      offsetX = initialX - cardRect.left;
-      offsetY = initialY - cardRect.top;
-      
-      // Add dragging class
-      activeCard.classList.add('dragging');
-      
-      // Set initial position
-      activeCard.style.position = 'absolute';
-      activeCard.style.zIndex = '1000';
-      moveCard(e.touches[0].clientX, e.touches[0].clientY);
-      
-      // Add event listeners for drag movement
-      document.addEventListener('touchmove', dragTouch);
-      document.addEventListener('touchend', endDragTouch);
-    }
-    
-    function drag(e: MouseEvent) {
-      if (!activeCard) return;
-      moveCard(e.clientX, e.clientY);
-    }
-    
-    function dragTouch(e: TouchEvent) {
-      if (!activeCard || e.touches.length === 0) return;
-      moveCard(e.touches[0].clientX, e.touches[0].clientY);
-    }
-    
-    function moveCard(clientX: number, clientY: number) {
-      if (!activeCard) return;
-      
-      const contentPanel = document.querySelector('.content-panel');
-      if (!contentPanel) return;
-      
-      const contentRect = contentPanel.getBoundingClientRect();
-      
-      // Calculate position relative to the content panel
-      let left = clientX - offsetX - contentRect.left;
-      let top = clientY - offsetY - contentRect.top;
-      
-      // Constrain within content panel
-      left = Math.max(0, Math.min(left, contentRect.width - activeCard.offsetWidth));
-      top = Math.max(0, Math.min(top, contentRect.height - 100)); // Allow some overflow at bottom
-      
-      activeCard.style.left = `${left}px`;
-      activeCard.style.top = `${top}px`;
-    }
-    
-    function endDrag() {
-      finishDrag();
-      document.removeEventListener('mousemove', drag);
-      document.removeEventListener('mouseup', endDrag);
-    }
-    
-    function endDragTouch() {
-      finishDrag();
-      document.removeEventListener('touchmove', dragTouch);
-      document.removeEventListener('touchend', endDragTouch);
-    }
-    
-    function finishDrag() {
-      if (!activeCard) return;
-      
-      // Remove dragging class
-      activeCard.classList.remove('dragging');
-      
-      // Reset the active card
-      activeCard = null;
-    }
-    
-    return () => {
-      // Cleanup event listeners
-      dragHandles.forEach(handle => {
-        const dragHandle = handle as HTMLElement;
-        dragHandle.removeEventListener('mousedown', startDrag);
-        dragHandle.removeEventListener('touchstart', startDragTouch);
-      });
-      
-      document.removeEventListener('mousemove', drag);
-      document.removeEventListener('mouseup', endDrag);
-      document.removeEventListener('touchmove', dragTouch);
-      document.removeEventListener('touchend', endDragTouch);
-    };
-  }, []);
-
   // 切换本周/本月视图
   const togglePeriodView = (view: 'week' | 'month') => {
     setCoachStatsView(view);
@@ -403,9 +255,6 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-card" id="today-overview-card" style={{ marginBottom: '20px' }}>
         <div className="card-header">
           <div className="card-title" style={{ fontSize: '18px' }}>今日数据</div>
-          <div>
-            <span className="drag-handle" title="拖动卡片">⋮⋮</span>
-          </div>
         </div>
         <div className="card-body">
           {/* 统计条 */}
@@ -613,7 +462,6 @@ const Dashboard: React.FC = () => {
             >
               <span>✓</span> 批量打卡
             </button>
-            <span className="drag-handle" title="拖动卡片">⋮⋮</span>
           </div>
         </div>
         <div className="card-body" style={{ padding: '0' }}>
@@ -662,8 +510,8 @@ const Dashboard: React.FC = () => {
                     <span className="badge badge-warning">未打卡</span>
                   </td>
                   <td>
-                    <button className="btn-expense" style={{ marginRight: '5px' }}>请假</button>
-                    <button className="btn-punch">✓ 打卡</button>
+                    <button className="btn-leave" style={{ marginRight: '5px' }}><i>🗓️</i> 请假</button>
+                    <button className="btn-punch"><i>✓</i> 打卡</button>
                   </td>
                 </tr>
                 <tr>
@@ -737,7 +585,6 @@ const Dashboard: React.FC = () => {
                 onClick={() => togglePeriodView('month')}
               >本月</button>
             </div>
-            <span className="drag-handle" title="拖动卡片">⋮⋮</span>
           </div>
         </div>
         <div className="card-body" style={{ padding: '0' }}>
@@ -815,7 +662,6 @@ const Dashboard: React.FC = () => {
                 onClick={() => togglePeriodView('month')}
               >本月</button>
             </div>
-            <span className="drag-handle" title="拖动卡片">⋮⋮</span>
           </div>
         </div>
         <div className="card-body">
