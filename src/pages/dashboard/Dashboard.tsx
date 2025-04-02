@@ -48,6 +48,66 @@ const Dashboard: React.FC = () => {
   const [coachStats, setCoachStats] = useState<CoachStats[]>([]);
   const [coachStatsView, setCoachStatsView] = useState<'week' | 'month'>('week');
 
+  // 处理全选功能
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    const checkboxes = document.querySelectorAll('input[data-status="unchecked"]');
+    
+    checkboxes.forEach((checkbox) => {
+      const cb = checkbox as HTMLInputElement;
+      cb.checked = isChecked;
+    });
+  };
+
+  // 处理批量打卡功能
+  const handleBatchPunch = () => {
+    const selectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked:not(#selectAllAttendance)');
+    
+    if (selectedCheckboxes.length === 0) {
+      alert('请先选择要打卡的学员');
+      return;
+    }
+    
+    // 这里可以添加确认对话框
+    if (window.confirm(`确定要为选中的 ${selectedCheckboxes.length} 名学员进行打卡吗？`)) {
+      // 这里应该调用后端API进行批量打卡操作
+      // 模拟操作成功
+      selectedCheckboxes.forEach(checkbox => {
+        const cb = checkbox as HTMLInputElement;
+        cb.disabled = true;
+        cb.checked = false;
+        cb.setAttribute('data-status', 'checked');
+        
+        // 获取所在行，更新状态显示
+        const row = cb.closest('tr');
+        if (row) {
+          const statusCell = row.querySelector('td:nth-child(9)');
+          if (statusCell) {
+            const badge = statusCell.querySelector('.badge');
+            if (badge) {
+              badge.className = 'badge badge-success';
+              badge.textContent = '已打卡';
+            }
+          }
+          
+          // 更新操作按钮
+          const actionCell = row.querySelector('td:nth-child(10)');
+          if (actionCell) {
+            actionCell.innerHTML = '<span style="color: #888; fontSize: 12px;">已完成</span>';
+          }
+        }
+      });
+      
+      // 重置全选复选框
+      const selectAllCheckbox = document.getElementById('selectAllAttendance') as HTMLInputElement;
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = false;
+      }
+      
+      alert('批量打卡成功！');
+    }
+  };
+
   // 拖动功能
   useEffect(() => {
     const cards = document.querySelectorAll('.dashboard-card');
@@ -546,7 +606,11 @@ const Dashboard: React.FC = () => {
         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="card-title" style={{ fontSize: '18px' }}>今日上课学员</div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button className="btn-batch-punch" style={{ marginRight: '10px' }}>
+            <button 
+              className="btn-batch-punch" 
+              style={{ marginRight: '10px' }}
+              onClick={handleBatchPunch}
+            >
               <span>✓</span> 批量打卡
             </button>
             <span className="drag-handle" title="拖动卡片">⋮⋮</span>
@@ -558,7 +622,12 @@ const Dashboard: React.FC = () => {
               <thead>
                 <tr>
                   <th style={{ textAlign: 'center', width: '40px' }}>
-                    <input type="checkbox" style={{ cursor: 'pointer' }} />
+                    <input 
+                      type="checkbox" 
+                      style={{ cursor: 'pointer' }} 
+                      onChange={handleSelectAll}
+                      id="selectAllAttendance"
+                    />
                   </th>
                   <th>学员姓名</th>
                   <th>时间</th>
@@ -574,16 +643,20 @@ const Dashboard: React.FC = () => {
               <tbody>
                 <tr>
                   <td style={{ textAlign: 'center' }}>
-                    <input type="checkbox" style={{ cursor: 'pointer' }} />
+                    <input 
+                      type="checkbox" 
+                      style={{ cursor: 'pointer' }} 
+                      data-status="unchecked"
+                    />
                   </td>
                   <td>张小明</td>
                   <td>14:00-16:00</td>
                   <td>李教练</td>
                   <td>12/24</td>
                   <td>
-                    <span className="badge badge-success">固定课程</span>
+                    <span className="badge badge-warning">未打卡</span>
                   </td>
-                  <td>—</td>
+                  <td>¥2,400</td>
                   <td>¥2,400</td>
                   <td>
                     <span className="badge badge-warning">未打卡</span>
@@ -595,14 +668,19 @@ const Dashboard: React.FC = () => {
                 </tr>
                 <tr>
                   <td style={{ textAlign: 'center' }}>
-                    <input type="checkbox" style={{ cursor: 'pointer' }} />
+                    <input 
+                      type="checkbox" 
+                      style={{ cursor: 'pointer' }} 
+                      data-status="checked"
+                      disabled
+                    />
                   </td>
                   <td>李华</td>
                   <td>10:00-11:00</td>
                   <td>王教练</td>
                   <td>15/30</td>
                   <td>
-                    <span className="badge badge-info">临时约课</span>
+                    <span className="badge badge-success">已打卡</span>
                   </td>
                   <td>¥180</td>
                   <td>¥2,700</td>
@@ -615,16 +693,21 @@ const Dashboard: React.FC = () => {
                 </tr>
                 <tr>
                   <td style={{ textAlign: 'center' }}>
-                    <input type="checkbox" style={{ cursor: 'pointer' }} />
+                    <input 
+                      type="checkbox" 
+                      style={{ cursor: 'pointer' }} 
+                      data-status="leave"
+                      disabled
+                    />
                   </td>
                   <td>王芳</td>
                   <td>16:00-17:00</td>
                   <td>张教练</td>
                   <td>8/20</td>
                   <td>
-                    <span className="badge badge-success">固定课程</span>
+                    <span className="badge badge-danger">已请假</span>
                   </td>
-                  <td>—</td>
+                  <td>¥1,600</td>
                   <td>¥1,600</td>
                   <td>
                     <span className="badge badge-danger">已请假</span>
@@ -644,17 +727,17 @@ const Dashboard: React.FC = () => {
         <div className="card-header">
           <div className="card-title">教练员课时统计</div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button 
-              onClick={() => togglePeriodView('week')} 
-              className={`btn btn-sm ${coachStatsView === 'week' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ marginRight: '5px', padding: '4px 8px', fontSize: '12px' }}
-            >本周</button>
-            <button 
-              onClick={() => togglePeriodView('month')} 
-              className={`btn btn-sm ${coachStatsView === 'month' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '4px 8px', fontSize: '12px' }}
-            >本月</button>
-            <span className="drag-handle" title="拖动卡片" style={{ marginLeft: '10px' }}>⋮⋮</span>
+            <div className="period-tabs" style={{ marginRight: '10px' }}>
+              <button 
+                className={`period-tab ${coachStatsView === 'week' ? 'active' : ''}`}
+                onClick={() => togglePeriodView('week')}
+              >本周</button>
+              <button 
+                className={`period-tab ${coachStatsView === 'month' ? 'active' : ''}`}
+                onClick={() => togglePeriodView('month')}
+              >本月</button>
+            </div>
+            <span className="drag-handle" title="拖动卡片">⋮⋮</span>
           </div>
         </div>
         <div className="card-body" style={{ padding: '0' }}>
@@ -674,10 +757,30 @@ const Dashboard: React.FC = () => {
                 {coachStats.map((coach) => (
                   <tr key={coach.id}>
                     <td>{coach.name}</td>
-                    <td>{coach.completedLessons} <span className="amount-note">(¥{coach.completedAmount.toLocaleString()})</span></td>
-                    <td>{coach.pendingLessons} <span className="amount-note">(¥{coach.pendingAmount.toLocaleString()})</span></td>
+                    <td>
+                      <span style={{ fontWeight: 600, color: '#28a745' }}>{coach.completedLessons}</span> 
+                      <span className="amount-note" style={{ color: '#28a745', opacity: 0.8 }}>(¥{coach.completedAmount.toLocaleString()})</span>
+                    </td>
+                    <td>
+                      <span style={{ fontWeight: 600, color: '#ffc107' }}>{coach.pendingLessons}</span> 
+                      <span className="amount-note" style={{ color: '#ffc107', opacity: 0.8 }}>(¥{coach.pendingAmount.toLocaleString()})</span>
+                    </td>
                     <td>{coach.hourlyRate}</td>
-                    <td>{coach.type}</td>
+                    <td>
+                      <span 
+                        style={{ 
+                          display: 'inline-block', 
+                          padding: '4px 8px', 
+                          borderRadius: '4px', 
+                          fontSize: '12px', 
+                          fontWeight: '600',
+                          backgroundColor: coach.type === '全职' ? 'rgba(52, 152, 219, 0.15)' : 'rgba(46, 204, 113, 0.15)',
+                          color: coach.type === '全职' ? '#3498db' : '#2ecc71'
+                        }}
+                      >
+                        {coach.type}
+                      </span>
+                    </td>
                     <td>{coach.estimatedSalary.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -704,12 +807,12 @@ const Dashboard: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div className="period-tabs" style={{ marginRight: '10px' }}>
               <button 
-                className={`period-tab ${activePeriod === 'week' ? 'active' : ''}`}
-                onClick={() => setActivePeriod('week')}
+                className={`period-tab ${coachStatsView === 'week' ? 'active' : ''}`}
+                onClick={() => togglePeriodView('week')}
               >本周</button>
               <button 
-                className={`period-tab ${activePeriod === 'month' ? 'active' : ''}`}
-                onClick={() => setActivePeriod('month')}
+                className={`period-tab ${coachStatsView === 'month' ? 'active' : ''}`}
+                onClick={() => togglePeriodView('month')}
               >本月</button>
             </div>
             <span className="drag-handle" title="拖动卡片">⋮⋮</span>

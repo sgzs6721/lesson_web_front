@@ -1161,7 +1161,7 @@ body {
   
   .main-content {
     padding-left: 20px;
-    padding-top: 110px; /* Further reduced padding for smaller fixed header */
+    padding-top: 120px; /* Reduced padding for fixed header on mobile */
   }
 
   .sidebar.collapsed + .main-content {
@@ -1173,7 +1173,7 @@ body {
     flex-direction: column;
     border-radius: 0;
     margin-bottom: 0;
-    padding: 8px;
+    padding: 10px;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -1186,21 +1186,37 @@ body {
     width: 100%;
   }
   
+  .campus-info-content > div:last-child {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    height: auto !important;
+  }
+  
+  .campus-info-content > div:last-child > div {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+  
   .campus-name {
     font-size: 18px !important;
   }
   
-  .campus-details {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-    margin-top: 8px !important;
+  .campus-selector, 
+  .campus-info-content > div:last-child > div > div {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 8px !important;
+    height: auto !important;
   }
   
-  .campus-details > div {
-    flex-direction: column !important;
-    width: 100%;
-    gap: 8px !important;
+  .campus-info-content button {
+    width: 100% !important;
+    height: 34px !important;
+    justify-content: space-between !important;
+    padding: 6px 16px !important;
+    font-size: 15px !important;
   }
   
   .campus-info .user-info {
@@ -1225,7 +1241,7 @@ body {
 
   /* Adjust content panel for fixed header */
   .content-panel {
-    margin-top: 0 !important;
+    margin-top: 210px !important;
   }
   
   /* Mobile sidebar overlay */

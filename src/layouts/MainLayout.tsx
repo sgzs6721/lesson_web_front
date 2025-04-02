@@ -154,136 +154,180 @@ const MainLayout: React.FC = () => {
           zIndex: '999',
           width: 'auto',
           backgroundColor: '#374263',
-          padding: '8px 20px',
+          padding: '12px 20px',
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.3s ease'
         }}>
-          <div className="campus-info-content">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div className="campus-name" style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', fontSize: '18px' }}>
-                {currentCampus}
-                <div className="campus-status-badge" style={{ marginLeft: '15px', marginBottom: '0', whiteSpace: 'nowrap' }}>正常运营中</div>
-              </div>
-              <div className="user-info" onClick={toggleDropdown} style={{ background: 'transparent' }}>
-                <div className="user-avatar">{username.charAt(0).toUpperCase()}</div>
-                <div style={{ color: 'white' }}>
-                  <div style={{ fontWeight: 600 }}>{username}</div>
-                  <div style={{ fontSize: '12px', opacity: '0.9' }}>超级管理员</div>
-                </div>
-                <div className={`dropdown-content ${showDropdown ? 'show' : ''}`}>
-                  <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/profile'); }}>设置</a>
-                  <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/password'); }}>修改密码</a>
-                  <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>登出</a>
-                </div>
-              </div>
-            </div>
-            
-            <div className="campus-details" style={{ display: 'flex', flexDirection: 'row', marginTop: '6px', gap: '30px', alignItems: 'center' }}>
-              {/* 校区选择器 - 简化样式，无箭头 */}
-              <div className="campus-selector" style={{
-                padding: '0',
-                position: 'relative',
-                display: 'inline-block'
+          <div className="campus-info-content" style={{ width: '100%' }}>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column'
+            }}>
+              {/* 第一行：校区名称和管理员信息 */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                marginBottom: '10px'
               }}>
-                <div 
-                  className={`campus-header ${showCampusList ? 'active' : ''}`}
-                  onClick={toggleCampusList}
-                  style={{
-                    padding: '4px 12px',
-                    background: 'rgba(255, 255, 255, 0.15)',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                >
-                  <span style={{ fontSize: '14px', display: 'flex', alignItems: 'center' }}>
-                    切换校区
-                  </span>
+                <div className="campus-name" style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  flexWrap: 'nowrap'
+                }}>
+                  {currentCampus}
+                  <div className="campus-status-badge" style={{ 
+                    marginLeft: '15px', 
+                    marginBottom: '0', 
+                    whiteSpace: 'nowrap' 
+                  }}>正常运营中</div>
                 </div>
-                {showCampusList && (
-                  <ul className="campus-list show" style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '0',
-                    right: 'auto',
-                    backgroundColor: '#fff',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    borderRadius: '4px',
-                    padding: '8px 0',
-                    marginTop: '5px',
-                    zIndex: 1000,
-                    minWidth: '150px'
+                
+                <div className="user-info" onClick={toggleDropdown} style={{ 
+                  background: 'transparent', 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  height: '100%',
+                  padding: '0 5px'
+                }}>
+                  <div className="user-avatar" style={{ 
+                    height: '36px', 
+                    width: '36px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                  }}>{username.charAt(0).toUpperCase()}</div>
+                  <div style={{ 
+                    color: 'white',
+                    marginLeft: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    height: '36px'
                   }}>
-                    <li className={`campus-item ${currentCampus === '总部校区' ? 'active' : ''}`} 
-                        onClick={(e) => { e.stopPropagation(); selectCampus('总部校区'); }}
-                        style={{ 
-                          padding: '8px 15px',
-                          cursor: 'pointer',
-                          color: '#333',
-                          backgroundColor: currentCampus === '总部校区' ? 'rgba(52, 152, 219, 0.1)' : 'transparent',
-                          transition: 'all 0.2s ease'
-                        }}>总部校区</li>
-                    <li className={`campus-item ${currentCampus === '东城校区' ? 'active' : ''}`} 
-                        onClick={(e) => { e.stopPropagation(); selectCampus('东城校区'); }}
-                        style={{ 
-                          padding: '8px 15px',
-                          cursor: 'pointer',
-                          color: '#333',
-                          backgroundColor: currentCampus === '东城校区' ? 'rgba(52, 152, 219, 0.1)' : 'transparent' 
-                        }}>东城校区</li>
-                    <li className={`campus-item ${currentCampus === '西城校区' ? 'active' : ''}`} 
-                        onClick={(e) => { e.stopPropagation(); selectCampus('西城校区'); }}
-                        style={{ 
-                          padding: '8px 15px',
-                          cursor: 'pointer',
-                          color: '#333',
-                          backgroundColor: currentCampus === '西城校区' ? 'rgba(52, 152, 219, 0.1)' : 'transparent' 
-                        }}>西城校区</li>
-                    <li className={`campus-item ${currentCampus === '南城校区' ? 'active' : ''}`} 
-                        onClick={(e) => { e.stopPropagation(); selectCampus('南城校区'); }}
-                        style={{ 
-                          padding: '8px 15px',
-                          cursor: 'pointer',
-                          color: '#333',
-                          backgroundColor: currentCampus === '南城校区' ? 'rgba(52, 152, 219, 0.1)' : 'transparent' 
-                        }}>南城校区</li>
-                    <li className={`campus-item ${currentCampus === '北城校区' ? 'active' : ''}`} 
-                        onClick={(e) => { e.stopPropagation(); selectCampus('北城校区'); }}
-                        style={{ 
-                          padding: '8px 15px',
-                          cursor: 'pointer',
-                          color: '#333',
-                          backgroundColor: currentCampus === '北城校区' ? 'rgba(52, 152, 219, 0.1)' : 'transparent' 
-                        }}>北城校区</li>
-                    <li className={`campus-item ${currentCampus === '天骄校区' ? 'active' : ''}`} 
-                        onClick={(e) => { e.stopPropagation(); selectCampus('天骄校区'); }}
-                        style={{ 
-                          padding: '8px 15px',
-                          cursor: 'pointer',
-                          color: '#333',
-                          backgroundColor: currentCampus === '天骄校区' ? 'rgba(52, 152, 219, 0.1)' : 'transparent' 
-                        }}>天骄校区</li>
-                  </ul>
-                )}
+                    <div style={{ fontWeight: 600, lineHeight: '18px' }}>{username}</div>
+                    <div style={{ fontSize: '12px', opacity: '0.9', lineHeight: '18px' }}>超级管理员</div>
+                  </div>
+                  <div className={`dropdown-content ${showDropdown ? 'show' : ''}`}>
+                    <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/profile'); }}>设置</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/password'); }}>修改密码</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>登出</a>
+                  </div>
+                </div>
               </div>
               
-              {/* 联系信息容器 - 让两个信息项横向对齐并使用相同宽度的容器 */}
-              <div style={{ display: 'flex', gap: '30px', flexWrap: 'nowrap', flex: 1 }}>
-                <div className="campus-detail-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', minWidth: '140px' }}>
-                  <i style={{ color: 'rgba(255, 255, 255, 0.9)', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>👨‍💼</i>
-                  <span>负责人：张明</span>
+              {/* 第二行：校区选择器、负责人和联系电话 */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center'
+              }}>
+                {/* 校区选择器 */}
+                <div style={{ 
+                  position: 'relative', 
+                  marginRight: '25px',
+                  height: '34px',
+                  minWidth: '120px'
+                }}>
+                  <button 
+                    onClick={toggleCampusList}
+                    style={{
+                      padding: '6px 16px',
+                      background: 'rgba(255, 255, 255, 0.15)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      color: 'white',
+                      fontSize: '15px',
+                      fontWeight: '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      height: '34px',
+                      width: '100%',
+                      justifyContent: 'flex-start'
+                    }}
+                  >
+                    切换校区 <span style={{ marginLeft: '6px', fontSize: '12px' }}>▼</span>
+                  </button>
+                  
+                  {showCampusList && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: '0',
+                      backgroundColor: '#fff',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      borderRadius: '4px',
+                      padding: '8px 0',
+                      marginTop: '5px',
+                      zIndex: 1000,
+                      minWidth: '150px'
+                    }}>
+                      {['总部校区', '东城校区', '西城校区', '南城校区', '北城校区', '天骄校区'].map(campus => (
+                        <div 
+                          key={campus}
+                          style={{ 
+                            padding: '8px 15px', 
+                            cursor: 'pointer', 
+                            color: '#333', 
+                            backgroundColor: currentCampus === campus ? 'rgba(52, 152, 219, 0.1)' : 'transparent' 
+                          }}
+                          onClick={(e) => { e.stopPropagation(); selectCampus(campus); }}
+                        >
+                          {campus}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="campus-detail-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}>
-                  <i style={{ color: 'rgba(255, 255, 255, 0.9)', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>📱</i>
-                  <span>联系电话：13800138001</span>
+                
+                {/* 负责人信息 */}
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  marginRight: '25px',
+                  height: '34px'
+                }}>
+                  <i style={{ 
+                    color: 'rgba(255, 255, 255, 0.9)', 
+                    background: 'rgba(255, 255, 255, 0.2)', 
+                    borderRadius: '50%', 
+                    width: '24px', 
+                    height: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '13px' 
+                  }}>👨‍💼</i>
+                  <span style={{ color: 'white', fontSize: '15px', whiteSpace: 'nowrap' }}>负责人：张明</span>
+                </div>
+                
+                {/* 联系电话信息 */}
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  height: '34px'
+                }}>
+                  <i style={{ 
+                    color: 'rgba(255, 255, 255, 0.9)', 
+                    background: 'rgba(255, 255, 255, 0.2)', 
+                    borderRadius: '50%', 
+                    width: '24px', 
+                    height: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '13px' 
+                  }}>📱</i>
+                  <span style={{ color: 'white', fontSize: '15px', whiteSpace: 'nowrap' }}>联系电话：13800138001</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="content-panel" style={{ marginTop: '70px' }}>
+        <div className="content-panel" style={{ marginTop: '110px' }}>
           <div className="header" style={{ display: 'none' }}>
             <h1 className="page-title">
               {activeMenu.startsWith('/dashboard') ? '数据概览' : 
