@@ -19,7 +19,8 @@ import {
   Radio,
   Switch,
   Upload,
-  Tabs
+  Tabs,
+  List
 } from 'antd';
 import {
   PlusOutlined,
@@ -32,7 +33,11 @@ import {
   CalendarOutlined,
   BookOutlined,
   UploadOutlined,
-  FileImageOutlined
+  FileImageOutlined,
+  UnorderedListOutlined,
+  AppstoreOutlined,
+  FilterOutlined,
+  SortAscendingOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile } from 'antd/es/upload/interface';
@@ -53,6 +58,9 @@ interface Course {
   period: number;
   periodUnit: 'day' | 'week' | 'month';
   totalHours: number;
+  consumedHours: number;
+  hoursPerClass: number;
+  unitPrice: number;
   status: 'active' | 'inactive' | 'pending';
   description: string;
   cover?: string;
@@ -70,12 +78,14 @@ const CourseManagement: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [activeTab, setActiveTab] = useState('1');
+  const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
   const [form] = Form.useForm();
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<string>('');
+  const [deletingCourseName, setDeletingCourseName] = useState<string>('');
 
   // 模拟课程分类
   const categoryOptions = [
@@ -85,6 +95,17 @@ const CourseManagement: React.FC = () => {
     { value: 'education', label: '学科教育' },
     { value: 'technology', label: '科技培训' },
     { value: 'language', label: '语言学习' },
+  ];
+
+  // 排序选项
+  const sortOptions = [
+    { value: 'priceAsc', label: '课筹单价升序' },
+    { value: 'priceDesc', label: '课筹单价降序' },
+    { value: 'hoursAsc', label: '总课时升序' },
+    { value: 'hoursDesc', label: '总课时降序' },
+    { value: 'consumedHoursAsc', label: '已销课时升序' },
+    { value: 'consumedHoursDesc', label: '已销课时降序' },
+    { value: 'latestUpdate', label: '最近更新' },
   ];
 
   // 模拟校区和教练数据
@@ -108,7 +129,7 @@ const CourseManagement: React.FC = () => {
 
   useEffect(() => {
     fetchCourses();
-  }, [currentPage, pageSize, searchText, selectedCategory, selectedStatus]);
+  }, [currentPage, pageSize, searchText, selectedCategory, sortOrder]);
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -123,6 +144,7 @@ const CourseManagement: React.FC = () => {
           const category = categoryOptions[index % categoryOptions.length].value;
           const level = index % 3 === 0 ? 'beginner' : index % 3 === 1 ? 'intermediate' : 'advanced';
           const periodUnit = index % 3 === 0 ? 'day' : index % 3 === 1 ? 'week' : 'month';
+          const totalHours = 10 + (index % 10) * 4;
           
           return {
             id: `C${10000 + index}`,
@@ -133,7 +155,10 @@ const CourseManagement: React.FC = () => {
             capacity: 10 + (index % 15),
             period: 1 + (index % 5),
             periodUnit,
-            totalHours: 10 + (index % 10) * 4,
+            totalHours,
+            consumedHours: Math.floor(totalHours * (0.1 + Math.random() * 0.7)),
+            hoursPerClass: 1 + (index % 3),
+            unitPrice: 50 + (index % 10) * 15,
             status: index % 5 === 0 ? 'pending' : index % 7 === 0 ? 'inactive' : 'active',
             description: `这是一个${categoryOptions[index % categoryOptions.length].label}${level === 'beginner' ? '初级' : level === 'intermediate' ? '中级' : '高级'}班，适合${level === 'beginner' ? '初学者' : level === 'intermediate' ? '有一定基础的学员' : '高级学员'}。`,
             cover: `https://picsum.photos/200/300?random=${index}`,
@@ -166,8 +191,33 @@ const CourseManagement: React.FC = () => {
         filteredData = filteredData.filter(course => course.category === selectedCategory);
       }
       
-      if (selectedStatus) {
-        filteredData = filteredData.filter(course => course.status === selectedStatus);
+      // 排序
+      if (sortOrder) {
+        switch (sortOrder) {
+          case 'priceAsc':
+            filteredData.sort((a, b) => a.unitPrice - b.unitPrice);
+            break;
+          case 'priceDesc':
+            filteredData.sort((a, b) => b.unitPrice - a.unitPrice);
+            break;
+          case 'hoursAsc':
+            filteredData.sort((a, b) => a.totalHours - b.totalHours);
+            break;
+          case 'hoursDesc':
+            filteredData.sort((a, b) => b.totalHours - a.totalHours);
+            break;
+          case 'consumedHoursAsc':
+            filteredData.sort((a, b) => a.consumedHours - b.consumedHours);
+            break;
+          case 'consumedHoursDesc':
+            filteredData.sort((a, b) => b.consumedHours - a.consumedHours);
+            break;
+          case 'latestUpdate':
+            filteredData.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+            break;
+          default:
+            break;
+        }
       }
 
       // 分页
@@ -188,16 +238,14 @@ const CourseManagement: React.FC = () => {
   const handleReset = () => {
     setSearchText('');
     setSelectedCategory('');
-    setSelectedStatus('');
+    setSortOrder('');
     setCurrentPage(1);
     fetchCourses();
   };
 
   const showAddModal = () => {
     form.resetFields();
-    setFileList([]);
     setEditingCourse(null);
-    setActiveTab('1');
     setIsModalVisible(true);
   };
   
@@ -207,20 +255,6 @@ const CourseManagement: React.FC = () => {
       ...record,
     });
     
-    if (record.cover) {
-      setFileList([
-        {
-          uid: '-1',
-          name: 'course-cover.jpg',
-          status: 'done',
-          url: record.cover,
-        },
-      ]);
-    } else {
-      setFileList([]);
-    }
-    
-    setActiveTab('1');
     setIsModalVisible(true);
   };
 
@@ -228,11 +262,6 @@ const CourseManagement: React.FC = () => {
     form.validateFields()
       .then(values => {
         let formattedValues = { ...values };
-        
-        // 处理封面图片
-        if (fileList.length > 0 && fileList[0].url) {
-          formattedValues.cover = fileList[0].url;
-        }
 
         if (editingCourse) {
           // 编辑现有课程
@@ -255,6 +284,9 @@ const CourseManagement: React.FC = () => {
             ...formattedValues,
             createdAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
             updatedAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+            consumedHours: 0,
+            campuses: [],
+            coaches: formattedValues.coaches ? [formattedValues.coaches] : []
           };
           setCourses(prevCourses => [newCourse, ...prevCourses]);
           setTotal(prev => prev + 1);
@@ -278,101 +310,41 @@ const CourseManagement: React.FC = () => {
     setCourses(courses.filter(course => course.id !== id));
     setTotal(prev => prev - 1);
     message.success('课程已删除');
+    setDeleteModalVisible(false);
+  };
+
+  const showDeleteConfirm = (id: string, name: string) => {
+    setCourseToDelete(id);
+    setDeletingCourseName(name);
+    setDeleteModalVisible(true);
+  };
+
+  // 获取教练名称
+  const getCoachNames = (coachIds: string[]) => {
+    if (!coachIds || coachIds.length === 0) return '';
+    // 只取第一个教练
+    const id = coachIds[0];
+    const coach = coachOptions.find(c => c.value === id);
+    return coach ? coach.label : id;
+  };
+
+  // 获取课程分类名称
+  const getCategoryName = (categoryId: string) => {
+    const category = categoryOptions.find(c => c.value === categoryId);
+    return category ? category.label : categoryId;
   };
 
   const columns: ColumnsType<Course> = [
     {
-      title: '课程ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 90,
-    },
-    {
       title: '课程名称',
       dataIndex: 'name',
       key: 'name',
-      render: (text, record) => (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {record.cover && (
-            <img 
-              src={record.cover} 
-              alt={text} 
-              style={{ 
-                width: 40, 
-                height: 40, 
-                marginRight: 8, 
-                borderRadius: 4,
-                objectFit: 'cover'
-              }}
-            />
-          )}
-          <span>{text}</span>
-        </div>
-      ),
     },
     {
-      title: '分类',
+      title: '课程类型',
       dataIndex: 'category',
       key: 'category',
-      render: (category) => {
-        const categoryInfo = categoryOptions.find(cat => cat.value === category);
-        return categoryInfo?.label || category;
-      },
-    },
-    {
-      title: '难度',
-      dataIndex: 'level',
-      key: 'level',
-      render: (level) => {
-        let color = '';
-        let text = '';
-        
-        switch (level) {
-          case 'beginner':
-            color = 'green';
-            text = '初级';
-            break;
-          case 'intermediate':
-            color = 'blue';
-            text = '中级';
-            break;
-          case 'advanced':
-            color = 'purple';
-            text = '高级';
-            break;
-          default:
-            color = 'default';
-            text = level;
-        }
-        
-        return <Tag color={color}>{text}</Tag>;
-      },
-    },
-    {
-      title: '价格(元)',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price) => `¥${price}`,
-      sorter: (a, b) => a.price - b.price,
-    },
-    {
-      title: '周期',
-      key: 'period',
-      render: (_, record) => {
-        let unit = '';
-        switch (record.periodUnit) {
-          case 'day':
-            unit = '天';
-            break;
-          case 'week':
-            unit = '周';
-            break;
-          case 'month':
-            unit = '月';
-            break;
-        }
-        return `${record.period} ${unit}`;
-      },
+      render: (category) => getCategoryName(category),
     },
     {
       title: '总课时',
@@ -381,10 +353,22 @@ const CourseManagement: React.FC = () => {
       render: (hours) => `${hours}小时`,
     },
     {
-      title: '班容量',
-      dataIndex: 'capacity',
-      key: 'capacity',
-      render: (capacity) => `${capacity}人`,
+      title: '已销课时',
+      dataIndex: 'consumedHours',
+      key: 'consumedHours',
+      render: (hours) => `${hours}小时`,
+    },
+    {
+      title: '上课教练',
+      dataIndex: 'coaches',
+      key: 'coaches',
+      render: (coaches) => getCoachNames(coaches),
+    },
+    {
+      title: '课筹单价',
+      dataIndex: 'unitPrice',
+      key: 'unitPrice',
+      render: (price) => `¥${price}`,
     },
     {
       title: '状态',
@@ -436,39 +420,42 @@ const CourseManagement: React.FC = () => {
             />
           </Tooltip>
           <Tooltip title="删除">
-            <Popconfirm
-              title="确定要删除此课程吗？"
-              onConfirm={() => handleDeleteCourse(record.id)}
-              okText="确定"
-              cancelText="取消"
-            >
-              <Button 
-                type="text" 
-                size="small" 
-                danger 
-                icon={<DeleteOutlined />} 
-              />
-            </Popconfirm>
+            <Button 
+              type="text" 
+              size="small" 
+              danger 
+              icon={<DeleteOutlined />} 
+              onClick={() => showDeleteConfirm(record.id, record.name)}
+            />
           </Tooltip>
         </Space>
       ),
     },
   ];
 
-  const handleCoverChange = ({ fileList }: { fileList: UploadFile[] }) => {
-    setFileList(fileList);
-  };
-
-  const beforeUpload = (file: File) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('只能上传JPG/PNG格式的图片!');
+  const renderStatusTag = (status: string) => {
+    let color = '';
+    let text = '';
+    
+    switch (status) {
+      case 'active':
+        color = 'green';
+        text = '开课中';
+        break;
+      case 'inactive':
+        color = 'red';
+        text = '已停课';
+        break;
+      case 'pending':
+        color = 'orange';
+        text = '待开课';
+        break;
+      default:
+        color = 'default';
+        text = status;
     }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('图片大小不能超过2MB!');
-    }
-    return false;
+    
+    return <Tag color={color}>{text}</Tag>;
   };
 
   return (
@@ -478,13 +465,29 @@ const CourseManagement: React.FC = () => {
           <Title level={4}>课程管理</Title>
         </Col>
         <Col>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            onClick={showAddModal}
-          >
-            添加课程
-          </Button>
+          <Space>
+            <Button 
+              type={viewMode === 'list' ? 'primary' : 'default'} 
+              icon={<UnorderedListOutlined />}
+              onClick={() => setViewMode('list')}
+            >
+              列表视图
+            </Button>
+            <Button 
+              type={viewMode === 'card' ? 'primary' : 'default'} 
+              icon={<AppstoreOutlined />}
+              onClick={() => setViewMode('card')}
+            >
+              卡片视图
+            </Button>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={showAddModal}
+            >
+              添加课程
+            </Button>
+          </Space>
         </Col>
       </Row>
 
@@ -516,20 +519,23 @@ const CourseManagement: React.FC = () => {
           </Col>
           <Col xs={24} sm={7} lg={7}>
             <Select
-              placeholder="选择状态"
+              placeholder="排序方式"
               style={{ width: '100%' }}
-              value={selectedStatus}
-              onChange={value => setSelectedStatus(value)}
+              value={sortOrder}
+              onChange={value => setSortOrder(value)}
               allowClear
+              suffixIcon={<SortAscendingOutlined />}
             >
-              <Option value="active">开课中</Option>
-              <Option value="inactive">已停课</Option>
-              <Option value="pending">待开课</Option>
+              {sortOptions.map(option => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={2} lg={2} style={{ textAlign: 'right' }}>
             <Button 
-              icon={<SearchOutlined />} 
+              icon={<FilterOutlined />} 
               onClick={handleReset}
             >
               重置
@@ -539,24 +545,100 @@ const CourseManagement: React.FC = () => {
       </Card>
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={courses}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: currentPage,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: total => `共 ${total} 条记录`,
-            onChange: (page, pageSize) => {
-              setCurrentPage(page);
-              setPageSize(pageSize);
-            },
-          }}
-        />
+        {viewMode === 'list' ? (
+          <Table
+            columns={columns}
+            dataSource={courses}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              total: total,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: total => `共 ${total} 条记录`,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setPageSize(pageSize);
+              },
+            }}
+          />
+        ) : (
+          <List
+            grid={{ 
+              gutter: 16, 
+              xs: 1, 
+              sm: 2, 
+              md: 3, 
+              lg: 4, 
+              xl: 4,
+              xxl: 4 
+            }}
+            dataSource={courses}
+            loading={loading}
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              total: total,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: total => `共 ${total} 条记录`,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setPageSize(pageSize);
+              },
+            }}
+            renderItem={item => (
+              <List.Item>
+                <Card 
+                  hoverable 
+                  style={{ height: 280 }}
+                  actions={[
+                    <EditOutlined key="edit" style={{ color: '#1890ff' }} onClick={() => showEditModal(item)} />,
+                    <DeleteOutlined key="delete" style={{ color: '#ff4d4f' }} onClick={() => showDeleteConfirm(item.id, item.name)} />
+                  ]}
+                >
+                  <Card.Meta
+                    title={<div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold' }}>
+                      <span>{item.name}</span>
+                      {renderStatusTag(item.status)}
+                    </div>}
+                    description={
+                      <div style={{ height: 160, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'auto' }}>
+                        <div>
+                          <div style={{ borderBottom: '1px solid #f0f0f0', marginBottom: 12, paddingBottom: 8 }}></div>
+                          <div style={{ marginBottom: 8, display: 'flex', flexWrap: 'wrap' }}>
+                            <Tag color="blue">{getCategoryName(item.category)}</Tag>
+                            <Tag color="purple">{getCoachNames(item.coaches)}</Tag>
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <div style={{ fontWeight: 'bold', display: 'block' }}>总课时： {item.totalHours}小时</div>
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <div style={{ fontWeight: 'bold', display: 'block' }}>已销课时： {item.consumedHours}小时</div>
+                          </div>
+                          {item.unitPrice && (
+                            <div style={{ marginBottom: 8 }}>
+                              <div style={{ fontWeight: 'bold', display: 'block' }}>教练课筹单价： ¥{item.unitPrice}</div>
+                            </div>
+                          )}
+                          {item.description && (
+                            <div style={{ marginBottom: 8 }}>
+                              <div style={{ fontWeight: 'bold', display: 'block' }}>课程描述：</div>
+                              <Paragraph ellipsis={{ rows: 2 }} style={{ marginTop: 4 }}>{item.description}</Paragraph>
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ textAlign: 'right', fontSize: '12px' }}><span style={{ fontWeight: 'bold' }}>更新时间:</span> {dayjs(item.updatedAt).format('YYYY-MM-DD')}</div>
+                      </div>
+                    }
+                  />
+                </Card>
+              </List.Item>
+            )}
+          />
+        )}
       </Card>
 
       <Modal
@@ -568,225 +650,131 @@ const CourseManagement: React.FC = () => {
         okText={editingCourse ? '保存' : '添加'}
         cancelText="取消"
       >
-        <Tabs 
-          activeKey={activeTab} 
-          onChange={key => setActiveTab(key)}
-          style={{ marginBottom: 20 }}
+        <div style={{ borderBottom: '1px solid #f0f0f0', marginBottom: 16, paddingBottom: 8 }}></div>
+        <Form
+          form={form}
+          layout="vertical"
+          name="courseForm"
+          initialValues={{
+            level: 'beginner',
+            status: 'active',
+            hoursPerClass: 1,
+            unitPrice: 100
+          }}
         >
-          <TabPane tab="基本信息" key="1">
-            <Form
-              form={form}
-              layout="vertical"
-              name="courseForm"
-              initialValues={{
-                level: 'beginner',
-                status: 'active',
-                period: 1,
-                periodUnit: 'month',
-                capacity: 15,
-              }}
-            >
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="name"
-                    label="课程名称"
-                    rules={[{ required: true, message: '请输入课程名称' }]}
-                  >
-                    <Input prefix={<BookOutlined />} placeholder="请输入课程名称" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="category"
-                    label="课程分类"
-                    rules={[{ required: true, message: '请选择课程分类' }]}
-                  >
-                    <Select placeholder="请选择课程分类">
-                      {categoryOptions.map(option => (
-                        <Option key={option.value} value={option.value}>
-                          {option.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="level"
-                    label="课程难度"
-                    rules={[{ required: true, message: '请选择课程难度' }]}
-                  >
-                    <Radio.Group>
-                      <Radio value="beginner">初级</Radio>
-                      <Radio value="intermediate">中级</Radio>
-                      <Radio value="advanced">高级</Radio>
-                    </Radio.Group>
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="status"
-                    label="课程状态"
-                    rules={[{ required: true, message: '请选择课程状态' }]}
-                  >
-                    <Radio.Group>
-                      <Radio value="active">开课中</Radio>
-                      <Radio value="inactive">已停课</Radio>
-                      <Radio value="pending">待开课</Radio>
-                    </Radio.Group>
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="price"
-                    label="课程价格(元)"
-                    rules={[{ required: true, message: '请输入课程价格' }]}
-                  >
-                    <InputNumber
-                      min={0}
-                      style={{ width: '100%' }}
-                      prefix={<DollarOutlined />}
-                      placeholder="请输入课程价格"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="totalHours"
-                    label="总课时(小时)"
-                    rules={[{ required: true, message: '请输入总课时' }]}
-                  >
-                    <InputNumber
-                      min={1}
-                      style={{ width: '100%' }}
-                      prefix={<ClockCircleOutlined />}
-                      placeholder="请输入总课时"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="capacity"
-                    label="班容量(人)"
-                    rules={[{ required: true, message: '请输入班容量' }]}
-                  >
-                    <InputNumber
-                      min={1}
-                      style={{ width: '100%' }}
-                      prefix={<TeamOutlined />}
-                      placeholder="请输入班容量"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="period"
-                    label="周期数量"
-                    rules={[{ required: true, message: '请输入周期数量' }]}
-                  >
-                    <InputNumber
-                      min={1}
-                      style={{ width: '100%' }}
-                      placeholder="请输入周期数量"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="periodUnit"
-                    label="周期单位"
-                    rules={[{ required: true, message: '请选择周期单位' }]}
-                  >
-                    <Select placeholder="请选择周期单位">
-                      <Option value="day">天</Option>
-                      <Option value="week">周</Option>
-                      <Option value="month">月</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="cover"
-                    label="课程封面"
-                  >
-                    <Upload
-                      listType="picture-card"
-                      fileList={fileList}
-                      onChange={handleCoverChange}
-                      beforeUpload={beforeUpload}
-                      maxCount={1}
-                    >
-                      {fileList.length >= 1 ? null : (
-                        <div>
-                          <UploadOutlined />
-                          <div style={{ marginTop: 8 }}>上传</div>
-                        </div>
-                      )}
-                    </Upload>
-                  </Form.Item>
-                </Col>
-              </Row>
-
+          <Row gutter={16}>
+            <Col span={12}>
               <Form.Item
-                name="description"
-                label="课程描述"
-                rules={[{ required: true, message: '请输入课程描述' }]}
+                name="name"
+                label="课程名称"
+                rules={[{ required: true, message: '请输入课程名称' }]}
               >
-                <TextArea rows={4} placeholder="请输入课程描述" />
+                <Input prefix={<BookOutlined />} placeholder="请输入课程名称" />
               </Form.Item>
-            </Form>
-          </TabPane>
-          
-          <TabPane tab="校区分配" key="2">
-            <Form.Item
-              name="campuses"
-              label="可开课校区"
-              rules={[{ required: true, message: '请选择至少一个校区' }]}
-            >
-              <Select
-                mode="multiple"
-                placeholder="请选择校区"
-                style={{ width: '100%' }}
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="category"
+                label="课程类型"
+                rules={[{ required: true, message: '请选择课程类型' }]}
               >
-                {campusOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </TabPane>
-          
-          <TabPane tab="教练分配" key="3">
-            <Form.Item
-              name="coaches"
-              label="可授课教练"
-              rules={[{ required: true, message: '请选择至少一个教练' }]}
-            >
-              <Select
-                mode="multiple"
-                placeholder="请选择教练"
-                style={{ width: '100%' }}
+                <Select placeholder="请选择课程类型">
+                  {categoryOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="课程状态"
+                rules={[{ required: true, message: '请选择课程状态' }]}
               >
-                {coachOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </TabPane>
-        </Tabs>
+                <Radio.Group>
+                  <Radio value="active">开课中</Radio>
+                  <Radio value="inactive">已停课</Radio>
+                  <Radio value="pending">待开课</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="coaches"
+                label="上课教练"
+                rules={[{ required: true, message: '请选择上课教练' }]}
+              >
+                <Select 
+                  placeholder="请选择上课教练"
+                  style={{ width: '100%' }}
+                >
+                  {coachOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="hoursPerClass"
+                label="每次消耗课时"
+                rules={[{ required: true, message: '请输入每次消耗课时' }]}
+              >
+                <InputNumber
+                  min={0.5}
+                  step={0.5}
+                  style={{ width: '100%' }}
+                  placeholder="请输入每次消耗课时"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="unitPrice"
+                label="课筹单价(元)"
+                rules={[{ required: false, message: '请输入课筹单价' }]}
+              >
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  prefix={<DollarOutlined />}
+                  placeholder="请输入课筹单价"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="description"
+            label="课程描述"
+            rules={[{ required: false, message: '请输入课程描述' }]}
+          >
+            <TextArea rows={4} placeholder="请输入课程描述" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="删除课程"
+        open={deleteModalVisible}
+        onOk={() => handleDeleteCourse(courseToDelete)}
+        onCancel={() => setDeleteModalVisible(false)}
+        okText="确认删除"
+        cancelText="取消"
+        okButtonProps={{ danger: true }}
+      >
+        <p>确定要删除课程 <strong>{deletingCourseName}</strong> 吗？</p>
+        <p>此操作不可恢复，删除后数据将无法找回。</p>
       </Modal>
     </div>
   );

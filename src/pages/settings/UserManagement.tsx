@@ -35,7 +35,7 @@ type UserRole = 'admin' | 'manager' | 'teacher' | 'finance' | 'receptionist';
 // 定义用户数据类型
 interface User {
   id: string;
-  username: string;
+  phone: string;
   name: string;
   role: UserRole;
   campus?: string;
@@ -98,7 +98,7 @@ const UserManagement: React.FC = () => {
           
           return {
             id: `U${10000 + index}`,
-            username: `user${index + 1}`,
+            phone: `1${Math.floor(Math.random() * 9) + 3}${String(Math.floor(Math.random() * 1000000000)).padStart(9, '0')}`,
             name: `用户${index + 1}`,
             role,
             campus: role === 'admin' ? undefined : campusOptions[index % 5].value,
@@ -114,7 +114,7 @@ const UserManagement: React.FC = () => {
       if (searchText) {
         filteredData = filteredData.filter(
           user => 
-            user.username.includes(searchText) || 
+            user.phone.includes(searchText) || 
             user.name.includes(searchText) || 
             user.id.includes(searchText)
         );
@@ -158,8 +158,8 @@ const UserManagement: React.FC = () => {
   const showEditModal = (record: User) => {
     setEditingUser(record);
     form.setFieldsValue({
-      username: record.username,
       name: record.name,
+      phone: record.phone,
       role: record.role,
       campus: record.campus,
       status: record.status
@@ -188,7 +188,7 @@ const UserManagement: React.FC = () => {
           // 添加新用户
           const newUser: User = {
             id: `U${10000 + Math.floor(Math.random() * 90000)}`,
-            username: values.username,
+            phone: values.phone,
             name: values.name,
             role: values.role,
             campus: values.role === 'admin' ? undefined : values.campus,
@@ -237,18 +237,26 @@ const UserManagement: React.FC = () => {
     setUserToDelete(null);
   };
 
+  // 处理重置密码
+  const handleResetPassword = () => {
+    if (editingUser) {
+      // 实际项目中这里应该调用重置密码API
+      message.success(`已将用户"${editingUser.name}"的密码重置为与电话号码相同`);
+    }
+  };
+
   // 表格列配置
   const columns: ColumnsType<User> = [
-    {
-      title: '用户名',
-      dataIndex: 'username',
-      key: 'username',
-      align: 'center',
-    },
     {
       title: '姓名',
       dataIndex: 'name',
       key: 'name',
+      align: 'center',
+    },
+    {
+      title: '电话',
+      dataIndex: 'phone',
+      key: 'phone',
       align: 'center',
     },
     {
@@ -345,7 +353,7 @@ const UserManagement: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={8} lg={8}>
             <Input
-              placeholder="搜索用户名/姓名"
+              placeholder="搜索电话/姓名"
               value={searchText}
               onChange={e => setSearchText(e.target.value)}
               prefix={<SearchOutlined />}
@@ -415,39 +423,61 @@ const UserManagement: React.FC = () => {
           initialValues={{
             status: 'active',
           }}
+          onValuesChange={(changedValues) => {
+            // 当电话字段变化时，自动更新密码字段
+            if (!editingUser && changedValues.phone) {
+              form.setFieldsValue({ password: changedValues.phone });
+            }
+          }}
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
-                name="username"
-                label="用户名"
-                rules={[{ required: true, message: '请输入用户名' }]}
+                name="name"
+                label="姓名"
+                rules={[{ required: true, message: '请输入姓名' }]}
               >
-                <Input prefix={<UserOutlined />} placeholder="请输入用户名" />
+                <Input 
+                  placeholder="请输入姓名" 
+                  disabled={!!editingUser}
+                />
               </Form.Item>
             </Col>
             
-            <Col span={12}>
-              {!editingUser && (
+            <Col span={8}>
+              <Form.Item
+                name="phone"
+                label="电话"
+                rules={[{ required: true, message: '请输入电话' }]}
+              >
+                <Input 
+                  prefix={<UserOutlined />} 
+                  placeholder="请输入电话" 
+                  disabled={!!editingUser}
+                />
+              </Form.Item>
+            </Col>
+            
+            <Col span={8}>
+              {!editingUser ? (
                 <Form.Item
                   name="password"
                   label="密码"
                   rules={[{ required: true, message: '请输入密码' }]}
                 >
-                  <Input.Password prefix={<LockOutlined />} placeholder="请输入密码" />
+                  <Input.Password 
+                    prefix={<LockOutlined />} 
+                    placeholder="请输入密码"
+                    disabled 
+                  />
                 </Form.Item>
-              )}
-              
-              {editingUser && (
+              ) : (
                 <Form.Item
-                  name="status"
-                  label="状态"
-                  rules={[{ required: true, message: '请选择状态' }]}
+                  label="密码"
                 >
-                  <Select placeholder="请选择状态">
-                    <Option value="active">启用</Option>
-                    <Option value="inactive">禁用</Option>
-                  </Select>
+                  <Button type="link" style={{ padding: 0 }} onClick={handleResetPassword}>
+                    重置密码
+                  </Button>
                 </Form.Item>
               )}
             </Col>
@@ -456,11 +486,15 @@ const UserManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
-                name="name"
-                label="姓名"
-                rules={[{ required: true, message: '请输入姓名' }]}
+                name="status"
+                label="状态"
+                rules={[{ required: true, message: '请选择状态' }]}
+                initialValue="active"
               >
-                <Input placeholder="请输入姓名" />
+                <Select placeholder="请选择状态">
+                  <Option value="active">启用</Option>
+                  <Option value="inactive">禁用</Option>
+                </Select>
               </Form.Item>
             </Col>
             
@@ -484,7 +518,7 @@ const UserManagement: React.FC = () => {
                 shouldUpdate={(prevValues, currentValues) => prevValues.role !== currentValues.role}
               >
                 {({ getFieldValue }) => {
-                  return getFieldValue('role') !== 'admin' ? (
+                  return getFieldValue('role') === 'manager' ? (
                     <Form.Item
                       name="campus"
                       label="所属校区"
@@ -513,7 +547,7 @@ const UserManagement: React.FC = () => {
         okText="确认删除"
         cancelText="取消"
       >
-        <p>确定要删除用户「{userToDelete?.username}」吗？此操作不可逆！</p>
+        <p>确定要删除用户「{userToDelete?.name}」吗？此操作不可逆！</p>
       </Modal>
     </div>
   );
