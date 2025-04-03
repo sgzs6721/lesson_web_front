@@ -113,6 +113,11 @@ const Dashboard: React.FC = () => {
     setCoachStatsView(view);
   };
 
+  // 切换数据总览视图
+  const toggleDataOverviewPeriod = (period: 'day' | 'week' | 'month') => {
+    setActivePeriod(period);
+  };
+
   // Simulate loading effect
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -145,14 +150,12 @@ const Dashboard: React.FC = () => {
       ]
     };
     
-    if (coachStatsView === 'week') {
-      setCoachStats(coachStatsData.week);
-    } else if (coachStatsView === 'month') {
-      setCoachStats(coachStatsData.month);
+    if (coachStatsView === 'week' || coachStatsView === 'month') {
+      setCoachStats(coachStatsData[coachStatsView]);
     } else {
-      setCoachStats(coachStatsData[activePeriod]);
+      setCoachStats(coachStatsData.day);
     }
-  }, [activePeriod, coachStatsView]);
+  }, [coachStatsView]);
 
   // Sample payment records data
   const paymentRecords: PaymentRecord[] = [
@@ -460,7 +463,7 @@ const Dashboard: React.FC = () => {
               style={{ marginRight: '10px' }}
               onClick={handleBatchPunch}
             >
-              <span>✓</span> 批量打卡
+              批量打卡
             </button>
           </div>
         </div>
@@ -510,8 +513,8 @@ const Dashboard: React.FC = () => {
                     <span className="badge badge-warning">未打卡</span>
                   </td>
                   <td>
-                    <button className="btn-leave" style={{ marginRight: '5px' }}><i>🗓️</i> 请假</button>
-                    <button className="btn-punch"><i>✓</i> 打卡</button>
+                    <button className="btn-leave" style={{ marginRight: '5px' }}>请假</button>
+                    <button className="btn-punch">打卡</button>
                   </td>
                 </tr>
                 <tr>
@@ -606,11 +609,11 @@ const Dashboard: React.FC = () => {
                     <td>{coach.name}</td>
                     <td>
                       <span style={{ fontWeight: 600, color: '#28a745' }}>{coach.completedLessons}</span> 
-                      <span className="amount-note" style={{ color: '#28a745', opacity: 0.8 }}>(¥{coach.completedAmount.toLocaleString()})</span>
+                      <div style={{ color: '#28a745', opacity: 0.8, fontSize: '12px', marginTop: '3px' }}>￥{coach.completedAmount.toLocaleString()}</div>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 600, color: '#ffc107' }}>{coach.pendingLessons}</span> 
-                      <span className="amount-note" style={{ color: '#ffc107', opacity: 0.8 }}>(¥{coach.pendingAmount.toLocaleString()})</span>
+                      <span style={{ fontWeight: 600, color: '#e83e8c' }}>{coach.pendingLessons}</span> 
+                      <div style={{ color: '#e83e8c', opacity: 0.7, fontSize: '12px', marginTop: '3px' }}>￥{coach.pendingAmount.toLocaleString()}</div>
                     </td>
                     <td>{coach.hourlyRate}</td>
                     <td>
@@ -635,8 +638,14 @@ const Dashboard: React.FC = () => {
               <tfoot>
                 <tr>
                   <td>{coachStatsView === 'week' ? '本周合计' : '本月合计'}</td>
-                  <td>{totals.completed} <span className="amount-note">(¥{totals.completedAmount.toLocaleString()})</span></td>
-                  <td>{totals.pending} <span className="amount-note">(¥{totals.pendingAmount.toLocaleString()})</span></td>
+                  <td>
+                    <span style={{ fontWeight: 600, color: '#28a745' }}>{totals.completed}</span>
+                    <div style={{ color: '#28a745', opacity: 0.8, fontSize: '12px', marginTop: '3px' }}>￥{totals.completedAmount.toLocaleString()}</div>
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 600, color: '#e83e8c' }}>{totals.pending}</span>
+                    <div style={{ color: '#e83e8c', opacity: 0.7, fontSize: '12px', marginTop: '3px' }}>￥{totals.pendingAmount.toLocaleString()}</div>
+                  </td>
                   <td>-</td>
                   <td>-</td>
                   <td>{totals.salary.toLocaleString()}</td>
@@ -654,12 +663,12 @@ const Dashboard: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div className="period-tabs" style={{ marginRight: '10px' }}>
               <button 
-                className={`period-tab ${coachStatsView === 'week' ? 'active' : ''}`}
-                onClick={() => togglePeriodView('week')}
+                className={`period-tab ${activePeriod === 'week' ? 'active' : ''}`}
+                onClick={() => toggleDataOverviewPeriod('week')}
               >本周</button>
               <button 
-                className={`period-tab ${coachStatsView === 'month' ? 'active' : ''}`}
-                onClick={() => togglePeriodView('month')}
+                className={`period-tab ${activePeriod === 'month' ? 'active' : ''}`}
+                onClick={() => toggleDataOverviewPeriod('month')}
               >本月</button>
             </div>
           </div>

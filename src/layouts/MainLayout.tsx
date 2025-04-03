@@ -117,15 +117,40 @@ const MainLayout: React.FC = () => {
               <p style={{ opacity: 0.7, marginTop: '5px', fontSize: '12px', textAlign: 'center' }}>核心业务管理平台</p>
             </>
           ) : (
-            <div style={{ fontSize: '32px', textAlign: 'center', marginTop: '10px' }}>🏫</div>
+            <>
+              <div style={{ fontSize: '32px', textAlign: 'center', marginTop: '10px' }}>🏫</div>
+            </>
           )}
-          <button className="sidebar-toggle" onClick={toggleSidebar} title={sidebarCollapsed ? "展开菜单" : "收起菜单"}>
+          <button 
+            className="sidebar-toggle" 
+            onClick={toggleSidebar} 
+            title={sidebarCollapsed ? "展开菜单" : "收起菜单"}
+            style={{ 
+              top: sidebarCollapsed ? '45px' : 'auto', 
+              bottom: sidebarCollapsed ? 'auto' : '10px',
+              right: sidebarCollapsed ? '50%' : '10px',
+              marginRight: sidebarCollapsed ? '-12px' : '0',
+              position: 'absolute',
+              background: 'rgba(255, 255, 255, 0.15)',
+              border: 'none',
+              color: 'white',
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              zIndex: 101
+            }}
+          >
             {sidebarCollapsed ? '❯' : '❮'}
           </button>
         </div>
 
         <ul className="sidebar-menu">
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/dashboard')} className={activeMenu === '/dashboard' ? 'active' : ''}><i>📊</i> {!sidebarCollapsed && <span>仪表盘</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/dashboard')} className={activeMenu === '/dashboard' ? 'active' : ''}><i>🏠</i> {!sidebarCollapsed && <span>首页</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/campuses')} className={activeMenu === '/campuses' ? 'active' : ''}><i>🏢</i> {!sidebarCollapsed && <span>校区管理</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/users')} className={activeMenu === '/users' ? 'active' : ''}><i>👤</i> {!sidebarCollapsed && <span>用户管理</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/coaches')} className={activeMenu === '/coaches' ? 'active' : ''}><i>🏋️</i> {!sidebarCollapsed && <span>教练管理</span>}</a></li>
@@ -168,7 +193,7 @@ const MainLayout: React.FC = () => {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'space-between',
-                marginBottom: '10px'
+                marginBottom: '6px'
               }}>
                 <div className="campus-name" style={{ 
                   display: 'flex', 
@@ -179,7 +204,14 @@ const MainLayout: React.FC = () => {
                   <div className="campus-status-badge" style={{ 
                     marginLeft: '15px', 
                     marginBottom: '0', 
-                    whiteSpace: 'nowrap' 
+                    whiteSpace: 'nowrap',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    color: '#ffffff',
+                    fontWeight: '500',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
                   }}>正常运营中</div>
                 </div>
                 
@@ -252,10 +284,10 @@ const MainLayout: React.FC = () => {
                       alignItems: 'center',
                       height: '34px',
                       width: '100%',
-                      justifyContent: 'flex-start'
+                      justifyContent: 'center'
                     }}
                   >
-                    切换校区 <span style={{ marginLeft: '6px', fontSize: '12px' }}>▼</span>
+                    校区选择 <span style={{ marginLeft: '6px', fontSize: '12px' }}>▼</span>
                   </button>
                   
                   {showCampusList && (
@@ -307,7 +339,11 @@ const MainLayout: React.FC = () => {
                     alignItems: 'center', 
                     justifyContent: 'center', 
                     fontSize: '13px' 
-                  }}>👨‍💼</i>
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"/>
+                    </svg>
+                  </i>
                   <span style={{ color: 'white', fontSize: '15px', whiteSpace: 'nowrap' }}>负责人：张明</span>
                 </div>
                 
@@ -328,7 +364,11 @@ const MainLayout: React.FC = () => {
                     alignItems: 'center', 
                     justifyContent: 'center', 
                     fontSize: '13px' 
-                  }}>📱</i>
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
+                    </svg>
+                  </i>
                   <span style={{ color: 'white', fontSize: '15px', whiteSpace: 'nowrap' }}>联系电话：13800138001</span>
                 </div>
               </div>
