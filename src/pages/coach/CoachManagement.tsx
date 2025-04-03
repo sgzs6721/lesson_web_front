@@ -16,9 +16,10 @@ import {
   Row,
   Col,
   Divider,
-  Upload,
   Radio,
-  DatePicker
+  DatePicker,
+  Avatar,
+  List
 } from 'antd';
 import {
   PlusOutlined,
@@ -31,34 +32,50 @@ import {
   IdcardOutlined,
   MailOutlined,
   CalendarOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  TableOutlined,
+  AppstoreOutlined,
+  SortAscendingOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import type { UploadFile } from 'antd/es/upload/interface';
 import dayjs from 'dayjs';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
-// 定义教练数据类型
+// 添加性别类型定义
+type Gender = 'male' | 'female';
+
+// 修改头像数据组织方式，区分男女
+const avatarOptions: Record<Gender, Array<{id: string, url: string}>> = {
+  male: Array(15).fill(null).map((_, index) => ({
+    id: `male_avatar_${index + 1}`,
+    url: `https://randomuser.me/api/portraits/men/${index}.jpg`
+  })),
+  female: Array(15).fill(null).map((_, index) => ({
+    id: `female_avatar_${index + 1}`,
+    url: `https://randomuser.me/api/portraits/women/${index}.jpg`
+  }))
+};
+
+// 修改教练接口，更新性别类型
 interface Coach {
   id: string;
   name: string;
-  gender: 'male' | 'female';
+  gender: Gender;
   age: number;
   phone: string;
-  email: string;
   avatar?: string;
   jobTitle: string;
-  specialties: string[];
-  certifications: string[];
+  certifications: string;
   experience: number;
-  bio: string;
   status: 'active' | 'vacation' | 'resigned';
   hireDate: string;
-  workHours: string[];
 }
+
+type ViewMode = 'table' | 'card';
+type SortField = 'experience' | 'hireDate' | 'none';
 
 const CoachManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -68,38 +85,17 @@ const CoachManagement: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string>('');
+  const [sortField, setSortField] = useState<SortField>('none');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCoach, setEditingCoach] = useState<Coach | null>(null);
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [selectedAvatar, setSelectedAvatar] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [form] = Form.useForm();
-
-  // 专业领域选项
-  const specialtyOptions = [
-    { value: 'basketball', label: '篮球' },
-    { value: 'swimming', label: '游泳' },
-    { value: 'tennis', label: '网球' },
-    { value: 'fitness', label: '健身' },
-    { value: 'yoga', label: '瑜伽' },
-    { value: 'taekwondo', label: '跆拳道' },
-    { value: 'dancing', label: '舞蹈' },
-    { value: 'football', label: '足球' },
-  ];
-
-  // 认证证书选项
-  const certificationOptions = [
-    { value: 'national_cert', label: '国家体育教练员证' },
-    { value: 'first_aid', label: '急救证' },
-    { value: 'professional_coach', label: '专业教练认证' },
-    { value: 'nutritionist', label: '营养师证书' },
-    { value: 'fitness_trainer', label: '健身教练证' },
-    { value: 'sports_rehab', label: '运动康复师' },
-  ];
 
   // 模拟获取教练数据
   useEffect(() => {
     fetchCoaches();
-  }, [currentPage, pageSize, searchText, selectedStatus, selectedSpecialty]);
+  }, [currentPage, pageSize, searchText, selectedStatus, sortField]);
 
   const fetchCoaches = async () => {
     setLoading(true);
@@ -111,48 +107,18 @@ const CoachManagement: React.FC = () => {
       const mockData: Coach[] = Array(50)
         .fill(null)
         .map((_, index) => {
-          // 随机生成专业和证书
-          const specialtiesCount = Math.floor(Math.random() * 3) + 1;
-          const selectedSpecialties = specialtyOptions
-            .sort(() => 0.5 - Math.random())
-            .slice(0, specialtiesCount)
-            .map(s => s.value);
-
-          const certificationsCount = Math.floor(Math.random() * 3) + 1;
-          const selectedCertifications = certificationOptions
-            .sort(() => 0.5 - Math.random())
-            .slice(0, certificationsCount)
-            .map(c => c.value);
-
-          // 生成工作时间
-          const workHours = [
-            '周一 09:00-18:00',
-            '周二 09:00-18:00',
-            '周三 09:00-18:00',
-            '周四 09:00-18:00',
-            '周五 09:00-18:00',
-            '周六 10:00-16:00',
-          ];
-          
-          // 随机排除一些工作日
-          const filteredWorkHours = workHours.filter(() => Math.random() > 0.2);
-
           return {
             id: `C${10000 + index}`,
             name: `教练${index + 1}`,
             gender: index % 2 === 0 ? 'male' : 'female',
             age: 25 + (index % 20),
             phone: `13${String(9000000000 + index).substring(0, 10)}`,
-            email: `coach${index + 1}@example.com`,
-            avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index % 100}.jpg`,
+            avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index % 15}.jpg`,
             jobTitle: index % 5 === 0 ? '高级教练' : index % 3 === 0 ? '中级教练' : '初级教练',
-            specialties: selectedSpecialties,
-            certifications: selectedCertifications,
+            certifications: index % 3 === 0 ? '国家体育教练员证' : index % 2 === 0 ? '急救证，专业教练认证' : '健身教练证',
             experience: 1 + (index % 15),
-            bio: `这是教练${index + 1}的个人简介，拥有${1 + (index % 15)}年相关教学经验。`,
             status: index % 7 === 0 ? 'vacation' : index % 11 === 0 ? 'resigned' : 'active',
             hireDate: dayjs().subtract(index % 1000, 'day').format('YYYY-MM-DD'),
-            workHours: filteredWorkHours,
           };
         });
 
@@ -164,19 +130,24 @@ const CoachManagement: React.FC = () => {
           coach => 
             coach.name.includes(searchText) || 
             coach.id.includes(searchText) ||
-            coach.phone.includes(searchText) ||
-            coach.email.includes(searchText)
+            coach.phone.includes(searchText)
         );
       }
       
       if (selectedStatus) {
         filteredData = filteredData.filter(coach => coach.status === selectedStatus);
       }
-      
-      if (selectedSpecialty) {
-        filteredData = filteredData.filter(coach => 
-          coach.specialties.includes(selectedSpecialty)
-        );
+
+      // 排序
+      if (sortField !== 'none') {
+        filteredData = [...filteredData].sort((a, b) => {
+          if (sortField === 'experience') {
+            return b.experience - a.experience;
+          } else if (sortField === 'hireDate') {
+            return dayjs(a.hireDate).isAfter(dayjs(b.hireDate)) ? -1 : 1;
+          }
+          return 0;
+        });
       }
 
       // 分页
@@ -198,7 +169,7 @@ const CoachManagement: React.FC = () => {
   const handleReset = () => {
     setSearchText('');
     setSelectedStatus('');
-    setSelectedSpecialty('');
+    setSortField('none');
     setCurrentPage(1);
     fetchCoaches();
   };
@@ -206,30 +177,28 @@ const CoachManagement: React.FC = () => {
   // 显示添加教练模态框
   const showAddModal = () => {
     form.resetFields();
-    setFileList([]);
+    setSelectedAvatar('');
     setEditingCoach(null);
     setIsModalVisible(true);
   };
   
   // 显示编辑教练模态框
   const showEditModal = (record: Coach) => {
-    setEditingCoach(record);
-    form.setFieldsValue({
+    // 将逗号分隔的证书转换为多行文本
+    const formValues = {
       ...record,
       hireDate: dayjs(record.hireDate),
-    });
+    };
+    
+    if (record.certifications) {
+      formValues.certifications = record.certifications.split('，').join('\n');
+    }
+    
+    setEditingCoach(record);
+    form.setFieldsValue(formValues);
     
     if (record.avatar) {
-      setFileList([
-        {
-          uid: '-1',
-          name: 'avatar.jpg',
-          status: 'done',
-          url: record.avatar,
-        },
-      ]);
-    } else {
-      setFileList([]);
+      setSelectedAvatar(record.avatar);
     }
     
     setIsModalVisible(true);
@@ -247,8 +216,16 @@ const CoachManagement: React.FC = () => {
         }
         
         // 处理头像
-        if (fileList.length > 0 && fileList[0].url) {
-          formattedValues.avatar = fileList[0].url;
+        if (selectedAvatar) {
+          formattedValues.avatar = selectedAvatar;
+        }
+        
+        // 处理证书文本，将多行转为逗号分隔的格式存储
+        if (values.certifications) {
+          formattedValues.certifications = values.certifications
+            .split('\n')
+            .filter((cert: string) => cert.trim() !== '')
+            .join('，');
         }
 
         if (editingCoach) {
@@ -293,36 +270,51 @@ const CoachManagement: React.FC = () => {
     message.success('教练已删除');
   };
 
-  // 处理头像上传变化
-  const handleAvatarChange = ({ fileList }: { fileList: UploadFile[] }) => {
-    setFileList(fileList);
+  // 选择头像
+  const handleAvatarSelect = (avatar: string) => {
+    setSelectedAvatar(avatar);
   };
 
-  // 上传前检查
-  const beforeUpload = (file: File) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('只能上传JPG/PNG格式的图片!');
+  // 渲染状态标签
+  const renderStatusTag = (status: string) => {
+    let color = '';
+    let text = '';
+    
+    switch (status) {
+      case 'active':
+        color = 'green';
+        text = '在职';
+        break;
+      case 'vacation':
+        color = 'orange';
+        text = '休假中';
+        break;
+      case 'resigned':
+        color = 'red';
+        text = '已离职';
+        break;
+      default:
+        color = 'default';
+        text = status;
     }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('图片大小不能超过2MB!');
-    }
-    return false;
+    
+    return <Tag color={color}>{text}</Tag>;
   };
 
-  // 表格列配置
+  // 修改表格列配置，表头居中
   const columns: ColumnsType<Coach> = [
     {
       title: '教练ID',
       dataIndex: 'id',
       key: 'id',
       width: 100,
+      align: 'center',
     },
     {
       title: '姓名',
       dataIndex: 'name',
       key: 'name',
+      align: 'center',
       render: (text, record) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {record.avatar && (
@@ -349,81 +341,61 @@ const CoachManagement: React.FC = () => {
       ),
     },
     {
+      title: '年龄',
+      dataIndex: 'age',
+      key: 'age',
+      width: 80,
+      align: 'center',
+    },
+    {
       title: '职位',
       dataIndex: 'jobTitle',
       key: 'jobTitle',
+      align: 'center',
     },
     {
-      title: '专业领域',
-      key: 'specialties',
-      render: (_, record) => (
-        <>
-          {record.specialties.map(specialty => {
-            const specialtyInfo = specialtyOptions.find(option => option.value === specialty);
-            return (
-              <Tag color="blue" key={specialty}>
-                {specialtyInfo?.label || specialty}
-              </Tag>
-            );
-          })}
-        </>
-      ),
-    },
-    {
-      title: '联系方式',
-      key: 'contact',
-      render: (_, record) => (
-        <>
-          <div><PhoneOutlined /> {record.phone}</div>
-          <div><MailOutlined /> {record.email}</div>
-        </>
+      title: '联系电话',
+      dataIndex: 'phone',
+      key: 'phone',
+      align: 'center',
+      render: (phone) => (
+        <div>{phone}</div>
       ),
     },
     {
       title: '入职日期',
       dataIndex: 'hireDate',
       key: 'hireDate',
+      align: 'center',
       render: text => dayjs(text).format('YYYY-MM-DD'),
     },
     {
       title: '教龄',
       dataIndex: 'experience',
       key: 'experience',
+      align: 'center',
       render: (years) => `${years}年`,
+    },
+    {
+      title: '证书',
+      dataIndex: 'certifications',
+      key: 'certifications',
+      ellipsis: true,
+      width: 200,
+      align: 'center',
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      render: status => {
-        let color = '';
-        let text = '';
-        
-        switch (status) {
-          case 'active':
-            color = 'green';
-            text = '在职';
-            break;
-          case 'vacation':
-            color = 'orange';
-            text = '休假中';
-            break;
-          case 'resigned':
-            color = 'red';
-            text = '已离职';
-            break;
-          default:
-            color = 'default';
-            text = status;
-        }
-        
-        return <Tag color={color}>{text}</Tag>;
-      },
+      align: 'center',
+      render: renderStatusTag,
     },
     {
       title: '操作',
       key: 'action',
       width: 150,
+      align: 'center',
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="编辑">
@@ -454,6 +426,106 @@ const CoachManagement: React.FC = () => {
     },
   ];
 
+  // 修改选择性别的处理函数，自动设置默认头像
+  const handleGenderChange = (e: any) => {
+    const gender = e.target.value as Gender;
+    // 选择该性别的第一个头像作为默认头像
+    const defaultAvatar = avatarOptions[gender][0].url;
+    setSelectedAvatar(defaultAvatar);
+    // 更新表单中的性别字段
+    form.setFieldValue('gender', gender);
+  };
+
+  // 渲染卡片视图
+  const renderCardView = () => {
+    return (
+      <List
+        grid={{
+          gutter: 16,
+          xs: 1,
+          sm: 1,
+          md: 2,
+          lg: 3,
+          xl: 3,
+          xxl: 3,
+        }}
+        dataSource={coaches}
+        loading={loading}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: total => `共 ${total} 条记录`,
+          onChange: (page, pageSize) => {
+            setCurrentPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+        renderItem={(coach) => (
+          <List.Item>
+            <Card 
+              hoverable
+              style={{ width: '100%', height: '100%' }}
+              actions={[
+                <Tooltip title="编辑">
+                  <EditOutlined key="edit" onClick={() => showEditModal(coach)} />
+                </Tooltip>,
+                <Tooltip title="删除">
+                  <Popconfirm
+                    title="确定要删除此教练吗？"
+                    onConfirm={() => handleDeleteCoach(coach.id)}
+                    okText="确定"
+                    cancelText="取消"
+                  >
+                    <DeleteOutlined key="delete" />
+                  </Popconfirm>
+                </Tooltip>,
+              ]}
+            >
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar 
+                  size={64} 
+                  src={coach.avatar}
+                  style={{ marginRight: 16 }}
+                />
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <Row gutter={[8, 4]}>
+                    <Col span={14}>
+                      <div style={{ fontWeight: 'bold', fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {coach.name}
+                        {coach.gender === 'male' ? 
+                          <span style={{ color: '#1890ff', marginLeft: 5 }}>♂</span> : 
+                          <span style={{ color: '#eb2f96', marginLeft: 5 }}>♀</span>
+                        }
+                        <span style={{ fontWeight: 'normal', fontSize: 14, marginLeft: 8 }}>{coach.age}岁</span>
+                      </div>
+                      <div style={{ color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{coach.jobTitle}</div>
+                    </Col>
+                    <Col span={10} style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 12 }}>ID: {coach.id}</div>
+                      <div>{renderStatusTag(coach.status)}</div>
+                    </Col>
+                  </Row>
+                  <Divider style={{ margin: '8px 0' }} />
+                  <div style={{ fontSize: 12 }}>
+                    <div style={{ marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <PhoneOutlined style={{ marginRight: 4 }} />{coach.phone}
+                    </div>
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <ClockCircleOutlined style={{ marginRight: 4 }} />教龄：{coach.experience}年
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </List.Item>
+        )}
+      />
+    );
+  };
+
   return (
     <div className="coach-management">
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -461,13 +533,23 @@ const CoachManagement: React.FC = () => {
           <Title level={4}>教练管理</Title>
         </Col>
         <Col>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            onClick={showAddModal}
-          >
-            添加教练
-          </Button>
+          <Space>
+            <Radio.Group 
+              value={viewMode} 
+              onChange={(e) => setViewMode(e.target.value)}
+              buttonStyle="solid"
+            >
+              <Radio.Button value="table"><TableOutlined /> 表格视图</Radio.Button>
+              <Radio.Button value="card"><AppstoreOutlined /> 卡片视图</Radio.Button>
+            </Radio.Group>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={showAddModal}
+            >
+              添加教练
+            </Button>
+          </Space>
         </Col>
       </Row>
 
@@ -475,7 +557,7 @@ const CoachManagement: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={24} md={8} lg={8}>
             <Input
-              placeholder="搜索教练姓名/ID/电话/邮箱"
+              placeholder="搜索教练姓名/ID/电话"
               value={searchText}
               onChange={e => setSearchText(e.target.value)}
               prefix={<SearchOutlined />}
@@ -497,17 +579,15 @@ const CoachManagement: React.FC = () => {
           </Col>
           <Col xs={24} sm={12} md={8} lg={8}>
             <Select
-              placeholder="选择专业领域"
+              placeholder="排序方式"
               style={{ width: '100%' }}
-              value={selectedSpecialty}
-              onChange={value => setSelectedSpecialty(value)}
+              value={sortField}
+              onChange={value => setSortField(value)}
               allowClear
             >
-              {specialtyOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
+              <Option value="none">默认排序</Option>
+              <Option value="experience">按教龄排序</Option>
+              <Option value="hireDate">按入职日期排序</Option>
             </Select>
           </Col>
           <Col xs={24} sm={24} md={2} lg={2} style={{ textAlign: 'right' }}>
@@ -519,24 +599,28 @@ const CoachManagement: React.FC = () => {
       </Card>
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={coaches}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: currentPage,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: total => `共 ${total} 条记录`,
-            onChange: (page, pageSize) => {
-              setCurrentPage(page);
-              setPageSize(pageSize);
-            },
-          }}
-        />
+        {viewMode === 'table' ? (
+          <Table
+            columns={columns}
+            dataSource={coaches}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              total: total,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: total => `共 ${total} 条记录`,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setPageSize(pageSize);
+              },
+            }}
+          />
+        ) : (
+          renderCardView()
+        )}
       </Card>
 
       <Modal
@@ -548,210 +632,240 @@ const CoachManagement: React.FC = () => {
         okText={editingCoach ? '保存' : '添加'}
         cancelText="取消"
       >
+        <Divider style={{ margin: '0 0 24px 0' }} />
         <Form
           form={form}
           layout="vertical"
           name="coachForm"
           initialValues={{
-            gender: 'male',
             status: 'active',
             experience: 1,
+            age: 25,
+            performanceBonus: 0,
+            commission: 0,
+            dividend: 0,
           }}
         >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="name"
-                label="姓名"
-                rules={[{ required: true, message: '请输入教练姓名' }]}
-              >
-                <Input prefix={<UserOutlined />} placeholder="请输入教练姓名" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="gender"
-                label="性别"
-                rules={[{ required: true, message: '请选择性别' }]}
-              >
-                <Radio.Group>
-                  <Radio value="male">男</Radio>
-                  <Radio value="female">女</Radio>
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-          </Row>
+          <Divider orientation="left">基本信息</Divider>
+          
+          <Row gutter={24} justify="space-between">
+            <Col span={16}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="name"
+                    label="姓名"
+                    rules={[{ required: true, message: '请输入教练姓名' }]}
+                  >
+                    <Input prefix={<UserOutlined />} placeholder="请输入教练姓名" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="gender"
+                    label="性别"
+                    rules={[{ required: true, message: '请选择性别' }]}
+                  >
+                    <Radio.Group onChange={handleGenderChange}>
+                      <Radio value="male">男</Radio>
+                      <Radio value="female">女</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="age"
-                label="年龄"
-                rules={[{ required: true, message: '请输入年龄' }]}
-              >
-                <Input type="number" placeholder="请输入年龄" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="phone"
-                label="联系电话"
-                rules={[{ required: true, message: '请输入联系电话' }]}
-              >
-                <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
-              </Form.Item>
-            </Col>
-          </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="age"
+                    label="年龄"
+                    rules={[{ required: true, message: '请输入年龄' }]}
+                  >
+                    <Input type="number" placeholder="请输入年龄" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="phone"
+                    label="联系电话"
+                    rules={[{ required: true, message: '请输入联系电话' }]}
+                  >
+                    <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="email"
-                label="邮箱"
-                rules={[
-                  { required: true, message: '请输入邮箱' },
-                  { type: 'email', message: '请输入有效的邮箱地址' }
-                ]}
-              >
-                <Input prefix={<MailOutlined />} placeholder="请输入邮箱" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="avatar"
-                label="头像"
-              >
-                <Upload
-                  listType="picture-card"
-                  fileList={fileList}
-                  onChange={handleAvatarChange}
-                  beforeUpload={beforeUpload}
-                  maxCount={1}
-                >
-                  {fileList.length >= 1 ? null : (
-                    <div>
-                      <UploadOutlined />
-                      <div style={{ marginTop: 8 }}>上传</div>
-                    </div>
-                  )}
-                </Upload>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="jobTitle"
+                    label="职位"
+                    rules={[{ required: true, message: '请输入职位' }]}
+                  >
+                    <Input placeholder="请输入职位" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="experience"
+                    label="教龄(年)"
+                    rules={[{ required: true, message: '请输入教龄' }]}
+                  >
+                    <Input type="number" placeholder="请输入教龄" />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="jobTitle"
-                label="职位"
-                rules={[{ required: true, message: '请输入职位' }]}
-              >
-                <Input placeholder="请输入职位" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="experience"
-                label="教龄(年)"
-                rules={[{ required: true, message: '请输入教龄' }]}
-              >
-                <Input type="number" placeholder="请输入教龄" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="specialties"
-                label="专业领域"
-                rules={[{ required: true, message: '请选择至少一个专业领域' }]}
-              >
-                <Select
-                  mode="multiple"
-                  placeholder="请选择专业领域"
-                  style={{ width: '100%' }}
-                >
-                  {specialtyOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="hireDate"
+                    label="入职日期"
+                    rules={[{ required: true, message: '请选择入职日期' }]}
+                  >
+                    <DatePicker style={{ width: '100%' }} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="status"
+                    label="状态"
+                    rules={[{ required: true, message: '请选择状态' }]}
+                  >
+                    <Select placeholder="请选择状态">
+                      <Option value="active">在职</Option>
+                      <Option value="vacation">休假中</Option>
+                      <Option value="resigned">已离职</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              
               <Form.Item
                 name="certifications"
                 label="持有证书"
-                rules={[{ required: true, message: '请选择至少一个证书' }]}
+                extra="每行输入一个证书"
               >
-                <Select
-                  mode="multiple"
-                  placeholder="请选择证书"
-                  style={{ width: '100%' }}
-                >
-                  {certificationOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
+                <TextArea rows={4} placeholder="请输入持有的证书，每行一个" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Row>
+                <Col span={24}>
+                  <Form.Item label="选择头像">
+                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                      <Avatar
+                        size={100}
+                        src={selectedAvatar}
+                        style={{ marginBottom: 16 }}
+                      />
+                    </div>
+                    <div style={{ height: 310, overflow: 'auto', border: '1px solid #d9d9d9', borderRadius: 2, padding: 8 }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', marginBottom: 8 }}>男性头像</div>
+                        <Row gutter={[8, 8]} justify="space-between">
+                          {avatarOptions.male.map(avatar => (
+                            <Col span={7} key={avatar.id} style={{ marginBottom: 12 }}>
+                              <Avatar
+                                size={48}
+                                src={avatar.url}
+                                style={{ 
+                                  cursor: 'pointer',
+                                  border: selectedAvatar === avatar.url ? '2px solid #1890ff' : 'none'
+                                }}
+                                onClick={() => handleAvatarSelect(avatar.url)}
+                              />
+                            </Col>
+                          ))}
+                        </Row>
+                        
+                        <Divider style={{ margin: '12px 0' }} />
+                        
+                        <div style={{ fontWeight: 'bold', marginBottom: 8 }}>女性头像</div>
+                        <Row gutter={[8, 8]} justify="space-between">
+                          {avatarOptions.female.map(avatar => (
+                            <Col span={7} key={avatar.id} style={{ marginBottom: 12 }}>
+                              <Avatar
+                                size={48}
+                                src={avatar.url}
+                                style={{ 
+                                  cursor: 'pointer',
+                                  border: selectedAvatar === avatar.url ? '2px solid #1890ff' : 'none'
+                                }}
+                                onClick={() => handleAvatarSelect(avatar.url)}
+                              />
+                            </Col>
+                          ))}
+                        </Row>
+                      </div>
+                    </div>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          
+          <Divider orientation="left" style={{ marginTop: 16 }}>薪资信息</Divider>
+          
+          <Row gutter={[16, 0]}>
+            <Col span={8}>
+              <Form.Item
+                name="baseSalary"
+                label="基本工资"
+                rules={[{ required: true, message: '请输入基本工资' }]}
+              >
+                <Input type="number" placeholder="请输入基本工资" prefix="¥" suffix="元" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="socialSecurity"
+                label="社保费"
+                rules={[{ required: true, message: '请输入社保费' }]}
+              >
+                <Input type="number" placeholder="请输入社保费" prefix="¥" suffix="元" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="hourlyRate"
+                label="课时费"
+                rules={[{ required: true, message: '请输入课时费' }]}
+              >
+                <Input type="number" placeholder="请输入课时费" prefix="¥" suffix="元/时" />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
+          <Row gutter={[16, 0]}>
+            <Col span={8}>
               <Form.Item
-                name="hireDate"
-                label="入职日期"
-                rules={[{ required: true, message: '请选择入职日期' }]}
+                name="performanceBonus"
+                label="绩效奖金"
+                rules={[{ required: true, message: '请输入绩效奖金' }]}
               >
-                <DatePicker style={{ width: '100%' }} />
+                <Input type="number" placeholder="请输入绩效奖金" prefix="¥" suffix="元" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
-                name="status"
-                label="状态"
-                rules={[{ required: true, message: '请选择状态' }]}
+                name="commission"
+                label="提成"
+                rules={[{ required: true, message: '请输入提成' }]}
               >
-                <Select placeholder="请选择状态">
-                  <Option value="active">在职</Option>
-                  <Option value="vacation">休假中</Option>
-                  <Option value="resigned">已离职</Option>
-                </Select>
+                <Input type="number" placeholder="请输入提成比例" suffix="%" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="dividend"
+                label="分红"
+                rules={[{ required: true, message: '请输入分红' }]}
+              >
+                <Input type="number" placeholder="请输入分红" prefix="¥" suffix="元" />
               </Form.Item>
             </Col>
           </Row>
-
-          <Form.Item
-            name="bio"
-            label="个人简介"
-            rules={[{ required: true, message: '请输入个人简介' }]}
-          >
-            <TextArea rows={4} placeholder="请输入个人简介" />
-          </Form.Item>
-
-          <Form.Item
-            name="workHours"
-            label="工作时间"
-          >
-            <Select
-              mode="multiple"
-              placeholder="请选择工作时间"
-              style={{ width: '100%' }}
-            >
-              <Option value="周一 09:00-18:00">周一 09:00-18:00</Option>
-              <Option value="周二 09:00-18:00">周二 09:00-18:00</Option>
-              <Option value="周三 09:00-18:00">周三 09:00-18:00</Option>
-              <Option value="周四 09:00-18:00">周四 09:00-18:00</Option>
-              <Option value="周五 09:00-18:00">周五 09:00-18:00</Option>
-              <Option value="周六 10:00-16:00">周六 10:00-16:00</Option>
-              <Option value="周日 10:00-16:00">周日 10:00-16:00</Option>
-            </Select>
-          </Form.Item>
         </Form>
       </Modal>
     </div>

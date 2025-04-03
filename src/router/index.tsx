@@ -15,6 +15,7 @@ const AttendanceManagement = lazy(() => import('@/pages/attendance/AttendanceMan
 const CampusManagement = lazy(() => import('@/pages/campus/CampusManagement'));
 const StatisticsDashboard = lazy(() => import('@/pages/statistics/StatisticsDashboard'));
 const SystemSettings = lazy(() => import('@/pages/settings/SystemSettings'));
+const UserManagement = lazy(() => import('@/pages/settings/UserManagement'));
 const ChangePassword = lazy(() => import('@/pages/profile/ChangePassword'));
 const NotFound = lazy(() => import('@/pages/error/NotFound'));
 const Unauthorized = lazy(() => import('@/pages/error/Unauthorized'));
@@ -51,6 +52,7 @@ const appRoutes: RouteObject[] = [
       { path: 'campuses', element: Loadable(CampusManagement)({}) },
       { path: 'statistics', element: Loadable(StatisticsDashboard)({}) },
       { path: 'settings', element: Loadable(SystemSettings)({}) },
+      { path: 'users', element: Loadable(UserManagement)({}) },
       { path: 'change-password', element: Loadable(ChangePassword)({}) },
       { path: 'unauthorized', element: Loadable(Unauthorized)({}) },
       { path: 'expenses', element: Loadable(ExpenseManagement)({}) },

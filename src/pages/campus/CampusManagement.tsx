@@ -16,10 +16,6 @@ import {
   Row,
   Col,
   InputNumber,
-  Upload,
-  Tabs,
-  List,
-  Avatar
 } from 'antd';
 import {
   PlusOutlined,
@@ -28,21 +24,16 @@ import {
   DeleteOutlined,
   EnvironmentOutlined,
   PhoneOutlined,
-  UploadOutlined,
   HomeOutlined,
-  TeamOutlined,
   UserOutlined,
-  MailOutlined,
-  PictureOutlined
+  PlayCircleOutlined,
+  PauseCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import type { UploadFile } from 'antd/es/upload/interface';
 import dayjs from 'dayjs';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
-const { TabPane } = Tabs;
-const { TextArea } = Input;
 
 // 定义校区数据类型
 interface Campus {
@@ -50,13 +41,9 @@ interface Campus {
   name: string;
   address: string;
   phone: string;
-  email: string;
-  manager: string;
-  managerPhone: string;
+  contactPerson?: string; // 非必填的联系人
   capacity: number;
   area: number; // 面积，单位：平方米
-  openTime: string;
-  closeTime: string;
   facilities: string[];
   image?: string;
   status: 'open' | 'closed' | 'renovating';
@@ -64,6 +51,9 @@ interface Campus {
   studentCount: number;
   coachCount: number;
   courseCount: number;
+  monthlyRent: number; // 月租金
+  propertyFee: number; // 物业费
+  utilitiesFee: number; // 固定水电费
 }
 
 // 定义设施选项
@@ -92,9 +82,16 @@ const CampusManagement: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCampus, setEditingCampus] = useState<Campus | null>(null);
-  const [activeTab, setActiveTab] = useState('1');
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
+  
+  // 添加状态切换确认模态框相关状态
+  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
+  const [campusToToggle, setCampusToToggle] = useState<Campus | null>(null);
+  
+  // 添加删除确认模态框相关状态
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [campusIdToDelete, setCampusIdToDelete] = useState<string>('');
+  const [campusNameToDelete, setCampusNameToDelete] = useState<string>('');
 
   // 页面加载时获取数据
   useEffect(() => {
@@ -127,13 +124,9 @@ const CampusManagement: React.FC = () => {
             name: ['北京中关村校区', '北京望京校区', '上海徐汇校区', '上海浦东校区', '广州天河校区', '深圳南山校区', '杭州西湖校区', '成都锦江校区', '武汉江岸校区', '南京鼓楼校区'][index % 10],
             address: `${['北京市', '上海市', '广州市', '深圳市', '杭州市', '成都市', '武汉市', '南京市', '天津市', '重庆市'][index % 10]}${['海淀区', '朝阳区', '徐汇区', '浦东新区', '天河区', '南山区', '西湖区', '锦江区', '江岸区', '鼓楼区'][index % 10]}${['中关村大街', '望京街道', '徐家汇路', '张江高科技园区', '天河路', '科技园路', '西湖大道', '锦江大道', '江岸大道', '鼓楼街'][index % 10]}${index + 1}号`,
             phone: `${['010', '021', '020', '0755', '0571', '028', '027', '025', '022', '023'][index % 10]}-${String(55000000 + index * 10000).substring(0, 8)}`,
-            email: `campus${index + 1}@example.com`,
-            manager: `校区经理${index + 1}`,
-            managerPhone: `13${String(9000000000 + index).substring(0, 10)}`,
+            contactPerson: `负责人${index + 1}`,
             capacity: (index % 5 + 2) * 100,
             area: (index % 10 + 5) * 200,
-            openTime: '08:30',
-            closeTime: '22:00',
             facilities: selectedFacilities,
             image: `https://picsum.photos/800/400?random=${index}`,
             status: index % 10 === 0 ? 'closed' : index % 15 === 0 ? 'renovating' : 'open',
@@ -141,6 +134,9 @@ const CampusManagement: React.FC = () => {
             studentCount,
             coachCount,
             courseCount: Math.floor(Math.random() * 30) + 10,
+            monthlyRent: Math.floor(Math.random() * 50000) + 10000,
+            propertyFee: Math.floor(Math.random() * 5000) + 1000,
+            utilitiesFee: Math.floor(Math.random() * 3000) + 500,
           };
         });
 
@@ -151,7 +147,6 @@ const CampusManagement: React.FC = () => {
         filteredData = filteredData.filter(
           campus => 
             campus.name.includes(searchText) || 
-            campus.id.includes(searchText) ||
             campus.address.includes(searchText) ||
             campus.phone.includes(searchText)
         );
@@ -187,9 +182,7 @@ const CampusManagement: React.FC = () => {
   // 显示添加校区模态框
   const showAddModal = () => {
     form.resetFields();
-    setFileList([]);
     setEditingCampus(null);
-    setActiveTab('1');
     setIsModalVisible(true);
   };
   
@@ -197,23 +190,16 @@ const CampusManagement: React.FC = () => {
   const showEditModal = (record: Campus) => {
     setEditingCampus(record);
     form.setFieldsValue({
-      ...record,
+      name: record.name,
+      address: record.address,
+      status: record.status,
+      monthlyRent: record.monthlyRent || 0,
+      propertyFee: record.propertyFee || 0,
+      utilitiesFee: record.utilitiesFee || 0,
+      contactPerson: record.contactPerson,
+      phone: record.phone,
     });
     
-    if (record.image) {
-      setFileList([
-        {
-          uid: '-1',
-          name: 'campus-image.jpg',
-          status: 'done',
-          url: record.image,
-        },
-      ]);
-    } else {
-      setFileList([]);
-    }
-    
-    setActiveTab('1');
     setIsModalVisible(true);
   };
 
@@ -222,11 +208,6 @@ const CampusManagement: React.FC = () => {
     form.validateFields()
       .then(values => {
         let formattedValues = { ...values };
-        
-        // 处理图片
-        if (fileList.length > 0 && fileList[0].url) {
-          formattedValues.image = fileList[0].url;
-        }
 
         if (editingCampus) {
           // 编辑现有校区
@@ -250,6 +231,14 @@ const CampusManagement: React.FC = () => {
             coachCount: 0,
             courseCount: 0,
             openDate: dayjs().format('YYYY-MM-DD'),
+            monthlyRent: formattedValues.monthlyRent || 0,
+            propertyFee: formattedValues.propertyFee || 0,
+            utilitiesFee: formattedValues.utilitiesFee || 0,
+            // 设置默认值，这些字段在UI中已删除
+            capacity: 200,
+            area: 1000,
+            facilities: [],
+            image: '',
           };
           setCampuses(prevCampuses => [newCampus, ...prevCampuses]);
           setTotal(prev => prev + 1);
@@ -275,81 +264,84 @@ const CampusManagement: React.FC = () => {
     setCampuses(campuses.filter(campus => campus.id !== id));
     setTotal(prev => prev - 1);
     message.success('校区已删除');
+    setIsDeleteModalVisible(false);
   };
 
-  // 处理图片上传变化
-  const handleImageChange = ({ fileList }: { fileList: UploadFile[] }) => {
-    setFileList(fileList);
+  // 处理校区状态切换（启用/停用）
+  const handleToggleStatus = (record: Campus) => {
+    const newStatus = record.status === 'closed' ? 'open' : 'closed';
+    setCampuses(prevCampuses => 
+      prevCampuses.map(campus => 
+        campus.id === record.id 
+          ? { ...campus, status: newStatus } 
+          : campus
+      )
+    );
+    message.success(`校区已${newStatus === 'closed' ? '停用' : '启用'}`);
+    setIsStatusModalVisible(false);
   };
-
-  // 上传前检查
-  const beforeUpload = (file: File) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('只能上传JPG/PNG格式的图片!');
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('图片大小不能超过2MB!');
-    }
-    return false;
+  
+  // 显示状态切换确认模态框
+  const showStatusConfirmModal = (record: Campus) => {
+    setCampusToToggle(record);
+    setIsStatusModalVisible(true);
+  };
+  
+  // 关闭状态切换确认模态框
+  const handleStatusModalCancel = () => {
+    setIsStatusModalVisible(false);
+    setCampusToToggle(null);
+  };
+  
+  // 显示删除确认模态框
+  const showDeleteConfirmModal = (id: string, name: string) => {
+    setCampusIdToDelete(id);
+    setCampusNameToDelete(name);
+    setIsDeleteModalVisible(true);
+  };
+  
+  // 关闭删除确认模态框
+  const handleDeleteModalCancel = () => {
+    setIsDeleteModalVisible(false);
+    setCampusIdToDelete('');
+    setCampusNameToDelete('');
   };
 
   // 表格列配置
   const columns: ColumnsType<Campus> = [
     {
-      title: '校区ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 100,
-    },
-    {
       title: '校区名称',
       dataIndex: 'name',
       key: 'name',
-      render: (text, record) => (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {record.image && (
-            <img 
-              src={record.image} 
-              alt={text} 
-              style={{ 
-                width: 40, 
-                height: 40, 
-                marginRight: 8, 
-                borderRadius: 4,
-                objectFit: 'cover'
-              }}
-            />
-          )}
-          <span>{text}</span>
-        </div>
-      ),
+      align: 'center',
     },
     {
       title: '地址',
       dataIndex: 'address',
       key: 'address',
       ellipsis: true,
+      align: 'center',
     },
     {
       title: '联系方式',
       key: 'contact',
+      align: 'center',
       render: (_, record) => (
         <>
-          <div><PhoneOutlined /> {record.phone}</div>
-          <div><MailOutlined /> {record.email}</div>
+          <div>{record.contactPerson}</div>
+          <div>{record.phone}</div>
         </>
       ),
     },
     {
       title: '校区规模',
       key: 'scale',
+      align: 'center',
       render: (_, record) => (
         <>
           <div>学员数: {record.studentCount}</div>
           <div>教练数: {record.coachCount}</div>
-          <div>课程数: {record.courseCount}</div>
+          <div>待销课时: {record.courseCount}</div>
         </>
       ),
     },
@@ -357,6 +349,7 @@ const CampusManagement: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
+      align: 'center',
       render: status => {
         let color = '';
         let text = '';
@@ -385,7 +378,8 @@ const CampusManagement: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 200,
+      align: 'center',
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="编辑">
@@ -396,20 +390,22 @@ const CampusManagement: React.FC = () => {
               onClick={() => showEditModal(record)} 
             />
           </Tooltip>
+          <Tooltip title={record.status === 'closed' ? '启用' : '停用'}>
+            <Button
+              type="text"
+              size="small"
+              icon={record.status === 'closed' ? <PlayCircleOutlined /> : <PauseCircleOutlined />}
+              onClick={() => showStatusConfirmModal(record)}
+            />
+          </Tooltip>
           <Tooltip title="删除">
-            <Popconfirm
-              title="确定要删除此校区吗？"
-              onConfirm={() => handleDeleteCampus(record.id)}
-              okText="确定"
-              cancelText="取消"
-            >
-              <Button 
-                type="text" 
-                size="small" 
-                danger 
-                icon={<DeleteOutlined />} 
-              />
-            </Popconfirm>
+            <Button 
+              type="text" 
+              size="small" 
+              danger 
+              icon={<DeleteOutlined />} 
+              onClick={() => showDeleteConfirmModal(record.id, record.name)}
+            />
           </Tooltip>
         </Space>
       ),
@@ -437,7 +433,7 @@ const CampusManagement: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={8} lg={8}>
             <Input
-              placeholder="搜索校区名称/ID/地址/电话"
+              placeholder="搜索校区名称/地址/电话"
               value={searchText}
               onChange={e => setSearchText(e.target.value)}
               prefix={<SearchOutlined />}
@@ -490,7 +486,7 @@ const CampusManagement: React.FC = () => {
       </Card>
 
       <Modal
-        title={editingCampus ? '编辑校区' : '添加校区'}
+        title={<div style={{ fontSize: '18px', fontWeight: 'bold' }}>{editingCampus ? '编辑校区' : '添加校区'}</div>}
         open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
@@ -498,219 +494,139 @@ const CampusManagement: React.FC = () => {
         okText={editingCampus ? '保存' : '添加'}
         cancelText="取消"
       >
-        <Tabs 
-          activeKey={activeTab} 
-          onChange={key => setActiveTab(key)}
-          style={{ marginBottom: 20 }}
+        <div style={{ borderBottom: '1px solid #e8e8e8', paddingBottom: '16px', marginBottom: '24px' }}>
+          <Typography.Title level={5} style={{ margin: 0 }}>基本信息</Typography.Title>
+        </div>
+        <Form
+          form={form}
+          layout="vertical"
+          name="campusForm"
+          initialValues={{
+            status: 'open',
+            monthlyRent: 0,
+            propertyFee: 0,
+            utilitiesFee: 0,
+          }}
         >
-          <TabPane tab="基本信息" key="1">
-            <Form
-              form={form}
-              layout="vertical"
-              name="campusForm"
-              initialValues={{
-                status: 'open',
-                capacity: 200,
-                area: 1000,
-                openTime: '08:30',
-                closeTime: '22:00',
-              }}
-            >
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="name"
-                    label="校区名称"
-                    rules={[{ required: true, message: '请输入校区名称' }]}
-                  >
-                    <Input prefix={<HomeOutlined />} placeholder="请输入校区名称" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="address"
-                    label="地址"
-                    rules={[{ required: true, message: '请输入地址' }]}
-                  >
-                    <Input prefix={<EnvironmentOutlined />} placeholder="请输入地址" />
-                  </Form.Item>
-                </Col>
-              </Row>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                name="name"
+                label="校区名称"
+                rules={[{ required: true, message: '请输入校区名称' }]}
+              >
+                <Input prefix={<HomeOutlined />} placeholder="请输入校区名称" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="address"
+                label="地址"
+                rules={[{ required: true, message: '请输入地址' }]}
+              >
+                <Input prefix={<EnvironmentOutlined />} placeholder="请输入地址" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="status"
+                label="状态"
+                rules={[{ required: true, message: '请选择状态' }]}
+              >
+                <Select placeholder="请选择状态">
+                  <Option value="open">营业中</Option>
+                  <Option value="closed">已关闭</Option>
+                  <Option value="renovating">装修中</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="phone"
-                    label="联系电话"
-                    rules={[{ required: true, message: '请输入联系电话' }]}
-                  >
-                    <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="email"
-                    label="联系邮箱"
-                    rules={[
-                      { required: true, message: '请输入联系邮箱' },
-                      { type: 'email', message: '请输入有效的邮箱地址' }
-                    ]}
-                  >
-                    <Input prefix={<MailOutlined />} placeholder="请输入联系邮箱" />
-                  </Form.Item>
-                </Col>
-              </Row>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                name="monthlyRent"
+                label="月租金"
+                rules={[{ required: true, message: '请输入月租金' }]}
+              >
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  placeholder="请输入月租金"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="propertyFee"
+                label="物业费"
+                rules={[{ required: true, message: '请输入物业费' }]}
+              >
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  placeholder="请输入物业费"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="utilitiesFee"
+                label="固定水电费"
+                rules={[{ required: true, message: '请输入固定水电费' }]}
+              >
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  placeholder="请输入固定水电费"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="manager"
-                    label="校区经理"
-                    rules={[{ required: true, message: '请输入校区经理姓名' }]}
-                  >
-                    <Input prefix={<UserOutlined />} placeholder="请输入校区经理姓名" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="managerPhone"
-                    label="经理电话"
-                    rules={[{ required: true, message: '请输入经理电话' }]}
-                  >
-                    <Input prefix={<PhoneOutlined />} placeholder="请输入经理电话" />
-                  </Form.Item>
-                </Col>
-              </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="contactPerson"
+                label="联系人"
+              >
+                <Input placeholder="请输入联系人" disabled />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="phone"
+                label="联系电话"
+              >
+                <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" disabled />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
 
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="openTime"
-                    label="开放时间"
-                    rules={[{ required: true, message: '请输入开放时间' }]}
-                  >
-                    <Input placeholder="请输入开放时间，例如：08:30" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="closeTime"
-                    label="关闭时间"
-                    rules={[{ required: true, message: '请输入关闭时间' }]}
-                  >
-                    <Input placeholder="请输入关闭时间，例如：22:00" />
-                  </Form.Item>
-                </Col>
-              </Row>
+      {/* 状态切换确认模态框 */}
+      <Modal
+        title="操作确认"
+        open={isStatusModalVisible}
+        onOk={() => campusToToggle && handleToggleStatus(campusToToggle)}
+        onCancel={handleStatusModalCancel}
+        okText="确认"
+        cancelText="取消"
+      >
+        <p>确定要{campusToToggle?.status === 'closed' ? '启用' : '停用'}校区「{campusToToggle?.name}」吗？</p>
+      </Modal>
 
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="capacity"
-                    label="容纳人数"
-                    rules={[{ required: true, message: '请输入容纳人数' }]}
-                  >
-                    <InputNumber
-                      min={1}
-                      style={{ width: '100%' }}
-                      prefix={<TeamOutlined />}
-                      placeholder="请输入容纳人数"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="area"
-                    label="面积(平方米)"
-                    rules={[{ required: true, message: '请输入面积' }]}
-                  >
-                    <InputNumber
-                      min={1}
-                      style={{ width: '100%' }}
-                      placeholder="请输入面积"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="status"
-                    label="状态"
-                    rules={[{ required: true, message: '请选择状态' }]}
-                  >
-                    <Select placeholder="请选择状态">
-                      <Option value="open">营业中</Option>
-                      <Option value="closed">已关闭</Option>
-                      <Option value="renovating">装修中</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="facilities"
-                    label="设施"
-                    rules={[{ required: true, message: '请选择至少一项设施' }]}
-                  >
-                    <Select
-                      mode="multiple"
-                      placeholder="请选择设施"
-                      style={{ width: '100%' }}
-                    >
-                      {facilityOptions.map(option => (
-                        <Option key={option.value} value={option.value}>
-                          {option.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="image"
-                    label="校区图片"
-                  >
-                    <Upload
-                      listType="picture-card"
-                      fileList={fileList}
-                      onChange={handleImageChange}
-                      beforeUpload={beforeUpload}
-                      maxCount={1}
-                    >
-                      {fileList.length >= 1 ? null : (
-                        <div>
-                          <UploadOutlined />
-                          <div style={{ marginTop: 8 }}>上传</div>
-                        </div>
-                      )}
-                    </Upload>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </TabPane>
-          
-          <TabPane tab="设施详情" key="2">
-            <List
-              itemLayout="horizontal"
-              dataSource={facilityOptions}
-              renderItem={item => (
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<Avatar icon={<HomeOutlined />} />}
-                    title={item.label}
-                    description={`校区可能提供的${item.label}设施`}
-                  />
-                  {form.getFieldValue('facilities')?.includes(item.value) ? 
-                    <Tag color="green">已有</Tag> : 
-                    <Tag color="default">未有</Tag>
-                  }
-                </List.Item>
-              )}
-            />
-          </TabPane>
-        </Tabs>
+      {/* 删除确认模态框 */}
+      <Modal
+        title="删除确认"
+        open={isDeleteModalVisible}
+        onOk={() => handleDeleteCampus(campusIdToDelete)}
+        onCancel={handleDeleteModalCancel}
+        okText="确认删除"
+        cancelText="取消"
+      >
+        <p>确定要删除校区「{campusNameToDelete}」吗？此操作不可逆！</p>
       </Modal>
     </div>
   );
