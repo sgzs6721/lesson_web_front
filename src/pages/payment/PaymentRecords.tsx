@@ -16,7 +16,8 @@ import {
   Statistic,
   Tag,
   Popconfirm,
-  Badge
+  Badge,
+  Tooltip
 } from 'antd';
 import {
   PlusOutlined,
@@ -26,7 +27,8 @@ import {
   ExportOutlined,
   ReloadOutlined,
   DollarOutlined,
-  PrinterOutlined
+  PrinterOutlined,
+  EyeOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -44,7 +46,7 @@ interface Payment {
   amount: number;
   paymentType: string;
   paymentMethod: string;
-  status: 'paid' | 'pending' | 'refunded';
+  status: '微信支付' | '现金支付' | '支付宝支付' | '银行卡转账';
   remark: string;
   operator: string;
 }
@@ -57,9 +59,9 @@ const mockData: Payment[] = [
     studentId: 'STU001',
     course: '游泳初级班',
     amount: 2000,
-    paymentType: '学费',
-    paymentMethod: '微信支付',
-    status: 'paid',
+    paymentType: '30次课',
+    paymentMethod: '新增',
+    status: '微信支付',
     remark: '预付2个月课程',
     operator: '王老师'
   },
@@ -70,9 +72,9 @@ const mockData: Payment[] = [
     studentId: 'STU002',
     course: '游泳中级班',
     amount: 2400,
-    paymentType: '学费',
-    paymentMethod: '支付宝',
-    status: 'paid',
+    paymentType: '50次课',
+    paymentMethod: '续费',
+    status: '支付宝支付',
     remark: '预付3个月课程',
     operator: '王老师'
   },
@@ -83,9 +85,9 @@ const mockData: Payment[] = [
     studentId: 'STU003',
     course: '游泳高级班',
     amount: 3000,
-    paymentType: '学费',
-    paymentMethod: '现金',
-    status: 'paid',
+    paymentType: '100次课',
+    paymentMethod: '补费',
+    status: '现金支付',
     remark: '预付3个月课程',
     operator: '李老师'
   },
@@ -96,9 +98,9 @@ const mockData: Payment[] = [
     studentId: 'STU004',
     course: '游泳初级班',
     amount: 800,
-    paymentType: '教材费',
-    paymentMethod: '银行转账',
-    status: 'pending',
+    paymentType: '30次课',
+    paymentMethod: '退费',
+    status: '银行卡转账',
     remark: '待确认到账',
     operator: '李老师'
   },
@@ -109,9 +111,9 @@ const mockData: Payment[] = [
     studentId: 'STU005',
     course: '游泳初级班',
     amount: 1000,
-    paymentType: '学费',
-    paymentMethod: '微信支付',
-    status: 'refunded',
+    paymentType: '50次课',
+    paymentMethod: '新增',
+    status: '微信支付',
     remark: '退课退款',
     operator: '张老师'
   }
@@ -126,6 +128,7 @@ const PaymentRecords: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [searchStatus, setSearchStatus] = useState<string>('');
   const [searchPaymentType, setSearchPaymentType] = useState<string>('');
+  const [searchPaymentMethod, setSearchPaymentMethod] = useState<string>('');
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [receiptVisible, setReceiptVisible] = useState(false);
   const [currentPayment, setCurrentPayment] = useState<Payment | null>(null);
@@ -209,6 +212,10 @@ const PaymentRecords: React.FC = () => {
       filteredData = filteredData.filter(item => item.paymentType === searchPaymentType);
     }
     
+    if (searchPaymentMethod) {
+      filteredData = filteredData.filter(item => item.paymentMethod === searchPaymentMethod);
+    }
+    
     if (dateRange && dateRange[0] && dateRange[1]) {
       const startDate = dateRange[0].format('YYYY-MM-DD');
       const endDate = dateRange[1].format('YYYY-MM-DD');
@@ -224,6 +231,7 @@ const PaymentRecords: React.FC = () => {
     setSearchText('');
     setSearchStatus('');
     setSearchPaymentType('');
+    setSearchPaymentMethod('');
     setDateRange(null);
     setData(mockData);
   };
@@ -233,23 +241,14 @@ const PaymentRecords: React.FC = () => {
   };
 
   const totalIncome = data
-    .filter(item => item.status === 'paid')
+    .filter(item => item.status === '微信支付' || item.status === '现金支付' || item.status === '支付宝支付' || item.status === '银行卡转账')
     .reduce((sum, item) => sum + item.amount, 0);
   
-  const pendingIncome = data
-    .filter(item => item.status === 'pending')
-    .reduce((sum, item) => sum + item.amount, 0);
+  const pendingIncome = 0; // 没有待确认收入的状态
   
-  const refundedAmount = data
-    .filter(item => item.status === 'refunded')
-    .reduce((sum, item) => sum + item.amount, 0);
+  const refundedAmount = 0; // 没有退款的状态
 
   const columns: ColumnsType<Payment> = [
-    {
-      title: '收据编号',
-      dataIndex: 'id',
-      key: 'id',
-    },
     {
       title: '日期',
       dataIndex: 'date',
@@ -275,67 +274,57 @@ const PaymentRecords: React.FC = () => {
       render: (amount) => `¥${amount.toLocaleString('zh-CN')}`,
     },
     {
-      title: '付款类型',
+      title: '课时类型',
       dataIndex: 'paymentType',
       key: 'paymentType',
     },
     {
-      title: '付款方式',
+      title: '缴费类型',
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
     },
     {
-      title: '状态',
+      title: '支付类型',
       dataIndex: 'status',
       key: 'status',
       render: (status) => {
         let color = '';
         let text = '';
         switch (status) {
-          case 'paid':
+          case '微信支付':
             color = 'green';
-            text = '已支付';
+            text = '微信支付';
             break;
-          case 'pending':
+          case '现金支付':
             color = 'gold';
-            text = '待审批';
+            text = '现金支付';
             break;
-          case 'refunded':
-            color = 'red';
-            text = '已退款';
+          case '支付宝支付':
+            color = 'blue';
+            text = '支付宝支付';
+            break;
+          case '银行卡转账':
+            color = 'purple';
+            text = '银行卡转账';
             break;
           default:
             break;
         }
-        return <Badge status={status === 'paid' ? 'success' : status === 'pending' ? 'warning' : 'error'} text={text} />;
+        return <Badge color={color} text={text} />;
       },
-    },
-    {
-      title: '经手人',
-      dataIndex: 'operator',
-      key: 'operator',
-    },
-    {
-      title: '备注',
-      dataIndex: 'remark',
-      key: 'remark',
-      ellipsis: true,
     },
     {
       title: '操作',
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button 
-            type="text" 
-            icon={<PrinterOutlined />} 
-            onClick={() => handleReceipt(record)}
-          />
-          <Button 
-            type="text" 
-            icon={<EditOutlined />} 
-            onClick={() => handleEdit(record)}
-          />
+          <Tooltip title="查看详情">
+            <Button 
+              type="text" 
+              icon={<EyeOutlined />} 
+              onClick={() => handleReceipt(record)}
+            />
+          </Tooltip>
           <Popconfirm
             title="确定删除此记录吗?"
             onConfirm={() => handleDelete(record.id)}
@@ -355,13 +344,13 @@ const PaymentRecords: React.FC = () => {
 
   return (
     <div className="payment-records-container">
-      <Title level={2}>付款记录</Title>
+      <Title level={2}>缴费记录</Title>
       
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={8}>
           <Card>
             <Statistic
-              title="总收入"
+              title="课时流水"
               value={totalIncome}
               precision={2}
               prefix={<DollarOutlined />}
@@ -373,7 +362,7 @@ const PaymentRecords: React.FC = () => {
         <Col span={8}>
           <Card>
             <Statistic
-              title="待确认收入"
+              title="其他收入"
               value={pendingIncome}
               precision={2}
               prefix={<DollarOutlined />}
@@ -398,7 +387,7 @@ const PaymentRecords: React.FC = () => {
       
       <Card bordered={false}>
         <div className="table-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <Space wrap>
+          <Space wrap align="center">
             <Input
               placeholder="搜索学员/ID/课程/收据编号"
               value={searchText}
@@ -407,30 +396,32 @@ const PaymentRecords: React.FC = () => {
               prefix={<SearchOutlined />}
             />
             <Select
-              placeholder="付款类型"
+              placeholder="请选择课时类型"
               style={{ width: 150 }}
               value={searchPaymentType}
               onChange={(value) => setSearchPaymentType(value)}
               allowClear
             >
-              <Option value="学费">学费</Option>
-              <Option value="教材费">教材费</Option>
-              <Option value="其他费用">其他费用</Option>
+              <Option value="30次课">30次课</Option>
+              <Option value="50次课">50次课</Option>
+              <Option value="100次课">100次课</Option>
             </Select>
             <Select
-              placeholder="支付状态"
+              placeholder="请选择缴费类型"
               style={{ width: 150 }}
-              value={searchStatus}
-              onChange={(value) => setSearchStatus(value)}
+              value={searchPaymentMethod}
+              onChange={(value) => setSearchPaymentMethod(value)}
               allowClear
             >
-              <Option value="paid">已支付</Option>
-              <Option value="pending">待确认</Option>
-              <Option value="refunded">已退款</Option>
+              <Option value="新增">新增</Option>
+              <Option value="退费">退费</Option>
+              <Option value="续费">续费</Option>
+              <Option value="补费">补费</Option>
             </Select>
-            <RangePicker 
+            <DatePicker.RangePicker 
               value={dateRange}
               onChange={(dates) => setDateRange(dates)}
+              placeholder={['开始日期', '结束日期']}
             />
             <Button type="primary" onClick={handleSearch} icon={<SearchOutlined />}>
               搜索
@@ -440,9 +431,6 @@ const PaymentRecords: React.FC = () => {
             </Button>
           </Space>
           <Space>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-              添加付款记录
-            </Button>
             <Button icon={<ExportOutlined />} onClick={exportData}>
               导出
             </Button>
@@ -479,29 +467,22 @@ const PaymentRecords: React.FC = () => {
             name="date"
             rules={[{ required: true, message: '请选择日期' }]}
           >
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: '100%' }} placeholder="选择日期" />
           </Form.Item>
           
           <Form.Item
-            label="学员信息"
-            required
+            label="学员姓名"
+            name="studentName"
+            rules={[{ required: true, message: '请输入学员姓名' }]}
           >
-            <Input.Group compact>
-              <Form.Item
-                name="studentId"
-                noStyle
-                rules={[{ required: true, message: '请输入学员ID' }]}
-              >
-                <Input style={{ width: '30%' }} placeholder="学员ID" />
-              </Form.Item>
-              <Form.Item
-                name="studentName"
-                noStyle
-                rules={[{ required: true, message: '请输入学员姓名' }]}
-              >
-                <Input style={{ width: '70%' }} placeholder="学员姓名" />
-              </Form.Item>
-            </Input.Group>
+            <Input placeholder="请输入学员姓名" />
+          </Form.Item>
+          
+          <Form.Item
+            name="studentId"
+            hidden
+          >
+            <Input />
           </Form.Item>
           
           <Form.Item
@@ -509,7 +490,7 @@ const PaymentRecords: React.FC = () => {
             name="course"
             rules={[{ required: true, message: '请选择课程' }]}
           >
-            <Select>
+            <Select placeholder="请选择课程">
               <Option value="游泳初级班">游泳初级班</Option>
               <Option value="游泳中级班">游泳中级班</Option>
               <Option value="游泳高级班">游泳高级班</Option>
@@ -528,28 +509,27 @@ const PaymentRecords: React.FC = () => {
           </Form.Item>
           
           <Form.Item
-            label="付款类型"
+            label="课时类型"
             name="paymentType"
-            rules={[{ required: true, message: '请选择付款类型' }]}
+            rules={[{ required: true, message: '请选择课时类型' }]}
           >
-            <Select>
-              <Option value="学费">学费</Option>
-              <Option value="教材费">教材费</Option>
-              <Option value="其他费用">其他费用</Option>
+            <Select placeholder="请选择课时类型">
+              <Option value="30次课">30次课</Option>
+              <Option value="50次课">50次课</Option>
+              <Option value="100次课">100次课</Option>
             </Select>
           </Form.Item>
           
           <Form.Item
-            label="付款方式"
+            label="缴费类型"
             name="paymentMethod"
-            rules={[{ required: true, message: '请选择付款方式' }]}
+            rules={[{ required: true, message: '请选择缴费类型' }]}
           >
-            <Select>
-              <Option value="现金">现金</Option>
-              <Option value="银行转账">银行转账</Option>
-              <Option value="微信支付">微信支付</Option>
-              <Option value="支付宝">支付宝</Option>
-              <Option value="其他">其他</Option>
+            <Select placeholder="请选择缴费类型">
+              <Option value="新增">新增</Option>
+              <Option value="退费">退费</Option>
+              <Option value="续费">续费</Option>
+              <Option value="补费">补费</Option>
             </Select>
           </Form.Item>
           
@@ -558,10 +538,11 @@ const PaymentRecords: React.FC = () => {
             name="status"
             rules={[{ required: true, message: '请选择支付状态' }]}
           >
-            <Select>
-              <Option value="paid">已支付</Option>
-              <Option value="pending">待确认</Option>
-              <Option value="refunded">已退款</Option>
+            <Select placeholder="请选择支付状态">
+              <Option value="微信支付">微信支付</Option>
+              <Option value="现金支付">现金支付</Option>
+              <Option value="支付宝支付">支付宝支付</Option>
+              <Option value="银行卡转账">银行卡转账</Option>
             </Select>
           </Form.Item>
           
@@ -575,21 +556,10 @@ const PaymentRecords: React.FC = () => {
       </Modal>
       
       <Modal
-        title="付款收据"
+        title="付款详情"
         open={receiptVisible}
         onCancel={() => setReceiptVisible(false)}
         footer={[
-          <Button 
-            key="print" 
-            type="primary" 
-            icon={<PrinterOutlined />}
-            onClick={() => {
-              message.success('收据打印成功');
-              setReceiptVisible(false);
-            }}
-          >
-            打印收据
-          </Button>,
           <Button key="close" onClick={() => setReceiptVisible(false)}>
             关闭
           </Button>
@@ -599,8 +569,7 @@ const PaymentRecords: React.FC = () => {
         {currentPayment && (
           <div className="payment-receipt" style={{ padding: '20px', border: '1px solid #d9d9d9' }}>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <h2>付款收据</h2>
-              <p>收据编号: {currentPayment.id}</p>
+              <h2>付款详情</h2>
             </div>
             
             <Row gutter={[16, 16]}>
@@ -608,28 +577,19 @@ const PaymentRecords: React.FC = () => {
                 <p><strong>日期:</strong> {currentPayment.date}</p>
               </Col>
               <Col span={12}>
-                <p><strong>状态:</strong> {
-                  currentPayment.status === 'paid' ? '已支付' : 
-                  currentPayment.status === 'pending' ? '待确认' : '已退款'
-                }</p>
+                <p><strong>状态:</strong> {currentPayment.status}</p>
               </Col>
               <Col span={12}>
                 <p><strong>学员姓名:</strong> {currentPayment.studentName}</p>
               </Col>
               <Col span={12}>
-                <p><strong>学员ID:</strong> {currentPayment.studentId}</p>
-              </Col>
-              <Col span={12}>
                 <p><strong>课程:</strong> {currentPayment.course}</p>
               </Col>
               <Col span={12}>
-                <p><strong>付款类型:</strong> {currentPayment.paymentType}</p>
+                <p><strong>课时类型:</strong> {currentPayment.paymentType}</p>
               </Col>
               <Col span={12}>
-                <p><strong>付款方式:</strong> {currentPayment.paymentMethod}</p>
-              </Col>
-              <Col span={12}>
-                <p><strong>经手人:</strong> {currentPayment.operator}</p>
+                <p><strong>缴费类型:</strong> {currentPayment.paymentMethod}</p>
               </Col>
               <Col span={24}>
                 <p><strong>备注:</strong> {currentPayment.remark}</p>
@@ -638,15 +598,6 @@ const PaymentRecords: React.FC = () => {
                 <h3>金额: ¥{currentPayment.amount.toLocaleString('zh-CN')}</h3>
               </Col>
             </Row>
-            
-            <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <p>付款人签名: _________________</p>
-              </div>
-              <div>
-                <p>收款人签名: _________________</p>
-              </div>
-            </div>
           </div>
         )}
       </Modal>
