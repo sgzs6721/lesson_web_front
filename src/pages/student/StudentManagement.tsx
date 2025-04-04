@@ -20,7 +20,10 @@ import {
   Calendar,
   Statistic,
   TimePicker,
-  InputNumber
+  InputNumber,
+  Dropdown,
+  Radio,
+  Alert
 } from 'antd';
 import {
   PlusOutlined,
@@ -38,10 +41,19 @@ import {
   InfoCircleOutlined,
   ScheduleOutlined,
   FileTextOutlined,
-  DollarOutlined
+  DollarOutlined,
+  DownOutlined,
+  SwapOutlined,
+  RollbackOutlined,
+  TransactionOutlined,
+  SyncOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn'; // 导入中文语言包
+
+// 设置 dayjs 使用中文
+dayjs.locale('zh-cn');
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -90,6 +102,20 @@ interface PaymentRecord {
   validUntil: string;
   gift: string;
   remarks: string;
+  courseId?: string; // 添加课程ID字段
+  courseName?: string; // 添加课程名称字段
+}
+
+// 添加课程摘要接口，用于显示课程信息
+interface CourseSummary {
+  id?: string;
+  name: string;
+  type: string;
+  coach: string;
+  status: string;
+  enrollDate: string;
+  expireDate: string;
+  remainingClasses?: string;
 }
 
 interface Student {
@@ -108,6 +134,19 @@ interface Student {
   status: 'active' | 'inactive' | 'pending';
   scheduleTimes?: ScheduleTime[]; // 添加排课时间
   payments?: PaymentRecord[]; // 添加缴费记录
+  courseGroups?: CourseGroup[]; // 添加课程组信息
+}
+
+// 定义报名课程组信息接口
+interface CourseGroup {
+  key: string;
+  courses: string[];
+  courseType: string;
+  coach: string;
+  status: 'active' | 'inactive' | 'pending';
+  enrollDate: string;
+  expireDate: string;
+  scheduleTimes: ScheduleTime[];
 }
 
 const StudentManagement: React.FC = () => {
@@ -120,7 +159,7 @@ const StudentManagement: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [enrollMonth, setEnrollMonth] = useState<dayjs.Dayjs | null>(null);
-  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend' | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<'enrollDateAsc' | 'enrollDateDesc' | 'ageAsc' | 'ageDesc' | 'remainingClassesAsc' | 'remainingClassesDesc' | 'lastClassDateAsc' | 'lastClassDateDesc' | undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
@@ -207,11 +246,9 @@ const StudentManagement: React.FC = () => {
 
   // 缴费类型选项
   const paymentTypeOptions = [
-    { value: 'new', label: '新生报名' },
-    { value: 'renew', label: '续费' },
-    { value: 'upgrade', label: '升级课程' },
-    { value: 'transfer', label: '转课' },
-    { value: 'makeup', label: '补费' },
+    { value: 'new_enrollment', label: '新报名' },
+    { value: 'renewal', label: '续费' },
+    { value: 'supplementary', label: '补费' },
   ];
 
   // 支付方式选项
@@ -231,6 +268,54 @@ const StudentManagement: React.FC = () => {
     { value: 'tshirt', label: 'T恤' },
     { value: 'cap', label: '帽子' },
   ];
+
+  // 添加课程组状态
+  const [courseGroups, setCourseGroups] = useState<CourseGroup[]>([]);
+
+  // 当前正在编辑的课程组索引
+  const [currentEditingGroupIndex, setCurrentEditingGroupIndex] = useState<number | null>(null);
+
+  // 添加一个临时存储正在编辑的课程组
+  const [tempCourseGroup, setTempCourseGroup] = useState<CourseGroup | null>(null);
+
+  // 添加标志当前是否有正在编辑的课程
+  const [isEditing, setIsEditing] = useState(false);
+
+  // 为缴费模态框添加选择课程功能
+  // 在状态部分添加所选课程状态
+  const [selectedPaymentCourse, setSelectedPaymentCourse] = useState<string>('');
+  const [selectedPaymentCourseName, setSelectedPaymentCourseName] = useState<string>('');
+
+  // 在组件开始处添加状态
+  const [originalCourseGroup, setOriginalCourseGroup] = useState<CourseGroup | null>(null);
+
+  // 添加退费转课模态框相关状态和函数
+  const [isRefundTransferModalVisible, setIsRefundTransferModalVisible] = useState(false);
+  const [refundTransferForm] = Form.useForm();
+
+  // 添加转课相关状态
+  const [transferStudentSearchText, setTransferStudentSearchText] = useState<string>('');
+  const [transferStudentSearchResults, setTransferStudentSearchResults] = useState<Student[]>([]);
+  const [isSearchingTransferStudent, setIsSearchingTransferStudent] = useState<boolean>(false);
+  const [selectedTransferStudent, setSelectedTransferStudent] = useState<Student | null>(null);
+
+  // 添加新学员相关状态
+  const [isQuickAddStudentModalVisible, setIsQuickAddStudentModalVisible] = useState(false);
+  const [quickAddStudentForm] = Form.useForm();
+
+  // 根据关键词搜索学员
+  const searchStudentsByKeyword = (keyword: string, excludeId?: string): Student[] => {
+    if (!keyword.trim()) return [];
+    
+    return students.filter(student => 
+      (excludeId ? student.id !== excludeId : true) && 
+      (
+        student.name.toLowerCase().includes(keyword.toLowerCase()) ||
+        student.id.toLowerCase().includes(keyword.toLowerCase()) ||
+        student.phone.includes(keyword)
+      )
+    );
+  };
 
   useEffect(() => {
     fetchStudents();
@@ -258,11 +343,11 @@ const StudentManagement: React.FC = () => {
             courseType: courseItem.type,
             course: courseItem.value,
             coach: courseItem.coaches[index % 2],
-            lastClassDate: dayjs().subtract(index % 30, 'day').format('YYYY-MM-DD'),
-            enrollDate: dayjs().subtract(index % 180, 'day').format('YYYY-MM-DD'),
+            lastClassDate: dayjs().subtract(index * 30, 'day').format('YYYY-MM-DD'),
+            enrollDate: dayjs().subtract(index * 180, 'day').format('YYYY-MM-DD'),
             expireDate: dayjs().add(180 - (index % 180), 'day').format('YYYY-MM-DD'),
             remainingClasses: `${remainingClasses}/${totalClasses}`,
-            status: index % 5 === 0 ? 'pending' : index % 7 === 0 ? 'inactive' : 'active',
+            status: index % 7 === 0 ? 'pending' : index % 7 === 1 ? 'inactive' : 'active',
           };
         });
 
@@ -298,9 +383,39 @@ const StudentManagement: React.FC = () => {
       // 排序
       if (sortOrder) {
         filteredData = [...filteredData].sort((a, b) => {
-          const dateA = new Date(a.enrollDate).getTime();
-          const dateB = new Date(b.enrollDate).getTime();
-          return sortOrder === 'ascend' ? dateA - dateB : dateB - dateA;
+          // 根据选择的排序类型进行排序
+          switch(sortOrder) {
+            case 'enrollDateAsc':
+              return dayjs(a.enrollDate).unix() - dayjs(b.enrollDate).unix();
+            case 'enrollDateDesc':
+              return dayjs(b.enrollDate).unix() - dayjs(a.enrollDate).unix();
+            case 'ageAsc':
+              return a.age - b.age;
+            case 'ageDesc':
+              return b.age - a.age;
+            case 'remainingClassesAsc': {
+              const remainingA = parseInt(a.remainingClasses.split('/')[0], 10);
+              const remainingB = parseInt(b.remainingClasses.split('/')[0], 10);
+              return remainingA - remainingB;
+            }
+            case 'remainingClassesDesc': {
+              const remainingA = parseInt(a.remainingClasses.split('/')[0], 10);
+              const remainingB = parseInt(b.remainingClasses.split('/')[0], 10);
+              return remainingB - remainingA;
+            }
+            case 'lastClassDateAsc': {
+              if (!a.lastClassDate) return 1;
+              if (!b.lastClassDate) return -1;
+              return dayjs(a.lastClassDate).unix() - dayjs(b.lastClassDate).unix();
+            }
+            case 'lastClassDateDesc': {
+              if (!a.lastClassDate) return 1;
+              if (!b.lastClassDate) return -1;
+              return dayjs(b.lastClassDate).unix() - dayjs(a.lastClassDate).unix();
+            }
+            default:
+              return 0;
+          }
         });
       }
 
@@ -329,42 +444,87 @@ const StudentManagement: React.FC = () => {
     fetchStudents();
   };
 
+  // 添加新的课程组 - 这里只创建一个临时的课程组
+  const addCourseGroup = () => {
+    const newKey = Date.now().toString(); // 使用时间戳作为唯一key
+    const newGroup: CourseGroup = {
+      key: newKey,
+      courses: [],
+      courseType: '',
+      coach: '',
+      status: 'active',
+      enrollDate: dayjs().format('YYYY-MM-DD'),
+      expireDate: dayjs().add(180, 'day').format('YYYY-MM-DD'),
+      scheduleTimes: []
+    };
+    setTempCourseGroup(newGroup);
+    setCurrentEditingGroupIndex(null); // 表示我们正在添加新的，而不是编辑已有的
+  };
+
+  // 显示添加用户模态框
   const showAddModal = () => {
     form.resetFields();
     setEditingStudent(null);
-    // 设置默认排课时间
-    setScheduleTimes([
-      { weekday: '一', time: '15:00' },
-      { weekday: '三', time: '16:00' }
-    ]);
+    // 初始化为空课程组列表
+    setCourseGroups([]);
     setIsModalVisible(true);
   };
   
   const showEditModal = (record: Student) => {
     setEditingStudent(record);
     form.setFieldsValue({
-      ...record,
-      enrollDate: dayjs(record.enrollDate),
-      expireDate: dayjs(record.expireDate),
+      name: record.name,
+      gender: record.gender,
+      age: record.age,
+      phone: record.phone,
     });
-    // 设置排课时间
-    setScheduleTimes(record.scheduleTimes || []);
+    
+    // 设置课程组
+    const courseGroup = {
+      key: '1',
+      courses: Array.isArray(record.course) ? [record.course[0]] : [record.course],
+      courseType: record.courseType,
+      coach: record.coach,
+      status: record.status,
+      enrollDate: record.enrollDate,
+      expireDate: record.expireDate,
+      scheduleTimes: record.scheduleTimes || []  // 如果没有排课时间则使用空数组
+    };
+    
+    setCourseGroups([courseGroup]);
     setIsModalVisible(true);
   };
 
+  // 处理模态框确认
   const handleModalOk = () => {
+    // 如果有正在编辑的课程组，先完成编辑
+    if (currentEditingGroupIndex !== null) {
+      message.warning('请先完成当前课程组的编辑');
+      return;
+    }
+    
+    // 如果没有添加课程，显示错误提示并阻止提交
+    if (courseGroups.length === 0) {
+      message.error('请至少添加一个课程');
+      return;
+    }
+    
     form.validateFields()
       .then(values => {
-        // 处理多选课程
-        const courseValue = Array.isArray(values.course) ? values.course[0] : values.course;
+        // 使用第一个课程组的信息作为主要课程信息
+        const primaryGroup = courseGroups[0];
         
         const formattedValues = {
           ...values,
-          // 如果是多选，保存整个数组
-          course: values.course,
-          enrollDate: values.enrollDate.format('YYYY-MM-DD'),
-          expireDate: values.expireDate.format('YYYY-MM-DD'),
-          scheduleTimes: scheduleTimes.length > 0 ? scheduleTimes : undefined,
+          course: primaryGroup.courses[0], // 只取第一个课程
+          courseType: primaryGroup.courseType,
+          coach: primaryGroup.coach,
+          status: primaryGroup.status,
+          enrollDate: primaryGroup.enrollDate,
+          expireDate: primaryGroup.expireDate,
+          scheduleTimes: primaryGroup.scheduleTimes,
+          // 添加所有课程组信息
+          courseGroups: courseGroups.length > 1 ? courseGroups : undefined
         };
 
         if (editingStudent) {
@@ -379,34 +539,658 @@ const StudentManagement: React.FC = () => {
           message.success('学员信息已更新');
         } else {
           // 添加新学员
-          // 获取课程对应的教练 - 使用第一个课程的教练
-          const selectedCourseInfo = courseOptions.find(c => c.value === courseValue);
-          const coach = selectedCourseInfo?.coaches[0] || '';
-          
           const newStudent: Student = {
             id: `ST${100000 + Math.floor(Math.random() * 900000)}`,
             ...formattedValues,
-            coach,
             lastClassDate: '',
-            courseType: selectedCourseInfo?.type || '',
             remainingClasses: '20/20', // 默认20课时
           };
           setStudents(prevStudents => [newStudent, ...prevStudents]);
           setTotal(prev => prev + 1);
           message.success('学员添加成功');
+          
+          // 检查是否需要在添加学员后重新打开转课模态框
+          if (window.sessionStorage.getItem('afterAddStudent') === 'true') {
+            window.sessionStorage.removeItem('afterAddStudent');
+            // 如果之前有学员被选中，重新打开转课模态框
+            if (currentStudent) {
+              setTimeout(() => {
+                showTransferModal(currentStudent);
+                // 确保表单使用了最新的添加学员
+                setTimeout(() => {
+                  // 自动选中新添加的学员作为转课目标
+                  setSelectedTransferStudent(newStudent);
+                  refundTransferForm.setFieldsValue({
+                    targetStudentId: newStudent.id,
+                    operationType: 'transfer', // 确保转课选项被选中
+                  });
+                }, 100);
+              }, 100);
+            }
+          }
         }
 
         form.resetFields();
         setIsModalVisible(false);
+        setCourseGroups([]);
+        setCurrentEditingGroupIndex(null);
       })
       .catch(info => {
         console.log('Validate Failed:', info);
       });
   };
 
+  // 处理模态框取消
   const handleModalCancel = () => {
     form.resetFields();
     setIsModalVisible(false);
+    setCurrentEditingGroupIndex(null);
+  };
+
+  // 确认添加课程组
+  const confirmAddCourseGroup = () => {
+    // 如果是编辑已有的课程组
+    if (currentEditingGroupIndex !== null) {
+      const group = courseGroups[currentEditingGroupIndex];
+      
+      // 验证课程组信息
+      if (!group.courses || group.courses.length === 0) {
+        message.error('请选择报名课程');
+        return false;
+      }
+      
+      // 验证通过，设置为非编辑状态
+      setCurrentEditingGroupIndex(null);
+      setIsEditing(false); // 清除编辑标志
+      return true;
+    }
+    
+    // 如果是添加新的课程组
+    if (tempCourseGroup) {
+      // 验证临时课程组信息
+      if (!tempCourseGroup.courses || tempCourseGroup.courses.length === 0) {
+        message.error('请选择报名课程');
+        return false;
+      }
+      
+      // 验证通过，添加到课程组列表
+      setCourseGroups(prev => [...prev, tempCourseGroup]);
+      setTempCourseGroup(null);
+      setIsEditing(false); // 清除编辑标志
+      return true;
+    }
+    
+    return false;
+  };
+
+  // 取消添加课程组
+  const cancelAddCourseGroup = () => {
+    // 如果是编辑现有课程组，取消编辑状态并恢复数据
+    if (currentEditingGroupIndex !== null && originalCourseGroup) {
+      setCourseGroups(prev => {
+        const newGroups = [...prev];
+        newGroups[currentEditingGroupIndex] = originalCourseGroup;
+        return newGroups;
+      });
+      setCurrentEditingGroupIndex(null);
+      setOriginalCourseGroup(null);
+    }
+    
+    // 如果是添加新课程组，清空临时数据
+    if (tempCourseGroup) {
+      setTempCourseGroup(null);
+    }
+
+    setIsEditing(false); // 清除编辑标志
+  };
+
+  // 编辑课程组
+  const editCourseGroup = (index: number) => {
+    // 如果已经有正在编辑的课程组或临时课程组，先提示
+    if (currentEditingGroupIndex !== null || tempCourseGroup !== null) {
+      message.warning('请先完成当前课程的编辑');
+      return;
+    }
+    
+    // 保存当前课程组的快照，用于取消编辑时恢复
+    setOriginalCourseGroup(JSON.parse(JSON.stringify(courseGroups[index])));
+    
+    setCurrentEditingGroupIndex(index);
+    setIsEditing(true); // 设置正在编辑标志
+  };
+
+  // 更新临时课程组信息
+  const updateTempCourseGroup = (field: keyof CourseGroup, value: any) => {
+    if (!tempCourseGroup) return;
+    
+    setTempCourseGroup(prev => {
+      if (!prev) return null;
+      
+      const updated = { ...prev, [field]: value };
+      
+      // 处理课程类型和教练联动
+      if (field === 'courses' && value?.length > 0) {
+        const courseValue = value[0];
+        const selectedCourseInfo = courseOptions.find(c => c.value === courseValue);
+        if (selectedCourseInfo) {
+          updated.courseType = selectedCourseInfo.type;
+          updated.coach = selectedCourseInfo.coaches[0];
+        }
+      }
+      
+      return updated;
+    });
+  };
+
+  // 更新课程组信息 - 针对已有课程组的编辑
+  const updateCourseGroup = (index: number, field: keyof CourseGroup, value: any) => {
+    setCourseGroups(prev => {
+      const newGroups = [...prev];
+      newGroups[index] = { ...newGroups[index], [field]: value };
+      
+      // 处理课程类型和教练联动
+      if (field === 'courses' && value?.length > 0) {
+        const courseValue = value[0];
+        const selectedCourseInfo = courseOptions.find(c => c.value === courseValue);
+        if (selectedCourseInfo) {
+          newGroups[index].courseType = selectedCourseInfo.type;
+          newGroups[index].coach = selectedCourseInfo.coaches[0];
+        }
+      }
+      
+      return newGroups;
+    });
+  };
+
+  // 开始添加课程组
+  const startAddCourseGroup = () => {
+    // 如果有正在编辑的课程组，先询问
+    if (currentEditingGroupIndex !== null) {
+      message.warning('请先完成当前课程组的编辑');
+      return;
+    }
+    
+    // 如果有临时课程组，先询问
+    if (tempCourseGroup !== null) {
+      message.warning('请先完成当前课程的添加');
+      return;
+    }
+    
+    addCourseGroup();
+  };
+
+  // 渲染课程组表格
+  const renderCourseGroupTable = () => {
+    // 如果没有有效数据（至少有一条记录且有课程信息），则不渲染表格
+    const hasValidData = courseGroups.some(group => 
+      group.courses && group.courses.length > 0 && group.courses[0]
+    );
+    
+    if (!hasValidData) {
+      return null;
+    }
+    
+    return (
+      <div style={{ marginBottom: 16 }}>
+        <Table
+          dataSource={courseGroups.filter(group => group.courses && group.courses.length > 0 && group.courses[0])}
+          rowKey="key"
+          pagination={false}
+          size="small"
+          columns={[
+            {
+              title: '报名课程',
+              dataIndex: 'courses',
+              render: (courses) => {
+                const courseValue = courses && courses.length > 0 ? courses[0] : '';
+                return courseOptions.find(c => c.value === courseValue)?.label || '-';
+              }
+            },
+            {
+              title: '课程类型',
+              dataIndex: 'courseType',
+              render: (type) => courseTypeOptions.find(t => t.value === type)?.label || '-'
+            },
+            {
+              title: '教练',
+              dataIndex: 'coach'
+            },
+            {
+              title: '状态',
+              dataIndex: 'status',
+              render: (status) => {
+                let text = '';
+                switch (status) {
+                  case 'active': text = '在学'; break;
+                  case 'inactive': text = '停课'; break;
+                  case 'pending': text = '待处理'; break;
+                  default: text = status;
+                }
+                return <Tag color={
+                  status === 'active' ? 'green' : 
+                  status === 'inactive' ? 'red' : 'orange'
+                }>{text}</Tag>;
+              }
+            },
+            {
+              title: '固定排课时间',
+              dataIndex: 'scheduleTimes',
+              render: (times: ScheduleTime[]) => times && times.length > 0 
+                ? times.map(t => `周${t.weekday} ${t.time}`).join('、') 
+                : '无'
+            },
+            {
+              title: '操作',
+              width: 150,
+              render: (_, __, index) => (
+                <Space>
+                  <Button 
+                    type="link" 
+                    size="small" 
+                    icon={<EditOutlined />}
+                    onClick={() => editCourseGroup(index)}
+                    disabled={isEditing} // 如果正在编辑，禁用按钮
+                  >
+                    编辑
+                  </Button>
+                  <Button 
+                    type="link" 
+                    size="small" 
+                    danger 
+                    icon={<DeleteOutlined />}
+                    onClick={() => removeCourseGroup(courseGroups[index].key)}
+                    disabled={isEditing} // 如果正在编辑，禁用按钮
+                  >
+                    删除
+                  </Button>
+                </Space>
+              )
+            }
+          ]}
+        />
+      </div>
+    );
+  };
+
+  // 渲染课程编辑表单 - 针对已有课程组的编辑
+  const renderCourseEditForm = (group: CourseGroup, index: number) => {
+    return (
+      <div 
+        key={group.key} 
+        style={{ 
+          border: '1px solid #f0f0f0', 
+          borderRadius: '8px', 
+          padding: '16px', 
+          marginBottom: '16px',
+          background: '#fafafa'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', alignItems: 'center' }}>
+          <Typography.Title level={5} style={{ margin: 0 }}>报名课程</Typography.Title>
+        </div>
+        
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="报名课程"
+              required
+            >
+              <Select 
+                placeholder="请选择课程"
+                value={group.courses && group.courses.length > 0 ? group.courses[0] : undefined}
+                onChange={(value) => updateCourseGroup(index, 'courses', [value])}
+                style={{ width: '100%' }}
+                showSearch
+                optionFilterProp="children"
+              >
+                {courseOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    <TeamOutlined /> {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="课程类型"
+            >
+              <Input 
+                value={group.courseType ? courseTypeOptions.find(t => t.value === group.courseType)?.label || group.courseType : ''}
+                disabled 
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="上课教练"
+            >
+              <Input 
+                value={group.coach} 
+                disabled 
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="状态"
+              required
+            >
+              <Select 
+                placeholder="请选择"
+                value={group.status}
+                onChange={(value) => updateCourseGroup(index, 'status', value)}
+                style={{ width: '100%' }}
+              >
+                <Option value="active">在学</Option>
+                <Option value="inactive">停课</Option>
+                <Option value="pending">待处理</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="报名日期"
+              required
+            >
+              <DatePicker 
+                style={{ width: '100%' }} 
+                placeholder="选择报名日期"
+                format="YYYY-MM-DD"
+                value={dayjs(group.enrollDate)}
+                onChange={(date) => updateCourseGroup(index, 'enrollDate', date ? date.format('YYYY-MM-DD') : '')}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="有效期至"
+              required
+            >
+              <DatePicker 
+                style={{ width: '100%' }} 
+                placeholder="选择有效期"
+                format="YYYY-MM-DD"
+                value={dayjs(group.expireDate)}
+                onChange={(date) => updateCourseGroup(index, 'expireDate', date ? date.format('YYYY-MM-DD') : '')}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* 排课时间 */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Typography.Text strong>固定排课时间</Typography.Text>
+            <Button 
+              type="link" 
+              onClick={() => {
+                const newScheduleTimes = [...(group.scheduleTimes || []), { weekday: '一', time: '15:00' }];
+                updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
+              }} 
+              icon={<PlusOutlined />}
+            >
+              添加时间
+            </Button>
+          </div>
+          {(group.scheduleTimes || []).map((scheduleTime, timeIndex) => (
+            <Row gutter={16} key={timeIndex} style={{ marginBottom: 16 }}>
+              <Col span={10}>
+                <Select
+                  style={{ width: '100%' }}
+                  value={scheduleTime.weekday}
+                  onChange={(value) => {
+                    const newScheduleTimes = [...(group.scheduleTimes || [])];
+                    newScheduleTimes[timeIndex].weekday = value;
+                    updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
+                  }}
+                >
+                  {weekdayOptions.map(option => (
+                    <Option key={option.value} value={option.value}>{option.label}</Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col span={10}>
+                <TimePicker
+                  style={{ width: '100%' }}
+                  format="HH:mm"
+                  value={dayjs(scheduleTime.time, 'HH:mm')}
+                  onChange={(time) => {
+                    const newScheduleTimes = [...(group.scheduleTimes || [])];
+                    newScheduleTimes[timeIndex].time = time ? time.format('HH:mm') : '00:00';
+                    updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
+                  }}
+                />
+              </Col>
+              <Col span={4} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Button 
+                  type="text" 
+                  danger 
+                  icon={<DeleteOutlined />} 
+                  onClick={() => {
+                    // 允许删除任何排课时间，不再有最少数量限制
+                    const newScheduleTimes = [...(group.scheduleTimes || [])];
+                    newScheduleTimes.splice(timeIndex, 1);
+                    updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
+                  }}
+                />
+              </Col>
+            </Row>
+          ))}
+          {(group.scheduleTimes || []).length === 0 && (
+            <Typography.Text type="secondary">暂无排课时间，点击上方"添加时间"按钮添加</Typography.Text>
+          )}
+        </div>
+
+        <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+          <Space>
+            <Button onClick={() => cancelAddCourseGroup()}>
+              取消
+            </Button>
+            <Button type="primary" onClick={() => confirmAddCourseGroup()}>
+              确定
+            </Button>
+          </Space>
+        </div>
+      </div>
+    );
+  };
+
+  // 渲染临时课程编辑表单 - 针对新添加的课程
+  const renderTempCourseEditForm = () => {
+    if (!tempCourseGroup) return null;
+    
+    return (
+      <div 
+        key={tempCourseGroup.key} 
+        style={{ 
+          border: '1px solid #f0f0f0', 
+          borderRadius: '8px', 
+          padding: '16px', 
+          marginBottom: '16px',
+          background: '#fafafa'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', alignItems: 'center' }}>
+          <Typography.Title level={5} style={{ margin: 0 }}>报名课程</Typography.Title>
+        </div>
+        
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="报名课程"
+              required
+            >
+              <Select 
+                placeholder="请选择课程"
+                value={tempCourseGroup.courses && tempCourseGroup.courses.length > 0 ? tempCourseGroup.courses[0] : undefined}
+                onChange={(value) => updateTempCourseGroup('courses', [value])}
+                style={{ width: '100%' }}
+                showSearch
+                optionFilterProp="children"
+              >
+                {courseOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    <TeamOutlined /> {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="课程类型"
+            >
+              <Input 
+                value={tempCourseGroup.courseType ? courseTypeOptions.find(t => t.value === tempCourseGroup.courseType)?.label || tempCourseGroup.courseType : ''}
+                disabled 
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="上课教练"
+            >
+              <Input 
+                value={tempCourseGroup.coach} 
+                disabled 
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="状态"
+              required
+            >
+              <Select 
+                placeholder="请选择"
+                value={tempCourseGroup.status}
+                onChange={(value) => updateTempCourseGroup('status', value)}
+                style={{ width: '100%' }}
+              >
+                <Option value="active">在学</Option>
+                <Option value="inactive">停课</Option>
+                <Option value="pending">待处理</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="报名日期"
+              required
+            >
+              <DatePicker 
+                style={{ width: '100%' }} 
+                placeholder="选择报名日期"
+                format="YYYY-MM-DD"
+                value={dayjs(tempCourseGroup.enrollDate)}
+                onChange={(date) => updateTempCourseGroup('enrollDate', date ? date.format('YYYY-MM-DD') : '')}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="有效期至"
+              required
+            >
+              <DatePicker 
+                style={{ width: '100%' }} 
+                placeholder="选择有效期"
+                format="YYYY-MM-DD"
+                value={dayjs(tempCourseGroup.expireDate)}
+                onChange={(date) => updateTempCourseGroup('expireDate', date ? date.format('YYYY-MM-DD') : '')}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* 排课时间 */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Typography.Text strong>固定排课时间</Typography.Text>
+            <Button 
+              type="link" 
+              onClick={() => {
+                const newScheduleTimes = [...(tempCourseGroup.scheduleTimes || []), { weekday: '一', time: '15:00' }];
+                updateTempCourseGroup('scheduleTimes', newScheduleTimes);
+              }} 
+              icon={<PlusOutlined />}
+            >
+              添加时间
+            </Button>
+          </div>
+          {(tempCourseGroup.scheduleTimes || []).map((scheduleTime, timeIndex) => (
+            <Row gutter={16} key={timeIndex} style={{ marginBottom: 16 }}>
+              <Col span={10}>
+                <Select
+                  style={{ width: '100%' }}
+                  value={scheduleTime.weekday}
+                  onChange={(value) => {
+                    const newScheduleTimes = [...(tempCourseGroup.scheduleTimes || [])];
+                    newScheduleTimes[timeIndex].weekday = value;
+                    updateTempCourseGroup('scheduleTimes', newScheduleTimes);
+                  }}
+                >
+                  {weekdayOptions.map(option => (
+                    <Option key={option.value} value={option.value}>{option.label}</Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col span={10}>
+                <TimePicker
+                  style={{ width: '100%' }}
+                  format="HH:mm"
+                  value={dayjs(scheduleTime.time, 'HH:mm')}
+                  onChange={(time) => {
+                    const newScheduleTimes = [...(tempCourseGroup.scheduleTimes || [])];
+                    newScheduleTimes[timeIndex].time = time ? time.format('HH:mm') : '00:00';
+                    updateTempCourseGroup('scheduleTimes', newScheduleTimes);
+                  }}
+                />
+              </Col>
+              <Col span={4} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Button 
+                  type="text" 
+                  danger 
+                  icon={<DeleteOutlined />} 
+                  onClick={() => {
+                    const newScheduleTimes = [...(tempCourseGroup.scheduleTimes || [])];
+                    newScheduleTimes.splice(timeIndex, 1);
+                    updateTempCourseGroup('scheduleTimes', newScheduleTimes);
+                  }}
+                />
+              </Col>
+            </Row>
+          ))}
+          {(tempCourseGroup.scheduleTimes || []).length === 0 && (
+            <Typography.Text type="secondary">暂无排课时间，点击上方"添加时间"按钮添加</Typography.Text>
+          )}
+        </div>
+
+        <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+          <Space>
+            <Button onClick={() => cancelAddCourseGroup()}>
+              取消
+            </Button>
+            <Button type="primary" onClick={() => confirmAddCourseGroup()}>
+              确定
+            </Button>
+          </Space>
+        </div>
+      </div>
+    );
   };
 
   const showDeleteModal = (id: string) => {
@@ -768,9 +1552,20 @@ const StudentManagement: React.FC = () => {
     setCurrentStudent(student);
     paymentForm.resetFields();
     
+    // 获取学生所有课程
+    const courses = getStudentAllCourses(student);
+    
+    // 如果有课程，默认选择第一个
+    if (courses.length > 0) {
+      const defaultCourse = courses[0];
+      setSelectedPaymentCourse(defaultCourse.id || '');
+      setSelectedPaymentCourseName(defaultCourse.name);
+    }
+    
     // 设置初始值
     paymentForm.setFieldsValue({
       courseType: student.courseType,
+      courseId: courses.length > 0 ? courses[0].id : '',
       student: student.id,
       transactionDate: dayjs(),
       validUntil: dayjs().add(180, 'day'),
@@ -812,6 +1607,8 @@ const StudentManagement: React.FC = () => {
           validUntil: values.validUntil.format('YYYY-MM-DD'),
           gift: values.gift || '',
           remarks: values.remarks || '',
+          courseId: values.courseId,
+          courseName: selectedPaymentCourseName,
         };
 
         // 更新学生信息
@@ -860,6 +1657,325 @@ const StudentManagement: React.FC = () => {
     }
   };
 
+  // 处理课程改变
+  const handlePaymentCourseChange = (courseId: string) => {
+    setSelectedPaymentCourse(courseId);
+    // 获取课程名称
+    const courses = getStudentAllCourses(currentStudent);
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+      setSelectedPaymentCourseName(course.name);
+    }
+    
+    // 获取对应课程类型
+    paymentForm.setFieldsValue({
+      courseType: course?.type || '',
+    });
+  };
+
+  // 修改 getStudentAllCourses 函数，确保所有课程都可以选择
+  const getStudentAllCourses = (student: Student | null): CourseSummary[] => {
+    if (!student) return [];
+
+    // 创建一个包含所有课程的数组
+    const allCourses: CourseSummary[] = [];
+
+    // 如果学员有多个课程组，将其添加到课程列表中
+    if (student.courseGroups && student.courseGroups.length > 0) {
+      student.courseGroups.forEach((group: CourseGroup) => {
+        const courseId = group.courses && group.courses.length > 0 ? group.courses[0] : '';
+        const courseName = courseId 
+          ? courseOptions.find(c => c.value === courseId)?.label || courseId
+          : '未知课程';
+        
+        allCourses.push({
+          id: courseId,
+          name: courseName,
+          type: courseTypeOptions.find(t => t.value === group.courseType)?.label || group.courseType,
+          coach: group.coach,
+          status: group.status === 'active' ? '在学' : 
+                  group.status === 'inactive' ? '停课' : '待处理',
+          enrollDate: group.enrollDate,
+          expireDate: group.expireDate,
+          remainingClasses: student.remainingClasses
+        });
+      });
+    } else if (student.course) {
+      // 如果只有一个主课程，添加到课程列表
+      const courseId = Array.isArray(student.course) ? student.course[0] : student.course;
+      const courseName = courseOptions.find(c => c.value === courseId)?.label || courseId;
+      
+      allCourses.push({
+        id: courseId,
+        name: courseName,
+        type: courseTypeOptions.find(t => t.value === student.courseType)?.label || student.courseType,
+        coach: student.coach,
+        status: student.status === 'active' ? '在学' : 
+                student.status === 'inactive' ? '停课' : '待处理',
+        enrollDate: student.enrollDate,
+        expireDate: student.expireDate,
+        remainingClasses: student.remainingClasses
+      });
+    }
+
+    // 不再添加未报名的课程选项
+    return allCourses;
+  };
+
+  // 显示退费模态框
+  const showRefundModal = (student: Student) => {
+    setCurrentStudent(student);
+    refundTransferForm.resetFields();
+    
+    // 获取学生所有课程
+    const courses = getStudentAllCourses(student).filter(
+      // 只显示已报名的课程
+      course => course.status !== '未报名'
+    );
+    
+    // 设置初始值
+    refundTransferForm.setFieldsValue({
+      fromCourseId: courses.length > 0 ? courses[0].id : '',
+      studentId: student.id,
+      studentName: student.name,
+      operationType: 'refund', // 设置为退费
+      refundAmount: 0,
+      serviceFee: 0,
+      otherFee: 0,
+      actualRefund: 0,
+    });
+    
+    setIsRefundTransferModalVisible(true);
+  };
+
+  // 显示转课模态框
+  const showTransferModal = (student: Student) => {
+    setCurrentStudent(student);
+    refundTransferForm.resetFields();
+    setSelectedTransferStudent(null);
+    setTransferStudentSearchResults([]);
+    
+    // 获取学生所有课程
+    const courses = getStudentAllCourses(student).filter(
+      // 只显示已报名的课程
+      course => course.status !== '未报名'
+    );
+    
+    // 设置初始值
+    refundTransferForm.setFieldsValue({
+      fromCourseId: courses.length > 0 ? courses[0].id : '',
+      studentId: student.id,
+      studentName: student.name,
+      operationType: 'transfer', // 设置为转课
+      transferClassHours: 1, // 默认转课课时为1
+      priceDifference: 0,
+    });
+    
+    setIsRefundTransferModalVisible(true);
+  };
+  
+  // 显示转班模态框
+  const showTransferClassModal = (student: Student) => {
+    setCurrentStudent(student);
+    refundTransferForm.resetFields();
+    
+    // 获取学生所有课程
+    const courses = getStudentAllCourses(student).filter(
+      // 只显示已报名的课程
+      course => course.status !== '未报名'
+    );
+    
+    // 设置初始值
+    refundTransferForm.setFieldsValue({
+      fromCourseId: courses.length > 0 ? courses[0].id : '',
+      studentId: student.id,
+      studentName: student.name,
+      operationType: 'transferClass', // 设置为转班
+      transferClassHours: 1, // 默认转班课时为1
+      priceDifference: 0,
+    });
+    
+    setIsRefundTransferModalVisible(true);
+  };
+
+  // 处理退费转课提交
+  const handleRefundTransferOk = () => {
+    refundTransferForm.validateFields()
+      .then(values => {
+        // 根据操作类型执行不同的逻辑
+        if (values.operationType === 'refund') {
+          // 退费逻辑
+          message.success(`退费处理成功，实际退款金额: ¥${values.actualRefund}`);
+          setIsRefundTransferModalVisible(false);
+        } else if (values.operationType === 'transfer') {
+          // 转课逻辑
+          if (!selectedTransferStudent && !values.targetStudentId) {
+            message.error('请选择要转课给哪个学员');
+            return;
+          }
+          
+          // 获取目标学员信息
+          const targetStudentId = values.targetStudentId || selectedTransferStudent?.id;
+          const targetStudent = students.find(s => s.id === targetStudentId);
+          
+          if (!targetStudent) {
+            message.error('未找到目标学员信息');
+            return;
+          }
+
+          // 获取课程信息
+          const toCourse = courseOptions.find(c => c.value === values.toCourseId);
+          const courseName = toCourse ? toCourse.label : '未知课程';
+          
+          const priceDifferenceInfo = values.priceDifference > 0 ? 
+            `，需补差价: ¥${values.priceDifference}` : 
+            (values.priceDifference < 0 ? 
+              `，退还差价: ¥${Math.abs(values.priceDifference)}` : 
+              '');
+              
+          message.success(`转课处理成功，课程转给: ${targetStudent.name}(${targetStudent.id})，课程: ${courseName}，课时: ${values.transferClassHours}${priceDifferenceInfo}`);
+          
+          // 模拟更新学员课程信息
+          // 实际应用中这里应该调用API更新数据库
+          // 这里只是示例代码
+          
+          setIsRefundTransferModalVisible(false);
+        } else if (values.operationType === 'transferClass') {
+          // 转班逻辑 - 同一学员换课程
+          if (!currentStudent) {
+            message.error('未找到学员信息');
+            return;
+          }
+          
+          // 获取课程信息
+          const toCourse = courseOptions.find(c => c.value === values.toCourseId);
+          const courseName = toCourse ? toCourse.label : '未知课程';
+          
+          const fromCourse = courseOptions.find(c => c.value === values.fromCourseId);
+          const fromCourseName = fromCourse ? fromCourse.label : '未知课程';
+          
+          const priceDifferenceInfo = values.priceDifference > 0 ? 
+            `，需补差价: ¥${values.priceDifference}` : 
+            (values.priceDifference < 0 ? 
+              `，退还差价: ¥${Math.abs(values.priceDifference)}` : 
+              '');
+              
+          message.success(`转班处理成功，从 ${fromCourseName} 转到 ${courseName}${priceDifferenceInfo}`);
+          
+          // 模拟更新学员课程信息
+          // 实际应用中这里应该调用API更新数据库
+          // 这里只是示例代码
+          
+          setIsRefundTransferModalVisible(false);
+        }
+      })
+      .catch(info => {
+        console.log('Validate Failed:', info);
+      });
+  };
+
+  // 关闭退费转课模态框
+  const handleRefundTransferCancel = () => {
+    setIsRefundTransferModalVisible(false);
+    setCurrentStudent(null);
+    refundTransferForm.resetFields();
+  };
+
+  // 处理学员搜索
+  const handleTransferStudentSearch = (value: string) => {
+    setTransferStudentSearchText(value);
+    
+    if (value.trim() === '') {
+      setTransferStudentSearchResults([]);
+      setIsSearchingTransferStudent(false);
+      return;
+    }
+    
+    setIsSearchingTransferStudent(true);
+    
+    // 模拟异步搜索
+    setTimeout(() => {
+      // 使用搜索函数查找学员
+      const results = searchStudentsByKeyword(value, currentStudent?.id);
+      setTransferStudentSearchResults(results);
+      setIsSearchingTransferStudent(false);
+    }, 300); // 减少延迟时间
+  };
+  
+  // 处理选择转课学员
+  const handleSelectTransferStudent = (studentId: string) => {
+    const student = students.find(s => s.id === studentId) || null;
+    setSelectedTransferStudent(student);
+    
+    // 重置搜索结果
+    setTransferStudentSearchText('');
+    setTransferStudentSearchResults([]);
+  };
+
+  // 处理快速添加学员模态框显示
+  const showQuickAddStudentModal = () => {
+    quickAddStudentForm.resetFields();
+    setIsQuickAddStudentModalVisible(true);
+  };
+  
+  // 处理快速添加学员提交
+  const handleQuickAddStudentOk = () => {
+    quickAddStudentForm.validateFields()
+      .then(values => {
+        // 生成学员ID（实际应用中应该由后端生成）
+        const newStudentId = `ST${Math.floor(100000 + Math.random() * 900000)}`;
+        
+        // 创建新学员
+        const newStudent: Student = {
+          id: newStudentId,
+          name: values.name,
+          gender: values.gender,
+          age: values.age,
+          phone: values.phone,
+          courseType: '',
+          course: [],
+          coach: '',
+          lastClassDate: '',
+          enrollDate: dayjs().format('YYYY-MM-DD'),
+          expireDate: dayjs().add(1, 'year').format('YYYY-MM-DD'),
+          remainingClasses: '0',
+          status: 'active',
+        };
+        
+        // 将新学员添加到学员列表
+        setStudents(prevStudents => [...prevStudents, newStudent]);
+        
+        // 选中新添加的学员并直接设置到转课表单中
+        setSelectedTransferStudent(newStudent);
+        refundTransferForm.setFieldsValue({
+          targetStudentId: newStudentId
+        });
+        
+        // 刷新转课学员搜索结果，确保新学员在列表中显示
+        setTransferStudentSearchResults(prevResults => {
+          // 如果新学员不在结果列表中，添加它
+          if (!prevResults.some(s => s.id === newStudentId)) {
+            return [...prevResults, newStudent];
+          }
+          return prevResults;
+        });
+        
+        // 显示成功消息
+        message.success(`新学员 ${values.name} 添加成功`);
+        
+        // 关闭模态框
+        setIsQuickAddStudentModalVisible(false);
+      })
+      .catch(info => {
+        console.log('Validate Failed:', info);
+      });
+  };
+  
+  // 处理快速添加学员取消
+  const handleQuickAddStudentCancel = () => {
+    setIsQuickAddStudentModalVisible(false);
+  };
+
   const columns: ColumnsType<Student> = [
     {
       title: '学员ID',
@@ -868,8 +1984,13 @@ const StudentManagement: React.FC = () => {
       width: 100,
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
+      sorter: (a, b) => {
+        const numA = parseInt(a.id.replace(/[^\d]/g, ''), 10);
+        const numB = parseInt(b.id.replace(/[^\d]/g, ''), 10);
+        return numA - numB;
+      }
     },
     {
       title: '姓名',
@@ -877,7 +1998,7 @@ const StudentManagement: React.FC = () => {
       key: 'name',
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
       render: (text, record) => (
         <span>
@@ -896,8 +2017,9 @@ const StudentManagement: React.FC = () => {
       width: 70,
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
+      sorter: (a, b) => a.age - b.age
     },
     {
       title: '联系电话',
@@ -905,7 +2027,7 @@ const StudentManagement: React.FC = () => {
       key: 'phone',
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
     },
     {
@@ -914,7 +2036,11 @@ const StudentManagement: React.FC = () => {
       key: 'courseType',
       align: 'center',
       width: 120,
-      render: renderCourseType
+      onHeaderCell: () => ({
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
+      }),
+      render: renderCourseType,
+      sorter: (a, b) => a.courseType.localeCompare(b.courseType)
     },
     {
       title: '教练',
@@ -922,8 +2048,9 @@ const StudentManagement: React.FC = () => {
       key: 'coach',
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
+      sorter: (a, b) => a.coach.localeCompare(b.coach)
     },
     {
       title: '剩余课时',
@@ -931,8 +2058,13 @@ const StudentManagement: React.FC = () => {
       key: 'remainingClasses',
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
+      sorter: (a, b) => {
+        const remainingA = parseInt(a.remainingClasses.split('/')[0], 10);
+        const remainingB = parseInt(b.remainingClasses.split('/')[0], 10);
+        return remainingA - remainingB;
+      }
     },
     {
       title: '最近上课时间',
@@ -940,9 +2072,14 @@ const StudentManagement: React.FC = () => {
       key: 'lastClassDate',
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
       render: text => text ? dayjs(text).format('YYYY-MM-DD') : '未上课',
+      sorter: (a, b) => {
+        if (!a.lastClassDate) return 1;
+        if (!b.lastClassDate) return -1;
+        return dayjs(a.lastClassDate).unix() - dayjs(b.lastClassDate).unix();
+      }
     },
     {
       title: '报名日期',
@@ -950,10 +2087,10 @@ const StudentManagement: React.FC = () => {
       key: 'enrollDate',
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
       render: text => dayjs(text).format('YYYY-MM-DD'),
-      sorter: true,
+      sorter: (a, b) => dayjs(a.enrollDate).unix() - dayjs(b.enrollDate).unix(),
     },
     {
       title: '状态',
@@ -961,7 +2098,7 @@ const StudentManagement: React.FC = () => {
       key: 'status',
       align: 'center',
       onHeaderCell: () => ({
-        style: columnStyle,
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
       }),
       render: status => {
         let color = '';
@@ -987,54 +2124,82 @@ const StudentManagement: React.FC = () => {
         
         return <Tag color={color}>{text}</Tag>;
       },
+      sorter: (a, b) => {
+        const statusOrder = { active: 0, pending: 1, inactive: 2 };
+        return statusOrder[a.status as keyof typeof statusOrder] - statusOrder[b.status as keyof typeof statusOrder];
+      }
     },
     {
       title: '操作',
       key: 'action',
-      width: 240,
-      align: 'center',
+      width: 120, // 减小宽度
+      onHeaderCell: () => ({
+        style: { ...columnStyle, whiteSpace: 'nowrap' },
+      }),
       render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="编辑">
-            <Button 
-              icon={<EditOutlined />} 
-              onClick={() => showEditModal(record)}
-              type="primary"
-              size="small"
-              ghost
-            />
-          </Tooltip>
-          <Tooltip title="课程记录">
-            <Button
-              icon={<FileTextOutlined />}
-              onClick={() => showClassRecordModal(record)}
-              type="primary"
-              size="small"
-              style={{ backgroundColor: '#722ed1', borderColor: '#722ed1' }}
-            />
-          </Tooltip>
-          <Tooltip title="缴费">
-            <Button
-              icon={<DollarOutlined />}
-              onClick={() => showPaymentModal(record)}
-              type="primary"
-              size="small"
-              style={{ backgroundColor: '#faad14', borderColor: '#faad14' }}
-            />
-          </Tooltip>
-          <Tooltip title="删除">
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={() => showDeleteModal(record.id)}
-              type="primary"
-              danger
-              size="small"
-            />
-          </Tooltip>
-        </Space>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: 'edit',
+                label: '编辑',
+                icon: <EditOutlined />,
+                onClick: () => showEditModal(record)
+              },
+              {
+                key: 'record',
+                label: '课程记录',
+                icon: <FileTextOutlined />,
+                onClick: () => showClassRecordModal(record)
+              },
+              {
+                key: 'payment',
+                label: '缴费',
+                icon: <DollarOutlined />,
+                onClick: () => showPaymentModal(record)
+              },
+              {
+                key: 'refund',
+                label: '退费',
+                icon: <RollbackOutlined />,
+                onClick: () => showRefundModal(record)
+              },
+              {
+                key: 'transfer',
+                label: '转课',
+                icon: <TransactionOutlined />,
+                onClick: () => showTransferModal(record)
+              },
+              {
+                key: 'transferClass',
+                label: '转班',
+                icon: <SyncOutlined />,
+                onClick: () => showTransferClassModal(record)
+              },
+              {
+                key: 'delete',
+                label: '删除',
+                icon: <DeleteOutlined />,
+                danger: true,
+                onClick: () => showDeleteModal(record.id)
+              },
+            ]
+          }}
+          trigger={['click']}
+        >
+          <Button type="link">
+            操作 <DownOutlined />
+          </Button>
+        </Dropdown>
       ),
     },
   ];
+
+  // 移除课程组
+  const removeCourseGroup = (key: string) => {
+    // 允许删除任何课程组，不再检查是否至少保留一个
+    setCourseGroups(courseGroups.filter(group => group.key !== key));
+  };
 
   return (
     <div className="student-management">
@@ -1117,16 +2282,52 @@ const StudentManagement: React.FC = () => {
               onChange={value => setSortOrder(value)}
               allowClear
             >
-              <Option value="ascend">
+              <Option value="enrollDateAsc">
                 <Space>
                   <SortAscendingOutlined />
                   报名日期升序
                 </Space>
               </Option>
-              <Option value="descend">
+              <Option value="enrollDateDesc">
                 <Space>
                   <SortDescendingOutlined />
                   报名日期降序
+                </Space>
+              </Option>
+              <Option value="ageAsc">
+                <Space>
+                  <SortAscendingOutlined />
+                  年龄升序
+                </Space>
+              </Option>
+              <Option value="ageDesc">
+                <Space>
+                  <SortDescendingOutlined />
+                  年龄降序
+                </Space>
+              </Option>
+              <Option value="remainingClassesAsc">
+                <Space>
+                  <SortAscendingOutlined />
+                  剩余课时升序
+                </Space>
+              </Option>
+              <Option value="remainingClassesDesc">
+                <Space>
+                  <SortDescendingOutlined />
+                  剩余课时降序
+                </Space>
+              </Option>
+              <Option value="lastClassDateAsc">
+                <Space>
+                  <SortAscendingOutlined />
+                  上课时间升序
+                </Space>
+              </Option>
+              <Option value="lastClassDateDesc">
+                <Space>
+                  <SortDescendingOutlined />
+                  上课时间降序
                 </Space>
               </Option>
             </Select>
@@ -1165,7 +2366,7 @@ const StudentManagement: React.FC = () => {
         open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
-        width={700}
+        width={800}
         okText={editingStudent ? '保存' : '添加'}
         cancelText="取消"
       >
@@ -1177,10 +2378,9 @@ const StudentManagement: React.FC = () => {
           initialValues={{
             gender: 'male',
             status: 'active',
-            enrollDate: dayjs(),
-            expireDate: dayjs().add(180, 'day'),
           }}
         >
+          <Typography.Title level={5}>基本信息</Typography.Title>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -1226,131 +2426,34 @@ const StudentManagement: React.FC = () => {
             </Col>
           </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="course"
-                label="报名课程"
-                rules={[{ required: true, message: '请选择课程' }]}
-              >
-                <Select 
-                  placeholder="请选择课程"
-                  onChange={handleCourseChange}
-                  mode="multiple"
+          <Divider style={{ margin: '24px 0' }} />
+          
+          {/* 课程信息 */}
+          <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Col span={24}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+                <Typography.Title level={5} style={{ margin: 0, marginRight: 16 }}>报名课程</Typography.Title>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />} 
+                  onClick={startAddCourseGroup}
+                  disabled={currentEditingGroupIndex !== null || tempCourseGroup !== null}
                 >
-                  {courseOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      <div>
-                        <TeamOutlined /> {option.label}
-                      </div>
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="courseType"
-                label="课程类型"
-              >
-                <Input disabled />
-              </Form.Item>
+                  添加课程
+                </Button>
+              </div>
+              
+              {/* 显示已确认的课程组表格 */}
+              {courseGroups.length > 0 && renderCourseGroupTable()}
+              
+              {/* 显示当前编辑中的已有课程组表单 */}
+              {currentEditingGroupIndex !== null && 
+                renderCourseEditForm(courseGroups[currentEditingGroupIndex], currentEditingGroupIndex)}
+              
+              {/* 显示正在添加的临时课程组表单 */}
+              {tempCourseGroup && renderTempCourseEditForm()}
             </Col>
           </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="coach"
-                label="上课教练"
-              >
-                <Input disabled />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="status"
-                label="状态"
-                rules={[{ required: true, message: '请选择状态' }]}
-              >
-                <Select placeholder="请选择">
-                  <Option value="active">在学</Option>
-                  <Option value="inactive">停课</Option>
-                  <Option value="pending">待处理</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="enrollDate"
-                label="报名日期"
-                rules={[{ required: true, message: '请选择报名日期' }]}
-              >
-                <DatePicker 
-                  style={{ width: '100%' }} 
-                  placeholder="选择报名日期"
-                  format="YYYY-MM-DD"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="expireDate"
-                label="有效期至"
-                rules={[{ required: true, message: '请选择有效期' }]}
-              >
-                <DatePicker 
-                  style={{ width: '100%' }} 
-                  placeholder="选择有效期"
-                  format="YYYY-MM-DD"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* 排课时间 */}
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <Typography.Text strong>固定排课时间</Typography.Text>
-              <Button type="link" onClick={addScheduleTime} icon={<PlusOutlined />}>
-                添加时间
-              </Button>
-            </div>
-            {scheduleTimes.map((scheduleTime, index) => (
-              <Row gutter={16} key={index} style={{ marginBottom: 16 }}>
-                <Col span={10}>
-                  <Select
-                    style={{ width: '100%' }}
-                    value={scheduleTime.weekday}
-                    onChange={(value) => updateScheduleTime(index, 'weekday', value)}
-                  >
-                    {weekdayOptions.map(option => (
-                      <Option key={option.value} value={option.value}>{option.label}</Option>
-                    ))}
-                  </Select>
-                </Col>
-                <Col span={10}>
-                  <TimePicker
-                    style={{ width: '100%' }}
-                    format="HH:mm"
-                    value={dayjs(scheduleTime.time, 'HH:mm')}
-                    onChange={(time) => updateScheduleTime(index, 'time', time ? time.format('HH:mm') : '00:00')}
-                  />
-                </Col>
-                <Col span={4} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <Button 
-                    type="text" 
-                    danger 
-                    icon={<DeleteOutlined />} 
-                    onClick={() => removeScheduleTime(index)}
-                  />
-                </Col>
-              </Row>
-            ))}
-          </div>
         </Form>
       </Modal>
 
@@ -1553,33 +2656,45 @@ const StudentManagement: React.FC = () => {
                 bonusClasses: 0,
               }}
             >
+              <Typography.Title level={5} style={{ marginBottom: 16 }}>基本信息</Typography.Title>
+              
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
-                    name="courseType"
-                    label="课程类型"
-                    rules={[{ required: true, message: '请选择课程类型' }]}
+                    name="courseId"
+                    label="缴费课程"
+                    rules={[{ required: true, message: '请选择缴费课程' }]}
                   >
-                    <Select placeholder="请选择课程类型">
-                      {courseTypeOptions.map(option => (
-                        <Option key={option.value} value={option.value}>{option.label}</Option>
+                    <Select 
+                      placeholder="请选择缴费课程" 
+                      onChange={handlePaymentCourseChange}
+                    >
+                      {getStudentAllCourses(currentStudent).map(course => (
+                        <Option key={course.id} value={course.id || ''}>
+                          {course.name}
+                        </Option>
                       ))}
                     </Select>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    name="student"
-                    label="选择学员"
-                    rules={[{ required: true, message: '请选择学员' }]}
+                    name="courseType"
+                    label="课程类型"
+                    rules={[{ required: true, message: '请选择课程类型' }]}
                   >
-                    <Select placeholder="请选择学员" disabled>
-                      <Option value={currentStudent?.id}>{currentStudent?.name}</Option>
+                    <Select placeholder="请选择课程类型" disabled>
+                      {courseTypeOptions.map(option => (
+                        <Option key={option.value} value={option.value}>{option.label}</Option>
+                      ))}
                     </Select>
                   </Form.Item>
                 </Col>
               </Row>
 
+              <Divider style={{ margin: '16px 0' }} />
+              <Typography.Title level={5} style={{ marginBottom: 16 }}>缴费信息</Typography.Title>
+              
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
@@ -1640,6 +2755,9 @@ const StudentManagement: React.FC = () => {
                 </Col>
               </Row>
 
+              <Divider style={{ margin: '16px 0' }} />
+              <Typography.Title level={5} style={{ marginBottom: 16 }}>课时信息</Typography.Title>
+              
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
@@ -1720,31 +2838,66 @@ const StudentManagement: React.FC = () => {
               <div style={{ fontSize: '16px', fontWeight: 'bold' }}>缴费预览</div>
             </div>
             <div style={{ background: '#f5f5f5', padding: '20px', height: 'calc(100% - 44px)', borderRadius: '4px', overflowY: 'auto' }}>
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>学员姓名：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{currentStudent?.name || '—'}</div>
-              </div>
+              <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>报名课程信息</Typography.Title>
+              
+              {getStudentAllCourses(currentStudent).map((course: CourseSummary, index: number) => (
+                <div key={index} style={{ 
+                  border: '1px solid #d9d9d9', 
+                  borderRadius: '4px', 
+                  padding: '12px', 
+                  marginBottom: '12px',
+                  background: course.id === selectedPaymentCourse ? '#e6f7ff' : '#fff',
+                  borderColor: course.id === selectedPaymentCourse ? '#1890ff' : '#d9d9d9'
+                }}>
+                  <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography.Text strong>{course.name}</Typography.Text>
+                    <Tag color={
+                      course.status === '在学' ? 'green' : 
+                      course.status === '停课' ? 'red' : 'orange'
+                    }>{course.status}</Tag>
+                  </div>
+                  
+                  <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>课程类型：</span>
+                    <span>{course.type}</span>
+                  </div>
+                  
+                  <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>教练：</span>
+                    <span>{course.coach}</span>
+                  </div>
+                  
+                  <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>报名日期：</span>
+                    <span>{course.enrollDate}</span>
+                  </div>
+                  
+                  <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>有效期至：</span>
+                    <span>{course.expireDate}</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>剩余课时：</span>
+                    <span>{course.remainingClasses}</span>
+                  </div>
+                </div>
+              ))}
+              
+              <Divider style={{ margin: '16px 0' }} />
+              
+              <Typography.Title level={5} style={{ marginBottom: 8 }}>缴费详情</Typography.Title>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>课程类型：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>
-                  {courseTypeOptions.find(t => t.value === currentStudent?.courseType)?.label || '—'}
+                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>缴费课程：</div>
+                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
+                  {selectedPaymentCourseName}
                 </div>
               </div>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>当前剩余课时：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{currentClassHours} 课时</div>
-              </div>
-              
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>当前有效期至：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{currentStudent?.expireDate || '—'}</div>
-              </div>
-              
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次缴费金额：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>¥{paymentForm.getFieldValue('amount') || '0.00'}</div>
+                <div style={{ color: '#f5222d', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>¥{paymentForm.getFieldValue('amount') || '0.00'}</div>
               </div>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1755,23 +2908,32 @@ const StudentManagement: React.FC = () => {
               </div>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次正课课时：</div>
+                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{paymentForm.getFieldValue('regularClasses') || 0} 课时</div>
+              </div>
+              
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次赠送课时：</div>
                 <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{paymentForm.getFieldValue('bonusClasses') || 0} 课时</div>
               </div>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次新增课时：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{newClassHours} 课时</div>
+                <div style={{ color: '#52c41a', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>{newClassHours} 课时</div>
               </div>
+              
+              <Divider style={{ margin: '16px 0' }} />
+              
+              <Typography.Title level={5} style={{ marginBottom: 8 }}>缴费后状态</Typography.Title>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>变更后总课时：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{totalClassHours} 课时</div>
+                <div style={{ color: '#1890ff', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>{totalClassHours} 课时</div>
               </div>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>新有效期至：</div>
-                <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>{newValidUntil}</div>
+                <div style={{ color: '#1890ff', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>{newValidUntil}</div>
               </div>
               
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1784,6 +2946,561 @@ const StudentManagement: React.FC = () => {
             </div>
           </Col>
         </Row>
+      </Modal>
+
+      {/* 退费转课模态框 */}
+      <Modal
+        title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>退费</span>}
+        open={isRefundTransferModalVisible && refundTransferForm.getFieldValue('operationType') === 'refund'}
+        onOk={handleRefundTransferOk}
+        onCancel={handleRefundTransferCancel}
+        width={800}
+        okText="确认提交"
+        cancelText="取消"
+        bodyStyle={{ padding: '24px 32px' }}
+      >
+        <Divider style={{ margin: '0 0 24px 0' }} />
+        
+        <Form
+          form={refundTransferForm}
+          layout="vertical"
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="studentName"
+                label="学员姓名"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="studentId"
+                label="学员ID"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Divider style={{ margin: '12px 0' }} />
+          <Typography.Title level={5} style={{ marginBottom: 16 }}>退费信息</Typography.Title>
+          
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="fromCourseId"
+                label="原课程"
+                rules={[{ required: true, message: '请选择原课程' }]}
+              >
+                <Select placeholder="请选择原课程">
+                  {getStudentAllCourses(currentStudent)
+                    .filter(course => course.status !== '未报名')
+                    .map(course => (
+                      <Option key={course.id} value={course.id || ''}>
+                        {course.name}
+                      </Option>
+                    ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Form.Item
+            name="refundClassHours"
+            label="退课课时"
+            rules={[{ required: true, message: '请输入退课课时' }]}
+          >
+            <InputNumber min={1} style={{ width: '100%' }} />
+          </Form.Item>
+          
+          <Form.Item
+            name="refundAmount"
+            label="退款金额"
+            rules={[{ required: true, message: '请输入退款金额' }]}
+          >
+            <InputNumber 
+              min={0} 
+              style={{ width: '100%' }} 
+              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value: string | undefined) => {
+                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                return parseFloat(parsed);
+              }}
+              onChange={() => {
+                // 计算实际退费金额
+                setTimeout(() => {
+                  const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
+                  const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
+                  const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
+                  const actualRefund = refundAmount - serviceFee - otherFee;
+                  refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
+                }, 0);
+              }}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="serviceFee"
+            label="手续费"
+            initialValue={0}
+            rules={[{ required: true, message: '请输入手续费' }]}
+          >
+            <InputNumber 
+              min={0} 
+              style={{ width: '100%' }} 
+              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value: string | undefined) => {
+                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                return parseFloat(parsed);
+              }}
+              onChange={() => {
+                // 计算实际退费金额
+                setTimeout(() => {
+                  const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
+                  const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
+                  const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
+                  const actualRefund = refundAmount - serviceFee - otherFee;
+                  refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
+                }, 0);
+              }}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="otherFee"
+            label="其它费用扣除"
+            initialValue={0}
+            rules={[{ required: true, message: '请输入其它费用' }]}
+          >
+            <InputNumber 
+              min={0} 
+              style={{ width: '100%' }} 
+              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value: string | undefined) => {
+                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                return parseFloat(parsed);
+              }}
+              onChange={() => {
+                // 计算实际退费金额
+                setTimeout(() => {
+                  const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
+                  const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
+                  const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
+                  const actualRefund = refundAmount - serviceFee - otherFee;
+                  refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
+                }, 0);
+              }}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="actualRefund"
+            label="实际退费金额"
+            initialValue={0}
+          >
+            <InputNumber 
+              min={0} 
+              style={{ width: '100%' }} 
+              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value: string | undefined) => {
+                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                return parseFloat(parsed);
+              }}
+              disabled
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="reason"
+            label="退费原因"
+            rules={[{ required: true, message: '请输入退费原因' }]}
+          >
+            <TextArea rows={4} placeholder="请输入退费原因" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 转课模态框 */}
+      <Modal
+        title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>转课</span>}
+        open={isRefundTransferModalVisible && refundTransferForm.getFieldValue('operationType') === 'transfer'}
+        onOk={handleRefundTransferOk}
+        onCancel={handleRefundTransferCancel}
+        width={800}
+        okText="确认提交"
+        cancelText="取消"
+        bodyStyle={{ padding: '24px 32px' }}
+      >
+        <Divider style={{ margin: '0 0 24px 0' }} />
+        
+        <Form
+          form={refundTransferForm}
+          layout="vertical"
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="studentName"
+                label="学员姓名"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="studentId"
+                label="学员ID"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Divider style={{ margin: '12px 0' }} />
+          <Typography.Title level={5} style={{ marginBottom: 16 }}>转课信息</Typography.Title>
+          
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="fromCourseId"
+                label="原课程"
+                rules={[{ required: true, message: '请选择原课程' }]}
+              >
+                <Select placeholder="请选择原课程">
+                  {getStudentAllCourses(currentStudent)
+                    .filter(course => course.status !== '未报名')
+                    .map(course => (
+                      <Option key={course.id} value={course.id || ''}>
+                        {course.name}
+                      </Option>
+                    ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="targetStudentId"
+                label="转课学员"
+                rules={[{ required: true, message: '请选择要转课给哪个学员' }]}
+              >
+                <Select
+                  showSearch
+                  placeholder="请输入学员姓名/ID/电话搜索"
+                  optionFilterProp="children"
+                  filterOption={false}
+                  onSearch={handleTransferStudentSearch}
+                  loading={isSearchingTransferStudent}
+                  notFoundContent={
+                    isSearchingTransferStudent ? (
+                      <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                        <span>搜索中...</span>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                        <span>未找到匹配学员</span>
+                        <div style={{ marginTop: 8 }}>
+                          <Button 
+                            size="small" 
+                            type="primary"
+                            onClick={showQuickAddStudentModal}
+                          >
+                            添加新学员
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  }
+                  onChange={(value) => {
+                    const student = students.find(s => s.id === value);
+                    if (student) {
+                      setSelectedTransferStudent(student);
+                    }
+                  }}
+                  value={selectedTransferStudent?.id}
+                  style={{ width: '100%' }}
+                  dropdownRender={menu => (
+                    <div>
+                      {menu}
+                      <Divider style={{ margin: '4px 0' }} />
+                      <div style={{ padding: '8px', textAlign: 'center' }}>
+                        <Button 
+                          type="link" 
+                          size="small"
+                          icon={<PlusOutlined />}
+                          onClick={showQuickAddStudentModal}
+                        >
+                          添加新学员
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                >
+                  {/* 显示所有学员，不按课程分组 */}
+                  {students
+                    .filter(student => student.id !== currentStudent?.id) // 排除当前学员
+                    .map(student => (
+                      <Select.Option key={student.id} value={student.id}>
+                        {student.name} ({student.id}) - {student.phone}
+                      </Select.Option>
+                    ))}
+                  
+                  {/* 搜索结果 */}
+                  {transferStudentSearchResults.length > 0 && (
+                    <Select.OptGroup label="搜索结果" key="search_results">
+                      {transferStudentSearchResults.map(student => (
+                        <Select.Option key={student.id} value={student.id}>
+                          {student.name} ({student.id}) - {student.phone}
+                        </Select.Option>
+                      ))}
+                    </Select.OptGroup>
+                  )}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="toCourseId"
+                label="课程名称"
+                rules={[{ required: true, message: '请选择课程名称' }]}
+              >
+                <Select placeholder="请选择课程名称">
+                  {courseOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="transferClassHours"
+                label="转课课时"
+                rules={[{ required: true, message: '请输入转课课时' }]}
+              >
+                <InputNumber min={1} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="priceDifference"
+                label="补差价"
+                tooltip="负数表示退还差价，正数表示需要补交差价"
+                initialValue={0}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }} 
+                  formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value: string | undefined) => {
+                    const parsed = value ? value.replace(/[^\d.-]/g, '') : '0';
+                    return parseFloat(parsed);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Form.Item
+            name="reason"
+            label="转课原因"
+            rules={[{ required: true, message: '请输入转课原因' }]}
+          >
+            <TextArea rows={4} placeholder="请输入转课原因" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 转班模态框 */}
+      <Modal
+        title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>转班</span>}
+        open={isRefundTransferModalVisible && refundTransferForm.getFieldValue('operationType') === 'transferClass'}
+        onOk={handleRefundTransferOk}
+        onCancel={handleRefundTransferCancel}
+        width={800}
+        okText="确认提交"
+        cancelText="取消"
+        bodyStyle={{ padding: '24px 32px' }}
+      >
+        <Divider style={{ margin: '0 0 24px 0' }} />
+        
+        <Form
+          form={refundTransferForm}
+          layout="vertical"
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="studentName"
+                label="学员姓名"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="studentId"
+                label="学员ID"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Divider style={{ margin: '12px 0' }} />
+          <Typography.Title level={5} style={{ marginBottom: 16 }}>转班信息</Typography.Title>
+          
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="fromCourseId"
+                label="原课程"
+                rules={[{ required: true, message: '请选择原课程' }]}
+              >
+                <Select placeholder="请选择原课程">
+                  {getStudentAllCourses(currentStudent)
+                    .filter(course => course.status !== '未报名')
+                    .map(course => (
+                      <Option key={course.id} value={course.id || ''}>
+                        {course.name}
+                      </Option>
+                    ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="toCourseId"
+                label="新课程名称"
+                rules={[{ required: true, message: '请选择新课程名称' }]}
+              >
+                <Select placeholder="请选择新课程名称">
+                  {courseOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="transferClassHours"
+                label="转班课时"
+                rules={[{ required: true, message: '请输入转班课时' }]}
+              >
+                <InputNumber min={1} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="priceDifference"
+                label="补差价"
+                tooltip="负数表示退还差价，正数表示需要补交差价"
+                initialValue={0}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }} 
+                  formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value: string | undefined) => {
+                    const parsed = value ? value.replace(/[^\d.-]/g, '') : '0';
+                    return parseFloat(parsed);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Form.Item
+            name="reason"
+            label="转班原因"
+            rules={[{ required: true, message: '请输入转班原因' }]}
+          >
+            <TextArea rows={4} placeholder="请输入转班原因" />
+          </Form.Item>
+        </Form>
+      </Modal>
+      
+      {/* 快速添加学员模态框 */}
+      <Modal
+        title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>添加新学员</span>}
+        open={isQuickAddStudentModalVisible}
+        onOk={handleQuickAddStudentOk}
+        onCancel={handleQuickAddStudentCancel}
+        width={600}
+        okText="确认添加"
+        cancelText="取消"
+        bodyStyle={{ padding: '24px 32px' }}
+      >
+        <Form
+          form={quickAddStudentForm}
+          layout="vertical"
+          initialValues={{ gender: 'male' }}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="学员姓名"
+                rules={[{ required: true, message: '请输入学员姓名' }]}
+              >
+                <Input placeholder="请输入学员姓名" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="gender"
+                label="性别"
+                rules={[{ required: true, message: '请选择性别' }]}
+              >
+                <Radio.Group>
+                  <Radio value="male">男</Radio>
+                  <Radio value="female">女</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="age"
+                label="年龄"
+                rules={[
+                  { required: true, message: '请输入年龄' },
+                  { type: 'number', min: 1, max: 100, message: '年龄必须在1-100之间' }
+                ]}
+              >
+                <InputNumber min={1} max={100} style={{ width: '100%' }} placeholder="请输入年龄" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="phone"
+                label="联系电话"
+                rules={[
+                  { required: true, message: '请输入联系电话' },
+                  { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码' }
+                ]}
+              >
+                <Input placeholder="请输入联系电话" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Alert
+            message="注意：此处添加的学员信息仅包含基本信息，可在学员管理页面进行详细编辑。"
+            type="info"
+            showIcon
+            style={{ marginTop: 16 }}
+          />
+        </Form>
       </Modal>
     </div>
   );
