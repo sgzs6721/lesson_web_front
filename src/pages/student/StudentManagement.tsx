@@ -2831,14 +2831,13 @@ const StudentManagement: React.FC = () => {
                 <Col span={12}>
                   <Form.Item
                     name="validUntil"
-                    label="有效期"
+                    label="有效期至"
                     rules={[{ required: true, message: '请选择有效期' }]}
                   >
                     <DatePicker 
                       style={{ width: '100%' }} 
-                      format="YYYY-MM-DD"
-                      placeholder="年/月/日"
-                      onChange={handleValidUntilChange}
+                      locale={locale}
+                      format="YYYY年MM月DD日"
                     />
                   </Form.Item>
                 </Col>
@@ -3046,118 +3045,136 @@ const StudentManagement: React.FC = () => {
             </Col>
           </Row>
           
-          <Form.Item
-            name="refundClassHours"
-            label="退课课时"
-            rules={[{ required: true, message: '请输入退课课时' }]}
-          >
-            <InputNumber min={1} style={{ width: '100%' }} />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="refundClassHours"
+                label="退课课时"
+                rules={[{ required: true, message: '请输入退课课时' }]}
+              >
+                <InputNumber min={1} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="refundAmount"
+                label="退款金额"
+                rules={[{ required: true, message: '请输入退款金额' }]}
+              >
+                <InputNumber 
+                  min={0} 
+                  style={{ width: '100%' }} 
+                  formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value: string | undefined) => {
+                    const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                    return parseFloat(parsed);
+                  }}
+                  onChange={() => {
+                    // 计算实际退费金额
+                    setTimeout(() => {
+                      const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
+                      const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
+                      const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
+                      const actualRefund = refundAmount - serviceFee - otherFee;
+                      refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
+                    }, 0);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="serviceFee"
+                label="手续费"
+                initialValue={0}
+                rules={[{ required: true, message: '请输入手续费' }]}
+              >
+                <InputNumber 
+                  min={0} 
+                  style={{ width: '100%' }} 
+                  formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value: string | undefined) => {
+                    const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                    return parseFloat(parsed);
+                  }}
+                  onChange={() => {
+                    // 计算实际退费金额
+                    setTimeout(() => {
+                      const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
+                      const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
+                      const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
+                      const actualRefund = refundAmount - serviceFee - otherFee;
+                      refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
+                    }, 0);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="otherFee"
+                label="其它费用扣除"
+                initialValue={0}
+                rules={[{ required: true, message: '请输入其它费用' }]}
+              >
+                <InputNumber 
+                  min={0} 
+                  style={{ width: '100%' }} 
+                  formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value: string | undefined) => {
+                    const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                    return parseFloat(parsed);
+                  }}
+                  onChange={() => {
+                    // 计算实际退费金额
+                    setTimeout(() => {
+                      const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
+                      const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
+                      const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
+                      const actualRefund = refundAmount - serviceFee - otherFee;
+                      refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
+                    }, 0);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="actualRefund"
+                label="实际退费金额"
+                initialValue={0}
+              >
+                <InputNumber 
+                  min={0} 
+                  style={{ width: '100%' }} 
+                  formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value: string | undefined) => {
+                    const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
+                    return parseFloat(parsed);
+                  }}
+                  disabled
+                />
+              </Form.Item>
+            </Col>
+          </Row>
           
-          <Form.Item
-            name="refundAmount"
-            label="退款金额"
-            rules={[{ required: true, message: '请输入退款金额' }]}
-          >
-            <InputNumber 
-              min={0} 
-              style={{ width: '100%' }} 
-              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value: string | undefined) => {
-                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
-                return parseFloat(parsed);
-              }}
-              onChange={() => {
-                // 计算实际退费金额
-                setTimeout(() => {
-                  const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
-                  const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
-                  const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
-                  const actualRefund = refundAmount - serviceFee - otherFee;
-                  refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
-                }, 0);
-              }}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="serviceFee"
-            label="手续费"
-            initialValue={0}
-            rules={[{ required: true, message: '请输入手续费' }]}
-          >
-            <InputNumber 
-              min={0} 
-              style={{ width: '100%' }} 
-              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value: string | undefined) => {
-                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
-                return parseFloat(parsed);
-              }}
-              onChange={() => {
-                // 计算实际退费金额
-                setTimeout(() => {
-                  const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
-                  const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
-                  const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
-                  const actualRefund = refundAmount - serviceFee - otherFee;
-                  refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
-                }, 0);
-              }}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="otherFee"
-            label="其它费用扣除"
-            initialValue={0}
-            rules={[{ required: true, message: '请输入其它费用' }]}
-          >
-            <InputNumber 
-              min={0} 
-              style={{ width: '100%' }} 
-              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value: string | undefined) => {
-                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
-                return parseFloat(parsed);
-              }}
-              onChange={() => {
-                // 计算实际退费金额
-                setTimeout(() => {
-                  const refundAmount = refundTransferForm.getFieldValue('refundAmount') || 0;
-                  const serviceFee = refundTransferForm.getFieldValue('serviceFee') || 0;
-                  const otherFee = refundTransferForm.getFieldValue('otherFee') || 0;
-                  const actualRefund = refundAmount - serviceFee - otherFee;
-                  refundTransferForm.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
-                }, 0);
-              }}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="actualRefund"
-            label="实际退费金额"
-            initialValue={0}
-          >
-            <InputNumber 
-              min={0} 
-              style={{ width: '100%' }} 
-              formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value: string | undefined) => {
-                const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
-                return parseFloat(parsed);
-              }}
-              disabled
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="reason"
-            label="退费原因"
-            rules={[{ required: true, message: '请输入退费原因' }]}
-          >
-            <TextArea rows={4} placeholder="请输入退费原因" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="reason"
+                label="退费原因"
+                rules={[{ required: true, message: '请输入退费原因' }]}
+              >
+                <TextArea rows={4} placeholder="请输入退费原因" />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Modal>
 
@@ -3346,6 +3363,22 @@ const StudentManagement: React.FC = () => {
             </Col>
           </Row>
           
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="validUntil"
+                label="有效期至"
+                rules={[{ required: true, message: '请选择有效期' }]}
+              >
+                <DatePicker 
+                  style={{ width: '100%' }} 
+                  locale={locale}
+                  format="YYYY年MM月DD日"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          
           <Form.Item
             name="reason"
             label="转课原因"
@@ -3453,6 +3486,22 @@ const StudentManagement: React.FC = () => {
                     const parsed = value ? value.replace(/[^\d.-]/g, '') : '0';
                     return parseFloat(parsed);
                   }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="validUntil"
+                label="有效期至"
+                rules={[{ required: true, message: '请选择有效期' }]}
+              >
+                <DatePicker 
+                  style={{ width: '100%' }} 
+                  locale={locale}
+                  format="YYYY年MM月DD日"
                 />
               </Form.Item>
             </Col>
