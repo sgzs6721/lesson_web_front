@@ -46,12 +46,22 @@ import {
   SwapOutlined,
   RollbackOutlined,
   TransactionOutlined,
-  SyncOutlined
+  SyncOutlined,
+  ManOutlined,
+  WomanOutlined,
+  MailOutlined,
+  HomeOutlined,
+  ClockCircleOutlined,
+  BarChartOutlined,
+  BookOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn'; // 导入中文语言包
+import locale from 'antd/es/date-picker/locale/zh_CN';
 
+// 设置 dayjs 使用中文
 // 设置 dayjs 使用中文
 dayjs.locale('zh-cn');
 
@@ -156,8 +166,8 @@ const StudentManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [selectedCourse, setSelectedCourse] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
+  const [selectedCourse, setSelectedCourse] = useState<string | undefined>(undefined);
   const [enrollMonth, setEnrollMonth] = useState<dayjs.Dayjs | null>(null);
   const [sortOrder, setSortOrder] = useState<'enrollDateAsc' | 'enrollDateDesc' | 'ageAsc' | 'ageDesc' | 'remainingClassesAsc' | 'remainingClassesDesc' | 'lastClassDateAsc' | 'lastClassDateDesc' | undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -317,9 +327,15 @@ const StudentManagement: React.FC = () => {
     );
   };
 
+  // useEffect 仅在分页变化时触发数据获取
   useEffect(() => {
     fetchStudents();
-  }, [currentPage, pageSize, searchText, selectedStatus, selectedCourse, enrollMonth, sortOrder]);
+  }, [currentPage, pageSize]);
+
+  // useEffect 仅在组件挂载时获取初始数据
+  useEffect(() => {
+    fetchStudents();
+  }, []); // 空依赖数组确保只运行一次
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -436,11 +452,12 @@ const StudentManagement: React.FC = () => {
 
   const handleReset = () => {
     setSearchText('');
-    setSelectedStatus('');
-    setSelectedCourse('');
+    setSelectedStatus(undefined);
+    setSelectedCourse(undefined);
     setEnrollMonth(null);
     setSortOrder(undefined);
     setCurrentPage(1);
+    // 重置后手动触发获取第一页数据
     fetchStudents();
   };
 
@@ -2227,120 +2244,142 @@ const StudentManagement: React.FC = () => {
       </Row>
 
       <Card style={{ marginBottom: 16 }}>
-        <Row justify="space-between" align="middle" gutter={[16, 16]}>
-          <Col xs={24} md={4}>
-            <Input
-              placeholder="搜索学员名称/ID/电话"
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              prefix={<SearchOutlined />}
-              allowClear
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={4}>
-            <Select
-              placeholder="选择状态"
-              style={{ width: '100%' }}
-              value={selectedStatus}
-              onChange={value => setSelectedStatus(value)}
-              allowClear
-            >
-              <Option value="active">在学</Option>
-              <Option value="inactive">停课</Option>
-              <Option value="pending">待处理</Option>
-            </Select>
-          </Col>
-          <Col xs={24} md={4}>
-            <Select
-              placeholder="选择课程"
-              style={{ width: '100%' }}
-              value={selectedCourse}
-              onChange={value => setSelectedCourse(value)}
-              allowClear
-            >
-              {courseOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} md={4}>
-            <MonthPicker
-              style={{ width: '100%' }}
-              placeholder="选择报名年月"
-              value={enrollMonth}
-              onChange={value => setEnrollMonth(value)}
-            />
-          </Col>
-          <Col xs={24} md={4}>
-            <Select
-              placeholder="排序方式"
-              style={{ width: '100%' }}
-              value={sortOrder}
-              onChange={value => setSortOrder(value)}
-              allowClear
-            >
-              <Option value="enrollDateAsc">
+        {/* 过滤和操作区域 */}
+        <Form layout="inline" style={{ marginBottom: 16 }}>
+          <Row gutter={[16, 16]} style={{ width: '100%' }}>
+            <Col flex={1}>
+              <Form.Item style={{ margin: 0, width: '100%' }}>
+                <Input
+                  placeholder="搜索学员名称/ID/电话"
+                  value={searchText}
+                  onChange={e => setSearchText(e.target.value)}
+                  prefix={<SearchOutlined />}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col flex={1}>
+              <Form.Item style={{ margin: 0, width: '100%' }}>
+                <Select
+                  placeholder="选择状态"
+                  style={{ width: '100%' }}
+                  value={selectedStatus}
+                  onChange={value => setSelectedStatus(value)}
+                  allowClear
+                >
+                  <Option value="active">在学</Option>
+                  <Option value="inactive">停课</Option>
+                  <Option value="pending">待处理</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col flex={1}>
+              <Form.Item style={{ margin: 0, width: '100%' }}>
+                <Select
+                  placeholder="选择课程"
+                  style={{ width: '100%' }}
+                  value={selectedCourse}
+                  onChange={value => setSelectedCourse(value)}
+                  allowClear
+                >
+                  {courseOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col flex={1}>
+              <Form.Item style={{ margin: 0, width: '100%' }}>
+                <MonthPicker
+                  style={{ width: '100%' }}
+                  placeholder="选择报名年月"
+                  value={enrollMonth}
+                  onChange={value => setEnrollMonth(value)}
+                  allowClear
+                  locale={locale}
+                  format="YYYY年MM月"
+                />
+              </Form.Item>
+            </Col>
+            <Col flex={1}>
+              <Form.Item style={{ margin: 0, width: '100%' }}>
+                <Select
+                  placeholder="排序方式"
+                  style={{ width: '100%' }}
+                  value={sortOrder}
+                  onChange={value => setSortOrder(value)}
+                  allowClear
+                >
+                  <Option value="enrollDateAsc">
+                    <Space>
+                      <SortAscendingOutlined />
+                      报名日期升序
+                    </Space>
+                  </Option>
+                  <Option value="enrollDateDesc">
+                    <Space>
+                      <SortDescendingOutlined />
+                      报名日期降序
+                    </Space>
+                  </Option>
+                  <Option value="ageAsc">
+                    <Space>
+                      <SortAscendingOutlined />
+                      年龄升序
+                    </Space>
+                  </Option>
+                  <Option value="ageDesc">
+                    <Space>
+                      <SortDescendingOutlined />
+                      年龄降序
+                    </Space>
+                  </Option>
+                  <Option value="remainingClassesAsc">
+                    <Space>
+                      <SortAscendingOutlined />
+                      剩余课时升序
+                    </Space>
+                  </Option>
+                  <Option value="remainingClassesDesc">
+                    <Space>
+                      <SortDescendingOutlined />
+                      剩余课时降序
+                    </Space>
+                  </Option>
+                  <Option value="lastClassDateAsc">
+                    <Space>
+                      <SortAscendingOutlined />
+                      上课时间升序
+                    </Space>
+                  </Option>
+                  <Option value="lastClassDateDesc">
+                    <Space>
+                      <SortDescendingOutlined />
+                      上课时间降序
+                    </Space>
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col>
+              <Form.Item style={{ margin: 0 }}>
                 <Space>
-                  <SortAscendingOutlined />
-                  报名日期升序
+                  {/* 点击查询按钮时触发数据获取 */}
+                  <Button type="primary" icon={<SearchOutlined />} onClick={() => fetchStudents()}>
+                    查询
+                  </Button>
+                  <Button icon={<ReloadOutlined />} onClick={handleReset}>
+                    重置
+                  </Button>
                 </Space>
-              </Option>
-              <Option value="enrollDateDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  报名日期降序
-                </Space>
-              </Option>
-              <Option value="ageAsc">
-                <Space>
-                  <SortAscendingOutlined />
-                  年龄升序
-                </Space>
-              </Option>
-              <Option value="ageDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  年龄降序
-                </Space>
-              </Option>
-              <Option value="remainingClassesAsc">
-                <Space>
-                  <SortAscendingOutlined />
-                  剩余课时升序
-                </Space>
-              </Option>
-              <Option value="remainingClassesDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  剩余课时降序
-                </Space>
-              </Option>
-              <Option value="lastClassDateAsc">
-                <Space>
-                  <SortAscendingOutlined />
-                  上课时间升序
-                </Space>
-              </Option>
-              <Option value="lastClassDateDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  上课时间降序
-                </Space>
-              </Option>
-            </Select>
-          </Col>
-          <Col xs={24} md={4}>
-            <Button icon={<ReloadOutlined />} onClick={handleReset} style={{ width: '100%' }}>
-              重置
-            </Button>
-          </Col>
-        </Row>
-      </Card>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
 
-      <Card>
+        {/* 表格区域 */}
         <Table
           columns={columns}
           dataSource={students}

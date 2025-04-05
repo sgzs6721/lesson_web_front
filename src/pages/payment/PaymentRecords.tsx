@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -32,6 +32,11 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import locale from 'antd/es/date-picker/locale/zh_CN';
+import './payment.css'; // 假设我们将创建这个CSS文件
+
+dayjs.locale('zh-cn');
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -162,14 +167,14 @@ const PaymentRecords: React.FC = () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      
+
       // 模拟API调用
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       if (editingId) {
-        setData(data.map(item => 
-          item.id === editingId ? 
-          { ...item, ...values, date: values.date.format('YYYY-MM-DD') } : 
+        setData(data.map(item =>
+          item.id === editingId ?
+          { ...item, ...values, date: values.date.format('YYYY-MM-DD') } :
           item
         ));
         message.success('付款记录更新成功');
@@ -183,7 +188,7 @@ const PaymentRecords: React.FC = () => {
         setData([...data, newPayment]);
         message.success('付款记录添加成功');
       }
-      
+
       setVisible(false);
     } catch (error) {
       console.error('提交错误:', error);
@@ -194,28 +199,28 @@ const PaymentRecords: React.FC = () => {
 
   const handleSearch = () => {
     let filteredData = mockData;
-    
+
     if (searchText) {
       filteredData = filteredData.filter(
-        item => item.studentName.includes(searchText) || 
+        item => item.studentName.includes(searchText) ||
                item.studentId.includes(searchText) ||
                item.course.includes(searchText) ||
                item.id.includes(searchText)
       );
     }
-    
+
     if (searchStatus) {
       filteredData = filteredData.filter(item => item.status === searchStatus);
     }
-    
+
     if (searchPaymentType) {
       filteredData = filteredData.filter(item => item.paymentType === searchPaymentType);
     }
-    
+
     if (searchPaymentMethod) {
       filteredData = filteredData.filter(item => item.paymentMethod === searchPaymentMethod);
     }
-    
+
     if (dateRange && dateRange[0] && dateRange[1]) {
       const startDate = dateRange[0].format('YYYY-MM-DD');
       const endDate = dateRange[1].format('YYYY-MM-DD');
@@ -223,7 +228,7 @@ const PaymentRecords: React.FC = () => {
         item => item.date >= startDate && item.date <= endDate
       );
     }
-    
+
     setData(filteredData);
   };
 
@@ -237,15 +242,47 @@ const PaymentRecords: React.FC = () => {
   };
 
   const exportData = () => {
-    message.success('导出成功');
+    try {
+      const exportedData = data.map(item => ({
+        日期: item.date,
+        学员姓名: item.studentName,
+        学员ID: item.studentId,
+        课程: item.course,
+        金额: item.amount,
+        课时类型: item.paymentType,
+        缴费类型: item.paymentMethod,
+        支付方式: item.status,
+        备注: item.remark,
+        操作员: item.operator
+      }));
+
+      const headers = Object.keys(exportedData[0]).join(',') + '\n';
+      const csv = exportedData.reduce((acc, row) => {
+        return acc + Object.values(row).join(',') + '\n';
+      }, headers);
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `付款记录_${dayjs().format('YYYY-MM-DD')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('导出错误:', error);
+      message.error('导出失败，请重试');
+    }
   };
 
   const totalIncome = data
     .filter(item => item.status === '微信支付' || item.status === '现金支付' || item.status === '支付宝支付' || item.status === '银行卡转账')
     .reduce((sum, item) => sum + item.amount, 0);
-  
+
   const pendingIncome = 0; // 没有待确认收入的状态
-  
+
   const refundedAmount = 0; // 没有退款的状态
 
   const columns: ColumnsType<Payment> = [
@@ -319,9 +356,9 @@ const PaymentRecords: React.FC = () => {
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="查看详情">
-            <Button 
-              type="text" 
-              icon={<EyeOutlined />} 
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
               onClick={() => handleReceipt(record)}
             />
           </Tooltip>
@@ -331,10 +368,10 @@ const PaymentRecords: React.FC = () => {
             okText="确定"
             cancelText="取消"
           >
-            <Button 
-              type="text" 
-              danger 
-              icon={<DeleteOutlined />} 
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
             />
           </Popconfirm>
         </Space>
@@ -342,10 +379,71 @@ const PaymentRecords: React.FC = () => {
     },
   ];
 
+  // 添加useEffect钩子来确保Select组件样式在组件挂载后应用
+  useEffect(() => {
+    // 添加自定义样式以确保placeholder显示
+    const style = document.createElement('style');
+    style.innerHTML = `
+      /* 强制显示所有选择器的placeholder */
+      .ant-select .ant-select-selection-placeholder,
+      .ant-select-selector .ant-select-selection-placeholder,
+      .ant-select-selection-placeholder,
+      .custom-select .ant-select-selection-placeholder,
+      .payment-records-container .ant-select-selection-placeholder,
+      #courseTypeSelect .ant-select-selection-placeholder,
+      #paymentTypeSelect .ant-select-selection-placeholder {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: rgba(0, 0, 0, 0.4) !important;
+        position: absolute !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        left: 11px !important;
+        right: auto !important;
+        transition: none !important;
+        pointer-events: none !important;
+        z-index: 100 !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // 确保选择框的placeholder正确显示
+    setTimeout(() => {
+      // 强制重新渲染选择器
+      const courseTypeSelect = document.getElementById('courseTypeSelect');
+      const paymentTypeSelect = document.getElementById('paymentTypeSelect');
+
+      if (courseTypeSelect) {
+        const placeholders = courseTypeSelect.querySelectorAll('.ant-select-selection-placeholder');
+        placeholders.forEach(placeholder => {
+          (placeholder as HTMLElement).style.display = 'inline-block';
+          (placeholder as HTMLElement).style.visibility = 'visible';
+          (placeholder as HTMLElement).style.opacity = '1';
+          (placeholder as HTMLElement).style.color = 'rgba(0, 0, 0, 0.4)';
+        });
+      }
+
+      if (paymentTypeSelect) {
+        const placeholders = paymentTypeSelect.querySelectorAll('.ant-select-selection-placeholder');
+        placeholders.forEach(placeholder => {
+          (placeholder as HTMLElement).style.display = 'inline-block';
+          (placeholder as HTMLElement).style.visibility = 'visible';
+          (placeholder as HTMLElement).style.opacity = '1';
+          (placeholder as HTMLElement).style.color = 'rgba(0, 0, 0, 0.4)';
+        });
+      }
+    }, 100);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   return (
     <div className="payment-records-container">
       <Title level={2}>缴费记录</Title>
-      
+
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={8}>
           <Card>
@@ -384,66 +482,143 @@ const PaymentRecords: React.FC = () => {
           </Card>
         </Col>
       </Row>
-      
-      <Card bordered={false}>
-        <div className="table-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <Space wrap align="center">
-            <Input
-              placeholder="搜索学员/ID/课程/收据编号"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 230 }}
-              prefix={<SearchOutlined />}
-            />
-            <Select
-              placeholder="请选择课时类型"
-              style={{ width: 150 }}
-              value={searchPaymentType}
-              onChange={(value) => setSearchPaymentType(value)}
-              allowClear
-            >
-              <Option value="30次课">30次课</Option>
-              <Option value="50次课">50次课</Option>
-              <Option value="100次课">100次课</Option>
-            </Select>
-            <Select
-              placeholder="请选择缴费类型"
-              style={{ width: 150 }}
-              value={searchPaymentMethod}
-              onChange={(value) => setSearchPaymentMethod(value)}
-              allowClear
-            >
-              <Option value="新增">新增</Option>
-              <Option value="退费">退费</Option>
-              <Option value="续费">续费</Option>
-              <Option value="补费">补费</Option>
-            </Select>
-            <DatePicker.RangePicker 
-              value={dateRange}
-              onChange={(dates) => setDateRange(dates)}
-              placeholder={['开始日期', '结束日期']}
-            />
-            <Button type="primary" onClick={handleSearch} icon={<SearchOutlined />}>
-              搜索
-            </Button>
-            <Button onClick={handleReset} icon={<ReloadOutlined />}>
-              重置
-            </Button>
-          </Space>
-          <Space>
-            <Button icon={<ExportOutlined />} onClick={exportData}>
-              导出
-            </Button>
-          </Space>
+
+      <Card>
+        <div className="table-toolbar" style={{ marginBottom: '16px' }}>
+          <Row gutter={16} align="middle" style={{ width: '100%' }}>
+            <Col flex="1">
+              <Input
+                placeholder="搜索学员/学员ID/课程"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ width: '100%' }}
+                prefix={<SearchOutlined />}
+              />
+            </Col>
+            <Col flex="1">
+              <Form.Item style={{ marginBottom: 0 }}>
+                <div className="select-container" style={{ position: 'relative' }}>
+                  <div className="select-placeholder" style={{
+                    position: 'absolute',
+                    left: '11px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'rgba(0, 0, 0, 0.4)',
+                    pointerEvents: 'none',
+                    display: searchPaymentType ? 'none' : 'block',
+                    zIndex: 1
+                  }}>
+                    选择课时类型
+                  </div>
+                  <Select
+                    style={{ width: '100%' }}
+                    value={searchPaymentType}
+                    onChange={(value) => setSearchPaymentType(value)}
+                    allowClear
+                    onClear={() => setSearchPaymentType('')}
+                    className="custom-select"
+                    popupClassName="custom-select-dropdown"
+                    showSearch={false}
+                    virtual={false}
+                    popupMatchSelectWidth={false}
+                    id="courseTypeSelect"
+                    notFoundContent={null}
+                  >
+                    <Option value="30次课">30次课</Option>
+                    <Option value="50次课">50次课</Option>
+                    <Option value="100次课">100次课</Option>
+                  </Select>
+                </div>
+              </Form.Item>
+            </Col>
+            <Col flex="1">
+              <Form.Item style={{ marginBottom: 0 }}>
+                <div className="select-container" style={{ position: 'relative' }}>
+                  <div className="select-placeholder" style={{
+                    position: 'absolute',
+                    left: '11px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'rgba(0, 0, 0, 0.4)',
+                    pointerEvents: 'none',
+                    display: searchPaymentMethod ? 'none' : 'block',
+                    zIndex: 1
+                  }}>
+                    选择缴费类型
+                  </div>
+                  <Select
+                    style={{ width: '100%' }}
+                    value={searchPaymentMethod}
+                    onChange={(value) => setSearchPaymentMethod(value)}
+                    allowClear
+                    onClear={() => setSearchPaymentMethod('')}
+                    className="custom-select"
+                    popupClassName="custom-select-dropdown"
+                    showSearch={false}
+                    virtual={false}
+                    popupMatchSelectWidth={false}
+                    id="paymentTypeSelect"
+                    notFoundContent={null}
+                  >
+                    <Option value="新增">新增</Option>
+                    <Option value="退费">退费</Option>
+                    <Option value="续费">续费</Option>
+                    <Option value="补费">补费</Option>
+                  </Select>
+                </div>
+              </Form.Item>
+            </Col>
+            <Col flex="1.5">
+              <DatePicker.RangePicker
+                value={dateRange}
+                onChange={(dates) => setDateRange(dates)}
+                placeholder={['开始日期', '结束日期']}
+                style={{ width: '100%' }}
+                locale={locale}
+                format="YYYY-MM-DD"
+              />
+            </Col>
+            <Col flex="0.7">
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                style={{ width: '100%' }}
+                onClick={handleSearch}
+              >
+                查询
+              </Button>
+            </Col>
+            <Col flex="0.7">
+              <Button
+                onClick={() => {
+                  handleReset();
+                  handleSearch();
+                }}
+                icon={<ReloadOutlined />}
+                style={{ width: '100%' }}
+              >
+                重置
+              </Button>
+            </Col>
+            <Col flex="0.7">
+              <Button
+                icon={<ExportOutlined />}
+                onClick={exportData}
+                style={{ width: '100%' }}
+              >
+                导出
+              </Button>
+            </Col>
+          </Row>
         </div>
-        <Table 
-          columns={columns} 
-          dataSource={data} 
+        <Table
+          columns={columns}
+          dataSource={data}
           rowKey="id"
           pagination={{ pageSize: 10 }}
         />
       </Card>
-      
+
       <Modal
         title={editingId ? "编辑付款记录" : "添加付款记录"}
         open={visible}
@@ -467,9 +642,14 @@ const PaymentRecords: React.FC = () => {
             name="date"
             rules={[{ required: true, message: '请选择日期' }]}
           >
-            <DatePicker style={{ width: '100%' }} placeholder="选择日期" />
+            <DatePicker
+              style={{ width: '100%' }}
+              placeholder="选择日期"
+              locale={locale}
+              format="YYYY-MM-DD"
+            />
           </Form.Item>
-          
+
           <Form.Item
             label="学员姓名"
             name="studentName"
@@ -477,26 +657,32 @@ const PaymentRecords: React.FC = () => {
           >
             <Input placeholder="请输入学员姓名" />
           </Form.Item>
-          
+
           <Form.Item
             name="studentId"
             hidden
           >
             <Input />
           </Form.Item>
-          
+
           <Form.Item
             label="课程"
             name="course"
             rules={[{ required: true, message: '请选择课程' }]}
           >
-            <Select placeholder="请选择课程">
+            <Select
+              placeholder="请选择课程"
+              className="custom-select"
+              popupClassName="custom-select-dropdown"
+              showSearch={false}
+              virtual={false}
+            >
               <Option value="游泳初级班">游泳初级班</Option>
               <Option value="游泳中级班">游泳中级班</Option>
               <Option value="游泳高级班">游泳高级班</Option>
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             label="金额"
             name="amount"
@@ -507,45 +693,63 @@ const PaymentRecords: React.FC = () => {
           >
             <Input type="number" prefix="¥" suffix="CNY" />
           </Form.Item>
-          
+
           <Form.Item
             label="课时类型"
             name="paymentType"
             rules={[{ required: true, message: '请选择课时类型' }]}
           >
-            <Select placeholder="请选择课时类型">
+            <Select
+              placeholder="请选择课时类型"
+              className="custom-select"
+              popupClassName="custom-select-dropdown"
+              showSearch={false}
+              virtual={false}
+            >
               <Option value="30次课">30次课</Option>
               <Option value="50次课">50次课</Option>
               <Option value="100次课">100次课</Option>
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             label="缴费类型"
             name="paymentMethod"
             rules={[{ required: true, message: '请选择缴费类型' }]}
           >
-            <Select placeholder="请选择缴费类型">
+            <Select
+              placeholder="请选择缴费类型"
+              className="custom-select"
+              popupClassName="custom-select-dropdown"
+              showSearch={false}
+              virtual={false}
+            >
               <Option value="新增">新增</Option>
               <Option value="退费">退费</Option>
               <Option value="续费">续费</Option>
               <Option value="补费">补费</Option>
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             label="支付状态"
             name="status"
             rules={[{ required: true, message: '请选择支付状态' }]}
           >
-            <Select placeholder="请选择支付状态">
+            <Select
+              placeholder="请选择支付状态"
+              className="custom-select"
+              popupClassName="custom-select-dropdown"
+              showSearch={false}
+              virtual={false}
+            >
               <Option value="微信支付">微信支付</Option>
               <Option value="现金支付">现金支付</Option>
               <Option value="支付宝支付">支付宝支付</Option>
               <Option value="银行卡转账">银行卡转账</Option>
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             label="备注"
             name="remark"
@@ -554,7 +758,7 @@ const PaymentRecords: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-      
+
       <Modal
         title="付款详情"
         open={receiptVisible}
@@ -571,7 +775,7 @@ const PaymentRecords: React.FC = () => {
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <h2>付款详情</h2>
             </div>
-            
+
             <Row gutter={[16, 16]}>
               <Col span={12}>
                 <p><strong>日期:</strong> {currentPayment.date}</p>
@@ -605,4 +809,4 @@ const PaymentRecords: React.FC = () => {
   );
 };
 
-export default PaymentRecords; 
+export default PaymentRecords;

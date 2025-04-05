@@ -36,7 +36,7 @@ import {
   FileImageOutlined,
   UnorderedListOutlined,
   AppstoreOutlined,
-  FilterOutlined,
+  ReloadOutlined, // 添加 ReloadOutlined
   SortAscendingOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -77,8 +77,9 @@ const CourseManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [sortOrder, setSortOrder] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined); // 初始值改为 undefined
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined); // 初始值改为 undefined
+  const [sortOrder, setSortOrder] = useState<string | undefined>(undefined); // 初始值改为 undefined
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
@@ -108,6 +109,13 @@ const CourseManagement: React.FC = () => {
     { value: 'latestUpdate', label: '最近更新' },
   ];
 
+  // 状态选项
+  const statusOptions = [
+    { value: 'active', label: '开课中' },
+    { value: 'inactive', label: '已停课' },
+    { value: 'pending', label: '待开课' },
+  ];
+
   // 模拟校区和教练数据
   const campusOptions = [
     { value: 'campus_1', label: '北京中关村校区' },
@@ -127,11 +135,21 @@ const CourseManagement: React.FC = () => {
     { value: 'coach_6', label: '林教练' },
   ];
 
+  // 修改 useEffect 依赖项
   useEffect(() => {
-    fetchCourses();
-  }, [currentPage, pageSize, searchText, selectedCategory, sortOrder]);
+    // 首次加载获取数据，传入 undefined 过滤条件
+    fetchCourses(currentPage, pageSize, searchText, selectedCategory, selectedStatus, sortOrder);
+  }, [currentPage, pageSize]); // 移除 searchText, selectedCategory, selectedStatus, sortOrder
 
-  const fetchCourses = async () => {
+  // 修改 fetchCourses 函数签名和逻辑
+  const fetchCourses = async (
+    page: number,
+    size: number,
+    search: string,
+    category: string | undefined, // 允许 undefined
+    status: string | undefined,   // 允许 undefined
+    sort: string | undefined      // 允许 undefined
+  ) => {
     setLoading(true);
     try {
       // 模拟API调用
@@ -176,24 +194,29 @@ const CourseManagement: React.FC = () => {
         });
 
       // 过滤数据
+      // 使用传入的参数进行过滤
       let filteredData = mockData;
-      
-      if (searchText) {
+
+      if (search) {
         filteredData = filteredData.filter(
-          course => 
-            course.name.includes(searchText) || 
-            course.id.includes(searchText) ||
-            course.description.includes(searchText)
+          course =>
+            course.name.toLowerCase().includes(search.toLowerCase()) ||
+            course.id.toLowerCase().includes(search.toLowerCase())
         );
       }
-      
-      if (selectedCategory) {
-        filteredData = filteredData.filter(course => course.category === selectedCategory);
+
+      if (category) {
+        filteredData = filteredData.filter(course => course.category === category);
+      }
+
+      if (status) { // 添加状态过滤
+        filteredData = filteredData.filter(course => course.status === status);
       }
       
       // 排序
-      if (sortOrder) {
-        switch (sortOrder) {
+      // 排序
+      if (sort) {
+        switch (sort) {
           case 'priceAsc':
             filteredData.sort((a, b) => a.unitPrice - b.unitPrice);
             break;
@@ -221,8 +244,9 @@ const CourseManagement: React.FC = () => {
       }
 
       // 分页
-      const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
+      // 分页
+      const start = (page - 1) * size;
+      const end = start + size;
       const paginatedData = filteredData.slice(start, end);
       
       setTotal(filteredData.length);
@@ -235,12 +259,21 @@ const CourseManagement: React.FC = () => {
     }
   };
 
+  // 创建 handleSearch 函数
+  const handleSearch = () => {
+    setCurrentPage(1); // 重置到第一页
+    fetchCourses(1, pageSize, searchText, selectedCategory, selectedStatus, sortOrder);
+  };
+
+  // 修改 handleReset 函数
   const handleReset = () => {
     setSearchText('');
-    setSelectedCategory('');
-    setSortOrder('');
+    setSelectedCategory(undefined); // 重置为 undefined
+    setSelectedStatus(undefined);   // 重置为 undefined
+    setSortOrder(undefined);     // 重置为 undefined
     setCurrentPage(1);
-    fetchCourses();
+    // 不再自动调用 fetchCourses，除非需要重置后立即显示所有数据
+    // fetchCourses(1, pageSize, '', '', '', ''); // 如果需要重置后查询，取消注释此行
   };
 
   const showAddModal = () => {
@@ -491,20 +524,25 @@ const CourseManagement: React.FC = () => {
         </Col>
       </Row>
 
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8} lg={8}>
+      {/* 过滤条件的 Card 已移除 */}
+
+      {/* 合并 Card，修改过滤行 */}
+      <Card>
+        {/* 过滤条件行 */}
+        <Row gutter={[16, 16]} align="middle" style={{ marginBottom: 24 }}>
+          <Col xs={24} sm={12} md={6} lg={5}>
             <Input
-              placeholder="搜索课程名称/ID"
+              placeholder="搜索课程名称" // 修改 placeholder
               value={searchText}
               onChange={e => setSearchText(e.target.value)}
               prefix={<SearchOutlined />}
               allowClear
+              onPressEnter={handleSearch} // 添加回车搜索
             />
           </Col>
-          <Col xs={24} sm={7} lg={7}>
+          <Col xs={24} sm={12} md={6} lg={5}>
             <Select
-              placeholder="选择课程分类"
+              placeholder="选择课程分类" // 确认 placeholder
               style={{ width: '100%' }}
               value={selectedCategory}
               onChange={value => setSelectedCategory(value)}
@@ -517,7 +555,23 @@ const CourseManagement: React.FC = () => {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={7} lg={7}>
+          <Col xs={24} sm={12} md={6} lg={5}>
+            {/* 添加状态过滤 */}
+            <Select
+              placeholder="选择课程状态"
+              style={{ width: '100%' }}
+              value={selectedStatus}
+              onChange={value => setSelectedStatus(value)}
+              allowClear
+            >
+              {statusOptions.map(option => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={6} lg={5}>
             <Select
               placeholder="排序方式"
               style={{ width: '100%' }}
@@ -533,18 +587,28 @@ const CourseManagement: React.FC = () => {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={2} lg={2} style={{ textAlign: 'right' }}>
-            <Button 
-              icon={<FilterOutlined />} 
-              onClick={handleReset}
-            >
-              重置
-            </Button>
+          {/* 将按钮放在一个 Col 中，居中对齐 */}
+          <Col xs={24} lg={4} style={{ display: 'flex', justifyContent: 'center' }}>
+             {/* 使用 Space 控制按钮间距 */}
+             <Space size="middle">
+               <Button
+                 type="primary"
+                 icon={<SearchOutlined />} // 查询按钮
+                 onClick={handleSearch}
+               >
+                 查询
+               </Button>
+               <Button
+                 icon={<ReloadOutlined />} // 修改重置图标
+                 onClick={handleReset}
+               >
+                 重置
+               </Button>
+             </Space>
           </Col>
         </Row>
-      </Card>
 
-      <Card>
+        {/* 表格或卡片视图 */}
         {viewMode === 'list' ? (
           <Table
             columns={columns}
@@ -558,9 +622,11 @@ const CourseManagement: React.FC = () => {
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: total => `共 ${total} 条记录`,
-              onChange: (page, pageSize) => {
+              onChange: (page, size) => {
                 setCurrentPage(page);
-                setPageSize(pageSize);
+                setPageSize(size);
+                // 分页变化时触发查询
+                fetchCourses(page, size, searchText, selectedCategory, selectedStatus, sortOrder);
               },
             }}
           />
@@ -584,9 +650,11 @@ const CourseManagement: React.FC = () => {
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: total => `共 ${total} 条记录`,
-              onChange: (page, pageSize) => {
+              onChange: (page, size) => {
                 setCurrentPage(page);
-                setPageSize(pageSize);
+                setPageSize(size);
+                 // 分页变化时触发查询
+                fetchCourses(page, size, searchText, selectedCategory, selectedStatus, sortOrder);
               },
             }}
             renderItem={item => (
