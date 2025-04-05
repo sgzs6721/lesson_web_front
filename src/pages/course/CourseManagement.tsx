@@ -37,7 +37,8 @@ import {
   UnorderedListOutlined,
   AppstoreOutlined,
   ReloadOutlined, // 添加 ReloadOutlined
-  SortAscendingOutlined
+  SortAscendingOutlined,
+  InfoCircleOutlined // 更换详情图标
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile } from 'antd/es/upload/interface';
@@ -87,6 +88,8 @@ const CourseManagement: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string>('');
   const [deletingCourseName, setDeletingCourseName] = useState<string>('');
+  const [detailModalVisible, setDetailModalVisible] = useState(false); // 添加详情模态框状态
+  const [detailCourse, setDetailCourse] = useState<Course | null>(null); // 添加详情课程状态
 
   // 模拟课程分类
   const categoryOptions = [
@@ -291,6 +294,12 @@ const CourseManagement: React.FC = () => {
     setIsModalVisible(true);
   };
 
+  // 添加显示详情模态框函数
+  const showDetailModal = (record: Course) => {
+    setDetailCourse(record);
+    setDetailModalVisible(true);
+  };
+
   const handleModalOk = () => {
     form.validateFields()
       .then(values => {
@@ -450,6 +459,14 @@ const CourseManagement: React.FC = () => {
               size="small" 
               icon={<EditOutlined />} 
               onClick={() => showEditModal(record)} 
+            />
+          </Tooltip>
+          <Tooltip title="详情">
+            <Button 
+              type="text" 
+              size="small" 
+              icon={<InfoCircleOutlined />} 
+              onClick={() => showDetailModal(record)} 
             />
           </Tooltip>
           <Tooltip title="删除">
@@ -843,6 +860,128 @@ const CourseManagement: React.FC = () => {
       >
         <p>确定要删除课程 <strong>{deletingCourseName}</strong> 吗？</p>
         <p>此操作不可恢复，删除后数据将无法找回。</p>
+      </Modal>
+
+      {/* 添加详情模态框 */}
+      <Modal
+        title="课程详情"
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setDetailModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={800}
+      >
+        {detailCourse && (
+          <div>
+            <div style={{ borderBottom: '1px solid #f0f0f0', marginBottom: 16, paddingBottom: 8 }}></div>
+            
+            {/* 课程基本信息 */}
+            <div style={{ marginBottom: 16 }}>
+              <Title level={5} style={{ marginBottom: 12, color: '#1890ff' }}>
+                <BookOutlined style={{ marginRight: 8 }} /> 基本信息
+              </Title>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>课程名称</div>
+                    <div style={{ fontSize: 14 }}>{detailCourse.name}</div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>课程类型</div>
+                    <div style={{ fontSize: 14 }}>{getCategoryName(detailCourse.category)}</div>
+                  </div>
+                </Col>
+              </Row>
+              
+              <Row gutter={16}>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>课程状态</div>
+                    <div>{renderStatusTag(detailCourse.status)}</div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>上课教练</div>
+                    <div style={{ fontSize: 14 }}>{getCoachNames(detailCourse.coaches)}</div>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+            
+            {/* 课程课时信息 */}
+            <div style={{ marginBottom: 16 }}>
+              <Title level={5} style={{ marginBottom: 12, color: '#1890ff' }}>
+                <ClockCircleOutlined style={{ marginRight: 8 }} /> 课时信息
+              </Title>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>每次消耗课时</div>
+                    <div style={{ fontSize: 14 }}>{detailCourse.hoursPerClass} 小时</div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>课筹单价(元)</div>
+                    <div style={{ fontSize: 14, color: '#f5222d' }}>¥{detailCourse.unitPrice}</div>
+                  </div>
+                </Col>
+              </Row>
+              
+              <Row gutter={16}>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>总课时</div>
+                    <div style={{ fontSize: 14 }}>{detailCourse.totalHours} 小时</div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>已销课时</div>
+                    <div style={{ fontSize: 14 }}>{detailCourse.consumedHours} 小时</div>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+            
+            {/* 课程描述和时间信息 */}
+            <div style={{ marginBottom: 16 }}>
+              <Title level={5} style={{ marginBottom: 12, color: '#1890ff' }}>
+                <FileImageOutlined style={{ marginRight: 8 }} /> 课程描述
+              </Title>
+              <div style={{ padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4, minHeight: 60 }}>
+                {detailCourse.description || '暂无描述'}
+              </div>
+            </div>
+
+            {/* 时间信息 */}
+            <div>
+              <Title level={5} style={{ marginBottom: 12, color: '#1890ff' }}>
+                <CalendarOutlined style={{ marginRight: 8 }} /> 时间信息
+              </Title>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <div style={{ padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>创建时间</div>
+                    <div style={{ fontSize: 14 }}>{dayjs(detailCourse.createdAt).format('YYYY-MM-DD HH:mm')}</div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>更新时间</div>
+                    <div style={{ fontSize: 14 }}>{dayjs(detailCourse.updatedAt).format('YYYY-MM-DD HH:mm')}</div>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -17,7 +17,8 @@ import {
   Tag,
   Popconfirm,
   Badge,
-  Tooltip
+  Tooltip,
+  Divider
 } from 'antd';
 import {
   PlusOutlined,
@@ -28,7 +29,7 @@ import {
   ReloadOutlined,
   DollarOutlined,
   PrinterOutlined,
-  EyeOutlined
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -38,7 +39,7 @@ import './payment.css'; // 假设我们将创建这个CSS文件
 
 dayjs.locale('zh-cn');
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
@@ -137,6 +138,8 @@ const PaymentRecords: React.FC = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [receiptVisible, setReceiptVisible] = useState(false);
   const [currentPayment, setCurrentPayment] = useState<Payment | null>(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<string | null>(null);
 
   const handleAdd = () => {
     form.resetFields();
@@ -156,6 +159,59 @@ const PaymentRecords: React.FC = () => {
   const handleDelete = (id: string) => {
     setData(data.filter(item => item.id !== id));
     message.success('删除成功');
+    setDeleteModalVisible(false);
+    setRecordToDelete(null);
+  };
+
+  const showDeleteConfirm = (id: string) => {
+    setRecordToDelete(id);
+    setDeleteModalVisible(true);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalVisible(false);
+    setRecordToDelete(null);
+  };
+
+  const handlePrint = () => {
+    const printContent = document.querySelector('.payment-receipt-content');
+    if (printContent) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>付款详情</title>
+              <style>
+                body { font-family: sans-serif; }
+                .payment-receipt-content { padding: 20px; }
+                h2 { text-align: center; margin-bottom: 20px; font-size: 1.5em; }
+                .details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 20px; margin-bottom: 20px; }
+                .details-grid p { margin: 5px 0; }
+                .details-grid strong { margin-right: 8px; }
+                .remark-section { margin-bottom: 20px; }
+                .amount-section { text-align: right; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
+                .amount-section h3 { font-size: 1.2em; margin: 0; }
+              </style>
+            </head>
+            <body>
+              ${printContent.innerHTML}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        // Timeout needed for some browsers to ensure content is loaded before print dialog
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 250);
+      } else {
+        message.error('无法打开打印窗口，请检查浏览器设置');
+      }
+    } else {
+      message.error('无法找到打印内容');
+    }
   };
 
   const handleReceipt = (record: Payment) => {
@@ -291,17 +347,20 @@ const PaymentRecords: React.FC = () => {
       dataIndex: 'date',
       key: 'date',
       sorter: (a, b) => a.date.localeCompare(b.date),
+      align: 'center',
     },
     {
       title: '学员',
       dataIndex: 'studentName',
       key: 'studentName',
       render: (text, record) => `${text} (${record.studentId})`,
+      align: 'center',
     },
     {
       title: '课程',
       dataIndex: 'course',
       key: 'course',
+      align: 'center',
     },
     {
       title: '金额 (¥)',
@@ -309,21 +368,36 @@ const PaymentRecords: React.FC = () => {
       key: 'amount',
       sorter: (a, b) => a.amount - b.amount,
       render: (amount) => `¥${amount.toLocaleString('zh-CN')}`,
+      align: 'center',
     },
     {
       title: '课时类型',
       dataIndex: 'paymentType',
       key: 'paymentType',
+      align: 'center',
+      render: (type) => <Tag color="blue">{type}</Tag>,
     },
     {
       title: '缴费类型',
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
+      align: 'center',
+      render: (method) => {
+        let color = 'default';
+        switch (method) {
+          case '新增': color = 'green'; break;
+          case '续费': color = 'cyan'; break;
+          case '补费': color = 'orange'; break;
+          case '退费': color = 'red'; break;
+        }
+        return <Tag color={color}>{method}</Tag>;
+      },
     },
     {
       title: '支付类型',
       dataIndex: 'status',
       key: 'status',
+      align: 'center',
       render: (status) => {
         let color = '';
         let text = '';
@@ -353,27 +427,24 @@ const PaymentRecords: React.FC = () => {
     {
       title: '操作',
       key: 'action',
+      align: 'center',
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="查看详情">
             <Button
               type="text"
-              icon={<EyeOutlined />}
+              icon={<InfoCircleOutlined />}
               onClick={() => handleReceipt(record)}
             />
           </Tooltip>
-          <Popconfirm
-            title="确定删除此记录吗?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
-          >
+          <Tooltip title="删除">
             <Button
               type="text"
               danger
               icon={<DeleteOutlined />}
+              onClick={() => showDeleteConfirm(record.id)}
             />
-          </Popconfirm>
+          </Tooltip>
         </Space>
       ),
     },
@@ -446,7 +517,7 @@ const PaymentRecords: React.FC = () => {
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={8}>
-          <Card>
+          <Card style={{ textAlign: 'center' }}>
             <Statistic
               title="课时流水"
               value={totalIncome}
@@ -458,7 +529,7 @@ const PaymentRecords: React.FC = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card>
+          <Card style={{ textAlign: 'center' }}>
             <Statistic
               title="其他收入"
               value={pendingIncome}
@@ -470,7 +541,7 @@ const PaymentRecords: React.FC = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card>
+          <Card style={{ textAlign: 'center' }}>
             <Statistic
               title="退款金额"
               value={refundedAmount}
@@ -616,6 +687,11 @@ const PaymentRecords: React.FC = () => {
           dataSource={data}
           rowKey="id"
           pagination={{ pageSize: 10 }}
+          locale={{
+            triggerDesc: '点击降序',
+            triggerAsc: '点击升序',
+            cancelSort: '取消排序'
+          }}
         />
       </Card>
 
@@ -760,50 +836,72 @@ const PaymentRecords: React.FC = () => {
       </Modal>
 
       <Modal
-        title="付款详情"
         open={receiptVisible}
         onCancel={() => setReceiptVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setReceiptVisible(false)}>
-            关闭
-          </Button>
-        ]}
+        footer={
+          <div key="footer-wrapper" style={{ borderTop: '1px solid #f0f0f0', paddingTop: '12px', marginTop: '0px', textAlign: 'right' }}>
+            <Space>
+              <Button key="print" icon={<PrinterOutlined />} onClick={handlePrint}>
+                打印
+              </Button>
+              <Button key="close" onClick={() => setReceiptVisible(false)}>
+                关闭
+              </Button>
+            </Space>
+          </div>
+        }
         width={600}
+        closable={true}
       >
         {currentPayment && (
-          <div className="payment-receipt" style={{ padding: '20px', border: '1px solid #d9d9d9' }}>
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <h2>付款详情</h2>
+          <div className="payment-receipt-content" style={{ padding: '24px' }}>
+            <Title level={3} style={{ textAlign: 'center', marginBottom: '24px' }}>付款详情</Title>
+            <div className="details-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px 64px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Text strong>日期:</Text>
+                <Text>{currentPayment.date}</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Text strong>状态:</Text>
+                <Text>{currentPayment.status}</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Text strong>学员姓名:</Text>
+                <Text>{currentPayment.studentName} ({currentPayment.studentId})</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Text strong>课程:</Text>
+                <Text>{currentPayment.course}</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Text strong>课时类型:</Text>
+                <Text>{currentPayment.paymentType}</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Text strong>缴费类型:</Text>
+                <Text>{currentPayment.paymentMethod}</Text>
+              </div>
             </div>
-
-            <Row gutter={[16, 16]}>
-              <Col span={12}>
-                <p><strong>日期:</strong> {currentPayment.date}</p>
-              </Col>
-              <Col span={12}>
-                <p><strong>状态:</strong> {currentPayment.status}</p>
-              </Col>
-              <Col span={12}>
-                <p><strong>学员姓名:</strong> {currentPayment.studentName}</p>
-              </Col>
-              <Col span={12}>
-                <p><strong>课程:</strong> {currentPayment.course}</p>
-              </Col>
-              <Col span={12}>
-                <p><strong>课时类型:</strong> {currentPayment.paymentType}</p>
-              </Col>
-              <Col span={12}>
-                <p><strong>缴费类型:</strong> {currentPayment.paymentMethod}</p>
-              </Col>
-              <Col span={24}>
-                <p><strong>备注:</strong> {currentPayment.remark}</p>
-              </Col>
-              <Col span={24} style={{ borderTop: '1px solid #d9d9d9', paddingTop: '15px', textAlign: 'right' }}>
-                <h3>金额: ¥{currentPayment.amount.toLocaleString('zh-CN')}</h3>
-              </Col>
-            </Row>
+            <div className="remark-section" style={{ marginBottom: '20px' }}>
+              <Text strong>备注:</Text> <Text>{currentPayment.remark || '无'}</Text>
+            </div>
+            <div className="amount-section" style={{ paddingTop: '16px', marginTop: '8px', textAlign: 'right' }}>
+              <Title level={4} style={{ margin: 0 }}>金额: ¥{currentPayment.amount.toLocaleString('zh-CN')}</Title>
+            </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        title="确认删除"
+        open={deleteModalVisible}
+        onOk={() => recordToDelete && handleDelete(recordToDelete)}
+        onCancel={handleCancelDelete}
+        okText="确定"
+        cancelText="取消"
+        okButtonProps={{ danger: true }}
+      >
+        <p>您确定要删除这条缴费记录吗？此操作不可撤销。</p>
       </Modal>
     </div>
   );

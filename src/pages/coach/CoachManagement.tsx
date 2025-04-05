@@ -19,7 +19,8 @@ import {
   Radio,
   DatePicker,
   Avatar,
-  List
+  List,
+  Descriptions
 } from 'antd';
 import {
   PlusOutlined,
@@ -36,7 +37,8 @@ import {
   TableOutlined,
   AppstoreOutlined,
   SortAscendingOutlined,
-  ReloadOutlined // 添加 ReloadOutlined 图标
+  ReloadOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -73,10 +75,16 @@ interface Coach {
   experience: number;
   status: 'active' | 'vacation' | 'resigned';
   hireDate: string;
+  baseSalary?: number;
+  socialSecurity?: number;
+  hourlyRate?: number;
+  performanceBonus?: number;
+  commission?: number;
+  dividend?: number;
 }
 
 type ViewMode = 'table' | 'card';
-type SortField = 'experience' | 'hireDate' | 'none';
+type SortField = 'experience' | 'hireDate';
 
 const CoachManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -85,14 +93,18 @@ const CoachManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined); // 明确类型并设为 undefined
-  const [sortField, setSortField] = useState<SortField>('none');
-  const [selectedJobTitle, setSelectedJobTitle] = useState<string | undefined>(undefined); // 明确类型并设为 undefined
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
+  const [sortField, setSortField] = useState<SortField | undefined>(undefined);
+  const [selectedJobTitle, setSelectedJobTitle] = useState<string | undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCoach, setEditingCoach] = useState<Coach | null>(null);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [form] = Form.useForm();
+
+  // Add state for details modal
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [viewingCoach, setViewingCoach] = useState<Coach | null>(null);
 
   // 模拟获取教练数据 - 初始加载
   useEffect(() => {
@@ -128,6 +140,12 @@ const CoachManagement: React.FC = () => {
             experience: 1 + (index % 15),
             status: index % 7 === 0 ? 'vacation' : index % 11 === 0 ? 'resigned' : 'active',
             hireDate: dayjs().subtract(index % 1000, 'day').format('YYYY-MM-DD'),
+            baseSalary: 5000 + (index % 10) * 500,
+            socialSecurity: 500 + (index % 5) * 50,
+            hourlyRate: 100 + (index % 8) * 10,
+            performanceBonus: (index % 3) * 1000,
+            commission: 5 + (index % 10),
+            dividend: (index % 4) * 500,
           };
         });
 
@@ -153,7 +171,7 @@ const CoachManagement: React.FC = () => {
       }
 
       // 排序
-      if (sortField !== 'none') {
+      if (sortField) {
         filteredData = [...filteredData].sort((a, b) => {
           if (sortField === 'experience') {
             return b.experience - a.experience;
@@ -182,10 +200,10 @@ const CoachManagement: React.FC = () => {
   // 处理搜索和筛选重置
   const handleReset = () => {
     setSearchText('');
-    setSelectedStatus(undefined); // 重置为 undefined (保持不变)
-    setSelectedJobTitle(undefined); // 重置职位为 undefined (保持不变)
-    setSortField('none');
-    setCurrentPage(1); // 重置到第一页
+    setSelectedStatus(undefined);
+    setSelectedJobTitle(undefined);
+    setSortField(undefined);
+    setCurrentPage(1);
     // fetchCoaches(); // 移除自动调用，查询通过按钮触发
     // 如果希望重置后立即看到结果，可以取消下面一行的注释
     // fetchCoaches();
@@ -399,7 +417,7 @@ const CoachManagement: React.FC = () => {
       key: 'certifications',
       ellipsis: true,
       width: 200,
-      align: 'center',
+      align: 'left',
     },
     {
       title: '状态',
@@ -421,6 +439,14 @@ const CoachManagement: React.FC = () => {
               size="small" 
               icon={<EditOutlined />} 
               onClick={() => showEditModal(record)} 
+            />
+          </Tooltip>
+          <Tooltip title="查看详情">
+            <Button
+              type="text"
+              size="small"
+              icon={<InfoCircleOutlined />}
+              onClick={() => showDetailModal(record)}
             />
           </Tooltip>
           <Tooltip title="删除">
@@ -508,7 +534,7 @@ const CoachManagement: React.FC = () => {
                   style={{ marginRight: 16 }}
                 />
                 <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <Row gutter={[8, 4]}>
+                  <Row gutter={[8, 4]} justify="space-between">
                     <Col span={14}>
                       <div style={{ fontWeight: 'bold', fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {coach.name}
@@ -541,6 +567,12 @@ const CoachManagement: React.FC = () => {
         )}
       />
     );
+  };
+
+  // Show coach details modal
+  const showDetailModal = (record: Coach) => {
+    setViewingCoach(record);
+    setIsDetailModalVisible(true);
   };
 
   return (
@@ -612,13 +644,12 @@ const CoachManagement: React.FC = () => {
           </Col>
           <Col style={{ flex: 1, minWidth: '150px' }}>
             <Select
-              placeholder="排序方式"
+              placeholder="默认排序"
               style={{ width: '100%' }}
               value={sortField}
               onChange={value => setSortField(value)}
               allowClear
             >
-              <Option value="none">默认排序</Option>
               <Option value="experience">按教龄排序</Option>
               <Option value="hireDate">按入职日期排序</Option>
             </Select>
@@ -914,6 +945,58 @@ const CoachManagement: React.FC = () => {
             </Col>
           </Row>
         </Form>
+      </Modal>
+
+      {/* Coach Details Modal */}
+      <Modal
+        title="教练详情"
+        open={isDetailModalVisible}
+        onCancel={() => setIsDetailModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setIsDetailModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={700} // Adjust width as needed
+      >
+        {viewingCoach && (
+          <Descriptions bordered column={2} size="small">
+            <Descriptions.Item label="教练ID" span={1}>{viewingCoach.id}</Descriptions.Item>
+            <Descriptions.Item label="年龄" span={1}>{viewingCoach.age}</Descriptions.Item>
+            
+            <Descriptions.Item label="姓名" span={1}>
+              <Space>
+                {viewingCoach.avatar && <Avatar size="small" src={viewingCoach.avatar} />}
+                {viewingCoach.name}
+                {viewingCoach.gender === 'male' ? 
+                  <span style={{ color: '#1890ff' }}>♂</span> : 
+                  <span style={{ color: '#eb2f96' }}>♀</span>
+                }
+              </Space>
+            </Descriptions.Item>
+            <Descriptions.Item label="状态" span={1}>{renderStatusTag(viewingCoach.status)}</Descriptions.Item>
+
+            <Descriptions.Item label="联系电话" span={1}>{viewingCoach.phone}</Descriptions.Item>
+            <Descriptions.Item label="职位" span={1}>{viewingCoach.jobTitle}</Descriptions.Item>
+
+            <Descriptions.Item label="入职日期" span={1}>{dayjs(viewingCoach.hireDate).format('YYYY-MM-DD')}</Descriptions.Item>
+            <Descriptions.Item label="教龄" span={1}>{`${viewingCoach.experience}年`}</Descriptions.Item>
+
+            <Descriptions.Item label="证书" span={2}>
+              {viewingCoach.certifications.split('，').map((cert, index) => (
+                <Tag key={index} style={{ marginBottom: 4 }}>{cert.trim()}</Tag>
+              ))}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="基本工资" span={1}>{`¥${viewingCoach.baseSalary?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+            <Descriptions.Item label="社保费" span={1}>{`¥${viewingCoach.socialSecurity?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+            <Descriptions.Item label="课时费" span={1}>{`¥${viewingCoach.hourlyRate?.toLocaleString() ?? 'N/A'} /时`}</Descriptions.Item>
+            <Descriptions.Item label="绩效奖金" span={1}>{`¥${viewingCoach.performanceBonus?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+            <Descriptions.Item label="提成" span={1}>{`${viewingCoach.commission ?? 'N/A'}%`}</Descriptions.Item>
+            <Descriptions.Item label="分红" span={1}>{`¥${viewingCoach.dividend?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+
+          </Descriptions>
+        )}
       </Modal>
     </div>
   );
