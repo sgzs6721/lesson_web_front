@@ -31,9 +31,10 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards }) =>
                 <span style={{ 
                   color: students[i].status === '已完成' ? '#27ae60' : students[i].status === '请假' ? '#e74c3c' : 'transparent', 
                   fontSize: '12px', 
-                  fontWeight: 500 
+                  fontWeight: 500,
+                  visibility: students[i].status !== 'empty' ? 'visible' : 'hidden'
                 }}>
-                  {students[i].status !== 'empty' ? students[i].status : ''}
+                  {students[i].status !== 'empty' ? students[i].status : '占位'}
                 </span>
               </>
             )}
@@ -47,9 +48,10 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards }) =>
                 <span style={{ 
                   color: students[i+1].status === '已完成' ? '#27ae60' : students[i+1].status === '请假' ? '#e74c3c' : 'transparent', 
                   fontSize: '12px', 
-                  fontWeight: 500 
+                  fontWeight: 500,
+                  visibility: students[i+1].status !== 'empty' ? 'visible' : 'hidden'
                 }}>
-                  {students[i+1].status !== 'empty' ? students[i+1].status : ''}
+                  {students[i+1].status !== 'empty' ? students[i+1].status : '占位'}
                 </span>
               </>
             )}
