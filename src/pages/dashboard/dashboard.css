@@ -1,0 +1,326 @@
+/* Dashboard 通用样式 */
+.dashboard-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.dashboard-card .card-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-card .card-title {
+  font-weight: 600;
+  color: #34495e;
+  margin: 0;
+}
+
+.dashboard-card .card-body {
+  padding: 20px;
+}
+
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 16px;
+  color: #7f8c8d;
+}
+
+/* 统计条样式 */
+.stats-bar {
+  display: flex;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-item {
+  flex: 1;
+  padding: 12px 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.stat-unit {
+  font-size: 13px;
+  margin-left: 2px;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+.stat-divider {
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 教练卡片样式 */
+.coach-card {
+  flex: 1;
+  min-width: 300px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  padding: 15px;
+}
+
+.student-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.student-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.student-item:last-child {
+  border-bottom: none;
+}
+
+/* 出勤表格样式 */
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th {
+  background-color: #f5f7fa;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.attendance-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #2d3748;
+}
+
+.attendance-table tbody tr:hover {
+  background-color: rgba(245, 247, 250, 0.5);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+}
+
+.badge-warning {
+  background-color: rgba(241, 196, 15, 0.15);
+  color: #f39c12;
+}
+
+.badge-danger {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+/* 按钮样式 */
+.btn-batch-punch {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-batch-punch:hover {
+  background-color: #2980b9;
+}
+
+.btn-punch {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  width: 60px;
+  height: 30px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.btn-leave {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  width: 60px;
+  height: 30px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* 教练课时表格样式 */
+.coach-lessons-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.coach-lessons-table th {
+  background-color: #f5f7fa;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.coach-lessons-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #2d3748;
+}
+
+.coach-lessons-table tfoot {
+  background-color: #f8fafc;
+  font-weight: 600;
+}
+
+.coach-lessons-table tfoot td {
+  border-top: 2px solid #e2e8f0;
+}
+
+/* 数据总览网格样式 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.stat-box {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-box-title {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin-bottom: 8px;
+}
+
+.stat-box-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.stat-box-subtitle {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.stat-highlight {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.stat-highlight-alt {
+  color: #e67e22;
+  font-weight: 600;
+}
+
+.stat-highlight-primary {
+  color: #3498db;
+  font-weight: 600;
+}
+
+/* 切换按钮样式 */
+.period-tabs {
+  display: flex;
+  background-color: #f1f2f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.period-tab {
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #7f8c8d;
+  transition: all 0.2s;
+}
+
+.period-tab.active {
+  background-color: #3498db;
+  color: white;
+  font-weight: 500;
+}
+
+/* 响应式布局 */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+} 
