@@ -217,6 +217,32 @@ export const useDashboardData = () => {
         status: '已请假',
         isChecked: false,
         isDisabled: true
+      },
+      {
+        id: '4',
+        studentName: '刘强',
+        time: '09:00-10:00',
+        coach: '李教练',
+        remainingLessons: '5/20',
+        courseType: '未打卡',
+        salesAmount: '¥1,800',
+        remainingAmount: '¥1,800',
+        status: '未打卡',
+        isChecked: false,
+        isDisabled: false
+      },
+      {
+        id: '5',
+        studentName: '周丽',
+        time: '11:00-12:00',
+        coach: '王教练',
+        remainingLessons: '3/12',
+        courseType: '未打卡',
+        salesAmount: '¥1,200',
+        remainingAmount: '¥1,200',
+        status: '未打卡',
+        isChecked: false,
+        isDisabled: false
       }
     ]);
   }, []);
@@ -254,8 +280,12 @@ export const useDashboardData = () => {
 
   // 批量打卡
   const handleBatchPunch = () => {
+    let punchedCount = 0;
+    
     const updatedRecords = attendanceRecords.map(record => {
-      if (record.isChecked && !record.isDisabled) {
+      // 只处理"未打卡"且被选中的记录
+      if (record.isChecked && record.status === '未打卡' && !record.isDisabled) {
+        punchedCount++;
         return {
           ...record,
           status: '已打卡' as const,
@@ -267,7 +297,7 @@ export const useDashboardData = () => {
     });
     
     setAttendanceRecords(updatedRecords);
-    return updatedRecords.filter(record => record.isChecked && !record.isDisabled).length;
+    return punchedCount;
   };
 
   // 选择/取消选择出勤记录

@@ -88,23 +88,58 @@
 /* 教练卡片样式 */
 .coach-card {
   flex: 1;
-  min-width: 300px;
+  min-width: 350px;
+  max-width: 49.5%;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 15px;
+  padding: 12px;
+  height: 330px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0;
 }
 
 .student-list {
-  max-height: 240px;
+  flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-row {
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+  margin-bottom: 0;
 }
 
 .student-item {
   display: flex;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: 6px 10px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  min-height: 30px;
+  flex: 1;
+  align-items: center;
+}
+
+.student-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-item span:first-child {
+  max-width: 70%;
+  color: #333;
+}
+
+.student-item span:last-child {
+  padding: 2px 5px;
+  font-size: 12px;
 }
 
 .student-item:last-child {
@@ -120,7 +155,7 @@
 .attendance-table th {
   background-color: #f5f7fa;
   padding: 12px 15px;
-  text-align: left;
+  text-align: center;
   font-weight: 600;
   color: #4a5568;
   border-bottom: 1px solid #e2e8f0;
@@ -130,10 +165,28 @@
   padding: 12px 15px;
   border-bottom: 1px solid #e2e8f0;
   color: #2d3748;
+  vertical-align: middle;
 }
 
 .attendance-table tbody tr:hover {
   background-color: rgba(245, 247, 250, 0.5);
+}
+
+.attendance-table tbody tr.unchecked-record {
+  background-color: rgba(255, 248, 230, 0.2);
+}
+
+.attendance-table tbody tr.unchecked-record:hover {
+  background-color: rgba(255, 248, 230, 0.4);
+}
+
+.attendance-table input[type="checkbox"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.attendance-table input[type="checkbox"]:checked {
+  accent-color: #3498db;
 }
 
 .badge {
@@ -161,46 +214,45 @@
 
 /* 按钮样式 */
 .btn-batch-punch {
-  background-color: #3498db;
-  color: white;
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
   border: none;
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-weight: 500;
 }
 
 .btn-batch-punch:hover {
-  background-color: #2980b9;
+  background-color: rgba(46, 204, 113, 0.25);
+}
+
+/* 表格中的操作按钮样式 */
+.btn-punch, .btn-leave {
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  width: 60px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  padding: 0;
+  margin: 6px 0;
 }
 
 .btn-punch {
-  background-color: #2ecc71;
-  color: white;
-  border: none;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  width: 60px;
-  height: 30px;
-  text-align: center;
-  font-weight: 500;
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
 }
 
 .btn-leave {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  width: 60px;
-  height: 30px;
-  text-align: center;
-  font-weight: 500;
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
 }
 
 /* 教练课时表格样式 */
@@ -212,7 +264,7 @@
 .coach-lessons-table th {
   background-color: #f5f7fa;
   padding: 12px 15px;
-  text-align: left;
+  text-align: center;
   font-weight: 600;
   color: #4a5568;
   border-bottom: 1px solid #e2e8f0;

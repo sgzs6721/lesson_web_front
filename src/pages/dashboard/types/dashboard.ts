@@ -50,7 +50,7 @@ export interface ClassCardInfo {
   students: {
     name: string;
     time: string;
-    status: '已完成' | '请假';
+    status: '已完成' | '请假' | 'empty';
   }[];
 }
 
