@@ -35,7 +35,8 @@ import {
   ClockCircleOutlined,
   TableOutlined,
   AppstoreOutlined,
-  SortAscendingOutlined
+  SortAscendingOutlined,
+  ReloadOutlined // 添加 ReloadOutlined 图标
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -84,18 +85,26 @@ const CoachManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined); // 明确类型并设为 undefined
   const [sortField, setSortField] = useState<SortField>('none');
+  const [selectedJobTitle, setSelectedJobTitle] = useState<string | undefined>(undefined); // 明确类型并设为 undefined
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCoach, setEditingCoach] = useState<Coach | null>(null);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [form] = Form.useForm();
 
-  // 模拟获取教练数据
+  // 模拟获取教练数据 - 初始加载
   useEffect(() => {
     fetchCoaches();
-  }, [currentPage, pageSize, searchText, selectedStatus, sortField]);
+  }, []); // 初始加载时调用一次
+
+  // 分页变化时重新获取数据
+  useEffect(() => {
+    // 仅在分页变化时自动获取，其他过滤条件通过查询按钮触发
+    // 注意：如果希望分页也通过查询按钮触发，可以移除此 useEffect 或调整逻辑
+    // fetchCoaches(); // 暂时注释掉，让分页也通过查询触发，如果需要分页自动加载则取消注释
+  }, [currentPage, pageSize]);
 
   const fetchCoaches = async () => {
     setLoading(true);
@@ -138,6 +147,11 @@ const CoachManagement: React.FC = () => {
         filteredData = filteredData.filter(coach => coach.status === selectedStatus);
       }
 
+      // 添加职位过滤
+      if (selectedJobTitle) {
+        filteredData = filteredData.filter(coach => coach.jobTitle === selectedJobTitle);
+      }
+
       // 排序
       if (sortField !== 'none') {
         filteredData = [...filteredData].sort((a, b) => {
@@ -168,10 +182,13 @@ const CoachManagement: React.FC = () => {
   // 处理搜索和筛选重置
   const handleReset = () => {
     setSearchText('');
-    setSelectedStatus('');
+    setSelectedStatus(undefined); // 重置为 undefined (保持不变)
+    setSelectedJobTitle(undefined); // 重置职位为 undefined (保持不变)
     setSortField('none');
-    setCurrentPage(1);
-    fetchCoaches();
+    setCurrentPage(1); // 重置到第一页
+    // fetchCoaches(); // 移除自动调用，查询通过按钮触发
+    // 如果希望重置后立即看到结果，可以取消下面一行的注释
+    // fetchCoaches();
   };
 
   // 显示添加教练模态框
@@ -528,23 +545,24 @@ const CoachManagement: React.FC = () => {
 
   return (
     <div className="coach-management">
+      {/* 将视图切换和添加按钮移回标题行 */}
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Title level={4}>教练管理</Title>
         </Col>
         <Col>
           <Space>
-            <Radio.Group 
-              value={viewMode} 
+            <Radio.Group
+              value={viewMode}
               onChange={(e) => setViewMode(e.target.value)}
               buttonStyle="solid"
             >
               <Radio.Button value="table"><TableOutlined /> 表格视图</Radio.Button>
               <Radio.Button value="card"><AppstoreOutlined /> 卡片视图</Radio.Button>
             </Radio.Group>
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={showAddModal}
             >
               添加教练
@@ -552,10 +570,12 @@ const CoachManagement: React.FC = () => {
           </Space>
         </Col>
       </Row>
-
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={24} md={8} lg={8}>
+      
+      <Card>
+        {/* 过滤条件区域 - 使用 Flex 布局实现均匀分布 */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap' }}>
+          {/* 移除 Col 的 span 属性，使用 flex: 1 */}
+          <Col style={{ flex: 1, minWidth: '150px' }}> {/* 添加 minWidth 避免过窄 */}
             <Input
               placeholder="搜索教练姓名/ID/电话"
               value={searchText}
@@ -564,7 +584,7 @@ const CoachManagement: React.FC = () => {
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={6} lg={6}>
+          <Col style={{ flex: 1, minWidth: '120px' }}>
             <Select
               placeholder="选择状态"
               style={{ width: '100%' }}
@@ -577,7 +597,20 @@ const CoachManagement: React.FC = () => {
               <Option value="resigned">已离职</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={12} md={8} lg={8}>
+          <Col style={{ flex: 1, minWidth: '120px' }}>
+            <Select
+              placeholder="选择职位"
+              style={{ width: '100%' }}
+              value={selectedJobTitle}
+              onChange={value => setSelectedJobTitle(value)}
+              allowClear
+            >
+              <Option value="高级教练">高级教练</Option>
+              <Option value="中级教练">中级教练</Option>
+              <Option value="初级教练">初级教练</Option>
+            </Select>
+          </Col>
+          <Col style={{ flex: 1, minWidth: '150px' }}>
             <Select
               placeholder="排序方式"
               style={{ width: '100%' }}
@@ -590,15 +623,27 @@ const CoachManagement: React.FC = () => {
               <Option value="hireDate">按入职日期排序</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={2} lg={2} style={{ textAlign: 'right' }}>
-            <Button icon={<SearchOutlined />} onClick={handleReset}>
-              重置
-            </Button>
+          {/* 按钮组稍微调整，使其在 flex 布局下表现更好 */}
+          <Col style={{ flex: 'none' }}> {/* 让按钮组根据内容自适应宽度 */}
+             <Space>
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={fetchCoaches}
+              >
+                查询
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={handleReset}
+              >
+                重置
+              </Button>
+            </Space>
           </Col>
         </Row>
-      </Card>
 
-      <Card>
+        {/* 表格或卡片视图 */}
         {viewMode === 'table' ? (
           <Table
             columns={columns}
@@ -615,11 +660,13 @@ const CoachManagement: React.FC = () => {
               onChange: (page, pageSize) => {
                 setCurrentPage(page);
                 setPageSize(pageSize);
+                // 如果希望分页变化时自动查询，取消下一行的注释
+                // fetchCoaches();
               },
             }}
           />
         ) : (
-          renderCardView()
+          renderCardView() // 卡片视图的分页逻辑在 renderCardView 内部处理
         )}
       </Card>
 

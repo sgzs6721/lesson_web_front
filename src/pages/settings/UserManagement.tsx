@@ -22,7 +22,8 @@ import {
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
-  LockOutlined
+  LockOutlined,
+  RedoOutlined // 添加重置图标
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -70,7 +71,9 @@ const UserManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string[]>([]);
+  const [selectedCampus, setSelectedCampus] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<('active' | 'inactive')[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -80,7 +83,7 @@ const UserManagement: React.FC = () => {
   // 页面加载时获取数据
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, pageSize, searchText, selectedRole]);
+  }, [currentPage, pageSize]); // 移除筛选条件的依赖，避免自动触发
 
   // 模拟获取用户数据
   const fetchUsers = async () => {
@@ -120,8 +123,17 @@ const UserManagement: React.FC = () => {
         );
       }
       
-      if (selectedRole) {
-        filteredData = filteredData.filter(user => user.role === selectedRole);
+      if (selectedRole.length > 0) {
+        filteredData = filteredData.filter(user => selectedRole.includes(user.role));
+      }
+
+      if (selectedCampus.length > 0) {
+        // 需要处理 campus 可能为 undefined 的情况
+        filteredData = filteredData.filter(user => user.campus && selectedCampus.includes(user.campus));
+      }
+
+      if (selectedStatus.length > 0) {
+        filteredData = filteredData.filter(user => selectedStatus.includes(user.status));
       }
 
       // 分页
@@ -142,9 +154,12 @@ const UserManagement: React.FC = () => {
   // 重置筛选条件
   const handleReset = () => {
     setSearchText('');
-    setSelectedRole('');
+    setSelectedRole([]);
+    setSelectedCampus([]);
+    setSelectedStatus([]);
     setCurrentPage(1);
-    fetchUsers();
+    // 重置时不自动查询，需要点击查询按钮
+    // fetchUsers();
   };
 
   // 显示添加用户模态框
@@ -349,42 +364,89 @@ const UserManagement: React.FC = () => {
         </Col>
       </Row>
 
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={8} lg={8}>
+      {/* This section is now removed as it's duplicated inside the Card below */}
+
+      {/* Main Card now wraps filters and table */}
+      <Card>
+        {/* Paste the filter Row here */}
+        {/* 过滤条件区域 - 使用 Flex 布局实现均匀分布 */}
+        <Row gutter={[16, 16]} style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 16 }}>
+          {/* 移除 Col 的 span 属性，使用 flex: 1 */}
+          <Col style={{ flex: 1, minWidth: '180px' }}> {/* 搜索框 */}
             <Input
-              placeholder="搜索电话/姓名"
+              placeholder="搜索电话/姓名/ID"
               value={searchText}
               onChange={e => setSearchText(e.target.value)}
               prefix={<SearchOutlined />}
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={8} lg={8}>
+          <Col style={{ flex: 1, minWidth: '150px' }}> {/* 角色选择 */}
             <Select
-              placeholder="选择角色"
+              mode="multiple"
+              placeholder="选择角色 (可多选)"
               style={{ width: '100%' }}
               value={selectedRole}
-              onChange={value => setSelectedRole(value)}
+              onChange={setSelectedRole}
               allowClear
+              maxTagCount="responsive"
             >
               {roleOptions.map(option => (
                 <Option key={option.value} value={option.value}>{option.label}</Option>
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={8} lg={8} style={{ textAlign: 'right' }}>
-            <Button 
-              icon={<SearchOutlined />} 
-              onClick={handleReset}
+          <Col style={{ flex: 1, minWidth: '150px' }}> {/* 校区选择 */}
+            <Select
+              mode="multiple"
+              placeholder="选择校区 (可多选)"
+              style={{ width: '100%' }}
+              value={selectedCampus}
+              onChange={setSelectedCampus}
+              allowClear
+              maxTagCount="responsive"
             >
-              重置
-            </Button>
+              {campusOptions.map(option => (
+                <Option key={option.value} value={option.value}>{option.label}</Option>
+              ))}
+            </Select>
+          </Col>
+          <Col style={{ flex: 1, minWidth: '150px' }}> {/* 状态选择 */}
+            <Select
+              mode="multiple"
+              placeholder="选择状态 (可多选)"
+              style={{ width: '100%' }}
+              value={selectedStatus}
+              onChange={setSelectedStatus}
+              allowClear
+              maxTagCount="responsive"
+            >
+              <Option value="active">启用</Option>
+              <Option value="inactive">禁用</Option>
+            </Select>
+          </Col>
+          {/* 按钮组 */}
+          <Col style={{ flex: 'none' }}> {/* 让按钮组根据内容自适应宽度 */}
+            <Space size="middle">
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={() => { setCurrentPage(1); fetchUsers(); }}
+              >
+                查询
+              </Button>
+              <Button
+                icon={<RedoOutlined />}
+                onClick={handleReset}
+              >
+                重置
+              </Button>
+            </Space>
           </Col>
         </Row>
-      </Card>
-
-      <Card>
+        {/* Add margin below the filter row */}
+        <div style={{ marginBottom: 16 }} />
+        {/* Table starts here */}
         <Table
           columns={columns}
           dataSource={users}

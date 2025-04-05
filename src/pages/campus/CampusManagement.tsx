@@ -27,7 +27,8 @@ import {
   HomeOutlined,
   UserOutlined,
   PlayCircleOutlined,
-  PauseCircleOutlined
+  PauseCircleOutlined,
+  RedoOutlined // 添加重置图标
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -79,7 +80,7 @@ const CampusManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCampus, setEditingCampus] = useState<Campus | null>(null);
   const [form] = Form.useForm();
@@ -96,7 +97,7 @@ const CampusManagement: React.FC = () => {
   // 页面加载时获取数据
   useEffect(() => {
     fetchCampuses();
-  }, [currentPage, pageSize, searchText, selectedStatus]);
+  }, [currentPage, pageSize]); // 移除筛选条件的依赖，避免自动触发
 
   // 模拟获取校区数据
   const fetchCampuses = async () => {
@@ -174,9 +175,10 @@ const CampusManagement: React.FC = () => {
   // 重置筛选条件
   const handleReset = () => {
     setSearchText('');
-    setSelectedStatus('');
+    setSelectedStatus(undefined);
     setCurrentPage(1);
-    fetchCampuses();
+    // 重置时不自动查询，需要点击查询按钮
+    // fetchCampuses();
   };
 
   // 显示添加校区模态框
@@ -414,24 +416,28 @@ const CampusManagement: React.FC = () => {
 
   return (
     <div className="campus-management">
+      {/* Re-add the Title Row */}
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Title level={4}>校区管理</Title>
         </Col>
+        {/* Move Add Campus button back here */}
         <Col>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
             onClick={showAddModal}
           >
             添加校区
           </Button>
         </Col>
       </Row>
-
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={8} lg={8}>
+      {/* Card now wraps both filters and table */}
+      <Card>
+        {/* 过滤条件区域 - 使用 Flex 布局实现均匀分布 */}
+        <Row gutter={[16, 16]} style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 16 }}>
+          {/* 调整 flex 比例，让 Input 更长 */}
+          <Col style={{ flex: '2 1 200px', minWidth: '200px' }}> {/* 搜索框 - flex-grow: 2 */}
             <Input
               placeholder="搜索校区名称/地址/电话"
               value={searchText}
@@ -440,7 +446,7 @@ const CampusManagement: React.FC = () => {
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={8} lg={8}>
+          <Col style={{ flex: '1 1 150px', minWidth: '150px' }}> {/* 状态选择 - flex-grow: 1 */}
             <Select
               placeholder="选择状态"
               style={{ width: '100%' }}
@@ -453,18 +459,28 @@ const CampusManagement: React.FC = () => {
               <Option value="renovating">装修中</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={8} lg={8} style={{ textAlign: 'right' }}>
-            <Button 
-              icon={<SearchOutlined />} 
-              onClick={handleReset}
-            >
-              重置
-            </Button>
+          {/* 按钮组 */}
+          <Col style={{ flex: 'none' }}> {/* 让按钮组根据内容自适应宽度 */}
+            <Space size="middle">
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={() => { setCurrentPage(1); fetchCampuses(); }}
+              >
+                查询
+              </Button>
+              <Button
+                icon={<RedoOutlined />}
+                onClick={handleReset}
+              >
+                重置
+              </Button>
+            </Space>
           </Col>
         </Row>
-      </Card>
-
-      <Card>
+         {/* Add margin below the filter row */}
+         <div style={{ marginBottom: 16 }} />
+         {/* Table starts here, inside the same Card */}
         <Table
           columns={columns}
           dataSource={campuses}
@@ -484,6 +500,7 @@ const CampusManagement: React.FC = () => {
           }}
         />
       </Card>
+      {/* End of the single Card */}
 
       <Modal
         title={<div style={{ fontSize: '18px', fontWeight: 'bold' }}>{editingCampus ? '编辑校区' : '添加校区'}</div>}
