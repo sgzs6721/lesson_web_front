@@ -1,0 +1,130 @@
+import React from 'react';
+import { List, Card, Tag, Typography, Pagination } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Course } from '../types/course';
+import dayjs from 'dayjs';
+import { categoryOptions, coachOptions } from '../constants/courseOptions';
+import { renderStatusTag } from '../constants/tableColumns';
+
+const { Paragraph } = Typography;
+
+interface CourseCardListProps {
+  data: Course[];
+  loading: boolean;
+  currentPage: number;
+  pageSize: number;
+  total: number;
+  onEdit: (record: Course) => void;
+  onDelete: (id: string, name: string) => void;
+  onPageChange: (page: number, pageSize: number) => void;
+}
+
+const CourseCardList: React.FC<CourseCardListProps> = ({
+  data,
+  loading,
+  currentPage,
+  pageSize,
+  total,
+  onEdit,
+  onDelete,
+  onPageChange
+}) => {
+  // 获取课程分类名称
+  const getCategoryName = (categoryId: string) => {
+    const category = categoryOptions.find(c => c.value === categoryId);
+    return category ? category.label : categoryId;
+  };
+
+  // 获取教练名称
+  const getCoachNames = (coachIds: string[]) => {
+    if (!coachIds || coachIds.length === 0) return '';
+    // 只取第一个教练
+    const id = coachIds[0];
+    const coach = coachOptions.find(c => c.value === id);
+    return coach ? coach.label : id;
+  };
+
+  return (
+    <>
+      <List
+        grid={{ 
+          gutter: 16, 
+          xs: 1, 
+          sm: 2, 
+          md: 3, 
+          lg: 4, 
+          xl: 4,
+          xxl: 4 
+        }}
+        dataSource={data}
+        loading={loading}
+        pagination={false}
+        renderItem={item => (
+          <List.Item>
+            <Card 
+              hoverable 
+              style={{ height: 280 }}
+              actions={[
+                <EditOutlined key="edit" style={{ color: '#1890ff' }} onClick={() => onEdit(item)} />,
+                <DeleteOutlined key="delete" style={{ color: '#ff4d4f' }} onClick={() => onDelete(item.id, item.name)} />
+              ]}
+            >
+              <Card.Meta
+                title={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: 'bold' }}>
+                  <span>{item.name}</span>
+                  {renderStatusTag(item.status)}
+                </div>}
+                description={
+                  <div style={{ height: 160, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'auto' }}>
+                    <div>
+                      <div style={{ borderBottom: '1px solid #f0f0f0', marginBottom: 12, paddingBottom: 8 }}></div>
+                      <div style={{ marginBottom: 8, display: 'flex', flexWrap: 'wrap' }}>
+                        <Tag color="blue">{getCategoryName(item.category)}</Tag>
+                        <Tag color="purple">{getCoachNames(item.coaches)}</Tag>
+                      </div>
+                      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ fontWeight: 'bold' }}>总课时：</div>
+                        <div>{item.totalHours}小时</div>
+                      </div>
+                      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ fontWeight: 'bold' }}>已销课时：</div>
+                        <div>{item.consumedHours}小时</div>
+                      </div>
+                      {item.unitPrice && (
+                        <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                          <div style={{ fontWeight: 'bold' }}>教练课筹单价：</div>
+                          <div>¥{item.unitPrice}</div>
+                        </div>
+                      )}
+                      {item.description && (
+                        <div style={{ marginBottom: 8 }}>
+                          <div style={{ fontWeight: 'bold', display: 'block' }}>课程描述：</div>
+                          <Paragraph ellipsis={{ rows: 2 }} style={{ marginTop: 4 }}>{item.description}</Paragraph>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: 'right', fontSize: '12px', borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8 }}><span style={{ fontWeight: 'bold' }}>更新时间:</span> {dayjs(item.updatedAt).format('YYYY-MM-DD')}</div>
+                  </div>
+                }
+              />
+            </Card>
+          </List.Item>
+        )}
+      />
+      
+      <div style={{ textAlign: 'right', marginTop: 16 }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={total}
+          showSizeChanger
+          showQuickJumper
+          showTotal={total => `共 ${total} 条记录`}
+          onChange={onPageChange}
+        />
+      </div>
+    </>
+  );
+};
+
+export default CourseCardList; 
