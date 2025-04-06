@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { logout } from '@/redux/slices/authSlice';
 
@@ -24,7 +24,7 @@ const MainLayout: React.FC = () => {
 
   const handleLogout = async () => {
     await dispatch(logout());
-    navigate('/login');
+    navigate('/home');
   };
 
   // Toggle sidebar collapse state
@@ -110,15 +110,51 @@ const MainLayout: React.FC = () => {
       <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           {!sidebarCollapsed ? (
-            <>
-              <div style={{ fontSize: '32px', textAlign: 'center' }}>🏫</div>
+            <Link to="/home" style={{ textDecoration: 'none', color: 'inherit', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ height: '60px', marginBottom: '10px' }}>
+                {/* 简化日历/课表元素 */}
+                <rect x="50" y="50" width="100" height="100" rx="10" ry="10" fill="#ffffff" stroke="#4285f4" strokeWidth="5"/>
+                
+                {/* 日历顶部条 */}
+                <rect x="50" y="50" width="100" height="20" rx="10" ry="10" fill="#4285f4"/>
+                
+                {/* 简化日历线条 */}
+                <line x1="50" y1="90" x2="150" y2="90" stroke="#4285f4" strokeWidth="2.5"/>
+                <line x1="50" y1="130" x2="150" y2="130" stroke="#4285f4" strokeWidth="2.5"/>
+                <line x1="83" y1="70" x2="83" y2="150" stroke="#4285f4" strokeWidth="2.5"/>
+                <line x1="117" y1="70" x2="117" y2="150" stroke="#4285f4" strokeWidth="2.5"/>
+                
+                {/* 钟表指针，代表时间/课时 */}
+                <circle cx="100" cy="110" r="25" fill="#ffffff" stroke="#4285f4" strokeWidth="4"/>
+                <line x1="100" y1="110" x2="100" y2="93" stroke="#4285f4" strokeWidth="4" strokeLinecap="round"/>
+                <line x1="100" y1="110" x2="114" y2="110" stroke="#4285f4" strokeWidth="4" strokeLinecap="round"/>
+                <circle cx="100" cy="110" r="4" fill="#4285f4"/>
+              </svg>
               <h1 style={{ fontSize: '20px', textAlign: 'center' }}>培训机构管理系统</h1>
               <p style={{ opacity: 0.7, marginTop: '5px', fontSize: '12px', textAlign: 'center' }}>核心业务管理平台</p>
-            </>
+            </Link>
           ) : (
-            <>
-              <div style={{ fontSize: '32px', textAlign: 'center', marginTop: '10px' }}>🏫</div>
-            </>
+            <Link to="/home" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', padding: '10px 0' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ height: '45px' }}>
+                {/* 简化日历/课表元素 */}
+                <rect x="50" y="50" width="100" height="100" rx="10" ry="10" fill="#ffffff" stroke="#4285f4" strokeWidth="5"/>
+                
+                {/* 日历顶部条 */}
+                <rect x="50" y="50" width="100" height="20" rx="10" ry="10" fill="#4285f4"/>
+                
+                {/* 简化日历线条 */}
+                <line x1="50" y1="90" x2="150" y2="90" stroke="#4285f4" strokeWidth="2.5"/>
+                <line x1="50" y1="130" x2="150" y2="130" stroke="#4285f4" strokeWidth="2.5"/>
+                <line x1="83" y1="70" x2="83" y2="150" stroke="#4285f4" strokeWidth="2.5"/>
+                <line x1="117" y1="70" x2="117" y2="150" stroke="#4285f4" strokeWidth="2.5"/>
+                
+                {/* 钟表指针，代表时间/课时 */}
+                <circle cx="100" cy="110" r="25" fill="#ffffff" stroke="#4285f4" strokeWidth="4"/>
+                <line x1="100" y1="110" x2="100" y2="93" stroke="#4285f4" strokeWidth="4" strokeLinecap="round"/>
+                <line x1="100" y1="110" x2="114" y2="110" stroke="#4285f4" strokeWidth="4" strokeLinecap="round"/>
+                <circle cx="100" cy="110" r="4" fill="#4285f4"/>
+              </svg>
+            </Link>
           )}
           <button 
             className="sidebar-toggle" 

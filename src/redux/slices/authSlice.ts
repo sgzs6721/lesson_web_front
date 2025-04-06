@@ -20,6 +20,15 @@ export interface LoginParams {
   password: string;
 }
 
+// 注册接口参数
+export interface RegisterParams {
+  orgName: string;
+  phone: string;
+  password: string;
+  representativeName: string;
+  description?: string;
+}
+
 // 认证状态
 interface AuthState {
   isAuthenticated: boolean;
@@ -96,6 +105,27 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   return null;
 });
 
+// 注册操作
+export const register = createAsyncThunk(
+  'auth/register',
+  async (params: RegisterParams, { rejectWithValue }) => {
+    try {
+      // 在实际应用中，这里应该是API调用
+      // const response = await API.auth.register(params);
+      
+      // 模拟API调用
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 模拟成功
+      message.success('注册成功，请使用手机号登录');
+      return true;
+    } catch (error: any) {
+      message.error(error.message || '注册失败');
+      return rejectWithValue(error.message || '注册失败');
+    }
+  }
+);
+
 // 创建Slice
 const authSlice = createSlice({
   name: 'auth',
@@ -137,6 +167,18 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.loading = false;
         state.error = action.payload as string || '登录失败';
+      })
+      // 注册
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string || '注册失败';
       })
       // 登出
       .addCase(logout.fulfilled, (state) => {

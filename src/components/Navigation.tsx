@@ -1,34 +1,106 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch } from '@/hooks/reduxHooks';
+import { logout } from '@/redux/slices/authSlice';
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
+import './Modal.css';
+import { LogoutOutlined, LoginOutlined } from '@ant-design/icons';
 
 const Navigation: React.FC = () => {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+
+  const openLoginModal = () => setIsLoginModalOpen(true);
+  const closeLoginModal = () => setIsLoginModalOpen(false);
+
+  const openRegisterModal = () => setIsRegisterModalOpen(true);
+  const closeRegisterModal = () => setIsRegisterModalOpen(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/home'); // 登出后跳转到首页
+  };
 
   return (
-    <nav className="navbar">
-      <div className="logo">
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2U2N2UyMiIvPjxjaXJjbGUgY3g9IjEyOCIgY3k9IjEyOCIgcj0iODAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTQiIGZpbGw9Im5vbmUiLz48cGF0aCBkPSJNMTI4IDQ4djYwTTEyOCAxNjh2NjBNNDggMTI4aDYwTTE2OCAxMjhoNjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjx0ZXh0IHg9IjEyOCIgeT0iMTQwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7mjqXlj5blj6PkvpnkuLo8L3RleHQ+PC9zdmc+" alt="培训机构Logo" />
-        <h1>培训机构管理系统</h1>
-      </div>
-      <div className="nav-links">
-        <a href="#features">功能特色</a>
-        <a href="#pricing">价格方案</a>
-        <a href="#about">关于我们</a>
-        <a href="#contact">联系我们</a>
-      </div>
-      <div className="auth-buttons">
-        {isAuthenticated ? (
-          <Link to="/dashboard" className="btn btn-primary">进入系统</Link>
-        ) : (
-          <>
-            <Link to="/login" className="btn btn-outline">登录</Link>
-            <Link to="/register" className="btn btn-primary">注册</Link>
-          </>
-        )}
-      </div>
-    </nav>
+    <>
+      <nav className="navbar">
+        <div className="logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ height: '40px', marginRight: '10px' }}>
+            {/* 简化日历/课表元素 */}
+            <rect x="50" y="50" width="100" height="100" rx="10" ry="10" fill="#ffffff" stroke="#4285f4" stroke-width="5"/>
+            
+            {/* 日历顶部条 */}
+            <rect x="50" y="50" width="100" height="20" rx="10" ry="10" fill="#4285f4"/>
+            
+            {/* 简化日历线条 */}
+            <line x1="50" y1="90" x2="150" y2="90" stroke="#4285f4" stroke-width="2.5"/>
+            <line x1="50" y1="130" x2="150" y2="130" stroke="#4285f4" stroke-width="2.5"/>
+            <line x1="83" y1="70" x2="83" y2="150" stroke="#4285f4" stroke-width="2.5"/>
+            <line x1="117" y1="70" x2="117" y2="150" stroke="#4285f4" stroke-width="2.5"/>
+            
+            {/* 钟表指针，代表时间/课时 */}
+            <circle cx="100" cy="110" r="25" fill="#ffffff" stroke="#4285f4" stroke-width="4"/>
+            <line x1="100" y1="110" x2="100" y2="93" stroke="#4285f4" stroke-width="4" strokeLinecap="round"/>
+            <line x1="100" y1="110" x2="114" y2="110" stroke="#4285f4" stroke-width="4" strokeLinecap="round"/>
+            <circle cx="100" cy="110" r="4" fill="#4285f4"/>
+          </svg>
+          <h1>培训机构管理系统</h1>
+        </div>
+        <div className="nav-links">
+          <a href="#features">功能特色</a>
+          <a href="#about">关于我们</a>
+          <a href="#contact">联系我们</a>
+        </div>
+        <div className="auth-buttons" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          {isAuthenticated ? (
+            <>
+              <Link 
+                to="/dashboard" 
+                className="btn btn-primary"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '5px',
+                  padding: '8px 15px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <LoginOutlined style={{ fontSize: '16px' }} />
+                进入
+              </Link>
+              <button 
+                onClick={handleLogout} 
+                className="btn btn-outline"
+                style={{ 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '5px',
+                  padding: '8px 15px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <LogoutOutlined style={{ fontSize: '16px' }} />
+                登出
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={openLoginModal} className="btn btn-outline" style={{ cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }}>登录</button>
+              <button onClick={openRegisterModal} className="btn btn-primary" style={{ cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }}>注册</button>
+            </>
+          )}
+        </div>
+      </nav>
+
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
+      <RegisterModal isOpen={isRegisterModalOpen} onClose={closeRegisterModal} />
+    </>
   );
 };
 

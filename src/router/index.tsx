@@ -4,8 +4,8 @@ import { Spin } from 'antd';
 import MainLayout from '@/layouts/MainLayout';
 
 // 懒加载组件
-const Login = lazy(() => import('@/pages/auth/Login'));
-const Register = lazy(() => import('@/pages/auth/Register'));
+// const Login = lazy(() => import('@/pages/auth/Login'));
+// const Register = lazy(() => import('@/pages/auth/Register'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const StudentManagement = lazy(() => import('@/pages/student/StudentManagement'));
 const CourseManagement = lazy(() => import('@/pages/course/CourseManagement'));
@@ -22,7 +22,7 @@ const Unauthorized = lazy(() => import('@/pages/error/Unauthorized'));
 const ExpenseManagement = lazy(() => import('@/pages/expense/ExpenseManagement'));
 const PaymentRecords = lazy(() => import('@/pages/payment/PaymentRecords'));
 const MiniprogramManagement = lazy(() => import('@/pages/miniprogram/MiniprogramManagement'));
-const HomePage = lazy(() => import('@/pages/home/HomePage'));
+const HomePage = lazy(() => import('@/pages/home/HomePage.tsx'));
 
 // 加载容器
 const Loadable = (Component: React.ComponentType) => (props: any) => (
@@ -67,14 +67,6 @@ const appRoutes: RouteObject[] = [
       { path: 'payments', element: Loadable(PaymentRecords)({}) },
       { path: 'miniprogram', element: Loadable(MiniprogramManagement)({}) },
     ],
-  },
-  {
-    path: '/login',
-    element: Loadable(Login)({}),
-  },
-  {
-    path: '/register',
-    element: Loadable(Register)({}),
   },
   {
     path: '*',

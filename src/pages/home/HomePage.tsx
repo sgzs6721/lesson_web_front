@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import './home.css';
 import FeatureSection from './components/FeatureSection';
-import PricingSection from './components/PricingSection';
+import ContactSection from './components/ContactSection';
+import AboutSection from './components/AboutSection';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
@@ -30,11 +31,48 @@ const HomePage: React.FC = () => {
         <p>一站式管理学员、课程、教师和财务，提升培训机构运营效率，让您专注于教学质量</p>
         <div className="hero-buttons">
           {isAuthenticated ? (
-            <Link to="/dashboard" className="btn btn-primary">进入系统</Link>
+            <Link 
+              to="/dashboard" 
+              className="btn btn-primary"
+              style={{ 
+                padding: '10px 20px',
+                maxWidth: '120px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              进入系统
+            </Link>
           ) : (
             <>
-              <Link to="/register" className="btn btn-primary">免费注册</Link>
-              <a href="#features" className="btn btn-outline" style={{ marginLeft: '40px' }}>了解更多</a>
+              <Link 
+                to="/register" 
+                className="btn btn-primary"
+                style={{ 
+                  padding: '10px 20px',
+                  maxWidth: '120px', 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                免费注册
+              </Link>
+              <a 
+                href="#features" 
+                className="btn btn-outline" 
+                style={{ 
+                  marginLeft: '20px', 
+                  padding: '10px 20px',
+                  maxWidth: '120px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                了解更多
+              </a>
             </>
           )}
         </div>
@@ -232,8 +270,11 @@ const HomePage: React.FC = () => {
       {/* 功能区域 */}
       <FeatureSection />
 
-      {/* 价格区域 */}
-      <PricingSection />
+      {/* 关于我们区域 - 添加 */}
+      <AboutSection />
+
+      {/* 联系我们区域 */}
+      <ContactSection />
 
       <Footer />
     </div>
