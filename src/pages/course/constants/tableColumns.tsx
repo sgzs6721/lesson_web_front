@@ -43,7 +43,7 @@ export const renderStatusTag = (status: string) => {
       text = status;
   }
   
-  return <Tag color={color} style={{ display: 'flex', alignItems: 'center', height: '22px' }}>{text}</Tag>;
+  return <Tag color={color} style={{ display: 'inline-flex', alignItems: 'center', height: '22px', padding: '0 8px', fontSize: '12px', lineHeight: '22px' }}>{text}</Tag>;
 };
 
 export const getTableColumns = (
@@ -55,53 +55,62 @@ export const getTableColumns = (
     title: '课程名称',
     dataIndex: 'name',
     key: 'name',
+    align: 'center',
   },
   {
     title: '课程类型',
     dataIndex: 'category',
     key: 'category',
+    align: 'center',
     render: (category: string) => getCategoryName(category),
   },
   {
     title: '总课时',
     dataIndex: 'totalHours',
     key: 'totalHours',
+    align: 'center',
     render: (hours: number) => `${hours}小时`,
   },
   {
     title: '已销课时',
     dataIndex: 'consumedHours',
     key: 'consumedHours',
+    align: 'center',
     render: (hours: number) => `${hours}小时`,
   },
   {
     title: '上课教练',
     dataIndex: 'coaches',
     key: 'coaches',
+    align: 'center',
     render: (coaches: string[]) => getCoachNames(coaches),
   },
   {
     title: '课筹单价',
     dataIndex: 'unitPrice',
     key: 'unitPrice',
+    align: 'center',
     render: (price: number) => `¥${price}`,
   },
   {
     title: '状态',
     dataIndex: 'status',
     key: 'status',
+    align: 'center',
     render: (status: string) => renderStatusTag(status),
   },
   {
     title: '更新时间',
     dataIndex: 'updatedAt',
     key: 'updatedAt',
+    align: 'center',
     render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
   },
   {
     title: '操作',
     key: 'action',
     width: 150,
+    align: 'center',
     render: (_: any, record: Course) => (
       <Space size="middle">
         <Tooltip title="编辑">

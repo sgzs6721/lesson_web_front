@@ -70,30 +70,32 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
               ]}
             >
               <Card.Meta
-                title={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: 'bold' }}>
+                title={<div style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>
                   <span>{item.name}</span>
-                  {renderStatusTag(item.status)}
                 </div>}
                 description={
                   <div style={{ height: 160, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'auto' }}>
                     <div>
+                      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          <Tag color="blue" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getCategoryName(item.category)}</Tag>
+                          <Tag color="purple" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getCoachNames(item.coaches)}</Tag>
+                        </div>
+                        {renderStatusTag(item.status)}
+                      </div>
                       <div style={{ borderBottom: '1px solid #f0f0f0', marginBottom: 12, paddingBottom: 8 }}></div>
-                      <div style={{ marginBottom: 8, display: 'flex', flexWrap: 'wrap' }}>
-                        <Tag color="blue">{getCategoryName(item.category)}</Tag>
-                        <Tag color="purple">{getCoachNames(item.coaches)}</Tag>
+                      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ fontWeight: 'bold', flex: 1 }}>总课时：</div>
+                        <div style={{ width: '70px', textAlign: 'right' }}>{item.totalHours}小时</div>
                       </div>
                       <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                        <div style={{ fontWeight: 'bold' }}>总课时：</div>
-                        <div>{item.totalHours}小时</div>
-                      </div>
-                      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                        <div style={{ fontWeight: 'bold' }}>已销课时：</div>
-                        <div>{item.consumedHours}小时</div>
+                        <div style={{ fontWeight: 'bold', flex: 1 }}>已销课时：</div>
+                        <div style={{ width: '70px', textAlign: 'right' }}>{item.consumedHours}小时</div>
                       </div>
                       {item.unitPrice && (
                         <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                          <div style={{ fontWeight: 'bold' }}>教练课筹单价：</div>
-                          <div>¥{item.unitPrice}</div>
+                          <div style={{ fontWeight: 'bold', flex: 1 }}>教练课筹单价：</div>
+                          <div style={{ width: '70px', textAlign: 'right' }}>¥{item.unitPrice}</div>
                         </div>
                       )}
                       {item.description && (
@@ -103,7 +105,7 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                         </div>
                       )}
                     </div>
-                    <div style={{ textAlign: 'right', fontSize: '12px', borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8 }}><span style={{ fontWeight: 'bold' }}>更新时间:</span> {dayjs(item.updatedAt).format('YYYY-MM-DD')}</div>
+                    <div style={{ display: 'flex', justifyContent: 'center', fontSize: '12px', borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8 }}><span style={{ fontWeight: 'bold' }}>更新时间:</span> {dayjs(item.updatedAt).format('YYYY-MM-DD')}</div>
                   </div>
                 }
               />
