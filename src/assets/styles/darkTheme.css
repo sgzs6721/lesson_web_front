@@ -1,0 +1,46 @@
+/* 暗色主题样式 - 只应用于侧边栏和顶部横幅 */
+
+/* 侧边栏暗色样式 */
+.sidebar.dark-theme {
+  background: linear-gradient(135deg, #292f45 0%, #1a1a2e 100%);
+}
+
+/* 头部信息栏暗色样式 */
+.campus-info.dark-theme {
+  background-color: #1f2833 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 下拉菜单暗色样式 */
+.dropdown-content.dark-theme {
+  background-color: #1f2833;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-content.dark-theme a {
+  color: #f0f0f0;
+}
+
+.dropdown-content.dark-theme a:hover {
+  background-color: #2a3651;
+}
+
+/* 校区选择器暗色样式 */
+.campus-dropdown-dark {
+  background-color: #1f2833 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.campus-dropdown-dark .campus-item {
+  color: #f0f0f0 !important;
+}
+
+.campus-dropdown-dark .campus-item:hover {
+  background-color: #2a3651 !important;
+}
+
+/* 头部校区状态徽章暗色样式 */
+.campus-info.dark-theme .campus-status-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+} 

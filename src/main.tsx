@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import App from '@/App';
 import '@/assets/styles/index.css';
+import '@/assets/styles/darkTheme.css';
 
 // Add Font Awesome script to the document
 const fontAwesomeScript = document.createElement('script');

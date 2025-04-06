@@ -12,6 +12,7 @@ const MainLayout: React.FC = () => {
   const [showCampusList, setShowCampusList] = useState(false);
   const [currentCampus, setCurrentCampus] = useState('总部校区');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
   
   // Get user info from redux store
   const auth = useAppSelector((state) => state.auth);
@@ -25,6 +26,11 @@ const MainLayout: React.FC = () => {
   const handleLogout = async () => {
     await dispatch(logout());
     navigate('/home');
+  };
+
+  // 切换主题
+  const toggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
   };
 
   // Toggle sidebar collapse state
@@ -107,7 +113,7 @@ const MainLayout: React.FC = () => {
   return (
     <div className="container">
       {/* 侧边栏 */}
-      <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${isDarkTheme ? 'dark-theme' : ''}`}>
         <div className="sidebar-header">
           {!sidebarCollapsed ? (
             <Link to="/home" style={{ textDecoration: 'none', color: 'inherit', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
@@ -205,7 +211,7 @@ const MainLayout: React.FC = () => {
       {/* 主内容区 */}
       <div className="main-content">
         {/* Show campus info on all pages */}
-        <div className="campus-info" style={{ 
+        <div className={`campus-info ${isDarkTheme ? 'dark-theme' : ''}`} style={{ 
           margin: '0', 
           position: 'fixed', 
           top: '0', 
@@ -213,7 +219,7 @@ const MainLayout: React.FC = () => {
           right: '0',
           zIndex: '999',
           width: 'auto',
-          backgroundColor: '#374263',
+          backgroundColor: isDarkTheme ? '#1f2833' : '#374263',
           padding: '12px 20px',
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.3s ease'
@@ -284,7 +290,13 @@ const MainLayout: React.FC = () => {
                     <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '2px' }}>{username}</div>
                     <div style={{ fontSize: '13px', opacity: '0.9' }}>超级管理员</div>
                   </div>
-                  <div className={`dropdown-content ${showDropdown ? 'show' : ''}`}>
+                  <div className={`dropdown-content ${showDropdown ? 'show' : ''} ${isDarkTheme ? 'dark-theme' : ''}`}>
+                    <a href="#" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>
+                      返回首页
+                    </a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); toggleTheme(); }}>
+                      {isDarkTheme ? '切换亮色' : '切换暗色'}
+                    </a>
                     <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/profile'); }}>设置</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/password'); }}>修改密码</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>登出</a>
@@ -326,11 +338,13 @@ const MainLayout: React.FC = () => {
                   </button>
                   
                   {showCampusList && (
-                    <div style={{
+                    <div 
+                      className={`campus-dropdown ${isDarkTheme ? 'campus-dropdown-dark' : ''}`}
+                      style={{
                       position: 'absolute',
                       top: '100%',
                       left: '0',
-                      backgroundColor: '#fff',
+                      backgroundColor: isDarkTheme ? '#1f2833' : '#fff',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                       borderRadius: '4px',
                       padding: '8px 0',
@@ -341,11 +355,14 @@ const MainLayout: React.FC = () => {
                       {['总部校区', '东城校区', '西城校区', '南城校区', '北城校区', '天骄校区'].map(campus => (
                         <div 
                           key={campus}
+                          className="campus-item"
                           style={{ 
                             padding: '8px 15px', 
                             cursor: 'pointer', 
-                            color: '#333', 
-                            backgroundColor: currentCampus === campus ? 'rgba(52, 152, 219, 0.1)' : 'transparent' 
+                            color: isDarkTheme ? '#f0f0f0' : '#333', 
+                            backgroundColor: currentCampus === campus ? 
+                              (isDarkTheme ? 'rgba(52, 152, 219, 0.2)' : 'rgba(52, 152, 219, 0.1)') : 
+                              'transparent' 
                           }}
                           onClick={(e) => { e.stopPropagation(); selectCampus(campus); }}
                         >
