@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login } from '@/redux/slices/authSlice';
-import '@/assets/styles/index.css';
 
 interface LoginFormValues {
   username: string;

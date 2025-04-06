@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import '@/assets/styles/index.css';
 import TodayStats from './components/TodayStats';
 import AttendanceRecordTable from './components/AttendanceRecordTable';
 import CoachStatistics from './components/CoachStatistics';
 import DataOverview from './components/DataOverview';
 import { useDashboardData } from './hooks/useDashboardData';
+import '@/assets/styles/index.css';
 import './dashboard.css';
 
 const Dashboard: React.FC = () => {

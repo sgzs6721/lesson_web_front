@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { logout } from '@/redux/slices/authSlice';
-import '@/assets/styles/index.css';
 
 const MainLayout: React.FC = () => {
   const dispatch = useAppDispatch();

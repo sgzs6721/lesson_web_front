@@ -22,6 +22,7 @@ const Unauthorized = lazy(() => import('@/pages/error/Unauthorized'));
 const ExpenseManagement = lazy(() => import('@/pages/expense/ExpenseManagement'));
 const PaymentRecords = lazy(() => import('@/pages/payment/PaymentRecords'));
 const MiniprogramManagement = lazy(() => import('@/pages/miniprogram/MiniprogramManagement'));
+const HomePage = lazy(() => import('@/pages/home/HomePage'));
 
 // 加载容器
 const Loadable = (Component: React.ComponentType) => (props: any) => (
@@ -40,9 +41,16 @@ const Loadable = (Component: React.ComponentType) => (props: any) => (
 const appRoutes: RouteObject[] = [
   {
     path: '/',
+    element: <Navigate to="/home" replace />
+  },
+  {
+    path: '/home',
+    element: Loadable(HomePage)({}),
+  },
+  {
+    path: '/',
     element: <MainLayout />,
     children: [
-      { path: '', element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: Loadable(Dashboard)({}) },
       { path: 'students', element: Loadable(StudentManagement)({}) },
       { path: 'courses', element: Loadable(CourseManagement)({}) },

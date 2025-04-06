@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import '@/assets/styles/index.css';
 
 interface RegisterFormValues {
   institution: string;
