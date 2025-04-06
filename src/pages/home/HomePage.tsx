@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
@@ -8,10 +8,12 @@ import ContactSection from './components/ContactSection';
 import AboutSection from './components/AboutSection';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import RegisterModal from '@/components/RegisterModal';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   // 如果已登录，可以选择自动跳转到dashboard
   React.useEffect(() => {
@@ -46,19 +48,21 @@ const HomePage: React.FC = () => {
             </Link>
           ) : (
             <>
-              <Link 
-                to="/register" 
+              <button 
+                onClick={() => setIsRegisterModalOpen(true)}
                 className="btn btn-primary"
                 style={{ 
                   padding: '10px 20px',
                   maxWidth: '120px', 
                   display: 'flex',
                   justifyContent: 'center',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  border: 'none',
+                  cursor: 'pointer'
                 }}
               >
                 免费注册
-              </Link>
+              </button>
               <a 
                 href="#features" 
                 className="btn btn-outline" 
@@ -77,6 +81,12 @@ const HomePage: React.FC = () => {
           )}
         </div>
       </section>
+
+      {/* 注册模态框 */}
+      <RegisterModal 
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+      />
 
       {/* 校外培训项目展示 */}
       <section className="project-showcase">

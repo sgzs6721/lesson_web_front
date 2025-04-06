@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'; // 引入 useDispatch 和 useSelector
 import { useNavigate } from 'react-router-dom'; // 引入 useNavigate
 import { login } from '@/redux/slices/authSlice'; // 引入 login action
@@ -55,6 +55,23 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose /*, onSubmit*/ 
       setLoading(false); // 结束 loading
     }
   };
+
+  // 添加 ESC 键关闭功能
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
