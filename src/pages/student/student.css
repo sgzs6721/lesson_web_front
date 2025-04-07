@@ -1,0 +1,73 @@
+.student-list-container {
+  padding: 24px;
+}
+
+.student-search-bar {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+}
+
+.student-search-bar .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.student-table-container {
+  margin-top: 16px;
+}
+
+.student-form-item {
+  margin-bottom: 16px;
+}
+
+.course-group-table {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.course-group-form {
+  padding: 16px;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.course-schedule-list {
+  margin-top: 8px;
+}
+
+.course-schedule-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.course-schedule-item .day {
+  width: 80px;
+  margin-right: 12px;
+}
+
+.course-schedule-item .time {
+  flex: 1;
+}
+
+.course-schedule-item .actions {
+  width: 60px;
+  text-align: right;
+}
+
+.student-form-section {
+  margin-bottom: 24px;
+}
+
+.student-form-section-title {
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.student-action-buttons {
+  display: flex;
+  gap: 8px;
+} 
