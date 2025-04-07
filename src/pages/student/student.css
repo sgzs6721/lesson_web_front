@@ -70,4 +70,43 @@
 .student-action-buttons {
   display: flex;
   gap: 8px;
+}
+
+/* 打卡模态框样式 */
+.attendance-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.attendance-form .ant-form-item-label {
+  padding-bottom: 4px;
+}
+
+.attendance-form .ant-input[disabled] {
+  background-color: #f5f5f5;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* 打卡模态框标题分隔线 */
+.ant-modal-content .ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
+/* 表格样式 */
+.student-table-container .ant-table-thead > tr > th {
+  text-align: center;
+  background-color: #fafafa;
+}
+
+.student-table-container .ant-table-tbody > tr > td {
+  text-align: center;
+}
+
+.student-table-container .ant-btn-link {
+  color: #1890ff;
+}
+
+.student-table-container .ant-btn-link:hover {
+  color: #40a9ff;
 } 

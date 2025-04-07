@@ -20,6 +20,7 @@ interface StudentTableProps {
   onTransfer: (student: Student) => void;
   onTransferClass: (student: Student) => void;
   onDelete: (id: string) => void;
+  onAttendance: (student: Student) => void;
 }
 
 const StudentTable: React.FC<StudentTableProps> = ({
@@ -32,7 +33,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
   onRefund,
   onTransfer,
   onTransferClass,
-  onDelete
+  onDelete,
+  onAttendance,
 }) => {
   const columns = getStudentColumns(
     onEdit,
@@ -41,7 +43,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
     onRefund,
     onTransfer,
     onTransferClass,
-    onDelete
+    onDelete,
+    onAttendance,
   );
 
   return (

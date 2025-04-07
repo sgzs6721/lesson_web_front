@@ -7,7 +7,7 @@ import MainLayout from '@/layouts/MainLayout';
 // const Login = lazy(() => import('@/pages/auth/Login'));
 // const Register = lazy(() => import('@/pages/auth/Register'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
-const StudentManagement = lazy(() => import('@/pages/student/StudentManagementNew'));
+const StudentManagement = lazy(() => import('@/pages/student/StudentManagement'));
 const CourseManagement = lazy(() => import('@/pages/course/CourseManagement'));
 const ScheduleView = lazy(() => import('@/pages/schedule/ScheduleView'));
 const CoachManagement = lazy(() => import('@/pages/coach/CoachManagement'));

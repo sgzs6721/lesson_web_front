@@ -39,14 +39,30 @@ const renderCourseType = (text: string, record: Student) => {
 
 // 生成学员表格列定义
 export const getStudentColumns = (
-  showEditModal: (record: Student) => void,
-  showClassRecordModal: (student: Student) => void,
-  showPaymentModal: (student: Student) => void,
-  showRefundModal: (student: Student) => void,
-  showTransferModal: (student: Student) => void,
-  showTransferClassModal: (student: Student) => void,
-  showDeleteModal: (id: string) => void
+  onEdit: (record: Student) => void,
+  onClassRecord: (student: Student) => void,
+  onPayment: (student: Student) => void,
+  onRefund: (student: Student) => void,
+  onTransfer: (student: Student) => void,
+  onTransferClass: (student: Student) => void,
+  onDelete: (id: string) => void,
+  onAttendance: (student: Student) => void,
 ): ColumnsType<Student> => [
+  {
+    title: '打卡',
+    key: 'attendance',
+    align: 'center',
+    width: 80,
+    render: (_: any, record: Student) => (
+      <Button 
+        type="link" 
+        onClick={() => onAttendance(record)}
+        style={{ padding: '4px 8px' }}
+      >
+        打卡
+      </Button>
+    ),
+  },
   {
     title: '学员ID',
     dataIndex: 'id',
@@ -214,44 +230,44 @@ export const getStudentColumns = (
               key: 'edit',
               label: '编辑',
               icon: <EditOutlined />,
-              onClick: () => showEditModal(record)
+              onClick: () => onEdit(record)
             },
             {
               key: 'record',
               label: '课程记录',
               icon: <FileTextOutlined />,
-              onClick: () => showClassRecordModal(record)
+              onClick: () => onClassRecord(record)
             },
             {
               key: 'payment',
               label: '缴费',
               icon: <DollarOutlined />,
-              onClick: () => showPaymentModal(record)
+              onClick: () => onPayment(record)
             },
             {
               key: 'refund',
               label: '退费',
               icon: <RollbackOutlined />,
-              onClick: () => showRefundModal(record)
+              onClick: () => onRefund(record)
             },
             {
               key: 'transfer',
               label: '转课',
               icon: <TransactionOutlined />,
-              onClick: () => showTransferModal(record)
+              onClick: () => onTransfer(record)
             },
             {
               key: 'transferClass',
               label: '转班',
               icon: <SyncOutlined />,
-              onClick: () => showTransferClassModal(record)
+              onClick: () => onTransferClass(record)
             },
             {
               key: 'delete',
               label: '删除',
               icon: <DeleteOutlined />,
               danger: true,
-              onClick: () => showDeleteModal(record.id)
+              onClick: () => onDelete(record.id)
             },
           ]
         }}
