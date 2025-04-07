@@ -354,12 +354,6 @@ const ScheduleView: React.FC = () => {
           </div>
         </div>
 
-        <ScheduleLegend
-          coaches={mockCoaches}
-          selectedCoach={selectedCoach}
-          onCoachChange={setSelectedCoach}
-        />
-
         <div className="schedule-container">
           <ScheduleGrid
             cells={filteredCells}

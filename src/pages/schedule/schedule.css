@@ -17,11 +17,14 @@
 .filter-and-actions {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
+  width: 100%;
 }
 
 .schedule-controls {
+  width: 100%;
+  margin-right: 16px;
   flex: 1;
 }
 
@@ -239,6 +242,10 @@
   border-color: #d9d9d9;
 }
 
+.filter-form {
+  width: 100%;
+}
+
 .filter-group {
   display: flex;
   flex-direction: row;
@@ -252,10 +259,15 @@
   flex: 1;
   min-width: 220px;
   margin-bottom: 8px;
+  margin-right: 0 !important;
 }
 
 .filter-group .ant-select {
   width: 100% !important;
+}
+
+.filter-group .ant-form-item-label {
+  min-width: 42px;
 }
 
 /* 多选标签样式 */
@@ -292,4 +304,55 @@
   margin-bottom: 8px;
   color: #333;
   font-size: 14px;
+}
+
+.coach-option {
+  display: flex !important;
+  align-items: center !important;
+  padding: 8px 12px !important;
+}
+
+.coach-color-dot {
+  flex-shrink: 0 !important;
+}
+
+/* 覆盖 Ant Design 下拉菜单样式 */
+.ant-select-dropdown.ant-select-dropdown-placement-bottomLeft {
+  padding: 4px !important;
+}
+
+.ant-select-item-option {
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+}
+
+.ant-select-item-option-selected {
+  background-color: #f0f7ff !important;
+  font-weight: normal !important;
+}
+
+.ant-select-item-option-active {
+  background-color: #f5f5f5 !important;
+}
+
+/* 覆盖标签样式 */
+.ant-select-selection-item {
+  background-color: #f7f9fa !important;
+  border-color: #e9e9e9 !important;
+  padding: 0 8px !important;
+  border-radius: 4px !important;
+}
+
+/* 教练下拉菜单样式 */
+.coach-dropdown .ant-select-item {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.coach-dropdown .ant-select-item-option-state {
+  display: none !important;
+}
+
+.coach-dropdown .ant-select-item-option-content {
+  padding: 0 !important;
 } 
