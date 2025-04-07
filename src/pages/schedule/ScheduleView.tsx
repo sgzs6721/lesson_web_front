@@ -1,698 +1,382 @@
-import { useState, useEffect } from 'react';
-import {
-  Calendar,
-  Badge,
-  Card,
-  Select,
-  Row,
-  Col,
-  Typography,
-  Button,
-  Modal,
-  Form,
-  Input,
-  TimePicker,
-  DatePicker,
-  message,
-  Spin,
-  Tooltip,
-  Popconfirm,
-  Tag,
-  Radio,
-  Space
-} from 'antd';
-import type { CalendarMode } from 'antd/es/calendar/generateCalendar';
-import {
-  PlusOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  TeamOutlined,
-  UserOutlined,
-  EnvironmentOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
-import type { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
-import 'dayjs/locale/zh-cn';
-import type { BadgeProps } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, message } from 'antd';
+import { EditOutlined, CheckOutlined } from '@ant-design/icons';
+import ScheduleControls from './components/ScheduleControls';
+import ScheduleGrid from './components/ScheduleGrid';
+import ScheduleLegend from './components/ScheduleLegend';
+import ScheduleChangeModal from './components/ScheduleChangeModal';
+import { Coach, CourseType, ScheduleCell, Student, ScheduleChange } from './types/schedule';
+import './schedule.css';
 
-const { Title, Text } = Typography;
-const { Option } = Select;
-const { RangePicker } = DatePicker;
-
-// 定义课程安排数据类型
-interface ScheduleItem {
-  id: string;
-  title: string;
-  courseId: string;
-  courseName: string;
-  coachId: string;
-  coachName: string;
-  campusId: string;
-  campusName: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  status: 'normal' | 'canceled' | 'completed';
-  studentCount: number;
-  maxStudents: number;
-  remarks?: string;
-  color: string;
-}
-
-// 模拟课程数据
-const courseOptions = [
-  { value: 'c1', label: '青少年篮球训练A班' },
-  { value: 'c2', label: '网球精英班' },
-  { value: 'c3', label: '少儿游泳入门班' },
-  { value: 'c4', label: '成人健身基础班' },
-  { value: 'c5', label: '瑜伽初级班' },
-  { value: 'c6', label: '跆拳道精英班' },
+// 模拟数据
+const mockCoaches: Coach[] = [
+  { id: 'li', name: '李教练', color: '#e74c3c' },
+  { id: 'wang', name: '王教练', color: '#3498db' },
+  { id: 'zhang', name: '张教练', color: '#2ecc71' },
+  { id: 'liu', name: '刘教练', color: '#f39c12' },
 ];
 
-// 模拟教练数据
-const coachOptions = [
-  { value: 'coach1', label: '张教练' },
-  { value: 'coach2', label: '李教练' },
-  { value: 'coach3', label: '王教练' },
-  { value: 'coach4', label: '刘教练' },
-  { value: 'coach5', label: '陈教练' },
+const mockCourseTypes: CourseType[] = [
+  { id: 'dance', name: '舞蹈课', color: '#e74c3c' },
+  { id: 'yoga', name: '瑜伽课', color: '#2ecc71' },
+  { id: 'fitness', name: '健身课', color: '#f39c12' },
 ];
 
-// 模拟校区数据
-const campusOptions = [
-  { value: 'campus1', label: '北京中关村校区' },
-  { value: 'campus2', label: '北京望京校区' },
-  { value: 'campus3', label: '上海徐汇校区' },
-  { value: 'campus4', label: '上海浦东校区' },
-  { value: 'campus5', label: '广州天河校区' },
-  { value: 'campus6', label: '深圳南山校区' },
+const mockStudents: Student[] = [
+  { id: '1', name: '张小明', remainingClasses: 12, totalClasses: 24, pricePerClass: 200, courseTypeName: '舞蹈课', courseName: '少儿街舞' },
+  { id: '2', name: '李华', remainingClasses: 15, totalClasses: 30, pricePerClass: 180, courseTypeName: '舞蹈课', courseName: '少儿街舞' },
+  { id: '3', name: '王芳', remainingClasses: 8, totalClasses: 20, pricePerClass: 150, courseTypeName: '健身课', courseName: '有氧训练' },
+  { id: '4', name: '赵强', remainingClasses: 10, totalClasses: 20, pricePerClass: 160, courseTypeName: '健身课', courseName: '有氧训练' },
+  { id: '5', name: '陈丽', remainingClasses: 18, totalClasses: 36, pricePerClass: 190, courseTypeName: '健身课', courseName: '力量训练' },
+  { id: '6', name: '孙红', remainingClasses: 14, totalClasses: 28, pricePerClass: 170, courseTypeName: '瑜伽课', courseName: '高温瑜伽' },
+  { id: '7', name: '周杰', remainingClasses: 9, totalClasses: 18, pricePerClass: 200, courseTypeName: '瑜伽课', courseName: '高温瑜伽' },
+  { id: '8', name: '吴敏', remainingClasses: 20, totalClasses: 40, pricePerClass: 180, courseTypeName: '健身课', courseName: '私教课程' },
+  { id: '9', name: '刘洋', remainingClasses: 16, totalClasses: 32, pricePerClass: 190, courseTypeName: '瑜伽课', courseName: '初级瑜伽' },
 ];
-
-// 颜色映射
-const colorMap = {
-  'c1': '#f50',
-  'c2': '#2db7f5',
-  'c3': '#87d068',
-  'c4': '#722ed1',
-  'c5': '#eb2f96',
-  'c6': '#faad14',
-};
 
 const ScheduleView: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [scheduleData, setScheduleData] = useState<ScheduleItem[]>([]);
-  const [filteredScheduleData, setFilteredScheduleData] = useState<ScheduleItem[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalType, setModalType] = useState<'add' | 'view'>('add');
-  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleItem | null>(null);
-  const [selectedCampus, setSelectedCampus] = useState<string>('');
-  const [selectedCoach, setSelectedCoach] = useState<string>('');
-  const [selectedCourse, setSelectedCourse] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
-  const [calendarView, setCalendarView] = useState<CalendarMode>('month');
-  
-  const [form] = Form.useForm();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedCoach, setSelectedCoach] = useState<string[]>([]);
+  const [selectedCourseType, setSelectedCourseType] = useState<string[]>([]);
+  const [selectedType, setSelectedType] = useState<string[]>([]);
+  const [scheduleCells, setScheduleCells] = useState<ScheduleCell[]>([]);
+  const [initialState, setInitialState] = useState<{ [key: string]: string }>({});
+  const [changes, setChanges] = useState<ScheduleChange[]>([]);
+  const [isChangeModalVisible, setIsChangeModalVisible] = useState(false);
+  const [filteredCells, setFilteredCells] = useState<ScheduleCell[]>([]);
 
   useEffect(() => {
-    fetchScheduleData();
-  }, []);
+    // 初始化课表数据
+    const initialCells: ScheduleCell[] = [];
+    const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    const timeSlots = ['9:00-10:00', '10:00-11:00', '14:00-15:00', '15:00-16:00', '16:00-17:00', '17:00-18:00'];
 
-  useEffect(() => {
-    filterScheduleData();
-  }, [scheduleData, selectedCampus, selectedCoach, selectedCourse]);
-
-  const fetchScheduleData = async () => {
-    setLoading(true);
-    try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 生成测试数据 - 过去和未来30天的课程安排
-      const today = dayjs();
-      const startDate = today.subtract(15, 'day');
-      
-      const mockData: ScheduleItem[] = [];
-      
-      // 为每个课程生成多个日程
-      courseOptions.forEach((course, courseIndex) => {
-        const courseId = course.value;
+    timeSlots.forEach(timeSlot => {
+      weekdays.forEach(weekday => {
+        // 为每个单元格随机选择学生
+        const coachId = mockCoaches[Math.floor(Math.random() * mockCoaches.length)].id;
+        const cellStudents = mockStudents
+          .slice(0, Math.floor(Math.random() * 3) + 1)
+          .map(student => ({ ...student })); // 创建学生对象的副本
+          
+        const cell: ScheduleCell = {
+          id: `${timeSlot}-${weekday}`,
+          coachId,
+          students: cellStudents,
+          timeSlot,
+          weekday,
+        };
         
-        // 每个课程在不同校区和不同教练下的安排
-        for (let campusIndex = 0; campusIndex < 3; campusIndex++) {
-          const campusId = campusOptions[campusIndex % campusOptions.length].value;
-          const campusName = campusOptions[campusIndex % campusOptions.length].label;
-          
-          const coachId = coachOptions[(courseIndex + campusIndex) % coachOptions.length].value;
-          const coachName = coachOptions[(courseIndex + campusIndex) % coachOptions.length].label;
-          
-          // 生成30天的排课
-          for (let day = 0; day < 30; day++) {
-            // 每个课程每周安排2-3次
-            if (day % 3 === courseIndex % 3 || day % 7 === courseIndex % 7) {
-              const currentDate = startDate.add(day, 'day');
-              const dateStr = currentDate.format('YYYY-MM-DD');
-              
-              // 上午和下午各一个时间段
-              const timeSlots = [
-                { start: '09:00', end: '10:30' },
-                { start: '14:00', end: '15:30' },
-                { start: '19:00', end: '20:30' },
-              ];
-              
-              const timeSlot = timeSlots[(courseIndex + day) % timeSlots.length];
-              
-              // 已完成、取消或正常状态
-              let status: 'completed' | 'canceled' | 'normal';
-              if (currentDate.isBefore(today, 'day')) {
-                status = Math.random() > 0.1 ? 'completed' : 'canceled';
-              } else {
-                status = Math.random() > 0.05 ? 'normal' : 'canceled';
-              }
-              
-              mockData.push({
-                id: `s${mockData.length + 1}`,
-                title: course.label,
-                courseId,
-                courseName: course.label,
-                coachId,
-                coachName,
-                campusId,
-                campusName,
-                date: dateStr,
-                startTime: timeSlot.start,
-                endTime: timeSlot.end,
-                status,
-                studentCount: Math.floor(Math.random() * 15) + 5,
-                maxStudents: 20,
-                remarks: Math.random() > 0.7 ? '特别备注：需要携带装备' : undefined,
-                color: colorMap[courseId as keyof typeof colorMap] || '#1890ff',
-              });
-            }
-          }
-        }
+        // 应用学生分组逻辑
+        initialCells.push(cell);
       });
-      
-      setScheduleData(mockData);
-    } catch (error) {
-      message.error('获取课程安排失败');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterScheduleData = () => {
-    let filtered = [...scheduleData];
-    
-    if (selectedCampus) {
-      filtered = filtered.filter(item => item.campusId === selectedCampus);
-    }
-    
-    if (selectedCoach) {
-      filtered = filtered.filter(item => item.coachId === selectedCoach);
-    }
-    
-    if (selectedCourse) {
-      filtered = filtered.filter(item => item.courseId === selectedCourse);
-    }
-    
-    setFilteredScheduleData(filtered);
-  };
-
-  const handleReset = () => {
-    setSelectedCampus('');
-    setSelectedCoach('');
-    setSelectedCourse('');
-    filterScheduleData();
-  };
-
-  const showAddModal = (date?: Dayjs) => {
-    setModalType('add');
-    form.resetFields();
-    
-    if (date) {
-      form.setFieldsValue({
-        date: date,
-      });
-    } else {
-      form.setFieldsValue({
-        date: dayjs(),
-      });
-    }
-    
-    setIsModalVisible(true);
-  };
-
-  const showViewModal = (schedule: ScheduleItem) => {
-    setModalType('view');
-    setSelectedSchedule(schedule);
-    
-    form.setFieldsValue({
-      ...schedule,
-      date: dayjs(schedule.date),
-      time: [dayjs(`${schedule.date} ${schedule.startTime}`), dayjs(`${schedule.date} ${schedule.endTime}`)],
     });
     
-    setIsModalVisible(true);
-  };
+    // 为每个单元格应用分组逻辑
+    initialCells.forEach(cell => {
+      reorganizeGroups(cell);
+    });
 
-  const handleModalOk = () => {
-    if (modalType === 'view') {
-      if (selectedSchedule && selectedSchedule.status !== 'completed') {
-        form.validateFields()
-          .then(values => {
-            const updatedSchedule: ScheduleItem = {
-              ...selectedSchedule,
-              courseId: values.courseId,
-              courseName: courseOptions.find(c => c.value === values.courseId)?.label || '',
-              coachId: values.coachId,
-              coachName: coachOptions.find(c => c.value === values.coachId)?.label || '',
-              campusId: values.campusId,
-              campusName: campusOptions.find(c => c.value === values.campusId)?.label || '',
-              date: values.date.format('YYYY-MM-DD'),
-              startTime: values.time[0].format('HH:mm'),
-              endTime: values.time[1].format('HH:mm'),
-              status: values.status,
-              remarks: values.remarks,
-              color: colorMap[values.courseId as keyof typeof colorMap] || '#1890ff',
-            };
-            
-            // 更新数据
-            setScheduleData(prev => 
-              prev.map(item => item.id === updatedSchedule.id ? updatedSchedule : item)
-            );
-            
-            message.success('课程安排已更新');
-            setIsModalVisible(false);
-          })
-          .catch(info => {
-            console.log('Validate Failed:', info);
-          });
-      } else {
-        setIsModalVisible(false);
-      }
-    } else {
-      form.validateFields()
-        .then(values => {
-          const courseInfo = courseOptions.find(c => c.value === values.courseId);
-          const coachInfo = coachOptions.find(c => c.value === values.coachId);
-          const campusInfo = campusOptions.find(c => c.value === values.campusId);
-          
-          const newSchedule: ScheduleItem = {
-            id: `s${Date.now()}`,
-            title: courseInfo?.label || '',
-            courseId: values.courseId,
-            courseName: courseInfo?.label || '',
-            coachId: values.coachId,
-            coachName: coachInfo?.label || '',
-            campusId: values.campusId,
-            campusName: campusInfo?.label || '',
-            date: values.date.format('YYYY-MM-DD'),
-            startTime: values.time[0].format('HH:mm'),
-            endTime: values.time[1].format('HH:mm'),
-            status: 'normal',
-            studentCount: 0,
-            maxStudents: values.maxStudents || 20,
-            remarks: values.remarks,
-            color: colorMap[values.courseId as keyof typeof colorMap] || '#1890ff',
-          };
-          
-          // 添加新数据
-          setScheduleData(prev => [newSchedule, ...prev]);
-          
-          message.success('课程安排已添加');
-          setIsModalVisible(false);
-        })
-        .catch(info => {
-          console.log('Validate Failed:', info);
-        });
-    }
-  };
+    setScheduleCells(initialCells);
+    setFilteredCells(initialCells);
+  }, []);
 
-  const handleDeleteSchedule = () => {
-    if (selectedSchedule) {
-      // 删除数据
-      setScheduleData(prev => prev.filter(item => item.id !== selectedSchedule.id));
-      message.success('课程安排已删除');
-      setIsModalVisible(false);
-    }
-  };
-
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const dateCellRender = (value: Dayjs) => {
-    const date = value.format('YYYY-MM-DD');
-    const listData = filteredScheduleData.filter(item => item.date === date);
+  // 当选择的教练或课程类型变化时，过滤课表
+  useEffect(() => {
+    let filtered = [...scheduleCells];
     
-    return (
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {listData.slice(0, 3).map(item => (
-          <li key={item.id} onClick={() => showViewModal(item)} style={{ margin: '2px 0' }}>
-            <Badge
-              status={getBadgeStatus(item.status)}
-              text={
-                <Tooltip title={`${item.startTime}-${item.endTime} ${item.courseName}`}>
-                  <span style={{ fontSize: '12px' }}>
-                    {item.startTime.substring(0, 5)} {item.courseName.substring(0, 6)}...
-                  </span>
-                </Tooltip>
-              }
-            />
-          </li>
-        ))}
-        {listData.length > 3 && (
-          <li>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              +{listData.length - 3} 更多...
-            </Text>
-          </li>
-        )}
-      </ul>
-    );
+    // 按教练过滤
+    if (selectedCoach.length > 0) {
+      filtered = filtered.map(cell => ({
+        ...cell,
+        students: selectedCoach.includes(cell.coachId) ? cell.students : []
+      }));
+    }
+    
+    // 按课程类型过滤
+    if (selectedCourseType.length > 0) {
+      const courseTypeNames = selectedCourseType.map(typeId => 
+        mockCourseTypes.find(ct => ct.id === typeId)?.name
+      ).filter(Boolean) as string[];
+      
+      filtered = filtered.map(cell => {
+        // 先保留当前单元格中所有学生
+        const cellStudents = [...cell.students];
+        
+        // 如果指定了课程类型，则只保留符合任一类型的学生
+        return {
+          ...cell,
+          students: cellStudents.filter(student => 
+            student.courseTypeName && courseTypeNames.includes(student.courseTypeName)
+          )
+        };
+      });
+    }
+    
+    // 按具体课程名称过滤
+    if (selectedType.length > 0) {
+      const courseNameMap: {[key: string]: string} = {
+        'type1': '少儿街舞',
+        'type2': '有氧训练',
+        'type3': '力量训练',
+        'type4': '高温瑜伽',
+        'type5': '初级瑜伽',
+        'type6': '私教课程'
+      };
+      
+      const courseNames = selectedType.map(typeId => courseNameMap[typeId]).filter(Boolean);
+      
+      filtered = filtered.map(cell => ({
+        ...cell,
+        students: cell.students.filter(student => 
+          student.courseName && courseNames.includes(student.courseName)
+        )
+      }));
+    }
+    
+    setFilteredCells(filtered);
+  }, [selectedCoach, selectedCourseType, selectedType, scheduleCells]);
+
+  const handleEditModeToggle = () => {
+    if (!isEditMode) {
+      // 进入编辑模式时保存初始状态
+      const state: { [key: string]: string } = {};
+      scheduleCells.forEach(cell => {
+        state[cell.id] = JSON.stringify(cell.students);
+      });
+      setInitialState(state);
+    }
+    setIsEditMode(!isEditMode);
   };
 
-  // 获取徽章状态
-  const getBadgeStatus = (status: string): BadgeProps['status'] => {
-    switch (status) {
-      case 'completed':
-        return 'success';
-      case 'canceled':
-        return 'error';
-      case 'normal':
-        return 'processing';
-      default:
-        return 'default';
+  const handleDragStart = (e: React.DragEvent, student: Student, cellId: string) => {
+    // 防止在非编辑模式下进行拖动
+    if (!isEditMode) return;
+    
+    const groupId = student.groupId;
+    
+    // 如果学生有分组ID，将该分组中的所有学生信息传递
+    if (groupId) {
+      const cell = scheduleCells.find(c => c.id === cellId);
+      if (cell) {
+        const groupStudents = cell.students.filter(s => s.groupId === groupId);
+        e.dataTransfer.setData('students', JSON.stringify(groupStudents));
+        e.dataTransfer.setData('sourceCellId', cellId);
+        e.dataTransfer.setData('isGroup', 'true');
+        
+        // 添加视觉效果
+        const dragIcon = document.createElement('div');
+        dragIcon.className = 'drag-ghost';
+        dragIcon.innerHTML = `<span>拖动 ${groupStudents.length} 名学生</span>`;
+        document.body.appendChild(dragIcon);
+        e.dataTransfer.setDragImage(dragIcon, 0, 0);
+        setTimeout(() => document.body.removeChild(dragIcon), 0);
+        return;
+      }
+    }
+    
+    // 单个学生的情况
+    e.dataTransfer.setData('student', JSON.stringify(student));
+    e.dataTransfer.setData('sourceCellId', cellId);
+    e.dataTransfer.setData('isGroup', 'false');
+  };
+
+  const handleDragOver = (e: React.DragEvent, cellId: string) => {
+    // 防止在非编辑模式下响应拖动
+    if (!isEditMode) return;
+    
+    e.preventDefault();
+    const cell = document.querySelector(`[data-cell-id="${cellId}"]`);
+    if (cell) {
+      cell.classList.add('drop-target');
     }
   };
 
-  const onPanelChange = (value: Dayjs) => {
-    setSelectedDate(value);
+  const handleDrop = (e: React.DragEvent, targetCellId: string) => {
+    // 防止在非编辑模式下响应拖动
+    if (!isEditMode) return;
+    
+    e.preventDefault();
+    // 移除所有目标样式
+    document.querySelectorAll('.drop-target').forEach(el => {
+      el.classList.remove('drop-target');
+    });
+    
+    const sourceCellId = e.dataTransfer.getData('sourceCellId');
+    if (!sourceCellId) return; // 确保有有效的源单元格ID
+    
+    const isGroup = e.dataTransfer.getData('isGroup') === 'true';
+
+    setScheduleCells(prevCells => {
+      const newCells = [...prevCells];
+      const sourceCell = newCells.find(c => c.id === sourceCellId);
+      const targetCell = newCells.find(c => c.id === targetCellId);
+
+      if (sourceCell && targetCell) {
+        if (isGroup) {
+          // 处理分组拖动
+          const groupStudentsData = e.dataTransfer.getData('students');
+          if (groupStudentsData) {
+            const groupStudents = JSON.parse(groupStudentsData);
+            const studentIds = groupStudents.map((s: Student) => s.id);
+            
+            // 从源单元格移除学生
+            sourceCell.students = sourceCell.students.filter(s => !studentIds.includes(s.id));
+            
+            // 添加到目标单元格
+            targetCell.students = [...targetCell.students, ...groupStudents];
+          }
+        } else {
+          // 处理单个学生拖动
+          const studentData = e.dataTransfer.getData('student');
+          if (studentData) {
+            const student = JSON.parse(studentData);
+            sourceCell.students = sourceCell.students.filter(s => s.id !== student.id);
+            targetCell.students = [...targetCell.students, student];
+          }
+        }
+        
+        // 拖放完成后重新组织目标单元格中的学生分组
+        reorganizeGroups(targetCell);
+      }
+
+      return newCells;
+    });
+  };
+  
+  // 重新组织单元格中的学生分组
+  const reorganizeGroups = (cell: ScheduleCell) => {
+    // 按课程类型和课程名称进行分组
+    const groupsMap: { [key: string]: Student[] } = {};
+    
+    // 先清除现有的分组ID
+    cell.students.forEach(student => {
+      // 创建组合键: 教练ID + 课程类型 + 课程名称
+      const groupKey = `${cell.coachId}_${student.courseTypeName || ''}_${student.courseName || ''}`;
+      
+      if (!groupsMap[groupKey]) {
+        groupsMap[groupKey] = [];
+      }
+      
+      groupsMap[groupKey].push({
+        ...student,
+        groupId: undefined // 暂时清除原有的groupId
+      });
+    });
+    
+    // 创建新的分组ID并应用
+    const newStudents: Student[] = [];
+    Object.entries(groupsMap).forEach(([groupKey, students]) => {
+      // 只有超过1个学生的才需要分组
+      if (students.length > 1) {
+        const newGroupId = `group_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        students.forEach(student => {
+          newStudents.push({
+            ...student,
+            groupId: newGroupId
+          });
+        });
+      } else {
+        // 单个学生不需要分组
+        newStudents.push(students[0]);
+      }
+    });
+    
+    // 更新单元格中的学生列表
+    cell.students = newStudents;
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'normal':
-        return '正常';
-      case 'canceled':
-        return '已取消';
-      case 'completed':
-        return '已完成';
-      default:
-        return status;
-    }
+  const handleFinishEdit = () => {
+    // 收集变更信息
+    const newChanges: ScheduleChange[] = [];
+    scheduleCells.forEach(cell => {
+      const initialStudents = JSON.parse(initialState[cell.id] || '[]');
+      const currentStudents = cell.students;
+      
+      if (JSON.stringify(initialStudents) !== JSON.stringify(currentStudents)) {
+        newChanges.push({
+          timeSlot: cell.timeSlot,
+          weekday: cell.weekday,
+          before: initialStudents.map((s: Student) => s.name),
+          after: currentStudents.map(s => s.name),
+        });
+      }
+    });
+
+    setChanges(newChanges);
+    setIsChangeModalVisible(true);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'normal':
-        return 'processing';
-      case 'canceled':
-        return 'error';
-      case 'completed':
-        return 'success';
-      default:
-        return 'default';
-    }
+  const handleChangeConfirm = () => {
+    message.success('课表更新已保存');
+    setIsChangeModalVisible(false);
+    setIsEditMode(false);
+  };
+
+  const handleChangeCancel = () => {
+    setIsChangeModalVisible(false);
+    // 恢复初始状态
+    setScheduleCells(prevCells => {
+      return prevCells.map(cell => ({
+        ...cell,
+        students: JSON.parse(initialState[cell.id] || '[]'),
+      }));
+    });
+    setIsEditMode(false);
   };
 
   return (
-    <div className="schedule-view">
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={4}>课程日程表</Title>
-        </Col>
-        <Col>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            onClick={() => showAddModal()}
-          >
-            添加课程安排
-          </Button>
-        </Col>
-      </Row>
+    <div className="schedule-view-container">
+      <div className="page-header">
+        <div className="page-title">固定课表</div>
+      </div>
 
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={24} md={6} lg={6}>
-            <Select
-              placeholder="选择校区"
-              style={{ width: '100%' }}
-              value={selectedCampus}
-              onChange={value => setSelectedCampus(value)}
-              allowClear
-            >
-              {campusOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={6}>
-            <Select
-              placeholder="选择教练"
-              style={{ width: '100%' }}
-              value={selectedCoach}
-              onChange={value => setSelectedCoach(value)}
-              allowClear
-            >
-              {coachOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={6}>
-            <Select
-              placeholder="选择课程"
-              style={{ width: '100%' }}
-              value={selectedCourse}
-              onChange={value => setSelectedCourse(value)}
-              allowClear
-            >
-              {courseOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={24} md={6} lg={6} style={{ textAlign: 'right' }}>
-            <Space>
-              <Radio.Group 
-                value={calendarView} 
-                onChange={e => setCalendarView(e.target.value)}
-                buttonStyle="solid"
-              >
-                <Radio.Button value="month">月</Radio.Button>
-                <Radio.Button value="week">周</Radio.Button>
-                <Radio.Button value="day">日</Radio.Button>
-              </Radio.Group>
-              <Button onClick={handleReset}>重置筛选</Button>
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-
-      <Card bodyStyle={{ padding: '24px 0' }}>
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 100 }}>
-            <Spin size="large" />
-          </div>
-        ) : (
-          <Calendar 
-            dateCellRender={dateCellRender}
-            onPanelChange={onPanelChange}
-            onSelect={date => showAddModal(date)}
-            mode={calendarView}
+      <Card>
+        <div className="filter-and-actions">
+          <ScheduleControls
+            coaches={mockCoaches}
+            courseTypes={mockCourseTypes}
+            selectedCoach={selectedCoach}
+            selectedCourseType={selectedCourseType}
+            selectedType={selectedType}
+            onCoachChange={setSelectedCoach}
+            onCourseTypeChange={setSelectedCourseType}
+            onTypeChange={setSelectedType}
           />
-        )}
+          <div className="action-buttons">
+            <Button
+              type={isEditMode ? 'default' : 'primary'}
+              icon={isEditMode ? <CheckOutlined /> : <EditOutlined />}
+              onClick={isEditMode ? handleFinishEdit : handleEditModeToggle}
+            >
+              {isEditMode ? '完成' : '编辑'}
+            </Button>
+          </div>
+        </div>
+
+        <ScheduleLegend
+          coaches={mockCoaches}
+          selectedCoach={selectedCoach}
+          onCoachChange={setSelectedCoach}
+        />
+
+        <div className="schedule-container">
+          <ScheduleGrid
+            cells={filteredCells}
+            isEditMode={isEditMode}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          />
+        </div>
       </Card>
 
-      <Modal
-        title={modalType === 'add' ? '添加课程安排' : '课程安排详情'}
-        open={isModalVisible}
-        onOk={handleModalOk}
-        onCancel={handleModalCancel}
-        width={700}
-        footer={
-          modalType === 'view' && selectedSchedule && selectedSchedule.status === 'completed'
-            ? [
-                <Button key="close" onClick={handleModalCancel}>
-                  关闭
-                </Button>
-              ]
-            : modalType === 'view'
-            ? [
-                <Popconfirm
-                  key="delete"
-                  title="确定要删除此课程安排吗？"
-                  onConfirm={handleDeleteSchedule}
-                  okText="确定"
-                  cancelText="取消"
-                >
-                  <Button danger>
-                    删除
-                  </Button>
-                </Popconfirm>,
-                <Button key="cancel" onClick={handleModalCancel}>
-                  取消
-                </Button>,
-                <Button key="submit" type="primary" onClick={handleModalOk}>
-                  保存修改
-                </Button>
-              ]
-            : undefined
-        }
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          name="scheduleForm"
-          initialValues={{
-            maxStudents: 20,
-          }}
-        >
-          {modalType === 'view' && selectedSchedule && (
-            <div style={{ marginBottom: 16 }}>
-              <Tag color={getStatusColor(selectedSchedule.status)}>
-                {getStatusText(selectedSchedule.status)}
-              </Tag>
-              {selectedSchedule.status !== 'canceled' && (
-                <span style={{ marginLeft: 8 }}>
-                  当前学员: {selectedSchedule.studentCount}/{selectedSchedule.maxStudents}
-                </span>
-              )}
-            </div>
-          )}
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="courseId"
-                label="课程"
-                rules={[{ required: true, message: '请选择课程' }]}
-              >
-                <Select 
-                  placeholder="请选择课程"
-                  disabled={modalType === 'view' && selectedSchedule?.status === 'completed'}
-                >
-                  {courseOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="coachId"
-                label="教练"
-                rules={[{ required: true, message: '请选择教练' }]}
-              >
-                <Select 
-                  placeholder="请选择教练"
-                  disabled={modalType === 'view' && selectedSchedule?.status === 'completed'}
-                >
-                  {coachOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="campusId"
-                label="校区"
-                rules={[{ required: true, message: '请选择校区' }]}
-              >
-                <Select 
-                  placeholder="请选择校区"
-                  disabled={modalType === 'view' && selectedSchedule?.status === 'completed'}
-                >
-                  {campusOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="date"
-                label="日期"
-                rules={[{ required: true, message: '请选择日期' }]}
-              >
-                <DatePicker 
-                  style={{ width: '100%' }} 
-                  disabled={modalType === 'view' && selectedSchedule?.status === 'completed'}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            name="time"
-            label="时间段"
-            rules={[{ required: true, message: '请选择时间段' }]}
-          >
-            <TimePicker.RangePicker 
-              format="HH:mm"
-              style={{ width: '100%' }}
-              disabled={modalType === 'view' && selectedSchedule?.status === 'completed'}
-            />
-          </Form.Item>
-
-          {modalType === 'add' && (
-            <Form.Item
-              name="maxStudents"
-              label="最大学员数"
-              rules={[{ required: true, message: '请输入最大学员数' }]}
-            >
-              <Input type="number" prefix={<TeamOutlined />} />
-            </Form.Item>
-          )}
-
-          {modalType === 'view' && selectedSchedule?.status !== 'completed' && (
-            <Form.Item
-              name="status"
-              label="状态"
-              rules={[{ required: true, message: '请选择状态' }]}
-            >
-              <Select>
-                <Option value="normal">正常</Option>
-                <Option value="canceled">已取消</Option>
-                {dayjs(selectedSchedule?.date).isBefore(dayjs(), 'day') && (
-                  <Option value="completed">已完成</Option>
-                )}
-              </Select>
-            </Form.Item>
-          )}
-
-          <Form.Item
-            name="remarks"
-            label="备注"
-          >
-            <Input.TextArea 
-              rows={3} 
-              placeholder="请输入备注信息"
-              disabled={modalType === 'view' && selectedSchedule?.status === 'completed'}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <ScheduleChangeModal
+        visible={isChangeModalVisible}
+        changes={changes}
+        onConfirm={handleChangeConfirm}
+        onCancel={handleChangeCancel}
+      />
     </div>
   );
 };
