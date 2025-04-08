@@ -100,7 +100,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
     <div>
       {/* 学员指标卡片 */}
       <div className="stats-section">
-        <div className="section-header">
+        <div className="section-header" style={{ borderBottom: 'none !important', paddingBottom: 0 }}>
           <div className="section-title">学员指标</div>
           <div className="btn-group">
             <Button
@@ -163,7 +163,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
 
       {/* 学员增长趋势 */}
       <div className="chart-container">
-        <div className="chart-header">
+        <div className="chart-header" style={{ borderBottom: 'none' }}>
           <div className="chart-title">学员增长趋势</div>
           <div className="chart-actions">
             <div className="btn-group">
@@ -312,7 +312,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
 
       {/* 学员续费金额趋势 */}
       <div className="chart-container">
-        <div className="chart-header">
+        <div className="chart-header" style={{ borderBottom: 'none' }}>
           <div className="chart-title">学员续费金额趋势</div>
           <div className="chart-actions">
             <div className="btn-group">
@@ -411,7 +411,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
 
       {/* 学员来源渠道分析 */}
       <div className="chart-container">
-        <div className="chart-header">
+        <div className="chart-header" style={{ borderBottom: 'none' }}>
           <div className="chart-title">学员来源渠道分析</div>
         </div>
         <Row gutter={20}>

@@ -25,12 +25,7 @@ const StatisticsDashboard: React.FC = () => {
     applyFilters
   } = useStatisticsData();
 
-  // 切换时间范围
-  const handleTimeframeChange = (value: string) => {
-    setTimeframe(value);
-    // 只对核心经营指标部分进行刷新
-    applyFilters({ timeframe: value });
-  };
+  // 已移除核心经营指标的时间范围按钮
 
   // 切换标签页
   const handleTabChange = (key: string) => {
@@ -39,39 +34,43 @@ const StatisticsDashboard: React.FC = () => {
 
   return (
     <div className="statistics-dashboard-container">
-      <div className="header">
-        <Title level={3}>数据统计</Title>
+      <div className="header" style={{ borderBottom: 'none', paddingBottom: 0, display: 'flex', alignItems: 'center', marginTop: '-10px', marginBottom: '10px' }}>
+        <Title level={3} style={{ marginBottom: 0, marginRight: '40px' }}>数据统计</Title>
+        <Tabs activeKey={activeTab} onChange={handleTabChange} className="header-tabs" size="large" tabBarStyle={{ marginBottom: 0 }}>
+          <TabPane tab="概览" key="overview" />
+          <TabPane tab="学员分析" key="student" />
+          <TabPane tab="教练分析" key="coach" />
+          <TabPane tab="财务分析" key="finance" />
+        </Tabs>
       </div>
 
-      <div className="statistics-tabs-container">
-        <Tabs activeKey={activeTab} onChange={handleTabChange} className="statistics-tabs">
-          <TabPane tab="概览" key="overview">
-            <StatisticsOverview
-              data={data}
-              timeframe={timeframe}
-              onTimeframeChange={handleTimeframeChange}
-              loading={loading}
-            />
-          </TabPane>
-          <TabPane tab="学员分析" key="student">
-            <StudentAnalysis
-              data={studentData}
-              loading={loading}
-            />
-          </TabPane>
-          <TabPane tab="教练分析" key="coach">
-            <CoachAnalysis
-              data={coachData}
-              loading={loading}
-            />
-          </TabPane>
-          <TabPane tab="财务分析" key="finance">
-            <FinanceAnalysis
-              data={financeData}
-              loading={loading}
-            />
-          </TabPane>
-        </Tabs>
+      <div className="statistics-tabs-content">
+        {activeTab === 'overview' && (
+          <StatisticsOverview
+            data={data}
+            timeframe={timeframe}
+            onTimeframeChange={() => {}}
+            loading={loading}
+          />
+        )}
+        {activeTab === 'student' && (
+          <StudentAnalysis
+            data={studentData}
+            loading={loading}
+          />
+        )}
+        {activeTab === 'coach' && (
+          <CoachAnalysis
+            data={coachData}
+            loading={loading}
+          />
+        )}
+        {activeTab === 'finance' && (
+          <FinanceAnalysis
+            data={financeData}
+            loading={loading}
+          />
+        )}
       </div>
     </div>
   );

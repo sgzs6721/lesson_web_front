@@ -15,7 +15,7 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
   onTimeframeChange,
   loading
 }) => {
-  const [coreStatsLoading, setCoreStatsLoading] = useState(false);
+  // 移除了核心指标的时间筛选按钮
   const [trendChartLoading, setTrendChartLoading] = useState(false);
   const [trendTimeframe, setTrendTimeframe] = useState<'month' | 'year'>('month');
   if (loading) {
@@ -50,59 +50,11 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
     <div>
       {/* 核心指标卡片 */}
       <div className="stats-section">
-        <div className="section-header">
+        <div className="section-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
           <div className="section-title">核心经营指标</div>
-          <div className="time-filter-buttons">
-            <Space.Compact size="small">
-              <Button
-                type={timeframe === 'day' ? 'primary' : 'default'}
-                onClick={() => {
-                  setCoreStatsLoading(true);
-                  onTimeframeChange('day');
-                  setTimeout(() => setCoreStatsLoading(false), 500);
-                }}
-              >
-                今日
-              </Button>
-              <Button
-                type={timeframe === 'week' ? 'primary' : 'default'}
-                onClick={() => {
-                  setCoreStatsLoading(true);
-                  onTimeframeChange('week');
-                  setTimeout(() => setCoreStatsLoading(false), 500);
-                }}
-              >
-                本周
-              </Button>
-              <Button
-                type={timeframe === 'month' ? 'primary' : 'default'}
-                onClick={() => {
-                  setCoreStatsLoading(true);
-                  onTimeframeChange('month');
-                  setTimeout(() => setCoreStatsLoading(false), 500);
-                }}
-              >
-                本月
-              </Button>
-              <Button
-                type={timeframe === 'year' ? 'primary' : 'default'}
-                onClick={() => {
-                  setCoreStatsLoading(true);
-                  onTimeframeChange('year');
-                  setTimeout(() => setCoreStatsLoading(false), 500);
-                }}
-              >
-                本年
-              </Button>
-            </Space.Compact>
-          </div>
+
         </div>
-        <div className="stats-cards" style={{ position: 'relative' }}>
-          {coreStatsLoading ? (
-            <div style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(255, 255, 255, 0.7)', zIndex: 10 }}>
-              <Spin />
-            </div>
-          ) : null}
+        <div className="stats-cards">
           <div className="stat-card" style={{ borderTop: '4px solid #3498db' }}>
             <div className="stat-title">总学员数</div>
             <div className="stat-value">{statisticsData.totalStudents.toLocaleString()}</div>
@@ -172,7 +124,7 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
 
       {/* 趋势图表 */}
       <div className="chart-container">
-        <div className="chart-header">
+        <div className="chart-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
           <div className="chart-title">收入与学员数量趋势</div>
           <div className="chart-actions">
             <div className="time-filter-buttons">
@@ -368,7 +320,7 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
 
       {/* 课程类型分布 */}
       <div className="chart-container">
-        <div className="chart-header">
+        <div className="chart-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
           <div className="chart-title">课程类型分布</div>
         </div>
         <div className="chart-content">

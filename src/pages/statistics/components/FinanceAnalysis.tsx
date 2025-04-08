@@ -53,7 +53,7 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
     <div>
       {/* 财务核心指标 */}
       <div className="chart-container">
-        <div className="chart-header">
+        <div className="chart-header" style={{ borderBottom: 'none !important', paddingBottom: 0 }}>
           <div className="chart-title">财务核心指标</div>
           <div className="chart-actions">
             <Space.Compact size="small">
@@ -126,7 +126,7 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
 
       {/* 收入与成本趋势 */}
       <div className="chart-container">
-        <div className="chart-header">
+        <div className="chart-header" style={{ borderBottom: 'none !important', paddingBottom: 0 }}>
           <div className="chart-title">收入与成本趋势</div>
           <div className="chart-actions">
             <Space.Compact size="small">
