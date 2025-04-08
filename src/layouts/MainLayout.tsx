@@ -201,7 +201,6 @@ const MainLayout: React.FC = () => {
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/attendance')} className={activeMenu === '/attendance' ? 'active' : ''}><i>✅</i> {!sidebarCollapsed && <span>打卡消课</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/payments')} className={activeMenu === '/payments' ? 'active' : ''}><i>💰</i> {!sidebarCollapsed && <span>缴费记录</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/expenses')} className={activeMenu === '/expenses' ? 'active' : ''}><i>💸</i> {!sidebarCollapsed && <span>收支管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/miniprogram')} className={activeMenu === '/miniprogram' ? 'active' : ''}><i>📱</i> {!sidebarCollapsed && <span>小程序管理</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/statistics')} className={activeMenu === '/statistics' ? 'active' : ''}><i>📈</i> {!sidebarCollapsed && <span>数据统计</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/analysis')} className={activeMenu === '/analysis' ? 'active' : ''}><i>🏢</i> {!sidebarCollapsed && <span>校区分析</span>}</a></li>
           <li><a href="#" onClick={(e) => handleMenuClick(e, '/settings')} className={activeMenu === '/settings' ? 'active' : ''}><i>⚙️</i> {!sidebarCollapsed && <span>系统设置</span>}</a></li>
@@ -441,7 +440,6 @@ const MainLayout: React.FC = () => {
                activeMenu.startsWith('/expenses') ? '收支管理' :
                activeMenu.startsWith('/schedules') ? '课表管理' :
                activeMenu.startsWith('/attendance') ? '打卡与消课' :
-               activeMenu.startsWith('/miniprogram') ? '小程序管理' :
                activeMenu.startsWith('/statistics') ? '数据统计' :
                activeMenu.startsWith('/analysis') ? '校区分析' :
                activeMenu.startsWith('/settings') ? '系统设置' : '未知页面'}

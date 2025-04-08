@@ -21,7 +21,6 @@ const NotFound = lazy(() => import('@/pages/error/NotFound'));
 const Unauthorized = lazy(() => import('@/pages/error/Unauthorized'));
 const ExpenseManagement = lazy(() => import('@/pages/expense/ExpenseManagement'));
 const PaymentRecords = lazy(() => import('@/pages/payment/PaymentRecords'));
-const MiniprogramManagement = lazy(() => import('@/pages/miniprogram/MiniprogramManagement'));
 const HomePage = lazy(() => import('@/pages/home/HomePage.tsx'));
 
 // 加载容器
@@ -65,7 +64,6 @@ const appRoutes: RouteObject[] = [
       { path: 'unauthorized', element: Loadable(Unauthorized)({}) },
       { path: 'expenses', element: Loadable(ExpenseManagement)({}) },
       { path: 'payments', element: Loadable(PaymentRecords)({}) },
-      { path: 'miniprogram', element: Loadable(MiniprogramManagement)({}) },
     ],
   },
   {
