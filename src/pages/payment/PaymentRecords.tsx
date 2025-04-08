@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Card } from 'antd';
+import { Typography, Card, Button } from 'antd';
 import PaymentStatistics from './components/PaymentStatistics';
 import PaymentTable from './components/PaymentTable';
 import PaymentSearchBar from './components/PaymentSearchBar';
@@ -24,9 +24,10 @@ const PaymentRecords: React.FC = () => {
     deletePayment,
     filterData,
     resetData,
-    totalIncome,
-    pendingIncome,
-    refundedAmount
+    paymentCount,
+    paymentAmount,
+    refundCount,
+    refundAmount
   } = usePaymentData();
   
   // 使用搜索功能钩子
@@ -90,13 +91,16 @@ const PaymentRecords: React.FC = () => {
   
   return (
     <div className="payment-records-container">
-      <Title level={2}>缴费记录</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={3} style={{ margin: 0 }}>缴费记录</Title>
+      </div>
 
       {/* 统计卡片 */}
       <PaymentStatistics
-        totalIncome={totalIncome}
-        pendingIncome={pendingIncome}
-        refundedAmount={refundedAmount}
+        paymentCount={paymentCount}
+        paymentAmount={paymentAmount}
+        refundCount={refundCount}
+        refundAmount={refundAmount}
       />
       
       {/* 主要内容卡片 */}

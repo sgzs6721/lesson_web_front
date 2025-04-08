@@ -75,13 +75,20 @@ export const usePaymentData = () => {
   };
   
   // 计算统计数据
-  const totalIncome = data
-    .filter(item => item.status === '微信支付' || item.status === '现金支付' || item.status === '支付宝支付' || item.status === '银行卡转账')
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  const pendingIncome = 0; // 没有待确认收入的状态
-
-  const refundedAmount = 0; // 没有退款的状态
+  const payments = data.filter(item => item.paymentType === '缴费');
+  const refunds = data.filter(item => item.paymentType === '退费');
+  
+  // 缴费次数
+  const paymentCount = payments.length;
+  
+  // 缴费金额
+  const paymentAmount = payments.reduce((sum, item) => sum + item.amount, 0);
+  
+  // 退费次数
+  const refundCount = refunds.length;
+  
+  // 退费金额
+  const refundAmount = refunds.reduce((sum, item) => sum + item.amount, 0);
   
   return {
     data,
@@ -90,8 +97,9 @@ export const usePaymentData = () => {
     deletePayment,
     filterData,
     resetData,
-    totalIncome,
-    pendingIncome,
-    refundedAmount
+    paymentCount,
+    paymentAmount,
+    refundCount,
+    refundAmount
   };
 }; 

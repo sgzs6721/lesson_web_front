@@ -1,13 +1,13 @@
 import React from 'react';
 import { Modal, Divider } from 'antd';
 
-interface PaymentDeleteModalProps {
+interface FinanceDeleteModalProps {
   visible: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-const PaymentDeleteModal: React.FC<PaymentDeleteModalProps> = ({
+const FinanceDeleteModal: React.FC<FinanceDeleteModalProps> = ({
   visible,
   onConfirm,
   onCancel
@@ -23,9 +23,9 @@ const PaymentDeleteModal: React.FC<PaymentDeleteModalProps> = ({
       okButtonProps={{ danger: true }}
     >
       <Divider style={{ margin: '0 0 24px 0' }} />
-      <p>您确定要删除这条缴费记录吗？此操作不可撤销。</p>
+      <p>您确定要删除这条支出记录吗？此操作不可撤销。</p>
     </Modal>
   );
 };
 
-export default PaymentDeleteModal; 
+export default FinanceDeleteModal;

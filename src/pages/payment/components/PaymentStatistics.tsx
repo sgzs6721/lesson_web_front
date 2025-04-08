@@ -1,25 +1,37 @@
 import React from 'react';
 import { Row, Col, Card, Statistic } from 'antd';
-import { DollarOutlined } from '@ant-design/icons';
+import { DollarOutlined, SwapOutlined, TransactionOutlined } from '@ant-design/icons';
 
 interface PaymentStatisticsProps {
-  totalIncome: number;
-  pendingIncome: number;
-  refundedAmount: number;
+  paymentCount: number;
+  paymentAmount: number;
+  refundCount: number;
+  refundAmount: number;
 }
 
 const PaymentStatistics: React.FC<PaymentStatisticsProps> = ({
-  totalIncome,
-  pendingIncome,
-  refundedAmount
+  paymentCount,
+  paymentAmount,
+  refundCount,
+  refundAmount
 }) => {
   return (
     <Row gutter={16} style={{ marginBottom: 24 }}>
-      <Col span={8}>
+      <Col span={6}>
         <Card style={{ textAlign: 'center' }}>
           <Statistic
-            title="课时流水"
-            value={totalIncome}
+            title="缴费次数"
+            value={paymentCount}
+            prefix={<TransactionOutlined />}
+            valueStyle={{ color: '#3f8600' }}
+          />
+        </Card>
+      </Col>
+      <Col span={6}>
+        <Card style={{ textAlign: 'center' }}>
+          <Statistic
+            title="缴费金额"
+            value={paymentAmount}
             precision={2}
             prefix={<DollarOutlined />}
             suffix="元"
@@ -27,23 +39,21 @@ const PaymentStatistics: React.FC<PaymentStatisticsProps> = ({
           />
         </Card>
       </Col>
-      <Col span={8}>
+      <Col span={6}>
         <Card style={{ textAlign: 'center' }}>
           <Statistic
-            title="其他收入"
-            value={pendingIncome}
-            precision={2}
-            prefix={<DollarOutlined />}
-            suffix="元"
-            valueStyle={{ color: '#faad14' }}
+            title="退费次数"
+            value={refundCount}
+            prefix={<SwapOutlined />}
+            valueStyle={{ color: '#cf1322' }}
           />
         </Card>
       </Col>
-      <Col span={8}>
+      <Col span={6}>
         <Card style={{ textAlign: 'center' }}>
           <Statistic
-            title="退款金额"
-            value={refundedAmount}
+            title="退费金额"
+            value={refundAmount}
             precision={2}
             prefix={<DollarOutlined />}
             suffix="元"

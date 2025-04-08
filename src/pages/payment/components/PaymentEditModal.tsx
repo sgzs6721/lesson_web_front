@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Form, DatePicker, Input, Select, Button } from 'antd';
+import { Modal, Form, DatePicker, Input, Select, Button, Divider } from 'antd';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import { FormInstance } from 'antd/lib/form';
 import { COURSE_TYPES, PAYMENT_METHOD, PAYMENT_STATUS, PAYMENT_TYPE } from '../constants/paymentTypes';
@@ -38,6 +38,7 @@ const PaymentEditModal: React.FC<PaymentEditModalProps> = ({
       ]}
       maskClosable={false}
     >
+      <Divider style={{ margin: '0 0 24px 0' }} />
       <Form
         form={form}
         layout="vertical"

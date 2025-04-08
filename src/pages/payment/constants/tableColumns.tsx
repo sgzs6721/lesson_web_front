@@ -44,6 +44,19 @@ export const getTableColumns = (
     render: (type) => <Tag color="blue">{type}</Tag>,
   },
   {
+    title: '增减课时',
+    dataIndex: 'lessonChange',
+    key: 'lessonChange',
+    align: 'center',
+    render: (_, record) => {
+      const isPositive = record.paymentMethod === '新增' || record.paymentMethod === '续费' || record.paymentMethod === '补费';
+      const color = isPositive ? 'green' : 'red';
+      const prefix = isPositive ? '+' : '-';
+      const value = Math.floor(record.amount / 100); // 假设每节课100元
+      return <span style={{ color }}>{prefix}{value}节</span>;
+    },
+  },
+  {
     title: '缴费类型',
     dataIndex: 'paymentMethod',
     key: 'paymentMethod',

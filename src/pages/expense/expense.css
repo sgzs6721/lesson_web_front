@@ -1,13 +1,12 @@
-/* 缴费记录页面的Select组件样式 */
+/* 支出记录页面的Select组件样式 */
 
 /* 强制显示所有选择器的placeholder */
 .ant-select .ant-select-selection-placeholder,
 .ant-select-selector .ant-select-selection-placeholder,
 .ant-select-selection-placeholder,
 .custom-select .ant-select-selection-placeholder,
-.payment-records-container .ant-select-selection-placeholder,
-#courseTypeSelect .ant-select-selection-placeholder,
-#paymentTypeSelect .ant-select-selection-placeholder {
+.expense-management-container .ant-select-selection-placeholder,
+#expenseCategorySelect .ant-select-selection-placeholder {
   display: inline-block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -39,9 +38,8 @@
   padding: 0 11px !important;
 }
 
-/* 特别强调课时类型和缴费类型的选择器 */
-#courseTypeSelect .ant-select-selection-placeholder,
-#paymentTypeSelect .ant-select-selection-placeholder {
+/* 特别强调支出类别的选择器 */
+#expenseCategorySelect .ant-select-selection-placeholder {
   z-index: 100 !important;
   font-size: 14px !important;
   display: inline-block !important;
@@ -50,52 +48,16 @@
   color: rgba(0, 0, 0, 0.4) !important;
 }
 
-.payment-records-container {
+/* 收支管理界面容器 */
+.expense-management-container {
   padding: 24px;
 }
 
-.payment-statistics {
-  margin-bottom: 24px;
-}
-
-.payment-filter-bar {
-  margin-bottom: 16px;
-  background-color: #f5f5f5;
-  padding: 16px;
-  border-radius: 4px;
-}
-
-.payment-filter-buttons {
-  margin-top: 24px;
-  text-align: right;
-}
-
-.status-badge {
-  margin-right: 0;
-}
-
-.payment-modal-divider {
-  margin: 0 0 24px 0;
-}
-
-/* 解决模态框中分隔线重复的问题 */
-.payment-receipt-modal .ant-modal-body {
-  padding-top: 0;
-}
-
-.payment-receipt-modal .ant-divider {
-  margin-top: 0;
-}
-
-.payment-receipt-descriptions {
-  margin-top: 0;
-}
-
-/* 给删除确认模态框和编辑模态框添加相同的样式，解决分隔线重复问题 */
+/* 解决收支管理页面模态框中分隔线重复的问题 */
 .ant-modal .ant-modal-body {
   padding-top: 0;
 }
 
 .ant-modal .ant-divider {
   margin-top: 0;
-}
+} 
