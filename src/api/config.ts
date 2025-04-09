@@ -6,7 +6,7 @@ export const USE_MOCK = false; // 恢复为 false (或 true 如果你需要 MOCK
 
 // API 基础 URL 配置 - 暂时恢复硬编码
 // export const API_HOST = process.env.REACT_APP_API_HOST || 'http://localhost:8080';
-export const API_HOST = 'http://121.36.91.199:8080'; // 更新为指定的 API 地址
+export const API_HOST = 'http://localhost:8080'; // 更新为指定的 API 地址
 
 // 请求超时时间（毫秒）
 export const API_TIMEOUT = 10000;
@@ -91,8 +91,8 @@ export const request = async (url: string, options: RequestInit = {}) => {
     const data = await response.json();
     
     // 检查业务状态码
-    // 假设后端接口成功时 code 为 0，非 0 表示业务错误
-    if (data.code !== 0) {
+    // 假设后端接口成功时 code 为 0 或 200，非 0/200 表示业务错误
+    if (data.code !== 0 && data.code !== 200) {
       // 抛出 ApiError，包含业务错误码和消息
       throw new ApiError(
         data.message || '业务处理失败', 
@@ -101,8 +101,8 @@ export const request = async (url: string, options: RequestInit = {}) => {
       );
     }
     
-    // 如果一切正常，返回业务数据
-    return data.data; // 注意：现在返回 data.data 而不是整个 data 对象
+    // 如果一切正常，返回完整响应对象
+    return data; // 返回完整的响应对象，包含 code, message, data
   } catch (error: any) {
     // 清理超时计时器
     clearTimeout(timeoutId);

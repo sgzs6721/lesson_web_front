@@ -14,16 +14,31 @@ const Navigation: React.FC = () => {
   const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [loginPhone, setLoginPhone] = useState('');
 
-  const openLoginModal = () => setIsLoginModalOpen(true);
-  const closeLoginModal = () => setIsLoginModalOpen(false);
+  const openLoginModal = (phone?: string) => {
+    if (phone) {
+      setLoginPhone(phone);
+    }
+    setIsLoginModalOpen(true);
+  };
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+    setLoginPhone('');
+  };
 
   const openRegisterModal = () => setIsRegisterModalOpen(true);
   const closeRegisterModal = () => setIsRegisterModalOpen(false);
 
+  const handleRegisterSuccess = (phone: string) => {
+    console.log('注册成功，准备打开登录模态框，手机号:', phone);
+    closeRegisterModal();
+    openLoginModal(phone);
+  };
+
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/home'); // 登出后跳转到首页
+    navigate('/home');
   };
 
   return (
@@ -91,15 +106,15 @@ const Navigation: React.FC = () => {
             </>
           ) : (
             <>
-              <button onClick={openLoginModal} className="btn btn-outline" style={{ cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }}>登录</button>
+              <button onClick={() => openLoginModal()} className="btn btn-outline" style={{ cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }}>登录</button>
               <button onClick={openRegisterModal} className="btn btn-primary" style={{ cursor: 'pointer', minWidth: '80px', whiteSpace: 'nowrap' }}>注册</button>
             </>
           )}
         </div>
       </nav>
 
-      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
-      <RegisterModal isOpen={isRegisterModalOpen} onClose={closeRegisterModal} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} initialPhone={loginPhone} />
+      <RegisterModal isOpen={isRegisterModalOpen} onClose={closeRegisterModal} onRegisterSuccess={handleRegisterSuccess} />
     </>
   );
 };

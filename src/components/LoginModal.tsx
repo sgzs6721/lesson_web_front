@@ -7,18 +7,25 @@ import './Modal.css'; // 引入模态框样式
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // 可以添加 onSubmit 回调来处理登录逻辑
-  // onSubmit: (data: { phone: string; pass: string }) => void;
+  initialPhone?: string; // 新增：初始手机号
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose /*, onSubmit*/ }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone = '' }) => {
   const dispatch = useDispatch(); // 获取 dispatch
   const navigate = useNavigate(); // 获取 navigate
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(initialPhone);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false); // 添加 loading 状态
   const [success, setSuccess] = useState(false); // 新增：登录成功状态
+
+  // 当 initialPhone 变化时更新 phone 状态
+  useEffect(() => {
+    if (initialPhone) {
+      console.log('设置初始手机号:', initialPhone);
+      setPhone(initialPhone);
+    }
+  }, [initialPhone]);
 
   const handleSubmit = async (e: React.FormEvent) => { // 标记为 async
     e.preventDefault();
@@ -35,7 +42,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose /*, onSubmit*/ 
     try {
       // 假设 login action 接受 phone 和 password
       // @ts-ignore (处理 redux-thunk 的类型推断)
-      const result = await dispatch(login({ username: phone, password }));
+      const result = await dispatch(login({ phone, password }));
       
       if (result.payload) {
         // 登录成功

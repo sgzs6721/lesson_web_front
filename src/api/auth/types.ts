@@ -12,7 +12,7 @@ export interface User {
 
 // 登录参数类型
 export interface LoginParams {
-  username: string;
+  phone: string;
   password: string;
 }
 
@@ -36,8 +36,10 @@ export interface RegisterParams {
 
 // 注册响应类型
 export interface RegisterResponse {
-  userId: number;
-  phone: string;
-  realName: string;
-  status: number;
+  code: number;
+  message: string;
+  data: {
+    userId: number;
+    phone: string;
+  };
 }

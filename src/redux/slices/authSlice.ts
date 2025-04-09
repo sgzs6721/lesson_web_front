@@ -16,7 +16,7 @@ export interface User {
 
 // 登录接口参数
 export interface LoginParams {
-  username: string;
+  phone: string;
   password: string;
 }
 
@@ -110,8 +110,15 @@ export const register = createAsyncThunk(
       const response = await API.auth.register(params);
 
       console.log('注册 API 调用成功:', response);
-      message.success('注册成功，请使用手机号登录');
-      return response.data;
+      
+      // 检查响应状态码
+      if (response.code === 200) {
+        message.success(response.message || '注册成功');
+        return response.data;
+      } else {
+        message.error(response.message || '注册失败');
+        return rejectWithValue(response.message || '注册失败');
+      }
     } catch (error: any) {
       console.error('注册 API 调用失败:', error);
       message.error(error.message || '注册失败');

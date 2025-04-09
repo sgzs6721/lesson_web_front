@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { register, login } from '@/redux/slices/authSlice';
+import { register } from '@/redux/slices/authSlice';
 import './Modal.css'; // 引入模态框样式
 
 interface RegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // 可以添加 onSubmit 回调来处理注册逻辑
-  // onSubmit: (data: { orgName: string; phone: string; pass: string }) => void;
+  onRegisterSuccess?: (phone: string) => void; // 新增：注册成功回调，传递手机号
 }
 
-const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSubmit*/ }) => {
+const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegisterSuccess }) => {
   const dispatch = useDispatch(); // 获取 dispatch
   const navigate = useNavigate(); // 获取 navigate
   const [orgName, setOrgName] = useState('');
@@ -22,7 +21,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
   const [description, setDescription] = useState(''); // 新增：机构描述 (可选)
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false); // 新增：loading 状态
-  const [success, setSuccess] = useState(false); // 新增：注册成功状态
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,47 +72,29 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
       console.log('检查注册结果:', result);
 
       if (result.payload && !result.error) {
-        // 注册成功，立即进行登录
-        console.log('注册成功，准备自动登录');
+        // 注册成功
+        console.log('注册成功');
         setSuccess(true);
-
-        try {
-          // 使用注册时的手机号和密码进行自动登录
-          const loginParams = {
-            username: phone,
-            password
-          };
-          console.log('登录参数:', loginParams);
-
-          const loginResult = await dispatch(login(loginParams) as any);
-          console.log('登录结果:', loginResult);
-
-          if (loginResult.payload) {
-            // 登录成功，跳转到dashboard
-            setTimeout(() => {
-              onClose(); // 关闭注册模态框
-              navigate('/dashboard'); // 直接跳转到dashboard
-
-              // 重置表单
-              setOrgName('');
-              setPhone('');
-              setPassword('');
-              setConfirmPassword('');
-              setRepresentativeName('');
-              setDescription('');
-              setSuccess(false);
-            }, 2000);
-          } else {
-            // 登录失败
-            setError('自动登录失败，请手动登录');
-            setSuccess(false);
-            setLoading(false);
-          }
-        } catch (loginErr: any) {
-          setError('自动登录失败，请手动登录');
-          setSuccess(false);
-          setLoading(false);
+        
+        // 调用注册成功回调，传递手机号
+        if (onRegisterSuccess) {
+          console.log('调用注册成功回调，传递手机号:', phone);
+          onRegisterSuccess(phone);
         }
+        
+        // 延迟关闭模态框，让用户看到成功消息
+        setTimeout(() => {
+          onClose(); // 关闭注册模态框
+          
+          // 重置表单
+          setOrgName('');
+          setPhone('');
+          setPassword('');
+          setConfirmPassword('');
+          setRepresentativeName('');
+          setDescription('');
+          setSuccess(false);
+        }, 2000);
       } else {
         // 注册失败
         console.error('注册失败:', result.error);
@@ -156,8 +137,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
         <div className="modal-body">
           {success ? (
             <div className="success-message">
-              <p>注册成功！正在自动登录系统...</p>
-              <p>即将进入管理后台</p>
+              <p>注册成功！</p>
+              <p>即将跳转到登录页面</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
