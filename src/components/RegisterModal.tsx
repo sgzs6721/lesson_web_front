@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { register, login } from '@/redux/slices/authSlice';
 import './Modal.css'; // 引入模态框样式
@@ -30,6 +30,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
     setSuccess(false);
     setLoading(true); // 开始 loading
 
+    console.log('点击注册按钮，开始处理表单提交');
+
     try {
       // Basic validation
       if (!orgName || !phone || !password || !confirmPassword || !representativeName) {
@@ -51,31 +53,47 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
       }
 
       // 调用注册 action
-      const result = await dispatch(register({
-        orgName,
+      console.log('准备调用注册 action');
+      const registerParams = {
         phone,
         password,
-        representativeName,
-        description
-      }) as any);
+        realName: representativeName,
+        institutionName: orgName,
+        institutionType: 'TRAINING',
+        institutionDescription: description,
+        managerName: representativeName,
+        managerPhone: phone
+      };
+      console.log('注册参数:', registerParams);
 
-      if (result.payload === true) {
+      const result = await dispatch(register(registerParams) as any);
+      console.log('注册 action 返回结果:', result);
+
+      // 检查注册结果
+      console.log('检查注册结果:', result);
+
+      if (result.payload && !result.error) {
         // 注册成功，立即进行登录
+        console.log('注册成功，准备自动登录');
         setSuccess(true);
-        
+
         try {
           // 使用注册时的手机号和密码进行自动登录
-          const loginResult = await dispatch(login({
+          const loginParams = {
             username: phone,
             password
-          }) as any);
+          };
+          console.log('登录参数:', loginParams);
+
+          const loginResult = await dispatch(login(loginParams) as any);
+          console.log('登录结果:', loginResult);
 
           if (loginResult.payload) {
             // 登录成功，跳转到dashboard
             setTimeout(() => {
               onClose(); // 关闭注册模态框
               navigate('/dashboard'); // 直接跳转到dashboard
-              
+
               // 重置表单
               setOrgName('');
               setPhone('');
@@ -97,10 +115,13 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
           setLoading(false);
         }
       } else {
-        setError('注册失败，请稍后再试');
+        // 注册失败
+        console.error('注册失败:', result.error);
+        setError(result.error?.message || '注册失败，请稍后再试');
         setLoading(false);
       }
     } catch (err: any) {
+      console.error('注册过程出错:', err);
       setError(err.message || '注册失败，请稍后再试');
       setLoading(false);
     }
@@ -127,12 +148,12 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
 
   return (
     <div className={`modal-backdrop ${isOpen ? 'open' : ''}`} onClick={onClose}>
-      <div className="modal-content large" onClick={(e) => e.stopPropagation()}> {/* 可能需要更大宽度 */} 
+      <div className="modal-content large" onClick={(e) => e.stopPropagation()}> {/* 可能需要更大宽度 */}
         <button className="modal-close-btn" onClick={onClose}>&times;</button>
         <div className="modal-header">
           <h3 className="modal-title">注册机构账号</h3>
         </div>
-        <div className="modal-body"> 
+        <div className="modal-body">
           {success ? (
             <div className="success-message">
               <p>注册成功！正在自动登录系统...</p>
@@ -211,19 +232,19 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
                   disabled={loading}
                 />
               </div>
-              {error && <p className="error-message">{error}</p>} 
+              {error && <p className="error-message">{error}</p>}
               <div className="button-group">
-                <button 
-                  type="button" 
-                  className="cancel-btn" 
-                  onClick={onClose} 
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={onClose}
                   disabled={loading}
                 >
                   取消
                 </button>
-                <button 
-                  type="submit" 
-                  className="submit-btn" 
+                <button
+                  type="submit"
+                  className="submit-btn"
                   disabled={loading}
                 >
                   {loading ? '注册中...' : '注册'}
@@ -237,4 +258,4 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose /*, onSub
   );
 };
 
-export default RegisterModal; 
+export default RegisterModal;

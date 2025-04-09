@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { message } from 'antd';
 import { API } from '@/api';
 
@@ -22,11 +22,14 @@ export interface LoginParams {
 
 // 注册接口参数
 export interface RegisterParams {
-  orgName: string;
   phone: string;
   password: string;
-  representativeName: string;
-  description?: string;
+  realName: string;
+  institutionName: string;
+  institutionType: string;
+  institutionDescription?: string;
+  managerName: string;
+  managerPhone: string;
 }
 
 // 认证状态
@@ -66,25 +69,17 @@ export const login = createAsyncThunk(
   'auth/login',
   async (params: LoginParams, { rejectWithValue }) => {
     try {
-      // 在实际应用中，这里应该是API调用
-      // const response = await API.auth.login(params);
-      
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockUser: User = {
-        id: '1',
-        username: params.username,
-        role: 'admin',
-        name: '管理员',
-        token: 'mock-token-value'
-      };
+      console.log('开始调用登录 API:', params);
+      // 调用实际的API接口
+      const response = await API.auth.login(params);
+      console.log('登录 API 调用成功:', response);
 
       // 保存到本地存储
-      localStorage.setItem('token', mockUser.token!);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
 
       message.success('登录成功');
-      return { user: mockUser, token: mockUser.token };
+      return response.data;
     } catch (error: any) {
       message.error(error.message || '登录失败');
       return rejectWithValue(error.message || '登录失败');
@@ -96,11 +91,11 @@ export const login = createAsyncThunk(
 export const logout = createAsyncThunk('auth/logout', async () => {
   // 在实际应用中，这里应该是API调用
   // await API.auth.logout();
-  
+
   // 清理本地存储
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  
+
   message.success('已退出登录');
   return null;
 });
@@ -110,16 +105,15 @@ export const register = createAsyncThunk(
   'auth/register',
   async (params: RegisterParams, { rejectWithValue }) => {
     try {
-      // 在实际应用中，这里应该是API调用
-      // const response = await API.auth.register(params);
-      
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 模拟成功
+      console.log('开始调用注册 API:', params);
+      // 调用实际的API接口
+      const response = await API.auth.register(params);
+
+      console.log('注册 API 调用成功:', response);
       message.success('注册成功，请使用手机号登录');
-      return true;
+      return response.data;
     } catch (error: any) {
+      console.error('注册 API 调用失败:', error);
       message.error(error.message || '注册失败');
       return rejectWithValue(error.message || '注册失败');
     }
@@ -189,4 +183,4 @@ const authSlice = createSlice({
 });
 
 export const { clearError } = authSlice.actions;
-export default authSlice.reducer; 
+export default authSlice.reducer;
