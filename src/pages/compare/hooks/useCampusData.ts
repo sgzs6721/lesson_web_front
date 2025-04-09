@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
+import dayjs from 'dayjs';
 import { 
   AllCampusData, 
   ComparisonMetric, 
@@ -113,6 +114,12 @@ export const useCampusData = () => {
   const [trendMetric, setTrendMetric] = useState<TrendMetric>('students');
   const [coachMetric, setCoachMetric] = useState<CoachMetric>('lessons');
   
+  // 日期范围
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().startOf('month'), 
+    dayjs()
+  ]);
+  
   // 加载数据
   useEffect(() => {
     // 实际项目中，这里应该从API获取数据
@@ -120,23 +127,44 @@ export const useCampusData = () => {
     setCampusData(mockData);
   }, []);
   
+  // 根据日期过滤数据
+  const filterDataByDate = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
+    setDateRange([startDate, endDate]);
+    
+    // 在实际项目中，这里应该调用API获取指定日期范围的数据
+    // 这里我们只是模拟一下，随机调整数据
+    const factor = (endDate.diff(startDate, 'day') % 30) / 30 + 0.8;
+    
+    const filteredData = Object.entries(mockData).reduce((acc, [key, campus]) => {
+      // 创建校区数据的副本并按日期范围调整数值
+      acc[key] = {
+        ...campus,
+        revenue: Math.round(campus.revenue * factor * 100) / 100,
+        profit: Math.round(campus.profit * factor * 100) / 100,
+        students: Math.round(campus.students * factor),
+        coaches: campus.coaches, // 教练数不变
+        growthData: {
+          students: campus.growthData.students.map(v => Math.round(v * factor)),
+          revenue: campus.growthData.revenue.map(v => Math.round(v * factor * 100) / 100),
+          profit: campus.growthData.profit.map(v => Math.round(v * factor * 100) / 100)
+        },
+        coachPerformance: {
+          ...campus.coachPerformance,
+          lessons: Math.round(campus.coachPerformance.lessons * factor),
+          students: Math.round(campus.coachPerformance.students * factor)
+        }
+      };
+      return acc;
+    }, {} as AllCampusData);
+    
+    setCampusData(filteredData);
+    message.success(`已更新为${startDate.format('YYYY-MM-DD')}至${endDate.format('YYYY-MM-DD')}的数据`);
+  };
+  
   // 切换校区
   const setCampus = (campus: string) => {
     setCurrentCampus(campus);
     message.success(`已切换到${campus === 'all' ? '全部校区' : mockData[campus].name}`);
-  };
-  
-  // 导出数据
-  const exportData = () => {
-    // 实际项目中，这里应该实现导出逻辑
-    message.success('数据导出成功');
-  };
-  
-  // 打印报表
-  const printReport = () => {
-    // 实际项目中，这里应该实现打印逻辑
-    window.print();
-    message.success('报表打印中');
   };
   
   return {
@@ -145,11 +173,11 @@ export const useCampusData = () => {
     comparisonMetric,
     trendMetric,
     coachMetric,
+    dateRange,
     setCampus,
     setComparisonMetric,
     setTrendMetric,
     setCoachMetric,
-    exportData,
-    printReport
+    filterDataByDate
   };
 }; 
