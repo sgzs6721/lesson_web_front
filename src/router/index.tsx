@@ -22,6 +22,7 @@ const Unauthorized = lazy(() => import('@/pages/error/Unauthorized'));
 const ExpenseManagement = lazy(() => import('@/pages/expense/ExpenseManagement'));
 const PaymentRecords = lazy(() => import('@/pages/payment/PaymentRecords'));
 const HomePage = lazy(() => import('@/pages/home/HomePage.tsx'));
+const CampusAnalysis = lazy(() => import('@/pages/compare/CampusAnalysis'));
 
 // 加载容器
 const Loadable = (Component: React.ComponentType) => (props: any) => (
@@ -64,6 +65,7 @@ const appRoutes: RouteObject[] = [
       { path: 'unauthorized', element: Loadable(Unauthorized)({}) },
       { path: 'expenses', element: Loadable(ExpenseManagement)({}) },
       { path: 'payments', element: Loadable(PaymentRecords)({}) },
+      { path: 'analysis', element: Loadable(CampusAnalysis)({}) },
     ],
   },
   {
