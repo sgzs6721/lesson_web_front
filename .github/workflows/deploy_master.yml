@@ -1,0 +1,34 @@
+name: deploy_master_web_front
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  dev-front-deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Scp dist To HW Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HW_TEST_SERVER }}
+          username: ${{ secrets.HW_SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ${{ github.workspace }}/dist/*
+          target: /root/lesson/lesson_web_front
+          strip_components: 3
