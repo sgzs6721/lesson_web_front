@@ -101,7 +101,7 @@ body {
 
 .sidebar-menu {
   list-style: none;
-  padding: 0 10px;
+  padding: 0 20px;
 }
 
 .sidebar-menu li {
@@ -111,13 +111,14 @@ body {
 .sidebar-menu a {
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 10px 20px;
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.3s;
   font-weight: 500;
   justify-content: flex-start;
+  text-align: center;
 }
 
 .sidebar.collapsed .sidebar-menu a {
@@ -125,14 +126,15 @@ body {
 }
 
 .sidebar-menu a i {
-  margin-right: 14px;
-  width: 20px;
+  margin-right: 20px;
+  width: 24px;
   height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .sidebar.collapsed .sidebar-menu a i {
@@ -141,11 +143,17 @@ body {
   font-size: 20px;
 }
 
-.sidebar-menu a:hover, 
+.sidebar-menu a span {
+  padding-left: 5px;
+  flex: 1;
+  text-align: left;
+}
+
+.sidebar-menu a:hover,
 .sidebar-menu a.active {
   background-color: rgba(255, 255, 255, 0.15);
   color: white;
-  transform: translateX(5px);
+  transform: translateX(3px);
 }
 
 .sidebar.collapsed .sidebar-menu a:hover,
@@ -215,7 +223,7 @@ body {
   border-collapse: collapse;
 }
 
-.table th, 
+.table th,
 .table td {
   padding: 12px 15px;
   border-bottom: 1px solid #eee;
@@ -1100,24 +1108,24 @@ body {
   .dashboard-stats {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .stats-bar {
     flex-wrap: wrap;
   }
-  
+
   .stat-item {
     min-width: 50%;
     padding: 10px;
   }
-  
+
   .stat-divider {
     display: none;
   }
-  
+
   #class-dimension-view {
     overflow-x: auto;
   }
-  
+
   #class-dimension-view > div {
     min-width: 930px;
   }
@@ -1142,7 +1150,7 @@ body {
     background: linear-gradient(135deg, #5c6e91 0%, #374263 100%);
     opacity: 0.9;
   }
-  
+
   .main-content {
     padding-left: 20px;
     padding-top: 120px; /* Reduced padding for fixed header on mobile */
@@ -1165,36 +1173,36 @@ body {
     width: 100% !important;
     z-index: 999 !important;
   }
-  
+
   .campus-info-content {
     width: 100%;
   }
-  
+
   .campus-info-content > div:last-child {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 10px !important;
     height: auto !important;
   }
-  
+
   .campus-info-content > div:last-child > div {
     flex-direction: column !important;
     width: 100% !important;
     gap: 10px !important;
   }
-  
+
   .campus-name {
     font-size: 18px !important;
   }
-  
-  .campus-selector, 
+
+  .campus-selector,
   .campus-info-content > div:last-child > div > div {
     width: 100% !important;
     margin-right: 0 !important;
     margin-bottom: 8px !important;
     height: auto !important;
   }
-  
+
   .campus-info-content button {
     width: 100% !important;
     height: 34px !important;
@@ -1202,23 +1210,23 @@ body {
     padding: 6px 16px !important;
     font-size: 15px !important;
   }
-  
+
   .campus-info .user-info {
     margin-top: 5px;
   }
-  
+
   .campus-status-badge {
     font-size: 12px;
     padding: 4px 8px;
   }
-  
+
   /* Adjust campus list for mobile */
   .campus-list {
     left: 0;
     top: 100%;
     width: 100%;
   }
-  
+
   .campus-header.active::after {
     transform: rotate(180deg);
   }
@@ -1227,7 +1235,7 @@ body {
   .content-panel {
     margin-top: 210px !important;
   }
-  
+
   /* Mobile sidebar overlay */
   .sidebar::before {
     content: '';
@@ -1242,25 +1250,25 @@ body {
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
   }
-  
+
   .sidebar.collapsed::before {
     opacity: 1;
     visibility: visible;
     z-index: 999;
   }
-  
+
   .sidebar.collapsed .sidebar-menu a i {
     margin-right: 14px;
     margin-left: 0;
   }
-  
+
   /* Adjust card headers for mobile */
   .card-header {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
   }
-  
+
   .card-header > div:last-child {
     width: 100%;
     display: flex;
@@ -1270,19 +1278,19 @@ body {
   .dashboard-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .stat-card.wide {
     grid-column: span 1;
   }
-  
+
   .stat-item {
     min-width: 100%;
   }
-  
+
   .campus-status-badge {
     margin-top: 10px;
   }
-  
+
   .coach-card {
     min-width: 250px;
   }
@@ -1294,12 +1302,12 @@ body {
     padding: 30px 20px;
     max-width: 90%;
   }
-  
+
   .header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .user-info {
     margin-top: 15px;
   }
