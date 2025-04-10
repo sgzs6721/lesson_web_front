@@ -45,7 +45,7 @@ export const fetchUsers = createAsyncThunk(
             role: 'admin',
             name: '管理员',
             email: 'admin@example.com',
-            status: 'active',
+            status: 'active' as 'active' | 'inactive',
             createdAt: '2023-01-01T00:00:00Z',
           }
         ],
@@ -72,7 +72,7 @@ export const createUser = createAsyncThunk(
         role: userData.role || 'user',
         name: userData.name || '',
         email: userData.email,
-        status: 'active',
+        status: 'active' as 'active' | 'inactive',
         createdAt: new Date().toISOString(),
       };
     } catch (error: any) {

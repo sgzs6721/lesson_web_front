@@ -1,4 +1,5 @@
 import { Dayjs } from 'dayjs';
+import { ApiResponse, PaginatedResponse } from '../types';
 
 // 定义课表接口
 export interface ClassSchedule {

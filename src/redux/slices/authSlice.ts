@@ -75,11 +75,11 @@ export const login = createAsyncThunk(
       console.log('登录 API 调用成功:', response);
 
       // 保存到本地存储
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
 
       message.success('登录成功');
-      return response.data;
+      return response;
     } catch (error: any) {
       message.error(error.message || '登录失败');
       return rejectWithValue(error.message || '登录失败');

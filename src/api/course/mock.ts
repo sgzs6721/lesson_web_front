@@ -1,4 +1,5 @@
-import { Course, ApiResponse, PaginatedResponse } from './types';
+import { Course } from './types';
+import { ApiResponse, PaginatedResponse } from '../types';
 
 // 模拟课程数据
 export const mockCourses: Course[] = [

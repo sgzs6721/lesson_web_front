@@ -72,7 +72,8 @@ export const course = {
       const end = start + pageSize;
       const list = filteredCourses.slice(start, end);
       
-      return mockPaginatedResponse(list, page, pageSize, filteredCourses.length);
+      const response = mockPaginatedResponse(list, page, pageSize, filteredCourses.length);
+      return response.data;
     }
     
     // Use imported config and path constants

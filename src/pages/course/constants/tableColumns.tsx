@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/ic
 import dayjs from 'dayjs';
 import { Course } from '../types/course';
 import { categoryOptions, coachOptions } from './courseOptions';
+import { AlignType } from 'rc-table/lib/interface';
 
 // 获取教练名称
 const getCoachNames = (coachIds: string[]) => {
@@ -55,62 +56,62 @@ export const getTableColumns = (
     title: '课程名称',
     dataIndex: 'name',
     key: 'name',
-    align: 'center',
+    align: 'center' as AlignType,
   },
   {
     title: '课程类型',
     dataIndex: 'category',
     key: 'category',
-    align: 'center',
+    align: 'center' as AlignType,
     render: (category: string) => getCategoryName(category),
   },
   {
     title: '总课时',
     dataIndex: 'totalHours',
     key: 'totalHours',
-    align: 'center',
+    align: 'center' as AlignType,
     render: (hours: number) => `${hours}小时`,
   },
   {
     title: '已销课时',
     dataIndex: 'consumedHours',
     key: 'consumedHours',
-    align: 'center',
+    align: 'center' as AlignType,
     render: (hours: number) => `${hours}小时`,
   },
   {
     title: '上课教练',
     dataIndex: 'coaches',
     key: 'coaches',
-    align: 'center',
+    align: 'center' as AlignType,
     render: (coaches: string[]) => getCoachNames(coaches),
   },
   {
     title: '课筹单价',
     dataIndex: 'unitPrice',
     key: 'unitPrice',
-    align: 'center',
+    align: 'center' as AlignType,
     render: (price: number) => `¥${price}`,
   },
   {
     title: '状态',
     dataIndex: 'status',
     key: 'status',
-    align: 'center',
+    align: 'center' as AlignType,
     render: (status: string) => renderStatusTag(status),
   },
   {
     title: '更新时间',
     dataIndex: 'updatedAt',
     key: 'updatedAt',
-    align: 'center',
+    align: 'center' as AlignType,
     render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
   },
   {
     title: '操作',
     key: 'action',
     width: 150,
-    align: 'center',
+    align: 'center' as AlignType,
     render: (_: any, record: Course) => (
       <Space size="middle">
         <Tooltip title="编辑">

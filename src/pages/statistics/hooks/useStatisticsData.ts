@@ -228,14 +228,24 @@ export const useStatisticsData = () => {
     }
 
     // 更新核心指标数据
-    const updatedData = {
-      ...data,
+    const updatedData: OverviewData = {
+      ...data!,
       totalStudents: 1284,
       activeStudents: Math.floor(876 * (1 + 0.1 * multiplier)),
       newStudents: Math.floor(68 * multiplier),
       lostStudents: Math.floor(24 * (multiplier / 2)),
+      totalCoaches: data?.totalCoaches || 42,
+      totalLessons: data?.totalLessons || 3425,
       totalIncome: Math.floor(876500 * multiplier),
       totalProfit: Math.floor(412680 * multiplier),
+      studentGrowth: data?.studentGrowth || 12.5,
+      activeGrowth: data?.activeGrowth || 8.2,
+      newGrowth: data?.newGrowth || 15.3,
+      lostGrowth: data?.lostGrowth || -5.2,
+      coachGrowth: data?.coachGrowth || 4.8,
+      lessonGrowth: data?.lessonGrowth || 9.7,
+      incomeGrowth: data?.incomeGrowth || 11.3,
+      profitGrowth: data?.profitGrowth || 10.5
     };
 
     // 更新数据

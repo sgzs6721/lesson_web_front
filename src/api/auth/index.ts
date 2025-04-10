@@ -22,7 +22,7 @@ export const auth = {
     if (USE_MOCK) {
       console.warn('开发环境下使用模拟登录数据');
       await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockUser = { id: '1', username: data.username, role: 'admin', name: '模拟用户', phone: data.username };
+      const mockUser = { id: '1', username: data.phone, role: 'admin', name: '模拟用户', phone: data.phone };
       const mockLoginResponse: LoginResponse = { token: 'mock-token-' + Date.now(), user: mockUser };
       return mockLoginResponse;
     }
@@ -78,7 +78,14 @@ export const auth = {
 
       mockUsers.push(newUser);
 
-      const mockRegisterResponse: RegisterResponse = { userId: Number(newUser.id), phone: newUser.phone || '', realName: newUser.name || '', status: 1 };
+      const mockRegisterResponse: RegisterResponse = { 
+        code: 200,
+        message: "注册成功",
+        data: {
+          userId: Number(newUser.id), 
+          phone: newUser.phone || ''
+        }
+      };
       return mockRegisterResponse;
     }
 

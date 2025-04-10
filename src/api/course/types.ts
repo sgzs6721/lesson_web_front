@@ -1,5 +1,6 @@
 // Remove imports for shared types
 // import { ApiResponse } from '../auth/types';
+import { ApiResponse, PaginatedResponse } from '../types';
 
 // 课程类型
 export interface Course {

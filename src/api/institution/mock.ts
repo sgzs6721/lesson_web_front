@@ -1,4 +1,5 @@
-import { Institution, ApiResponse, PaginatedResponse } from './types';
+import { Institution } from './types';
+import { ApiResponse, PaginatedResponse } from '../types';
 
 // 模拟机构数据
 export const mockInstitutions: Institution[] = [

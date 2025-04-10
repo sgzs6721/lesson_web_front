@@ -1,4 +1,5 @@
-import { Student, ClassRecord, PaymentRecord, ApiResponse, PaginatedResponse } from './types';
+import { Student, ClassRecord, PaymentRecord } from './types';
+import { ApiResponse, PaginatedResponse } from '../types';
 
 // 模拟学生数据
 export const mockStudents: Student[] = [

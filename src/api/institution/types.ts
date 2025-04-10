@@ -3,6 +3,9 @@
 // Remove imports for shared types
 // import { ApiResponse } from '../auth/types';
 
+// 导入共享类型
+import { ApiResponse, PaginatedResponse } from '../types';
+
 // 机构类型
 export interface Institution {
   id: string;

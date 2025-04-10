@@ -27,7 +27,8 @@ export const student = {
       const start = (page - 1) * pageSize;
       const end = start + pageSize;
       const list = mockStudents.slice(start, end);
-      return mockPaginatedResponse(list, page, pageSize, mockStudents.length);
+      const response = mockPaginatedResponse(list, page, pageSize, mockStudents.length);
+      return response.data;
     }
     const queryParams = params ? `?page=${params.page}&pageSize=${params.pageSize}` : '';
     return request(`${API_HOST}${STUDENT_API_PATHS.LIST}${queryParams}`);
