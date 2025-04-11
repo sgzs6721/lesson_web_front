@@ -19,20 +19,27 @@ export const DEFAULT_HEADERS = {
 
 // 请求拦截器
 export const requestInterceptor = (config: RequestInit) => {
-  // 首先从cookie中获取token，如果没有则从localStorage获取
-  const tokenFromCookie = getTokenCookie();
-  const tokenFromStorage = localStorage.getItem('token');
-  const token = tokenFromCookie || tokenFromStorage;
-  
-  // 如果有 token，添加到请求头
-  if (token) {
-    return {
-      ...config,
-      headers: {
-        ...config.headers,
-        'Authorization': token
-      }
-    };
+  try {
+    // 首先从cookie中获取token，如果没有则从localStorage获取
+    const tokenFromCookie = getTokenCookie();
+    const tokenFromStorage = localStorage.getItem('token');
+    const token = tokenFromCookie || tokenFromStorage;
+    
+    console.log('请求拦截器:', token ? `找到token, 值: ${token.substring(0, 10)}...` : '未找到token');
+    
+    // 如果有 token，添加到请求头
+    if (token) {
+      console.log('为请求添加Authorization头');
+      return {
+        ...config,
+        headers: {
+          ...config.headers,
+          'Authorization': token
+        }
+      };
+    }
+  } catch (error) {
+    console.error('请求拦截器出错:', error);
   }
   
   return config;

@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { message } from 'antd';
 import { API } from '@/api';
-import { setTokenCookie, removeTokenCookie, clearAuthCookies } from '@/utils/cookies';
+import { setTokenCookie, removeTokenCookie, clearAuthCookies, getTokenCookie } from '@/utils/cookies';
 
 // 定义用户类型
 export interface User {
@@ -74,33 +74,54 @@ export const login = createAsyncThunk(
       console.log('开始调用登录 API:', params);
       // 调用实际的API接口
       const response = await API.auth.login(params);
-      console.log('登录 API 调用成功:', response);
+      console.log('登录 API 调用成功，响应:', response);
 
       // 检查响应状态码
       if (response.code === 200) {
         // 从response.data中获取token
-        const token = response.data?.token;
+        const data = response.data;
+        console.log('登录响应data:', data);
+        
+        if (!data) {
+          console.error('登录成功但未返回data对象');
+          message.error('登录成功但获取认证信息失败');
+          return rejectWithValue('登录成功但获取认证信息失败');
+        }
+        
+        const token = data.token;
         if (!token) {
           console.error('登录成功但未返回token');
           message.error('登录成功但获取认证信息失败');
           return rejectWithValue('登录成功但获取认证信息失败');
         }
         
+        console.log('获取到token:', token.substring(0, 10) + '...');
+        
         // 构建用户对象
         const user: User = {
-          id: String(response.data.userId || ''),
-          username: response.data.phone || '',
-          role: response.data.roleName || '',
-          name: response.data.realName || '',
-          phone: response.data.phone || ''
+          id: String(data.userId || ''),
+          username: data.phone || '',
+          role: data.roleName || '',
+          name: data.realName || '',
+          phone: data.phone || ''
         };
+        
+        console.log('构建用户对象:', user);
         
         // 保存到本地存储
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        console.log('已保存用户信息到localStorage');
         
         // 同时保存到cookie中，用于API请求验证
+        console.log('正在保存token到cookie...');
         setTokenCookie(token);
+        
+        // 验证cookie是否设置成功
+        setTimeout(() => {
+          const tokenInCookie = getTokenCookie();
+          console.log('验证cookie设置:', tokenInCookie ? '成功' : '失败');
+        }, 100);
 
         message.success(response.message || '登录成功');
         return {
@@ -109,10 +130,12 @@ export const login = createAsyncThunk(
         };
       } else {
         // 如果code不是200，则返回错误信息
+        console.error('登录失败，状态码:', response.code, '消息:', response.message);
         message.error(response.message || '登录失败');
         return rejectWithValue(response.message || '登录失败');
       }
     } catch (error: any) {
+      console.error('登录过程出错:', error);
       message.error(error.message || '登录失败');
       return rejectWithValue(error.message || '登录失败');
     }
