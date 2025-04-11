@@ -23,13 +23,31 @@ export const setTokenCookie = (token: string) => {
     };
     
     console.log('Cookie设置选项:', cookieOptions);
-    Cookies.set('token', token, cookieOptions);
     
-    // 检查cookie是否设置成功
-    const savedToken = Cookies.get('token');
-    console.log('Cookie设置后检查:', savedToken ? '成功' : '失败');
+    // 首先检查cookie是否已经存在
+    const existingToken = Cookies.get('token');
+    if (existingToken) {
+      console.log('Cookie已存在，不重复设置');
+      return;
+    }
     
-    // 备用方式存储，确保至少有一种方式可以工作
+    // 尝试使用js-cookie设置
+    try {
+      Cookies.set('token', token, cookieOptions);
+      
+      // 检查cookie是否设置成功
+      const savedToken = Cookies.get('token');
+      if (savedToken) {
+        console.log('通过js-cookie设置cookie成功');
+        return;
+      } else {
+        console.log('通过js-cookie设置cookie失败，尝试原生方式');
+      }
+    } catch (e) {
+      console.error('js-cookie设置失败:', e);
+    }
+    
+    // 如果js-cookie设置失败，尝试原生方式
     try {
       document.cookie = `token=${token}; path=/; max-age=${TOKEN_EXPIRY_DAYS * 24 * 60 * 60}; ${window.location.protocol === 'https:' ? 'secure; ' : ''}samesite=lax`;
       console.log('通过原生方式设置cookie完成');
