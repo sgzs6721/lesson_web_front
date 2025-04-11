@@ -8,7 +8,7 @@ import { API_HOST, request, USE_MOCK } from '../config'; // Added request and US
 // API Path Constants
 const AUTH_API_PATHS = {
   LOGIN: '/lesson/api/auth/login',
-  LOGOUT: '/lessonapi/auth/logout',
+  LOGOUT: '/lesson/api/auth/logout',
   REGISTER: '/lesson/api/auth/register',
 };
 
@@ -27,9 +27,9 @@ export const auth = {
       return mockLoginResponse;
     }
 
-    console.log('开始调用登录接口:', `${API_HOST}${AUTH_API_PATHS.LOGIN}`);
+    console.log('开始调用登录接口:', `${AUTH_API_PATHS.LOGIN}`);
     console.log('登录请求数据:', data);
-    return request(`${API_HOST}${AUTH_API_PATHS.LOGIN}`, {
+    return request(`${AUTH_API_PATHS.LOGIN}`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -41,7 +41,7 @@ export const auth = {
       await new Promise(resolve => setTimeout(resolve, 500));
       return null;
     }
-    return request(`${API_HOST}${AUTH_API_PATHS.LOGOUT}`, {
+    return request(`${AUTH_API_PATHS.LOGOUT}`, {
       method: 'POST'
     });
   },
@@ -89,9 +89,9 @@ export const auth = {
       return mockRegisterResponse;
     }
 
-    console.log('正在调用注册接口:', `${API_HOST}${AUTH_API_PATHS.REGISTER}`);
+    console.log('正在调用注册接口:', `${AUTH_API_PATHS.REGISTER}`);
     console.log('请求数据:', data);
-    return request(`${API_HOST}${AUTH_API_PATHS.REGISTER}`, {
+    return request(`${AUTH_API_PATHS.REGISTER}`, {
       method: 'POST',
       body: JSON.stringify(data)
     });

@@ -6,7 +6,7 @@ export const USE_MOCK = false; // 恢复为 false (或 true 如果你需要 MOCK
 
 // API 基础 URL 配置 - 暂时恢复硬编码
 // export const API_HOST = process.env.REACT_APP_API_HOST || 'http://localhost:8080';
-export const API_HOST = 'http://localhost:8080'; // 更新为指定的 API 地址
+export const API_HOST = 'http://lesson.devtesting.top'; // 更新为指定的 API 地址
 
 // 请求超时时间（毫秒）
 export const API_TIMEOUT = 10000;
