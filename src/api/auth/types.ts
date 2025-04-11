@@ -18,17 +18,28 @@ export interface LoginParams {
 
 // 登录响应类型
 export interface LoginResponse {
-  token: string;
-  user: User;
+  code: number;
+  message: string;
+  data: {
+    token: string;
+    user?: User;
+    userId?: string | number;
+    phone?: string;
+    realName?: string;
+    roleId?: string | number;
+    roleName?: string;
+    institutionId?: string | number;
+    campusId?: string | number;
+  };
 }
 
 // 注册参数类型
 export interface RegisterParams {
-  phone: string;
+  phone?: string;
   password: string;
-  realName: string;
+  realName?: string;
   institutionName: string;
-  institutionType: string;
+  institutionType?: string;
   institutionDescription?: string;
   managerName: string;
   managerPhone: string;

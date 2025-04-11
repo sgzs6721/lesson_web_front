@@ -1,4 +1,5 @@
 import { ApiError } from './types'; // Import ApiError
+import { getTokenCookie } from '@/utils/cookies'; // 导入cookie工具
 
 // 是否启用 Mock 数据 - 暂时恢复硬编码以修复 'process is not defined' 错误
 // export const USE_MOCK = process.env.NODE_ENV === 'development';
@@ -9,7 +10,7 @@ export const USE_MOCK = false; // 恢复为 false (或 true 如果你需要 MOCK
 export const API_HOST = 'http://lesson.devtesting.top'; // 更新为指定的 API 地址
 
 // 请求超时时间（毫秒）
-export const API_TIMEOUT = 10000;
+export const API_TIMEOUT = 30000; // 将超时时间增加到30秒
 
 // 默认请求头
 export const DEFAULT_HEADERS = {
@@ -18,8 +19,10 @@ export const DEFAULT_HEADERS = {
 
 // 请求拦截器
 export const requestInterceptor = (config: RequestInit) => {
-  // 获取本地存储的 token
-  const token = localStorage.getItem('token');
+  // 首先从cookie中获取token，如果没有则从localStorage获取
+  const tokenFromCookie = getTokenCookie();
+  const tokenFromStorage = localStorage.getItem('token');
+  const token = tokenFromCookie || tokenFromStorage;
   
   // 如果有 token，添加到请求头
   if (token) {
@@ -27,7 +30,7 @@ export const requestInterceptor = (config: RequestInit) => {
       ...config,
       headers: {
         ...config.headers,
-        'Authorization': `Bearer ${token}`
+        'Authorization': token
       }
     };
   }
@@ -79,21 +82,27 @@ export const request = async (url: string, options: RequestInit = {}) => {
   
   try {
     // 发送请求
+    console.log(`正在请求API: ${url}`);
+    const startTime = Date.now();
     const response = await fetch(url, {
       ...interceptedConfig,
       signal: controller.signal
     });
+    const endTime = Date.now();
+    console.log(`API响应时间: ${endTime - startTime}ms`);
     
     // 应用响应拦截器 (现在它只在 !response.ok 时抛出 ApiError)
     await responseInterceptor(response); // 注意：这里不再接收返回值，只用于检查和抛错
     
     // 解析 JSON (如果上面没抛错，说明 response.ok 是 true)
     const data = await response.json();
+    console.log(`API返回数据:`, data);
     
     // 检查业务状态码
     // 假设后端接口成功时 code 为 0 或 200，非 0/200 表示业务错误
     if (data.code !== 0 && data.code !== 200) {
       // 抛出 ApiError，包含业务错误码和消息
+      console.error(`业务错误: code=${data.code}, message=${data.message}`);
       throw new ApiError(
         data.message || '业务处理失败', 
         data.code, // 使用业务 code
@@ -109,16 +118,18 @@ export const request = async (url: string, options: RequestInit = {}) => {
     
     // 如果错误已经是 ApiError，直接重新抛出
     if (error instanceof ApiError) {
+      console.error(`API错误: ${error.message}, code=${error.code}`);
       throw error;
     }
     
     // 处理 AbortError (超时)
     if (error.name === 'AbortError') {
-      throw new ApiError('请求超时，请稍后再试', -1); // 使用 -1 作为网络/超时错误的 code
+      console.error(`API请求超时: ${url}`);
+      throw new ApiError(`请求超时(${API_TIMEOUT}ms)，请稍后再试或检查网络连接`, -1); // 使用 -1 作为网络/超时错误的 code
     }
     
     // 处理其他网络错误或未知错误
-    // 可以根据需要进一步区分 error.message
-    throw new ApiError(error.message || '网络请求失败', -2); // 使用 -2 作为其他网络错误的 code
+    console.error(`网络请求失败: ${error.message || '未知错误'}`, error);
+    throw new ApiError(error.message || '网络请求失败，请检查网络连接', -2); // 使用 -2 作为其他网络错误的 code
   }
 };

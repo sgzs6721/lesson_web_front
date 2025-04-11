@@ -23,7 +23,17 @@ export const auth = {
       console.warn('开发环境下使用模拟登录数据');
       await new Promise(resolve => setTimeout(resolve, 1000));
       const mockUser = { id: '1', username: data.phone, role: 'admin', name: '模拟用户', phone: data.phone };
-      const mockLoginResponse: LoginResponse = { token: 'mock-token-' + Date.now(), user: mockUser };
+      const mockLoginResponse: LoginResponse = { 
+        code: 200,
+        message: '登录成功',
+        data: {
+          token: 'mock-token-' + Date.now(),
+          userId: 1,
+          phone: data.phone,
+          realName: '模拟用户',
+          roleName: 'admin'
+        }
+      };
       return mockLoginResponse;
     }
 
@@ -48,13 +58,16 @@ export const auth = {
 
   // 注册
   register: async (data: RegisterParams): Promise<RegisterResponse> => {
-    if (!data.phone || !data.password || !data.realName || !data.institutionName || !data.institutionType) {
+    if (!data.password || !data.institutionName || !data.managerName || !data.managerPhone) {
       throw new Error('请填写所有必填字段');
     }
 
-    const phoneRegex = /^1[3-9]\d{9}$/;
-    if (!phoneRegex.test(data.phone)) {
-      throw new Error('请输入正确的手机号');
+    // 验证手机号格式
+    if (data.managerPhone) {
+      const phoneRegex = /^1[3-9]\d{9}$/;
+      if (!phoneRegex.test(data.managerPhone)) {
+        throw new Error('请输入正确的手机号');
+      }
     }
 
     if (data.password.length < 6) {
@@ -64,16 +77,16 @@ export const auth = {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (mockUsers.some(u => u.phone === data.phone)) {
+      if (data.managerPhone && mockUsers.some(u => u.phone === data.managerPhone)) {
         throw new Error('该手机号已注册');
       }
 
       const newUser = {
         id: String(mockUsers.length + 1),
-        username: data.phone,
+        username: data.managerPhone,
         role: 'institution',
-        name: data.realName,
-        phone: data.phone
+        name: data.managerName,
+        phone: data.managerPhone
       };
 
       mockUsers.push(newUser);
