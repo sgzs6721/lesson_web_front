@@ -219,91 +219,97 @@ const MainLayout: React.FC = () => {
           zIndex: '999',
           width: 'auto',
           backgroundColor: isDarkTheme ? '#1f2833' : '#374263',
-          padding: '12px 20px',
+          padding: '10px 20px',
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.3s ease'
         }}>
           <div className="campus-info-content" style={{ width: '100%' }}>
             <div style={{
               display: 'flex',
-              flexDirection: 'column'
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}>
-              {/* 第一行：校区名称和管理员信息 */}
               <div style={{
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '6px'
+                alignItems: 'center'
               }}>
-                <div className="campus-name" style={{
+                <div style={{ 
                   display: 'flex',
                   alignItems: 'center',
-                  flexWrap: 'nowrap'
+                  marginRight: '15px'
                 }}>
-                  {currentCampus}
-                  <div className="campus-status-badge" style={{
-                    marginLeft: '15px',
-                    marginBottom: '0',
-                    whiteSpace: 'nowrap',
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
+                  <div style={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    marginRight: '10px'
+                  }}>
+                    {currentCampus}
+                  </div>
+                  <div style={{
+                    fontSize: '11px',
+                    padding: '2px 6px',
                     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    color: '#ffffff',
-                    fontWeight: '500',
+                    color: 'white',
+                    borderRadius: '3px',
                     border: '1px solid rgba(255, 255, 255, 0.3)'
-                  }}>正常运营中</div>
+                  }}>
+                    正常运营中
+                  </div>
                 </div>
 
-                <div className="user-info" onClick={toggleDropdown} style={{
-                  background: 'transparent',
+                {/* 负责人信息 */}
+                <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  height: '100%',
-                  padding: '0 15px',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  marginTop: 'auto',
-                  marginBottom: 'auto'
+                  gap: '6px',
+                  marginRight: '15px',
+                  height: '30px'
                 }}>
-                  <div className="user-avatar" style={{
-                    height: '44px',
-                    width: '44px',
+                  <i style={{
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '20px',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    border: '2px solid rgba(255, 255, 255, 0.5)',
-                    borderRadius: '50%'
-                  }}>{username.charAt(0).toUpperCase()}</div>
-                  <div style={{
-                    color: 'white',
-                    marginLeft: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    height: '44px',
-                    lineHeight: '1.2'
+                    fontSize: '11px'
                   }}>
-                    <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '2px' }}>{username}</div>
-                    <div style={{ fontSize: '13px', opacity: '0.9' }}>超级管理员</div>
-                  </div>
-                  <div className={`dropdown-content ${showDropdown ? 'show' : ''} ${isDarkTheme ? 'dark-theme' : ''}`}>
-                    <a href="#" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>
-                      返回首页
-                    </a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); toggleTheme(); }}>
-                      {isDarkTheme ? '切换亮色' : '切换暗色'}
-                    </a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/profile'); }}>设置</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); navigate('/settings/password'); }}>修改密码</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>登出</a>
-                  </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"/>
+                    </svg>
+                  </i>
+                  <span style={{ color: 'white', fontSize: '13px', whiteSpace: 'nowrap' }}>负责人：张明</span>
+                </div>
+
+                {/* 联系电话信息 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  height: '30px'
+                }}>
+                  <i style={{
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px'
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
+                    </svg>
+                  </i>
+                  <span style={{ color: 'white', fontSize: '13px', whiteSpace: 'nowrap' }}>联系电话：13800138001</span>
                 </div>
               </div>
 
-              {/* 第二行：校区选择器、负责人和联系电话 */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center'
@@ -311,123 +317,354 @@ const MainLayout: React.FC = () => {
                 {/* 校区选择器 */}
                 <div style={{
                   position: 'relative',
-                  marginRight: '25px',
-                  height: '34px',
+                  marginRight: '15px',
+                  height: '32px',
                   minWidth: '120px'
                 }}>
                   <button
                     onClick={toggleCampusList}
                     style={{
-                      padding: '6px 16px',
-                      background: 'rgba(255, 255, 255, 0.15)',
-                      border: 'none',
-                      borderRadius: '4px',
+                      padding: '0 12px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '16px',
                       cursor: 'pointer',
                       color: 'white',
-                      fontSize: '15px',
+                      fontSize: '13px',
                       fontWeight: '500',
                       display: 'flex',
                       alignItems: 'center',
-                      height: '34px',
+                      height: '32px',
                       width: '100%',
-                      justifyContent: 'center'
+                      justifyContent: 'space-between',
+                      transition: 'all 0.2s ease',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
                     }}
                   >
-                    校区选择 <span style={{ marginLeft: '6px', fontSize: '12px' }}>▼</span>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '6px' }}>
+                        <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z"/>
+                      </svg>
+                      校区选择
+                    </div>
+                    <span style={{ 
+                      fontSize: '10px',
+                      transform: showCampusList ? 'rotate(180deg)' : 'rotate(0)',
+                      transition: 'transform 0.2s ease'
+                    }}>▼</span>
                   </button>
 
                   {showCampusList && (
                     <div
                       className={`campus-dropdown ${isDarkTheme ? 'campus-dropdown-dark' : ''}`}
                       style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: '0',
-                      backgroundColor: isDarkTheme ? '#1f2833' : '#fff',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      borderRadius: '4px',
-                      padding: '8px 0',
-                      marginTop: '5px',
-                      zIndex: 1000,
-                      minWidth: '150px'
-                    }}>
+                        position: 'absolute',
+                        top: '100%',
+                        right: '0',
+                        backgroundColor: isDarkTheme ? 'rgba(31, 40, 51, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                        borderRadius: '12px',
+                        padding: '6px',
+                        marginTop: '8px',
+                        zIndex: 1000,
+                        minWidth: '160px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        animation: 'dropdownFade 0.2s ease'
+                      }}
+                    >
                       {['总部校区', '东城校区', '西城校区', '南城校区', '北城校区', '天骄校区'].map(campus => (
                         <div
                           key={campus}
                           className="campus-item"
                           style={{
-                            padding: '8px 15px',
+                            padding: '8px 12px',
+                            margin: '2px',
                             cursor: 'pointer',
                             color: isDarkTheme ? '#f0f0f0' : '#333',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'all 0.2s ease',
                             backgroundColor: currentCampus === campus ?
                               (isDarkTheme ? 'rgba(52, 152, 219, 0.2)' : 'rgba(52, 152, 219, 0.1)') :
                               'transparent'
                           }}
+                          onMouseEnter={(e) => {
+                            if (currentCampus !== campus) {
+                              e.currentTarget.style.backgroundColor = isDarkTheme ? 
+                                'rgba(255, 255, 255, 0.05)' : 
+                                'rgba(0, 0, 0, 0.05)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (currentCampus !== campus) {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }
+                          }}
                           onClick={(e) => { e.stopPropagation(); selectCampus(campus); }}
                         >
-                          {campus}
+                          {currentCampus === campus && (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
+                              <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                          )}
+                          <span style={{ marginLeft: currentCampus === campus ? '0' : '22px' }}>{campus}</span>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-
-                {/* 负责人信息 */}
-                <div style={{
+                
+                <div className="user-info" onClick={toggleDropdown} style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  marginRight: '25px',
-                  height: '34px'
+                  height: '42px',
+                  padding: '0',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  borderRadius: '21px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  transition: 'all 0.2s ease',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
                 }}>
-                  <i style={{
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'linear-gradient(135deg, #4285f4, #34a853)',
+                    height: '40px',
+                    width: '40px',
+                    borderRadius: '20px',
+                    justifyContent: 'center',
+                    marginLeft: '1px'
+                  }}>
+                    <div className="user-avatar" style={{
+                      height: '32px',
+                      width: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      color: '#4285f4',
+                      borderRadius: '50%',
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)'
+                    }}>{username.charAt(0).toUpperCase()}</div>
+                  </div>
+                  <div style={{
+                    color: 'white',
+                    marginLeft: '10px',
+                    marginRight: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    padding: '0 4px'
+                  }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      fontSize: '13px', 
+                      marginBottom: '2px',
+                      letterSpacing: '0.3px'
+                    }}>{username}</div>
+                    <div style={{ 
+                      fontSize: '11px', 
+                      opacity: '0.85',
+                      letterSpacing: '0.2px'
+                    }}>超级管理员</div>
+                  </div>
+                  <div style={{
+                    width: '28px',
+                    height: '40px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '13px'
+                    marginRight: '2px'
                   }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"/>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="14" 
+                      height="14" 
+                      fill="currentColor" 
+                      viewBox="0 0 16 16" 
+                      style={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)',
+                        transition: 'transform 0.2s ease'
+                      }}
+                    >
+                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                     </svg>
-                  </i>
-                  <span style={{ color: 'white', fontSize: '15px', whiteSpace: 'nowrap' }}>负责人：张明</span>
+                  </div>
                 </div>
 
-                {/* 联系电话信息 */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  height: '34px'
-                }}>
-                  <i style={{
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '13px'
+                {showDropdown && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: '0',
+                    marginTop: '8px',
+                    backgroundColor: isDarkTheme ? 'rgba(31, 40, 51, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                    borderRadius: '12px',
+                    padding: '6px',
+                    zIndex: 1000,
+                    minWidth: '180px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    animation: 'dropdownFade 0.2s ease'
                   }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-                    </svg>
-                  </i>
-                  <span style={{ color: 'white', fontSize: '15px', whiteSpace: 'nowrap' }}>联系电话：13800138001</span>
-                </div>
+                    <div style={{
+                      padding: '8px 12px',
+                      margin: '2px',
+                      cursor: 'pointer',
+                      color: isDarkTheme ? '#f0f0f0' : '#333',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
+                        'rgba(255, 255, 255, 0.05)' : 
+                        'rgba(0, 0, 0, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={() => navigate('/profile')}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"/>
+                      </svg>
+                      个人信息
+                    </div>
+
+                    <div style={{
+                      padding: '8px 12px',
+                      margin: '2px',
+                      cursor: 'pointer',
+                      color: isDarkTheme ? '#f0f0f0' : '#333',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
+                        'rgba(255, 255, 255, 0.05)' : 
+                        'rgba(0, 0, 0, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={() => navigate('/settings')}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
+                        <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                      </svg>
+                      系统设置
+                    </div>
+
+                    <div style={{
+                      padding: '8px 12px',
+                      margin: '2px',
+                      cursor: 'pointer',
+                      color: isDarkTheme ? '#f0f0f0' : '#333',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
+                        'rgba(255, 255, 255, 0.05)' : 
+                        'rgba(0, 0, 0, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={toggleTheme}
+                    >
+                      {isDarkTheme ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
+                          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
+                          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+                        </svg>
+                      )}
+                      {isDarkTheme ? '浅色模式' : '深色模式'}
+                    </div>
+
+                    <div style={{
+                      margin: '4px 8px',
+                      height: '1px',
+                      background: isDarkTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }} />
+
+                    <div style={{
+                      padding: '8px 12px',
+                      margin: '2px',
+                      cursor: 'pointer',
+                      color: '#dc3545',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
+                        'rgba(220, 53, 69, 0.1)' : 
+                        'rgba(220, 53, 69, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={handleLogout}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
+                        <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                        <path fillRule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                      </svg>
+                      退出登录
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="content-panel" style={{ marginTop: '110px' }}>
+        <div className="content-panel" style={{ marginTop: '57px' }}>
           <div className="header" style={{ display: 'none' }}>
             <h1 className="page-title">
               {activeMenu.startsWith('/dashboard') ? '数据概览' :
