@@ -476,7 +476,7 @@ const MainLayout: React.FC = () => {
                   </div>
                   <div style={{
                     color: 'white',
-                    marginLeft: '10px',
+                    marginLeft: '0px',
                     marginRight: '8px',
                     display: 'flex',
                     flexDirection: 'column',
