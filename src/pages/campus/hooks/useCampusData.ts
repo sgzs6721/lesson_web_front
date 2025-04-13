@@ -47,14 +47,14 @@ export const useCampusData = () => {
             area: (index % 10 + 5) * 200,
             facilities: selectedFacilities,
             image: `https://picsum.photos/800/400?random=${index}`,
-            status: index % 10 === 0 ? 'closed' : index % 15 === 0 ? 'renovating' : 'open',
+            status: index % 10 === 0 ? 'CLOSED' : 'OPERATING',
             openDate: dayjs().subtract((index + 1) * 90, 'day').format('YYYY-MM-DD'),
             studentCount,
             coachCount,
             courseCount: Math.floor(Math.random() * 30) + 10,
             monthlyRent: Math.floor(Math.random() * 50000) + 10000,
             propertyFee: Math.floor(Math.random() * 5000) + 1000,
-            utilitiesFee: Math.floor(Math.random() * 3000) + 500,
+            utilityFee: Math.floor(Math.random() * 3000) + 500,
           };
         });
 
@@ -104,14 +104,14 @@ export const useCampusData = () => {
               area: (index % 10 + 5) * 200,
               facilities: selectedFacilities,
               image: `https://picsum.photos/800/400?random=${index}`,
-              status: index % 10 === 0 ? 'closed' : index % 15 === 0 ? 'renovating' : 'open',
+              status: index % 10 === 0 ? 'CLOSED' : 'OPERATING',
               openDate: dayjs().subtract((index + 1) * 90, 'day').format('YYYY-MM-DD'),
               studentCount,
               coachCount,
               courseCount: Math.floor(Math.random() * 30) + 10,
               monthlyRent: Math.floor(Math.random() * 50000) + 10000,
               propertyFee: Math.floor(Math.random() * 5000) + 1000,
-              utilitiesFee: Math.floor(Math.random() * 3000) + 500,
+              utilityFee: Math.floor(Math.random() * 3000) + 500,
             };
           });
 
@@ -159,14 +159,14 @@ export const useCampusData = () => {
       area: values.area || 1000,
       facilities: values.facilities || [],
       image: values.image || '',
-      status: values.status || 'open',
+      status: values.status || 'OPERATING',
       openDate: dayjs().format('YYYY-MM-DD'),
       studentCount: 0,
       coachCount: 0,
       courseCount: 0,
       monthlyRent: values.monthlyRent || 0,
       propertyFee: values.propertyFee || 0,
-      utilitiesFee: values.utilitiesFee || 0
+      utilityFee: values.utilityFee || 0
     };
     
     setCampuses(prevCampuses => [newCampus, ...prevCampuses]);
@@ -196,7 +196,7 @@ export const useCampusData = () => {
 
   // 切换校区状态
   const toggleCampusStatus = (record: Campus) => {
-    const newStatus = record.status === 'closed' ? 'open' : 'closed';
+    const newStatus = record.status === 'CLOSED' ? 'OPERATING' : 'CLOSED';
     setCampuses(prevCampuses => 
       prevCampuses.map(campus => 
         campus.id === record.id 
@@ -204,7 +204,7 @@ export const useCampusData = () => {
           : campus
       )
     );
-    message.success(`校区已${newStatus === 'closed' ? '停用' : '启用'}`);
+    message.success(`校区状态已更新为${newStatus === 'OPERATING' ? '运营中' : '已关闭'}`);
   };
 
   return {

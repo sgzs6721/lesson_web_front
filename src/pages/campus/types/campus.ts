@@ -11,7 +11,7 @@ export interface Campus {
   area: number; // 面积，单位：平方米
   facilities: string[];
   image?: string;
-  status: 'open' | 'closed' | 'renovating';
+  status: 'OPERATING' | 'CLOSED';
   openDate: string;
   studentCount: number;
   coachCount: number;
