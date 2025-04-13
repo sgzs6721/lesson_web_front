@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Form, Input, Select, InputNumber, Row, Col, Typography, message } from 'antd';
-import { HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
+import { HomeOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setHasCampus, setCampusModalVisible } from '@/redux/slices/authSlice';
@@ -163,26 +163,6 @@ const CampusAddAfterLogin: React.FC<CampusAddAfterLoginProps> = ({
             </Col>
           </Row>
         )}
-
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="contactPerson"
-              label="联系人"
-            >
-              <Input placeholder="请输入联系人" />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="phone"
-              label="联系电话"
-              rules={[{ required: true, message: '请输入联系电话' }]}
-            >
-              <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
-            </Form.Item>
-          </Col>
-        </Row>
       </Form>
     </Modal>
   );
