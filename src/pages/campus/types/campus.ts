@@ -18,7 +18,7 @@ export interface Campus {
   courseCount: number;
   monthlyRent: number; // 月租金
   propertyFee: number; // 物业费
-  utilitiesFee: number; // 固定水电费
+  utilityFee: number; // 固定水电费
 }
 
 // 搜索参数类型
