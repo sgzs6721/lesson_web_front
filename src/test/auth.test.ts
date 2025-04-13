@@ -47,7 +47,7 @@ async function testLogin() {
         address: '测试地址',
         phone: '13800138001',
         contactPerson: '测试联系人',
-        status: 'open'
+        status: 'OPERATING'
       });
       
       console.log('创建校区响应:', createResponse);

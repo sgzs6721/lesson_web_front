@@ -96,11 +96,11 @@ export const getTableColumns = (
             onClick={() => onEdit(record)} 
           />
         </Tooltip>
-        <Tooltip title={record.status === 'closed' ? '启用' : '停用'}>
+        <Tooltip title={record.status === 'CLOSED' ? '启用' : '停用'}>
           <Button
             type="text"
             size="small"
-            icon={record.status === 'closed' ? <PlayCircleOutlined /> : <PauseCircleOutlined />}
+            icon={record.status === 'CLOSED' ? <PlayCircleOutlined /> : <PauseCircleOutlined />}
             onClick={() => onToggleStatus(record)}
           />
         </Tooltip>

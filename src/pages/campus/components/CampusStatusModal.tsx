@@ -24,7 +24,7 @@ const CampusStatusModal: React.FC<CampusStatusModalProps> = ({
       okText="确认"
       cancelText="取消"
     >
-      <p>确定要{campus?.status === 'closed' ? '启用' : '停用'}校区「{campus?.name}」吗？</p>
+      <p>确定要{campus?.status === 'CLOSED' ? '启用' : '停用'}校区「{campus?.name}」吗？</p>
     </Modal>
   );
 };
