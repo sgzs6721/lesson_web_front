@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { message } from 'antd';
 import { API } from '@/api';
-import { setTokenCookie, removeTokenCookie, clearAuthCookies, getTokenCookie } from '@/utils/cookies';
+import { setTokenCookie, clearAuthCookies, getTokenCookie } from '@/utils/cookies';
 
 // 定义用户类型
 export interface User {
@@ -40,6 +40,9 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  hasCampus: boolean | null; // 是否有校区
+  showCampusModal: boolean; // 是否显示校区创建模态框
+  total: number | null; // 校区总数
 }
 
 // 初始状态
@@ -48,6 +51,9 @@ const initialState: AuthState = {
   user: null,
   loading: false,
   error: null,
+  hasCampus: null,
+  showCampusModal: false,
+  total: null
 };
 
 // 从localStorage和cookie检查认证状态
@@ -81,22 +87,22 @@ export const login = createAsyncThunk(
         // 从response.data中获取token
         const data = response.data;
         console.log('登录响应data:', data);
-        
+
         if (!data) {
           console.error('登录成功但未返回data对象');
           message.error('登录成功但获取认证信息失败');
           return rejectWithValue('登录成功但获取认证信息失败');
         }
-        
+
         const token = data.token;
         if (!token) {
           console.error('登录成功但未返回token');
           message.error('登录成功但获取认证信息失败');
           return rejectWithValue('登录成功但获取认证信息失败');
         }
-        
+
         console.log('获取到token:', token.substring(0, 10) + '...');
-        
+
         // 构建用户对象
         const user: User = {
           id: String(data.userId || ''),
@@ -105,24 +111,25 @@ export const login = createAsyncThunk(
           name: data.realName || '',
           phone: data.phone || ''
         };
-        
+
         console.log('构建用户对象:', user);
-        
+
         // 保存到本地存储
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         console.log('已保存用户信息到localStorage');
-        
+
         // 同时保存到cookie中，用于API请求验证
         console.log('正在保存token到cookie...');
         setTokenCookie(token);
-        
+
         // 验证cookie是否设置成功
         setTimeout(() => {
           const tokenInCookie = getTokenCookie();
           console.log('验证cookie设置:', tokenInCookie ? '成功' : '失败');
         }, 100);
 
+        // 返回登录成功结果
         message.success(response.message || '登录成功');
         return {
           user,
@@ -150,7 +157,7 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   // 清理本地存储
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  
+
   // 清理cookie
   clearAuthCookies();
 
@@ -168,7 +175,7 @@ export const register = createAsyncThunk(
       const response = await API.auth.register(params);
 
       console.log('注册 API 调用成功:', response);
-      
+
       // 检查响应状态码
       if (response.code === 200) {
         message.success(response.message || '注册成功');
@@ -194,6 +201,15 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    // 设置校区模态框显示状态
+    setCampusModalVisible: (state, action) => {
+      console.log('设置校区模态框显示状态:', action.payload);
+      state.showCampusModal = action.payload;
+    },
+    // 设置校区状态
+    setHasCampus: (state, action) => {
+      state.hasCampus = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -216,6 +232,9 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.hasCampus = null;
+        state.showCampusModal = false;
+        state.total = null;
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isAuthenticated = true;
@@ -226,6 +245,9 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.loading = false;
         state.error = action.payload as string || '登录失败';
+        state.hasCampus = null;
+        state.showCampusModal = false;
+        state.total = null;
       })
       // 注册
       .addCase(register.pending, (state) => {
@@ -243,9 +265,11 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.isAuthenticated = false;
         state.user = null;
+        state.hasCampus = null;
+        state.showCampusModal = false;
       });
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, setCampusModalVisible, setHasCampus } = authSlice.actions;
 export default authSlice.reducer;

@@ -3,15 +3,15 @@ import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
 import { mockApiResponse, mockInstitutions, mockPaginatedResponse } from './mock';
 
 // Import shared config
-import { API_HOST, request, USE_MOCK } from '../config';
+import { request, USE_MOCK } from '../config';
 
 // API Path Constants
 const INSTITUTION_API_PATHS = {
-  LIST: '/api/institutions',
-  DETAIL: (id: string) => `/api/institutions/${id}`,
-  ADD: '/api/institutions',
-  UPDATE: (id: string) => `/api/institutions/${id}`,
-  DELETE: (id: string) => `/api/institutions/${id}`,
+  LIST: '/lesson/api/institutions',
+  DETAIL: (id: string) => `/lesson/api/institutions/${id}`,
+  ADD: '/lesson/api/institutions',
+  UPDATE: (id: string) => `/lesson/api/institutions/${id}`,
+  DELETE: (id: string) => `/lesson/api/institutions/${id}`,
 };
 
 // 机构相关接口
@@ -28,9 +28,9 @@ export const institution = {
       return response.data;
     }
     const queryParams = params ? `?page=${params.page}&pageSize=${params.pageSize}` : '';
-    return request(`${API_HOST}${INSTITUTION_API_PATHS.LIST}${queryParams}`);
+    return request(`${INSTITUTION_API_PATHS.LIST}${queryParams}`);
   },
-  
+
   // 获取机构详情
   getDetail: async (id: string): Promise<Institution> => {
     if (USE_MOCK) {
@@ -41,9 +41,9 @@ export const institution = {
       }
       return institution;
     }
-    return request(`${API_HOST}${INSTITUTION_API_PATHS.DETAIL(id)}`);
+    return request(`${INSTITUTION_API_PATHS.DETAIL(id)}`);
   },
-  
+
   // 添加机构
   add: async (data: Omit<Institution, 'id' | 'createdAt' | 'updatedAt'>): Promise<Institution> => {
     if (USE_MOCK) {
@@ -53,12 +53,12 @@ export const institution = {
       mockInstitutions.push(newInstitution);
       return newInstitution;
     }
-    return request(`${API_HOST}${INSTITUTION_API_PATHS.ADD}`, {
+    return request(`${INSTITUTION_API_PATHS.ADD}`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
   },
-  
+
   // 更新机构
   update: async (id: string, data: Partial<Institution>): Promise<Institution> => {
     if (USE_MOCK) {
@@ -69,12 +69,12 @@ export const institution = {
       mockInstitutions[index] = updatedInstitution;
       return updatedInstitution;
     }
-    return request(`${API_HOST}${INSTITUTION_API_PATHS.UPDATE(id)}`, {
+    return request(`${INSTITUTION_API_PATHS.UPDATE(id)}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
   },
-  
+
   // 删除机构
   delete: async (id: string): Promise<null> => {
     if (USE_MOCK) {
@@ -84,7 +84,7 @@ export const institution = {
       mockInstitutions.splice(index, 1);
       return null;
     }
-    return request(`${API_HOST}${INSTITUTION_API_PATHS.DELETE(id)}`, {
+    return request(`${INSTITUTION_API_PATHS.DELETE(id)}`, {
       method: 'DELETE'
     });
   }

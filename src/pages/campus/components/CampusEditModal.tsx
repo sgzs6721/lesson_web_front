@@ -42,10 +42,10 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
         layout="vertical"
         name="campusForm"
         initialValues={{
-          status: 'open',
+          status: 'OPERATING',
           monthlyRent: 0,
           propertyFee: 0,
-          utilitiesFee: 0,
+          utilityFee: 0,
         }}
       >
         <Row gutter={16}>
@@ -74,9 +74,8 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
               rules={[{ required: true, message: '请选择状态' }]}
             >
               <Select placeholder="请选择状态">
-                <Option value="open">营业中</Option>
-                <Option value="closed">已关闭</Option>
-                <Option value="renovating">装修中</Option>
+                <Option value="OPERATING">营业中</Option>
+                <Option value="CLOSED">已关闭</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -147,4 +146,4 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
   );
 };
 
-export default CampusEditModal; 
+export default CampusEditModal;

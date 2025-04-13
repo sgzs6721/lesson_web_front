@@ -13,14 +13,14 @@ export const useCampusForm = (
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingCampus, setEditingCampus] = useState<Campus | null>(null);
-  
+
   // 显示添加校区模态框
   const handleAdd = () => {
     form.resetFields();
     setEditingCampus(null);
     setVisible(true);
   };
-  
+
   // 显示编辑校区模态框
   const handleEdit = (record: Campus) => {
     setEditingCampus(record);
@@ -30,19 +30,19 @@ export const useCampusForm = (
       status: record.status,
       monthlyRent: record.monthlyRent || 0,
       propertyFee: record.propertyFee || 0,
-      utilitiesFee: record.utilitiesFee || 0,
+      utilityFee: record.utilityFee || 0,
       contactPerson: record.contactPerson,
       phone: record.phone,
     });
     setVisible(true);
   };
-  
+
   // 提交表单
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      
+
       if (editingCampus) {
         // 编辑现有校区
         await updateCampus(editingCampus.id, values);
@@ -50,7 +50,7 @@ export const useCampusForm = (
         // 添加新校区
         await addCampus(values);
       }
-      
+
       form.resetFields();
       setVisible(false);
     } catch (error) {
@@ -59,13 +59,13 @@ export const useCampusForm = (
       setLoading(false);
     }
   };
-  
+
   // 取消表单
   const handleCancel = () => {
     form.resetFields();
     setVisible(false);
   };
-  
+
   return {
     form,
     visible,
@@ -76,4 +76,4 @@ export const useCampusForm = (
     handleSubmit,
     handleCancel
   };
-}; 
+};
