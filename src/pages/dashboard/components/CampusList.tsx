@@ -71,7 +71,7 @@ const CampusList: React.FC<CampusListProps> = ({ campusList, total }) => {
       key: 'action',
       render: (_: any, record: Campus) => (
         <Space size="middle">
-          <Button type="link" size="small" onClick={() => handleViewCampus(record.id)}>
+          <Button type="link" size="small" onClick={() => handleViewCampus(String(record.id))}>
             查看
           </Button>
         </Space>
@@ -96,9 +96,9 @@ const CampusList: React.FC<CampusListProps> = ({ campusList, total }) => {
             <BuildOutlined style={{ marginRight: 8 }} />
             校区列表
           </Title>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
             size="small"
             onClick={navigateToCampusManagement}
           >
@@ -133,4 +133,4 @@ const CampusList: React.FC<CampusListProps> = ({ campusList, total }) => {
   );
 };
 
-export default CampusList; 
+export default CampusList;

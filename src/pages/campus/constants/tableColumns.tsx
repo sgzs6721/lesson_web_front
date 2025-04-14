@@ -106,7 +106,7 @@ export const getTableColumns = (
             size="small"
             danger
             icon={<DeleteOutlined />}
-            onClick={() => onDelete(record.id, record.name)}
+            onClick={() => onDelete(String(record.id), record.name)}
           />
         </Tooltip>
       </Space>

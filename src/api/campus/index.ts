@@ -33,7 +33,7 @@ export const campus = {
         filteredCampuses = filteredCampuses.filter(campus =>
           campus.name.toLowerCase().includes(keyword) ||
           campus.address.toLowerCase().includes(keyword) ||
-          campus.phone.includes(keyword)
+          (campus.phone ? campus.phone.includes(keyword) : false)
         );
       }
 
