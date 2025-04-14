@@ -31,7 +31,7 @@ export const useUserData = () => {
         name: values.name,
         role: values.role,
         campus: values.campus,
-        status: 'active',
+        status: 'ENABLED',
         createdAt: new Date().toISOString().split('T')[0],
       };
 

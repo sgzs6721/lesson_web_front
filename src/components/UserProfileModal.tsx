@@ -3,6 +3,18 @@ import { Modal, Avatar, Tabs, Form, Input, Button, message, Divider, Spin } from
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, IdcardOutlined } from '@ant-design/icons';
 import { useAppSelector } from '@/hooks/reduxHooks';
 
+// 定义用户类型接口
+interface UserProfile {
+  id?: string | number;
+  name?: string;
+  username?: string;
+  phone?: string;
+  email?: string;
+  role?: string;
+  avatar?: string;
+  status?: string;
+}
+
 interface UserProfileModalProps {
   visible: boolean;
   onClose: () => void;
@@ -15,11 +27,11 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
-  
+
   // 从 Redux 获取用户信息
   const auth = useAppSelector((state) => state.auth);
-  const user = auth?.user || {};
-  
+  const user = (auth?.user || {}) as UserProfile;
+
   useEffect(() => {
     if (visible && user) {
       form.setFieldsValue({
@@ -30,20 +42,20 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
       });
     }
   }, [visible, user, form]);
-  
+
   const handleTabChange = (key: string) => {
     setActiveTab(key);
   };
-  
+
   const handleUpdateProfile = async (values: any) => {
     setLoading(true);
     try {
       // 这里应该调用 API 更新用户信息
       console.log('更新用户信息:', values);
-      
+
       // 模拟 API 调用
       await new Promise(resolve => setTimeout(resolve, 800));
-      
+
       message.success('个人信息更新成功');
     } catch (error) {
       message.error('更新失败，请稍后重试');
@@ -52,16 +64,16 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
       setLoading(false);
     }
   };
-  
+
   const handleUpdatePassword = async (values: any) => {
     setLoading(true);
     try {
       // 这里应该调用 API 更新密码
       console.log('更新密码:', values);
-      
+
       // 模拟 API 调用
       await new Promise(resolve => setTimeout(resolve, 800));
-      
+
       message.success('密码更新成功');
       passwordForm.resetFields();
     } catch (error) {
@@ -71,7 +83,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
       setLoading(false);
     }
   };
-  
+
   return (
     <Modal
       title={
@@ -87,13 +99,13 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
       bodyStyle={{ padding: '20px' }}
     >
       <Divider style={{ margin: '0 0 24px 0' }} />
-      
+
       <div style={{ display: 'flex', marginBottom: '24px' }}>
         <div style={{ marginRight: '24px', textAlign: 'center' }}>
-          <Avatar 
-            size={100} 
-            icon={<UserOutlined />} 
-            style={{ 
+          <Avatar
+            size={100}
+            icon={<UserOutlined />}
+            style={{
               backgroundColor: '#1890ff',
               fontSize: '48px',
               display: 'flex',
@@ -110,12 +122,12 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
             {user.role || '超级管理员'}
           </div>
         </div>
-        
+
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ 
-            padding: '16px', 
-            borderRadius: '8px', 
-            backgroundColor: 'rgba(24, 144, 255, 0.05)', 
+          <div style={{
+            padding: '16px',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(24, 144, 255, 0.05)',
             border: '1px solid rgba(24, 144, 255, 0.1)',
             marginBottom: '12px'
           }}>
@@ -130,13 +142,13 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
               <span>{user.email || '未设置'}</span>
             </div>
           </div>
-          
+
           <div style={{ fontSize: '13px', color: '#666' }}>
             您可以在下方标签页中修改您的个人信息和密码。
           </div>
         </div>
       </div>
-      
+
       <Tabs activeKey={activeTab} onChange={handleTabChange} type="card">
         <TabPane tab="基本信息" key="1">
           <Spin spinning={loading}>
@@ -160,7 +172,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
                 >
                   <Input prefix={<UserOutlined />} placeholder="请输入姓名" />
                 </Form.Item>
-                
+
                 <Form.Item
                   name="role"
                   label="角色"
@@ -169,7 +181,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
                   <Input prefix={<IdcardOutlined />} disabled />
                 </Form.Item>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '16px' }}>
                 <Form.Item
                   name="phone"
@@ -182,7 +194,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
                 >
                   <Input prefix={<PhoneOutlined />} placeholder="请输入手机号码" />
                 </Form.Item>
-                
+
                 <Form.Item
                   name="email"
                   label="电子邮箱"
@@ -194,7 +206,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
                   <Input prefix={<MailOutlined />} placeholder="请输入电子邮箱" />
                 </Form.Item>
               </div>
-              
+
               <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                 <Button type="primary" htmlType="submit" loading={loading}>
                   保存修改
@@ -203,7 +215,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
             </Form>
           </Spin>
         </TabPane>
-        
+
         <TabPane tab="修改密码" key="2">
           <Spin spinning={loading}>
             <Form
@@ -218,7 +230,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
               >
                 <Input.Password prefix={<LockOutlined />} placeholder="请输入当前密码" />
               </Form.Item>
-              
+
               <Form.Item
                 name="newPassword"
                 label="新密码"
@@ -229,7 +241,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
               >
                 <Input.Password prefix={<LockOutlined />} placeholder="请输入新密码" />
               </Form.Item>
-              
+
               <Form.Item
                 name="confirmPassword"
                 label="确认新密码"
@@ -248,7 +260,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
               >
                 <Input.Password prefix={<LockOutlined />} placeholder="请确认新密码" />
               </Form.Item>
-              
+
               <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                 <Button type="primary" htmlType="submit" loading={loading}>
                   更新密码

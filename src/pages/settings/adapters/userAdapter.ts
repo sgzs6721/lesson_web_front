@@ -96,7 +96,7 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
     name: apiUser.realName,
     role: roleObj || mapRoleToUserRole(roleName),
     roleName: roleName,
-    campus: campusObj || campusInfo,
+    campus: campusObj || campusInfo || undefined,
     status: apiUser.status,
     statusText: apiUser.statusText,
     createdAt: createdAt,

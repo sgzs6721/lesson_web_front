@@ -55,7 +55,7 @@ const UserManagement: React.FC = () => {
         searchText: '',
         selectedRole: [],
         selectedCampus: [],
-        selectedStatus: []
+        selectedStatus: undefined
       };
       filterUsers(emptyParams, 1, pagination.pageSize);
       isInitializedRef.current = true;

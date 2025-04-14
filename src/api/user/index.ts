@@ -67,7 +67,7 @@ export const user = {
 
       if (params?.status !== undefined) {
         filteredUsers = filteredUsers.filter(user =>
-          user.status === params.status
+          String(user.status) === String(params.status)
         );
       }
 
