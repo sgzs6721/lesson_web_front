@@ -1,8 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import dayjs from 'dayjs';
 import { Campus, CampusSearchParams } from '../types/campus';
-import { facilityOptions } from '../constants/facilityOptions';
+import { API } from '@/api';
+import { refreshAllCampusSelectors } from '@/components/CampusSelector';
+
+// 创建模块级缓存
+let campusListCache: {
+  data: Campus[];
+  total: number;
+  pageNum: number;
+  pageSize: number;
+  timestamp: number;
+  searchParams?: CampusSearchParams;
+} | null = null;
+
+// 缓存过期时间（毫秒）
+const CACHE_EXPIRY = 60000; // 1分钟
+
+// 正在进行的请求标记
+let isFetchingCampusList = false;
+let campusListCallbacks: ((data: any) => void)[] = [];
 
 export const useCampusData = () => {
   const [loading, setLoading] = useState(false);
@@ -11,200 +29,293 @@ export const useCampusData = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // 页面加载时获取数据
+  // 记录当前的搜索参数
+  const searchParamsRef = useRef<CampusSearchParams | undefined>();
+
+  // 页面加载或参数变化时获取数据
   useEffect(() => {
-    fetchCampuses();
+    fetchCampuses(searchParamsRef.current);
   }, [currentPage, pageSize]);
 
-  // 模拟获取校区数据
-  const fetchCampuses = async () => {
-    setLoading(true);
-    try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  // 获取校区数据
+  const fetchCampuses = async (searchParams?: CampusSearchParams) => {
+    // 更新搜索参数引用
+    searchParamsRef.current = searchParams;
 
-      // 生成测试数据
-      const mockData: Campus[] = Array(30)
-        .fill(null)
-        .map((_, index) => {
-          // 随机生成设施
-          const facilitiesCount = Math.floor(Math.random() * 6) + 3;
-          const selectedFacilities = facilityOptions
-            .sort(() => 0.5 - Math.random())
-            .slice(0, facilitiesCount)
-            .map(f => f.value);
+    // 检查缓存是否有效
+    const now = Date.now();
+    if (campusListCache &&
+        campusListCache.pageNum === currentPage &&
+        campusListCache.pageSize === pageSize &&
+        now - campusListCache.timestamp < CACHE_EXPIRY &&
+        JSON.stringify(campusListCache.searchParams) === JSON.stringify(searchParams)) {
+      // 使用缓存数据
+      console.log('使用缓存的校区列表数据');
+      setCampuses(campusListCache.data);
+      setTotal(campusListCache.total);
+      return;
+    }
 
-          const studentCount = Math.floor(Math.random() * 300) + 100;
-          const coachCount = Math.floor(Math.random() * 20) + 5;
-          
-          return {
-            id: `CA${10000 + index}`,
-            name: ['北京中关村校区', '北京望京校区', '上海徐汇校区', '上海浦东校区', '广州天河校区', '深圳南山校区', '杭州西湖校区', '成都锦江校区', '武汉江岸校区', '南京鼓楼校区'][index % 10],
-            address: `${['北京市', '上海市', '广州市', '深圳市', '杭州市', '成都市', '武汉市', '南京市', '天津市', '重庆市'][index % 10]}${['海淀区', '朝阳区', '徐汇区', '浦东新区', '天河区', '南山区', '西湖区', '锦江区', '江岸区', '鼓楼区'][index % 10]}${['中关村大街', '望京街道', '徐家汇路', '张江高科技园区', '天河路', '科技园路', '西湖大道', '锦江大道', '江岸大道', '鼓楼街'][index % 10]}${index + 1}号`,
-            phone: `${['010', '021', '020', '0755', '0571', '028', '027', '025', '022', '023'][index % 10]}-${String(55000000 + index * 10000).substring(0, 8)}`,
-            contactPerson: `负责人${index + 1}`,
-            capacity: (index % 5 + 2) * 100,
-            area: (index % 10 + 5) * 200,
-            facilities: selectedFacilities,
-            image: `https://picsum.photos/800/400?random=${index}`,
-            status: index % 10 === 0 ? 'CLOSED' : 'OPERATING',
-            openDate: dayjs().subtract((index + 1) * 90, 'day').format('YYYY-MM-DD'),
-            studentCount,
-            coachCount,
-            courseCount: Math.floor(Math.random() * 30) + 10,
-            monthlyRent: Math.floor(Math.random() * 50000) + 10000,
-            propertyFee: Math.floor(Math.random() * 5000) + 1000,
-            utilityFee: Math.floor(Math.random() * 3000) + 500,
-          };
+    // 如果有正在进行的请求，等待该请求完成
+    if (isFetchingCampusList) {
+      console.log('等待现有的校区列表请求完成');
+      setLoading(true);
+      return new Promise<void>((resolve) => {
+        campusListCallbacks.push((data) => {
+          setCampuses(data.list || []);
+          setTotal(data.total || 0);
+          setLoading(false);
+          resolve();
         });
+      });
+    }
 
-      // 分页
-      const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
-      const paginatedData = mockData.slice(start, end);
-      
-      setTotal(mockData.length);
-      setCampuses(paginatedData);
+    // 标记正在进行请求
+    isFetchingCampusList = true;
+    setLoading(true);
+
+    try {
+      console.log('获取校区列表，页码:', currentPage, '每页数量:', pageSize);
+
+      // 注意: 我们现在直接使用queryParams构建查询参数
+
+      // 调用API获取校区列表
+      // 构建完整的URL查询参数
+      const queryParams = new URLSearchParams();
+      queryParams.append('pageNum', currentPage.toString());
+      queryParams.append('pageSize', pageSize.toString());
+
+      if (searchParams?.searchText) {
+        queryParams.append('keyword', searchParams.searchText);
+      }
+
+      if (searchParams?.selectedStatus) {
+        queryParams.append('status', searchParams.selectedStatus);
+      }
+
+      // 只调用一次API
+      const directResponse = await fetch(`/lesson/api/campus/list?${queryParams.toString()}`, {
+        headers: {
+          'Authorization': document.cookie.split(';').find(c => c.trim().startsWith('token='))?.trim().substring('token='.length) || ''
+        }
+      });
+      const directData = await directResponse.json();
+      console.log('校区列表原始数据:', directData);
+
+      // 处理数据
+      let campusList: Campus[] = [];
+      let totalCount = 0;
+
+      if (directData && directData.code === 200 && directData.data) {
+        // 使用API返回的数据
+        campusList = directData.data.list || [];
+        totalCount = directData.data.total || 0;
+        console.log('校区列表数据处理成功:', campusList);
+      }
+
+      console.log('最终处理后的校区列表数据:', campusList);
+
+      // 更新缓存
+      campusListCache = {
+        data: campusList,
+        total: totalCount,
+        pageNum: currentPage,
+        pageSize: pageSize,
+        timestamp: Date.now(),
+        searchParams: searchParams
+      };
+
+      // 设置校区列表和总数
+      setCampuses(campusList);
+      setTotal(totalCount);
+      console.log('设置后的校区列表数据:', campusList);
+
+      // 通知所有等待的回调
+      campusListCallbacks.forEach(callback => callback({ list: campusList, total: totalCount }));
+      campusListCallbacks = [];
     } catch (error) {
       message.error('获取校区列表失败');
-      console.error(error);
+      console.error('获取校区列表错误:', error);
+      setCampuses([]);
+      setTotal(0);
+
+      // 清除缓存
+      campusListCache = null;
     } finally {
+      isFetchingCampusList = false;
       setLoading(false);
     }
   };
 
   // 根据条件过滤数据
   const filterData = (params: CampusSearchParams) => {
-    setLoading(true);
-    const { searchText, selectedStatus } = params;
-    setTimeout(() => {
-      try {
-        // 模拟API调用 - 实际情况应该是调用fetchCampuses但传入搜索参数
-        // 生成测试数据
-        const mockData: Campus[] = Array(30)
-          .fill(null)
-          .map((_, index) => {
-            // 随机生成设施
-            const facilitiesCount = Math.floor(Math.random() * 6) + 3;
-            const selectedFacilities = facilityOptions
-              .sort(() => 0.5 - Math.random())
-              .slice(0, facilitiesCount)
-              .map(f => f.value);
-
-            const studentCount = Math.floor(Math.random() * 300) + 100;
-            const coachCount = Math.floor(Math.random() * 20) + 5;
-            
-            return {
-              id: `CA${10000 + index}`,
-              name: ['北京中关村校区', '北京望京校区', '上海徐汇校区', '上海浦东校区', '广州天河校区', '深圳南山校区', '杭州西湖校区', '成都锦江校区', '武汉江岸校区', '南京鼓楼校区'][index % 10],
-              address: `${['北京市', '上海市', '广州市', '深圳市', '杭州市', '成都市', '武汉市', '南京市', '天津市', '重庆市'][index % 10]}${['海淀区', '朝阳区', '徐汇区', '浦东新区', '天河区', '南山区', '西湖区', '锦江区', '江岸区', '鼓楼区'][index % 10]}${['中关村大街', '望京街道', '徐家汇路', '张江高科技园区', '天河路', '科技园路', '西湖大道', '锦江大道', '江岸大道', '鼓楼街'][index % 10]}${index + 1}号`,
-              phone: `${['010', '021', '020', '0755', '0571', '028', '027', '025', '022', '023'][index % 10]}-${String(55000000 + index * 10000).substring(0, 8)}`,
-              contactPerson: `负责人${index + 1}`,
-              capacity: (index % 5 + 2) * 100,
-              area: (index % 10 + 5) * 200,
-              facilities: selectedFacilities,
-              image: `https://picsum.photos/800/400?random=${index}`,
-              status: index % 10 === 0 ? 'CLOSED' : 'OPERATING',
-              openDate: dayjs().subtract((index + 1) * 90, 'day').format('YYYY-MM-DD'),
-              studentCount,
-              coachCount,
-              courseCount: Math.floor(Math.random() * 30) + 10,
-              monthlyRent: Math.floor(Math.random() * 50000) + 10000,
-              propertyFee: Math.floor(Math.random() * 5000) + 1000,
-              utilityFee: Math.floor(Math.random() * 3000) + 500,
-            };
-          });
-
-        // 过滤数据
-        let filteredData = mockData;
-        
-        if (searchText) {
-          filteredData = filteredData.filter(
-            campus => 
-              campus.name.includes(searchText) || 
-              campus.address.includes(searchText) ||
-              campus.phone.includes(searchText)
-          );
-        }
-        
-        if (selectedStatus) {
-          filteredData = filteredData.filter(campus => campus.status === selectedStatus);
-        }
-
-        // 分页
-        const start = (currentPage - 1) * pageSize;
-        const end = start + pageSize;
-        const paginatedData = filteredData.slice(start, end);
-        
-        setTotal(filteredData.length);
-        setCampuses(paginatedData);
-      } catch (error) {
-        message.error('筛选校区列表失败');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }, 500);
+    // 重置到第一页
+    setCurrentPage(1);
+    // 调用fetchCampuses并传入搜索参数
+    fetchCampuses(params);
   };
 
   // 添加校区
-  const addCampus = (values: Partial<Campus>) => {
-    const newCampus: Campus = {
-      id: `CA${10000 + Math.floor(Math.random() * 90000)}`,
-      name: values.name || '',
-      address: values.address || '',
-      phone: values.phone || '',
-      contactPerson: values.contactPerson || '',
-      capacity: values.capacity || 200,
-      area: values.area || 1000,
-      facilities: values.facilities || [],
-      image: values.image || '',
-      status: values.status || 'OPERATING',
-      openDate: dayjs().format('YYYY-MM-DD'),
-      studentCount: 0,
-      coachCount: 0,
-      courseCount: 0,
-      monthlyRent: values.monthlyRent || 0,
-      propertyFee: values.propertyFee || 0,
-      utilityFee: values.utilityFee || 0
-    };
-    
-    setCampuses(prevCampuses => [newCampus, ...prevCampuses]);
-    setTotal(prev => prev + 1);
-    message.success('校区添加成功');
-    return newCampus;
+  const addCampus = async (values: Partial<Campus> & { utilitiesFee?: number }) => {
+    try {
+      setLoading(true);
+
+      // 准备请求数据
+      const campusData = {
+        name: values.name || '',
+        address: values.address || '',
+        phone: values.phone || '',
+        contactPerson: values.contactPerson || '',
+        status: values.status || 'OPERATING',
+        monthlyRent: values.monthlyRent || 0,
+        propertyFee: values.propertyFee || 0,
+        utilityFee: values.utilityFee || (values as any).utilitiesFee || 0, // 兼容表单字段名
+        capacity: 200, // 使用默认值
+        area: 1000, // 使用默认值
+        facilities: [] // 使用默认空数组
+      };
+
+      // 调用API创建校区
+      const newCampusId = await API.campus.create(campusData);
+      console.log('校区创建成功，ID:', newCampusId);
+
+      // 创建本地校区对象用于UI更新
+      const newCampus: Campus = {
+        id: newCampusId,
+        name: campusData.name,
+        address: campusData.address,
+        phone: campusData.phone,
+        contactPerson: campusData.contactPerson,
+        status: campusData.status as 'OPERATING' | 'CLOSED',
+        monthlyRent: campusData.monthlyRent,
+        propertyFee: campusData.propertyFee,
+        utilityFee: campusData.utilityFee,
+        openDate: dayjs().format('YYYY-MM-DD'),
+        studentCount: 0,
+        coachCount: 0,
+        courseCount: 0,
+        capacity: campusData.capacity,
+        area: campusData.area,
+        facilities: campusData.facilities,
+        image: '',
+      };
+
+      // 清除缓存
+      campusListCache = null;
+
+      // 重新获取最新数据，更新表格
+      await fetchCampuses(searchParamsRef.current);
+
+      // 触发所有校区选择器组件刷新
+      refreshAllCampusSelectors();
+
+      return newCampus;
+    } catch (error) {
+      console.error('添加校区失败:', error);
+      message.error('添加校区失败');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 更新校区
-  const updateCampus = (id: string, values: Partial<Campus>) => {
-    setCampuses(prevCampuses => 
-      prevCampuses.map(campus => 
-        campus.id === id 
-          ? { ...campus, ...values } 
-          : campus
-      )
-    );
-    message.success('校区信息已更新');
+  const updateCampus = async (id: string | number, values: Partial<Campus>) => {
+    try {
+      setLoading(true);
+
+      // 准备请求数据
+      const updateData = {
+        name: values.name,
+        address: values.address,
+        phone: values.phone,
+        contactPerson: values.contactPerson,
+        status: values.status,
+        monthlyRent: values.monthlyRent,
+        propertyFee: values.propertyFee,
+        utilityFee: values.utilityFee, // 水电费
+      };
+
+      // 调用API更新校区
+      await API.campus.update(String(id), updateData);
+      console.log('校区更新成功:', id);
+
+      // 清除缓存
+      campusListCache = null;
+
+      // 重新获取最新数据，更新表格
+      await fetchCampuses(searchParamsRef.current);
+
+      // 成功提示已移至useCampusForm.ts中处理，这里不再显示
+
+      // 触发所有校区选择器组件刷新
+      refreshAllCampusSelectors();
+    } catch (error) {
+      console.error('更新校区失败:', error);
+      message.error('更新校区失败');
+      // 重新抛出错误，使调用者知道函数失败
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 删除校区
-  const deleteCampus = (id: string) => {
-    setCampuses(campuses.filter(campus => campus.id !== id));
-    setTotal(prev => prev - 1);
-    message.success('校区已删除');
+  const deleteCampus = async (id: string | number) => {
+    try {
+      setLoading(true);
+
+      // 调用API删除校区
+      await API.campus.delete(String(id));
+      console.log('校区删除成功:', id);
+
+      message.success('校区已删除');
+
+      // 清除缓存
+      campusListCache = null;
+
+      // 重新获取最新数据，更新表格
+      await fetchCampuses(searchParamsRef.current);
+
+      // 触发所有校区选择器组件刷新
+      refreshAllCampusSelectors();
+    } catch (error) {
+      console.error('删除校区失败:', error);
+      message.error('删除校区失败');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 切换校区状态
-  const toggleCampusStatus = (record: Campus) => {
-    const newStatus = record.status === 'CLOSED' ? 'OPERATING' : 'CLOSED';
-    setCampuses(prevCampuses => 
-      prevCampuses.map(campus => 
-        campus.id === record.id 
-          ? { ...campus, status: newStatus } 
-          : campus
-      )
-    );
-    message.success(`校区状态已更新为${newStatus === 'OPERATING' ? '运营中' : '已关闭'}`);
+  const toggleCampusStatus = async (record: Campus) => {
+    try {
+      setLoading(true);
+
+      // 计算新状态
+      const newStatus = record.status === 'CLOSED' ? 'OPERATING' : 'CLOSED';
+      const statusValue = newStatus === 'OPERATING' ? 1 : 0; // 1表示营业中，0表示已关闭
+
+      // 调用API更新校区状态，使用updateStatus接口
+      await API.campus.updateStatus(String(record.id), statusValue);
+      console.log('校区状态更新成功:', record.id, newStatus);
+
+      message.success(`校区状态已更新为${newStatus === 'OPERATING' ? '运营中' : '已关闭'}`);
+
+      // 清除缓存
+      campusListCache = null;
+
+      // 重新获取最新数据，更新表格
+      await fetchCampuses(searchParamsRef.current);
+
+      // 触发所有校区选择器组件刷新
+      refreshAllCampusSelectors();
+    } catch (error) {
+      console.error('更新校区状态失败:', error);
+      message.error('更新校区状态失败');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
@@ -222,4 +333,4 @@ export const useCampusData = () => {
     setCurrentPage,
     setPageSize
   };
-}; 
+};

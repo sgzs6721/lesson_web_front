@@ -1,57 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux'; // 引入 useDispatch 和 useSelector
-import { useNavigate } from 'react-router-dom'; // 引入 useNavigate
-import { login, setCampusModalVisible } from '@/redux/slices/authSlice'; // 引入 login action
-import { RootState } from '@/redux/store'; // 引入 RootState 类型
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { login, setCampusModalVisible } from '@/redux/slices/authSlice';
+import { RootState } from '@/redux/store';
 import { Form, Modal } from 'antd';
-import CampusAddAfterLogin from '@/pages/campus/components/CampusAddAfterLogin'; // 引入登录后添加校区的模态框
-import { API } from '@/api'; // 导入 API
-// 不再需要直接引入 API
-import './Modal.css'; // 引入模态框样式
-
-// 添加 mock 接口返回值的类型定义
-interface MockResponse {
-  code: number;
-  message?: string;  // 设为可选
-  data: {
-    total: number;
-    pageNum?: number;  // 设为可选
-    pageSize?: number;  // 设为可选
-    pages?: number;  // 设为可选
-    list?: any[];  // 设为可选
-  };
-}
+import CampusAddAfterLogin from '@/pages/campus/components/CampusAddAfterLogin';
+import './Modal.css';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialPhone?: string; // 新增：初始手机号
+  initialPhone?: string;
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone = '' }) => {
-  const dispatch = useDispatch(); // 获取 dispatch
-  const navigate = useNavigate(); // 获取 navigate
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [phone, setPhone] = useState(initialPhone);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [loading, setLoading] = useState(false); // 添加 loading 状态
-  const [success, setSuccess] = useState(false); // 新增：登录成功状态
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [noCampus, setNoCampus] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   // 创建校区表单
   const [campusForm] = Form.useForm();
   const [campusFormLoading] = useState(false);
 
   // 从campusSlice中获取校区状态
-  const { showCampusModal, hasCampus, total } = useSelector((state: RootState) => state.auth);
-
-  // 添加状态变化的监听
-  useEffect(() => {
-    console.log('Redux状态更新:', { showCampusModal, hasCampus, total });
-  }, [showCampusModal, hasCampus, total]);
+  const { showCampusModal } = useSelector((state: RootState) => state.auth);
 
   // 当 initialPhone 变化时更新 phone 状态
   useEffect(() => {
@@ -121,7 +99,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
     e.preventDefault();
     setError('');
     setSuccess(false);
-    setNoCampus(false);
     setLoading(true);
 
     if (!isFormValid()) {
@@ -135,37 +112,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
       console.log('登录结果:', resultAction);
 
       if (resultAction.type.endsWith('/fulfilled')) {
+        // 登录成功
         setSuccess(true);
-
-        try {
-          const campusListResponse = await API.campus.getList();
-          console.log('校区列表响应:', campusListResponse);
-
-          if ('code' in campusListResponse && 'data' in campusListResponse) {
-            const mockResponse = campusListResponse as unknown as MockResponse;
-            const mockData = mockResponse.data;
-            if (mockData.total === 0) {
-              console.log('mock接口：没有校区');
-              setNoCampus(true);
-            } else {
-              onClose();
-              navigate('/dashboard');
-            }
-          } else {
-            if (campusListResponse.total === 0) {
-              console.log('正式接口：没有校区');
-              setNoCampus(true);
-            } else {
-              onClose();
-              navigate('/dashboard');
-            }
-          }
-        } catch (error) {
-          console.error('获取校区列表失败:', error);
-          setSuccess(false);
-          setError('登录失败，请重试');
-          setLoading(false);
-        }
+        
+        // 登录成功后直接进入系统，不再立即调用campus/list接口
+        setTimeout(() => {
+          onClose();
+          navigate('/dashboard');
+        }, 1000);
       } else if (resultAction.type.endsWith('/rejected')) {
         const errorMessage = resultAction.payload || '登录失败，请检查手机号或密码';
 
@@ -176,6 +130,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
         } else {
           setError('');
         }
+        setLoading(false);
       }
     } catch (err: any) {
       console.error('登录过程中出现错误:', err);
@@ -183,7 +138,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
       if (errMsg.includes('网络') || errMsg.includes('连接') || errMsg.includes('超时')) {
         setError(errMsg);
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -233,23 +187,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
     }, 2000);
   };
 
-  // 处理确认模态框的确认按钮
-  const handleConfirmModalOk = () => {
-    setShowConfirmModal(false);
-    dispatch(setCampusModalVisible(true));
-  };
-
-  // 处理确认模态框的取消按钮
-  const handleConfirmModalCancel = () => {
-    setShowConfirmModal(false);
-    onClose();
-  };
-
-  // 处理创建校区按钮点击
-  const handleCreateCampus = () => {
-    dispatch(setCampusModalVisible(true));
-  };
-
   // 处理取消按钮点击
   const handleCancel = () => {
     onClose();
@@ -266,34 +203,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
           <div className="modal-body">
             {success ? (
               <div className="success-message">
-                {noCampus ? (
-                  <>
-                    <p>机构未创建校区，请先创建校区</p>
-                    <div className="button-group" style={{ marginTop: '20px' }}>
-                      <button className="cancel-btn" onClick={handleCancel}>
-                        取消
-                      </button>
-                      <button className="submit-btn" onClick={handleCreateCampus}>
-                        确认
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <p>登录成功！正在进入系统...</p>
-                )}
+                <p>登录成功！正在进入系统...</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
                   <label htmlFor="login-phone">手机号</label>
                   <input
-                    type="tel" // 使用 tel 类型以便移动端键盘
+                    type="tel"
                     id="login-phone"
                     value={phone}
                     onChange={handlePhoneChange}
                     placeholder="请输入手机号"
                     required
-                    disabled={loading} // loading 时禁用输入
+                    disabled={loading}
                   />
                 </div>
                 {phoneError && <p className="error-message">{phoneError}</p>}
@@ -306,12 +229,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
                     onChange={handlePasswordChange}
                     placeholder="请输入密码（至少8位）"
                     required
-                    disabled={loading} // loading 时禁用输入
+                    disabled={loading}
                     onKeyDown={handlePasswordKeyDown}
                   />
                 </div>
                 {passwordError && <p className="error-message">{passwordError}</p>}
-                {/* 只有在有本地表单验证错误或网络错误时才显示错误信息 */}
                 {error && <p className="error-message">{error}</p>}
                 <div className="button-group">
                   <button
@@ -335,18 +257,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
           </div>
         </div>
       </div>
-
-      {/* 添加确认模态框 */}
-      <Modal
-        title="提示"
-        open={showConfirmModal}
-        onOk={handleConfirmModalOk}
-        onCancel={handleConfirmModalCancel}
-        okText="确认"
-        cancelText="取消"
-      >
-        <p>机构未创建校区，请先创建校区</p>
-      </Modal>
 
       {/* 校区创建模态框 */}
       <CampusAddAfterLogin

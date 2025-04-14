@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Form } from 'antd';
+import { Form, message } from 'antd';
 import { Campus } from '../types/campus';
 
-type AddFunction = (values: Partial<Campus>) => Campus;
-type UpdateFunction = (id: string, values: Partial<Campus>) => void;
+type AddFunction = (values: Partial<Campus>) => Promise<Campus>;
+type UpdateFunction = (id: string, values: Partial<Campus>) => Promise<void>;
 
 export const useCampusForm = (
   addCampus: AddFunction,
@@ -32,7 +32,7 @@ export const useCampusForm = (
       propertyFee: record.propertyFee || 0,
       utilityFee: record.utilityFee || 0,
       contactPerson: record.contactPerson,
-      phone: record.phone,
+      phone: record.phone
     });
     setVisible(true);
   };
@@ -45,16 +45,42 @@ export const useCampusForm = (
 
       if (editingCampus) {
         // 编辑现有校区
-        await updateCampus(editingCampus.id, values);
+        try {
+          // 尝试更新校区
+          await updateCampus(String(editingCampus.id), values);
+          message.success('校区信息已更新');
+
+          // 只有在更新成功时才重置表单并关闭模态框
+          form.resetFields();
+          setVisible(false);
+        } catch (updateError) {
+          // 更新失败时，不关闭模态框，允许用户修改输入
+          console.error('更新校区失败:', updateError);
+          message.error('更新校区失败，请检查输入并重试');
+        }
       } else {
         // 添加新校区
-        await addCampus(values);
-      }
+        try {
+          await addCampus(values);
+          message.success('校区添加成功');
 
-      form.resetFields();
-      setVisible(false);
-    } catch (error) {
-      console.error('Validate Failed:', error);
+          // 只有在添加成功时才重置表单并关闭模态框
+          form.resetFields();
+          setVisible(false);
+        } catch (addError) {
+          // 添加失败时，不关闭模态框，允许用户修改输入
+          console.error('添加校区失败:', addError);
+          message.error('添加校区失败，请检查输入并重试');
+        }
+      }
+    } catch (error: any) {
+      // 表单验证错误
+      if (error.errorFields) {
+        message.error('请正确填写所有必填字段');
+      } else {
+        message.error('操作失败，请稍后重试');
+        console.error('Form submit failed:', error);
+      }
     } finally {
       setLoading(false);
     }

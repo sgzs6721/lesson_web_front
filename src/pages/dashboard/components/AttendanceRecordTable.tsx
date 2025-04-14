@@ -36,18 +36,18 @@ const AttendanceRecordTable: React.FC<AttendanceRecordTableProps> = ({
     // 找到要打卡的学员
     const studentToPunch = attendanceRecords.find(r => r.id === id);
     if (!studentToPunch) return;
-    
+
     // 更新本地状态
-    const updatedRecords = attendanceRecords.map(record => 
-      record.id === id 
+    const updatedRecords = attendanceRecords.map(record =>
+      record.id === id
         ? { ...record, status: '已打卡' as const, isDisabled: true, isChecked: false }
         : record
     );
     setAttendanceRecords(updatedRecords);
-    
+
     // 通知父组件取消选中该学员，因为打卡后学员已被禁用
     onSelectRecord(id, false);
-    
+
     alert(`${studentToPunch.studentName} 打卡成功！`);
   };
 
@@ -56,28 +56,28 @@ const AttendanceRecordTable: React.FC<AttendanceRecordTableProps> = ({
     // 找到要请假的学员
     const studentToLeave = attendanceRecords.find(r => r.id === id);
     if (!studentToLeave) return;
-    
+
     // 更新本地状态
-    const updatedRecords = attendanceRecords.map(record => 
-      record.id === id 
+    const updatedRecords = attendanceRecords.map(record =>
+      record.id === id
         ? { ...record, status: '已请假' as const, isDisabled: true, isChecked: false }
         : record
     );
     setAttendanceRecords(updatedRecords);
-    
+
     // 通知父组件取消选中该学员，因为请假后学员已被禁用
     onSelectRecord(id, false);
-    
+
     alert(`${studentToLeave.studentName} 请假成功！`);
   };
 
   return (
-    <div id="attendance-card" className="dashboard-card" style={{ marginBottom: '20px' }}>
+    <div id="attendance-card" className="dashboard-card" style={{ marginBottom: '20px', marginTop: '20px' }}>
       <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="card-title" style={{ fontSize: '18px' }}>今日上课学员</div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <button 
-            className="btn-batch-punch" 
+          <button
+            className="btn-batch-punch"
             style={{ marginRight: '10px' }}
             onClick={onBatchPunch}
           >
@@ -91,9 +91,9 @@ const AttendanceRecordTable: React.FC<AttendanceRecordTableProps> = ({
             <thead>
               <tr>
                 <th style={{ textAlign: 'center', width: '40px' }}>
-                  <input 
-                    type="checkbox" 
-                    style={{ cursor: 'pointer' }} 
+                  <input
+                    type="checkbox"
+                    style={{ cursor: 'pointer' }}
                     onChange={handleSelectAll}
                     id="selectAllAttendance"
                   />
@@ -113,9 +113,9 @@ const AttendanceRecordTable: React.FC<AttendanceRecordTableProps> = ({
               {attendanceRecords.map(record => (
                 <tr key={record.id} className={record.status === '未打卡' ? 'unchecked-record' : ''}>
                   <td style={{ textAlign: 'center' }}>
-                    <input 
-                      type="checkbox" 
-                      style={{ cursor: record.isDisabled ? 'not-allowed' : 'pointer' }} 
+                    <input
+                      type="checkbox"
+                      style={{ cursor: record.isDisabled ? 'not-allowed' : 'pointer' }}
                       data-status={record.status === '未打卡' ? 'unchecked' : record.status === '已打卡' ? 'checked' : 'leave'}
                       disabled={record.isDisabled}
                       checked={record.isChecked || false}
@@ -141,13 +141,13 @@ const AttendanceRecordTable: React.FC<AttendanceRecordTableProps> = ({
                   <td>
                     {record.status === '未打卡' ? (
                       <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
-                        <button 
+                        <button
                           className="btn-punch"
                           onClick={() => handlePunch(record.id)}
                         >
                           打卡
                         </button>
-                        <button 
+                        <button
                           className="btn-leave"
                           onClick={() => handleLeave(record.id)}
                         >
@@ -170,4 +170,4 @@ const AttendanceRecordTable: React.FC<AttendanceRecordTableProps> = ({
   );
 };
 
-export default AttendanceRecordTable; 
+export default AttendanceRecordTable;

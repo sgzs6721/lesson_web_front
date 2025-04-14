@@ -34,8 +34,8 @@ export const getTableColumns = (
     align: 'center',
     render: (_, record) => (
       <>
-        <div>{record.contactPerson}</div>
-        <div>{record.phone}</div>
+        <div>{record.contactPerson || '未设置'}</div>
+        <div>{record.phone || '未设置'}</div>
       </>
     ),
   },
@@ -59,25 +59,21 @@ export const getTableColumns = (
     render: (status) => {
       let color = '';
       let text = '';
-      
+
       switch (status) {
-        case 'open':
+        case 'OPERATING':
           color = 'green';
           text = '营业中';
           break;
-        case 'closed':
+        case 'CLOSED':
           color = 'red';
           text = '已关闭';
-          break;
-        case 'renovating':
-          color = 'orange';
-          text = '装修中';
           break;
         default:
           color = 'default';
           text = status;
       }
-      
+
       return <Tag color={color}>{text}</Tag>;
     },
   },
@@ -89,11 +85,11 @@ export const getTableColumns = (
     render: (_, record) => (
       <Space size="middle">
         <Tooltip title="编辑">
-          <Button 
-            type="text" 
-            size="small" 
-            icon={<EditOutlined />} 
-            onClick={() => onEdit(record)} 
+          <Button
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
           />
         </Tooltip>
         <Tooltip title={record.status === 'CLOSED' ? '启用' : '停用'}>
@@ -105,15 +101,15 @@ export const getTableColumns = (
           />
         </Tooltip>
         <Tooltip title="删除">
-          <Button 
-            type="text" 
-            size="small" 
-            danger 
-            icon={<DeleteOutlined />} 
+          <Button
+            type="text"
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
             onClick={() => onDelete(record.id, record.name)}
           />
         </Tooltip>
       </Space>
     ),
   },
-]; 
+];

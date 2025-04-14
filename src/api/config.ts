@@ -33,21 +33,17 @@ export const requestInterceptor = (config: RequestInit, url: string) => {
       return config;
     }
 
-    // 首先从cookie中获取token，如果没有则从localStorage获取
+    // 从cookie中获取token
     const tokenFromCookie = getTokenCookie();
-    const tokenFromStorage = localStorage.getItem('token');
-    const token = tokenFromCookie || tokenFromStorage;
 
-    console.log('请求拦截器:', token ? `找到token, 值: ${token.substring(0, 10)}...` : '未找到token');
-
-    // 如果有 token，添加到请求头
-    if (token) {
+    // 如果有token，添加到请求头
+    if (tokenFromCookie) {
       console.log('为请求添加Authorization头');
       return {
         ...config,
         headers: {
           ...config.headers,
-          'Authorization': token
+          'Authorization': tokenFromCookie
         }
       };
     } else {
@@ -92,7 +88,10 @@ export const request = async (url: string, options: RequestInit = {}) => {
     headers: {
       ...DEFAULT_HEADERS,
       ...options.headers
-    }
+    },
+    // 添加跨域相关配置
+    mode: 'cors' as RequestMode,
+    credentials: 'include' as RequestCredentials
   };
 
   // 应用请求拦截器

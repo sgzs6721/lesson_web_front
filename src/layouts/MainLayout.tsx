@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { logout } from '@/redux/slices/authSlice';
+import CampusSelector, { getCampusList } from '@/components/CampusSelector';
+import { Campus } from '@/api/campus/types';
 
 const MainLayout: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -9,8 +11,7 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState('/dashboard');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showCampusList, setShowCampusList] = useState(false);
-  const [currentCampus, setCurrentCampus] = useState('总部校区');
+  const [currentCampus, setCurrentCampus] = useState<Campus | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
 
@@ -18,10 +19,31 @@ const MainLayout: React.FC = () => {
   const auth = useAppSelector((state) => state.auth);
   const username = auth && (auth as any).user?.username || '管理员';
 
+  // 设置当前活动菜单
   useEffect(() => {
     const pathKey = location.pathname;
     setActiveMenu(pathKey);
   }, [location.pathname]);
+
+  // 在组件加载时预加载校区列表
+  useEffect(() => {
+    const preloadCampusList = async () => {
+      try {
+        console.log('预加载校区列表...');
+        const campusList = await getCampusList();
+        console.log('预加载校区列表成功:', campusList);
+
+        // 如果有校区且当前没有选中校区，选择第一个
+        if (campusList.length > 0 && !currentCampus) {
+          setCurrentCampus(campusList[0]);
+        }
+      } catch (error) {
+        console.error('预加载校区列表失败:', error);
+      }
+    };
+
+    preloadCampusList();
+  }, []);
 
   const handleLogout = async () => {
     await dispatch(logout());
@@ -43,6 +65,12 @@ const MainLayout: React.FC = () => {
       // For mobile, collapsed actually means visible/expanded
       document.body.style.overflow = !sidebarCollapsed ? 'hidden' : '';
     }
+  };
+
+  // 处理校区变更
+  const handleCampusChange = (campus: Campus) => {
+    setCurrentCampus(campus);
+    console.log('选择校区:', campus);
   };
 
   // Close sidebar when clicking on menu item on mobile
@@ -83,9 +111,6 @@ const MainLayout: React.FC = () => {
       if (!(e.target as HTMLElement).closest('.user-info')) {
         setShowDropdown(false);
       }
-      if (!(e.target as HTMLElement).closest('.campus-selector')) {
-        setShowCampusList(false);
-      }
     };
 
     document.addEventListener('click', handleClickOutside);
@@ -97,17 +122,6 @@ const MainLayout: React.FC = () => {
   const toggleDropdown = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDropdown(!showDropdown);
-  };
-
-  // Toggle campus list visibility
-  const toggleCampusList = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowCampusList(!showCampusList);
-  };
-
-  const selectCampus = (campus: string) => {
-    setCurrentCampus(campus);
-    setShowCampusList(false);
   };
 
   return (
@@ -229,205 +243,101 @@ const MainLayout: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'space-between'
             }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <div style={{ 
+              {currentCampus ? (
+                <div style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  marginRight: '15px'
+                  alignItems: 'center'
                 }}>
                   <div style={{
-                    fontSize: '20px',
-                    fontWeight: 'bold',
-                    color: 'white',
-                    marginRight: '10px'
-                  }}>
-                    {currentCampus}
-                  </div>
-                  <div style={{
-                    fontSize: '11px',
-                    padding: '2px 6px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    color: 'white',
-                    borderRadius: '3px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)'
-                  }}>
-                    正常运营中
-                  </div>
-                </div>
-
-                {/* 负责人信息 */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  marginRight: '15px',
-                  height: '30px'
-                }}>
-                  <i style={{
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '50%',
-                    width: '20px',
-                    height: '20px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '11px'
+                    marginRight: '15px'
                   }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"/>
-                    </svg>
-                  </i>
-                  <span style={{ color: 'white', fontSize: '13px', whiteSpace: 'nowrap' }}>负责人：张明</span>
-                </div>
-
-                {/* 联系电话信息 */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  height: '30px'
-                }}>
-                  <i style={{
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '50%',
-                    width: '20px',
-                    height: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '11px'
-                  }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-                    </svg>
-                  </i>
-                  <span style={{ color: 'white', fontSize: '13px', whiteSpace: 'nowrap' }}>联系电话：13800138001</span>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                {/* 校区选择器 */}
-                <div style={{
-                  position: 'relative',
-                  marginRight: '15px',
-                  height: '32px',
-                  minWidth: '120px'
-                }}>
-                  <button
-                    onClick={toggleCampusList}
-                    style={{
-                      padding: '0 12px',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '16px',
-                      cursor: 'pointer',
+                    <div style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
                       color: 'white',
-                      fontSize: '13px',
-                      fontWeight: '500',
+                      marginRight: '10px'
+                    }}>
+                      {currentCampus.name}
+                    </div>
+                    <div style={{
+                      fontSize: '11px',
+                      padding: '2px 6px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      color: 'white',
+                      borderRadius: '3px',
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }}>
+                      {currentCampus.status === 'OPERATING' ? '正常运营中' : '已关闭'}
+                    </div>
+                  </div>
+
+                  {/* 负责人信息 */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginRight: '15px',
+                    height: '30px'
+                  }}>
+                    <i style={{
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
                       display: 'flex',
                       alignItems: 'center',
-                      height: '32px',
-                      width: '100%',
-                      justifyContent: 'space-between',
-                      transition: 'all 0.2s ease',
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '6px' }}>
-                        <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z"/>
+                      justifyContent: 'center',
+                      fontSize: '11px'
+                    }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"/>
                       </svg>
-                      校区选择
-                    </div>
-                    <span style={{ 
-                      fontSize: '10px',
-                      transform: showCampusList ? 'rotate(180deg)' : 'rotate(0)',
-                      transition: 'transform 0.2s ease'
-                    }}>▼</span>
-                  </button>
+                    </i>
+                    <span style={{ color: 'white', fontSize: '13px', whiteSpace: 'nowrap' }}>负责人：{currentCampus.contactPerson || '未设置'}</span>
+                  </div>
 
-                  {showCampusList && (
-                    <div
-                      className={`campus-dropdown ${isDarkTheme ? 'campus-dropdown-dark' : ''}`}
-                      style={{
-                        position: 'absolute',
-                        top: '100%',
-                        right: '0',
-                        backgroundColor: isDarkTheme ? 'rgba(31, 40, 51, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-                        borderRadius: '12px',
-                        padding: '6px',
-                        marginTop: '8px',
-                        zIndex: 1000,
-                        minWidth: '160px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        animation: 'dropdownFade 0.2s ease'
-                      }}
-                    >
-                      {['总部校区', '东城校区', '西城校区', '南城校区', '北城校区', '天骄校区'].map(campus => (
-                        <div
-                          key={campus}
-                          className="campus-item"
-                          style={{
-                            padding: '8px 12px',
-                            margin: '2px',
-                            cursor: 'pointer',
-                            color: isDarkTheme ? '#f0f0f0' : '#333',
-                            borderRadius: '8px',
-                            fontSize: '13px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            transition: 'all 0.2s ease',
-                            backgroundColor: currentCampus === campus ?
-                              (isDarkTheme ? 'rgba(52, 152, 219, 0.2)' : 'rgba(52, 152, 219, 0.1)') :
-                              'transparent'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (currentCampus !== campus) {
-                              e.currentTarget.style.backgroundColor = isDarkTheme ? 
-                                'rgba(255, 255, 255, 0.05)' : 
-                                'rgba(0, 0, 0, 0.05)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (currentCampus !== campus) {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                            }
-                          }}
-                          onClick={(e) => { e.stopPropagation(); selectCampus(campus); }}
-                        >
-                          {currentCampus === campus && (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
-                              <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                            </svg>
-                          )}
-                          <span style={{ marginLeft: currentCampus === campus ? '0' : '22px' }}>{campus}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {/* 联系电话信息 */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    height: '30px'
+                  }}>
+                    <i style={{
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '11px'
+                    }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
+                      </svg>
+                    </i>
+                    <span style={{ color: 'white', fontSize: '13px', whiteSpace: 'nowrap' }}>联系电话：{currentCampus.phone || '未设置'}</span>
+                  </div>
                 </div>
-                
+              ) : (
+                <div style={{ color: 'white', fontSize: '16px' }}>暂无校区信息</div>
+              )}
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                {/* 使用CampusSelector组件 */}
+                <CampusSelector
+                  isDarkTheme={isDarkTheme}
+                  onCampusChange={handleCampusChange}
+                />
+
                 <div className="user-info" onClick={toggleDropdown} style={{
                   background: 'rgba(255, 255, 255, 0.1)',
                   display: 'flex',
@@ -483,14 +393,14 @@ const MainLayout: React.FC = () => {
                     justifyContent: 'center',
                     padding: '0 4px'
                   }}>
-                    <div style={{ 
-                      fontWeight: 600, 
-                      fontSize: '13px', 
+                    <div style={{
+                      fontWeight: 600,
+                      fontSize: '13px',
                       marginBottom: '2px',
                       letterSpacing: '0.3px'
                     }}>{username}</div>
-                    <div style={{ 
-                      fontSize: '11px', 
+                    <div style={{
+                      fontSize: '11px',
                       opacity: '0.85',
                       letterSpacing: '0.2px'
                     }}>超级管理员</div>
@@ -503,12 +413,12 @@ const MainLayout: React.FC = () => {
                     justifyContent: 'center',
                     marginRight: '2px'
                   }}>
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="14" 
-                      height="14" 
-                      fill="currentColor" 
-                      viewBox="0 0 16 16" 
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
                       style={{
                         color: 'rgba(255, 255, 255, 0.7)',
                         transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)',
@@ -549,17 +459,49 @@ const MainLayout: React.FC = () => {
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
-                        'rgba(255, 255, 255, 0.05)' : 
+                      e.currentTarget.style.backgroundColor = isDarkTheme ?
+                        'rgba(255, 255, 255, 0.05)' :
                         'rgba(0, 0, 0, 0.05)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}
-                    onClick={() => navigate('/profile')}
+                    onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
-                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664z"/>
+                        {isDarkTheme ? (
+                          <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+                        ) : (
+                          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+                        )}
+                      </svg>
+                      {isDarkTheme ? '切换到浅色模式' : '切换到深色模式'}
+                    </div>
+
+                    <div style={{
+                      padding: '8px 12px',
+                      margin: '2px',
+                      cursor: 'pointer',
+                      color: isDarkTheme ? '#f0f0f0' : '#333',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDarkTheme ?
+                        'rgba(255, 255, 255, 0.05)' :
+                        'rgba(0, 0, 0, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={(e) => { e.stopPropagation(); navigate('/profile'); }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                        <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
                       </svg>
                       个人信息
                     </div>
@@ -576,17 +518,18 @@ const MainLayout: React.FC = () => {
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
-                        'rgba(255, 255, 255, 0.05)' : 
+                      e.currentTarget.style.backgroundColor = isDarkTheme ?
+                        'rgba(255, 255, 255, 0.05)' :
                         'rgba(0, 0, 0, 0.05)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}
-                    onClick={() => navigate('/settings')}
+                    onClick={(e) => { e.stopPropagation(); navigate('/settings'); }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
-                        <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.159.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
                       </svg>
                       系统设置
                     </div>
@@ -603,48 +546,9 @@ const MainLayout: React.FC = () => {
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
-                        'rgba(255, 255, 255, 0.05)' : 
+                      e.currentTarget.style.backgroundColor = isDarkTheme ?
+                        'rgba(255, 255, 255, 0.05)' :
                         'rgba(0, 0, 0, 0.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                    onClick={toggleTheme}
-                    >
-                      {isDarkTheme ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
-                          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
-                          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
-                        </svg>
-                      )}
-                      {isDarkTheme ? '浅色模式' : '深色模式'}
-                    </div>
-
-                    <div style={{
-                      margin: '4px 8px',
-                      height: '1px',
-                      background: isDarkTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                    }} />
-
-                    <div style={{
-                      padding: '8px 12px',
-                      margin: '2px',
-                      cursor: 'pointer',
-                      color: '#dc3545',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isDarkTheme ? 
-                        'rgba(220, 53, 69, 0.1)' : 
-                        'rgba(220, 53, 69, 0.05)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
@@ -652,7 +556,7 @@ const MainLayout: React.FC = () => {
                     onClick={handleLogout}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
-                        <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                        <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
                         <path fillRule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
                       </svg>
                       退出登录
@@ -664,26 +568,12 @@ const MainLayout: React.FC = () => {
           </div>
         </div>
 
-        <div className="content-panel" style={{ marginTop: '57px' }}>
-          <div className="header" style={{ display: 'none' }}>
-            <h1 className="page-title">
-              {activeMenu.startsWith('/dashboard') ? '数据概览' :
-               activeMenu.startsWith('/campuses') ? '校区管理' :
-               activeMenu.startsWith('/users') ? '用户管理' :
-               activeMenu.startsWith('/coaches') ? '教练管理' :
-               activeMenu.startsWith('/courses') ? '课程管理' :
-               activeMenu.startsWith('/students') ? '学员管理' :
-               activeMenu.startsWith('/payments') ? '缴费记录' :
-               activeMenu.startsWith('/expenses') ? '收支管理' :
-               activeMenu.startsWith('/schedules') ? '课表管理' :
-               activeMenu.startsWith('/attendance') ? '打卡与消课' :
-               activeMenu.startsWith('/statistics') ? '数据统计' :
-               activeMenu.startsWith('/analysis') ? '校区分析' :
-               activeMenu.startsWith('/settings') ? '系统设置' : '未知页面'}
-            </h1>
-          </div>
-
-          {/* 主要内容，使用Outlet渲染嵌套路由内容 */}
+        <div className="content" style={{
+          marginTop: '70px', // 为顶部导航条留出空间
+          padding: '20px',
+          height: 'calc(100% - 70px)',
+          overflowY: 'auto'
+        }}>
           <Outlet />
         </div>
       </div>

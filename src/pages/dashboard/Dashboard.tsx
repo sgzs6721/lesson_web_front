@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
         statsBarItems={getStatsBarItems()} 
         classCards={classCards} 
       />
-
+      
       {/* 今日上课学员 */}
       <AttendanceRecordTable 
         records={records} 

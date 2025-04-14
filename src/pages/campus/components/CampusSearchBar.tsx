@@ -40,9 +40,8 @@ const CampusSearchBar: React.FC<CampusSearchBarProps> = ({
           onChange={value => onStatusChange(value)}
           allowClear
         >
-          <Option value="open">营业中</Option>
-          <Option value="closed">已关闭</Option>
-          <Option value="renovating">装修中</Option>
+          <Option value="OPERATING">营业中</Option>
+          <Option value="CLOSED">已关闭</Option>
         </Select>
       </Col>
       {/* 按钮组 */}
@@ -67,4 +66,4 @@ const CampusSearchBar: React.FC<CampusSearchBarProps> = ({
   );
 };
 
-export default CampusSearchBar; 
+export default CampusSearchBar;

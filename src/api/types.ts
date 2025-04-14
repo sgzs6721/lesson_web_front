@@ -21,8 +21,10 @@ export interface PaginationParams {
 export interface PaginatedResponse<T> {
   list: T[]; // 当前页数据列表
   total: number; // 总记录数
-  page: number; // 当前页码
+  pageNum?: number; // 当前页码
+  page?: number; // 当前页码（兼容字段）
   pageSize: number; // 每页数量
+  pages?: number; // 总页数
 }
 
 /**
@@ -42,4 +44,4 @@ export class ApiError extends Error {
       Error.captureStackTrace(this, ApiError);
     }
   }
-} 
+}

@@ -110,7 +110,7 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
           </Col>
           <Col span={8}>
             <Form.Item
-              name="utilitiesFee"
+              name="utilityFee"
               label="固定水电费"
               rules={[{ required: true, message: '请输入固定水电费' }]}
             >

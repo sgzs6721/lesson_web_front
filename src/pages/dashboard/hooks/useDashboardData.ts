@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { 
-  StatCard, 
-  CoachStats, 
-  StatsItem, 
+import { message } from 'antd';
+import {
+  StatCard,
+  CoachStats,
+  StatsItem,
   ClassCardInfo,
-  AttendanceRecord, 
-  PeriodType, 
-  CoachStatsViewType 
+  AttendanceRecord,
+  PeriodType,
+  CoachStatsViewType
 } from '../types/dashboard';
+// API import removed as we're using the shared getCampusList function
+import { Campus } from '@/api/campus/types';
+import { getCampusList } from '@/components/CampusSelector';
 
 export const useDashboardData = () => {
   const [loading, setLoading] = useState(true);
@@ -16,13 +20,58 @@ export const useDashboardData = () => {
   const [coachStatsView, setCoachStatsView] = useState<CoachStatsViewType>('week');
   const [classCards, setClassCards] = useState<ClassCardInfo[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [campusList, setCampusList] = useState<Campus[]>([]);
+  const [campusTotal, setCampusTotal] = useState<number>(0);
 
-  // 加载初始数据
+  // 获取校区列表数据 - 使用共享的getCampusList函数
+  const fetchCampusList = async () => {
+    try {
+      // 使用共享的获取函数，避免重复调用API
+      const campusData = await getCampusList();
+      console.log('从getCampusList获取的校区数据:', campusData);
+
+      // 更新状态
+      setCampusList(campusData);
+      setCampusTotal(campusData.length);
+    } catch (error) {
+      console.error('获取校区列表失败:', error);
+      message.error('获取校区列表失败');
+    }
+  };
+
+  // 异步加载初始数据，不阻塞页面渲染
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
+    let isMounted = true; // 用于防止组件卸载后设置状态
+
+    const initData = async () => {
+      // 开始加载数据
+      if (isMounted) setLoading(true);
+
+      try {
+        // 异步获取校区列表，使用共享缓存
+        fetchCampusList().catch(err => console.error('获取校区列表失败:', err));
+
+        // 加载其他数据...
+        // 这里可以并行加载多个数据源
+
+        // 完成加载
+        if (isMounted) setLoading(false);
+      } catch (error) {
+        console.error('初始化数据失败:', error);
+        if (isMounted) {
+          message.error('初始化数据失败');
+          setLoading(false);
+        }
+      }
+    };
+
+    // 开始加载数据，但不阻塞渲染
+    initData();
+
+    // 清理函数
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // 获取教练统计数据
@@ -48,7 +97,7 @@ export const useDashboardData = () => {
         { id: '4', name: '刘教练', completedLessons: 48, completedAmount: 6240, pendingLessons: 12, pendingAmount: 1560, hourlyRate: 130, estimatedSalary: 6240, type: '兼职' as const, colorClass: 'rgba(243, 156, 18, 0.7)' },
       ]
     };
-    
+
     if (coachStatsView === 'week' || coachStatsView === 'month') {
       setCoachStats(coachStatsData[coachStatsView]);
     } else {
@@ -92,7 +141,7 @@ export const useDashboardData = () => {
       {
         id: '4',
         title: '校区数',
-        value: activePeriod === 'day' ? 4 : activePeriod === 'week' ? 5 : 8,
+        value: campusTotal || (activePeriod === 'day' ? 4 : activePeriod === 'week' ? 5 : 8),
         subtitle: '运营校区',
         period: activePeriod,
         growthPercent: 0,
@@ -281,7 +330,7 @@ export const useDashboardData = () => {
   // 批量打卡
   const handleBatchPunch = () => {
     let punchedCount = 0;
-    
+
     const updatedRecords = attendanceRecords.map(record => {
       // 只处理"未打卡"且被选中的记录
       if (record.isChecked && record.status === '未打卡' && !record.isDisabled) {
@@ -295,7 +344,7 @@ export const useDashboardData = () => {
       }
       return record;
     });
-    
+
     setAttendanceRecords(updatedRecords);
     return punchedCount;
   };
@@ -303,7 +352,7 @@ export const useDashboardData = () => {
   // 选择/取消选择出勤记录
   const toggleAttendanceSelection = (id: string, isChecked: boolean) => {
     setAttendanceRecords(
-      attendanceRecords.map(record => 
+      attendanceRecords.map(record =>
         record.id === id ? { ...record, isChecked } : record
       )
     );
@@ -312,7 +361,7 @@ export const useDashboardData = () => {
   // 全选/取消全选
   const toggleSelectAll = (isChecked: boolean) => {
     setAttendanceRecords(
-      attendanceRecords.map(record => 
+      attendanceRecords.map(record =>
         !record.isDisabled ? { ...record, isChecked } : record
       )
     );
@@ -325,6 +374,8 @@ export const useDashboardData = () => {
     coachStatsView,
     classCards,
     attendanceRecords,
+    campusList,
+    campusTotal,
     getStatCards,
     getStatsBarItems,
     togglePeriodView,
@@ -332,6 +383,7 @@ export const useDashboardData = () => {
     calculateTotals,
     handleBatchPunch,
     toggleAttendanceSelection,
-    toggleSelectAll
+    toggleSelectAll,
+    fetchCampusList
   };
-}; 
+};

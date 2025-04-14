@@ -2,10 +2,10 @@ import { ApiResponse, PaginatedResponse } from '../types';
 
 // 校区类型
 export interface Campus {
-  id: string;
+  id: number | string;
   name: string;
   address: string;
-  phone: string;
+  phone?: string;
   contactPerson?: string;
   capacity?: number;
   area?: number;
@@ -15,9 +15,15 @@ export interface Campus {
   studentCount?: number;
   coachCount?: number;
   courseCount?: number;
+  pendingLessonCount?: number;
   monthlyRent?: number;
   propertyFee?: number;
   utilityFee?: number;
+  createdTime?: string;
+  updateTime?: string;
+  managerName?: string;
+  managerPhone?: string;
+  editable?: boolean;
 }
 
 // 校区创建参数

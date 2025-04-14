@@ -10,7 +10,7 @@ const CAMPUS_API_PATHS = {
   LIST: '/lesson/api/campus/list',
   DETAIL: (id: string) => `/lesson/api/campus/detail?id=${id}`,
   CREATE: '/lesson/api/campus/create',
-  UPDATE: (id: string) => `/lesson/api/campus/update?id=${id}`,
+  UPDATE: '/lesson/api/campus/update',
   DELETE: (id: string) => `/lesson/api/campus/delete?id=${id}`,
   UPDATE_STATUS: (id: string, status: number) => `/lesson/api/campus/updateStatus?id=${id}&status=${status}`,
   SIMPLE_LIST: '/lesson/api/campus/simple/list'
@@ -105,9 +105,14 @@ export const campus = {
       mockCampuses[index] = { ...mockCampuses[index], ...data };
       return null;
     }
-    return request(`${CAMPUS_API_PATHS.UPDATE(id)}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
+    // 将id包含在请求体中
+    const updateData = {
+      id,
+      ...data
+    };
+    return request(CAMPUS_API_PATHS.UPDATE, {
+      method: 'POST',
+      body: JSON.stringify(updateData)
     });
   },
 
@@ -122,8 +127,9 @@ export const campus = {
       mockCampuses.splice(index, 1);
       return null;
     }
+    // 使用POST方法和查询参数
     return request(`${CAMPUS_API_PATHS.DELETE(id)}`, {
-      method: 'DELETE'
+      method: 'POST'
     });
   },
 
@@ -138,7 +144,8 @@ export const campus = {
       mockCampuses[index].status = status === 1 ? 'OPERATING' : 'CLOSED';
       return null;
     }
-    return request(`${CAMPUS_API_PATHS.UPDATE_STATUS(id, status)}`, {
+    // 使用查询参数而不是请求体
+    return request(CAMPUS_API_PATHS.UPDATE_STATUS(id, status), {
       method: 'POST'
     });
   }
