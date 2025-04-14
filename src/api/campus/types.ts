@@ -24,6 +24,12 @@ export interface Campus {
   managerName?: string;
   managerPhone?: string;
   editable?: boolean;
+  // 校区管理员信息
+  manager?: {
+    id: number | string;
+    name: string;
+    phone: string;
+  };
 }
 
 // 校区创建参数

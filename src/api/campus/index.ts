@@ -12,7 +12,7 @@ const CAMPUS_API_PATHS = {
   CREATE: '/lesson/api/campus/create',
   UPDATE: '/lesson/api/campus/update',
   DELETE: (id: string) => `/lesson/api/campus/delete?id=${id}`,
-  UPDATE_STATUS: (id: string, status: number) => `/lesson/api/campus/updateStatus?id=${id}&status=${status}`,
+  UPDATE_STATUS: (id: string, status: string) => `/lesson/api/campus/updateStatus?id=${id}&status=${status}`,
   SIMPLE_LIST: '/lesson/api/campus/simple/list'
 };
 
@@ -69,7 +69,20 @@ export const campus = {
       }
       return campus;
     }
-    return request(`${CAMPUS_API_PATHS.DETAIL(id)}`);
+    // 调用真实API获取校区详情
+    console.log(`调用校区详情接口: ${CAMPUS_API_PATHS.DETAIL(id)}`);
+    const response = await request(`${CAMPUS_API_PATHS.DETAIL(id)}`);
+    console.log('校区详情接口原始响应:', response);
+
+    // 如果返回的是包含 code/message/data 的结构，则提取data部分
+    if (response && (response.code === 0 || response.code === 200) && response.data) {
+      console.log('提取的校区详情数据:', response.data);
+      return response.data;
+    }
+
+    // 如果直接返回的是数据对象，则直接使用
+    console.log('直接使用响应数据:', response);
+    return response;
   },
 
   // 添加校区
@@ -134,19 +147,61 @@ export const campus = {
   },
 
   // 更新校区状态
-  updateStatus: async (id: string, status: number): Promise<null> => {
+  updateStatus: async (id: string, status: 'OPERATING' | 'CLOSED'): Promise<null> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 500));
       const index = mockCampuses.findIndex(c => c.id === id);
       if (index === -1) {
         throw new Error('校区不存在');
       }
-      mockCampuses[index].status = status === 1 ? 'OPERATING' : 'CLOSED';
+      mockCampuses[index].status = status;
       return null;
     }
     // 使用查询参数而不是请求体
     return request(CAMPUS_API_PATHS.UPDATE_STATUS(id, status), {
       method: 'POST'
+    });
+  },
+
+  // 获取校区简单列表
+  getSimpleList: async (): Promise<{id: number, name: string, address: string, status: string}[]> => {
+    if (USE_MOCK) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      // 先按id排序，然后转换为简单列表格式
+      return mockCampuses
+        .sort((a, b) => {
+          const idA = typeof a.id === 'string' ? parseInt(a.id) : a.id;
+          const idB = typeof b.id === 'string' ? parseInt(b.id) : b.id;
+          return idA - idB;
+        })
+        .map(campus => ({
+          id: typeof campus.id === 'string' ? parseInt(campus.id) : campus.id,
+          name: campus.name,
+          address: campus.address,
+          status: campus.status
+        }));
+    }
+
+    // 调用真实API获取校区简单列表
+    console.log('调用校区简单列表接口:', CAMPUS_API_PATHS.SIMPLE_LIST);
+    const response = await request(CAMPUS_API_PATHS.SIMPLE_LIST);
+    console.log('校区简单列表接口响应:', response);
+
+    // 如果返回的是包含 code/message/data 的结构，则提取data部分
+    let campusList;
+    if (response && (response.code === 0 || response.code === 200) && response.data) {
+      console.log('提取的校区简单列表数据:', response.data);
+      campusList = response.data;
+    } else {
+      // 如果直接返回的是数据数组，则直接使用
+      campusList = response;
+    }
+
+    // 按id排序
+    return campusList.sort((a: {id: number | string}, b: {id: number | string}) => {
+      const idA = typeof a.id === 'string' ? parseInt(a.id) : a.id;
+      const idB = typeof b.id === 'string' ? parseInt(b.id) : b.id;
+      return idA - idB;
     });
   }
 };

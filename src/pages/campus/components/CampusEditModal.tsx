@@ -1,9 +1,8 @@
 import React from 'react';
-import { Modal, Form, Input, Select, InputNumber, Typography, Row, Col } from 'antd';
+import { Modal, Form, Input, Select, InputNumber, Typography, Row, Col, Spin } from 'antd';
 import { HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Campus } from '../types/campus';
 
-const { Title } = Typography;
 const { Option } = Select;
 
 interface CampusEditModalProps {
@@ -33,21 +32,24 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
       okText={editingCampus ? '保存' : '添加'}
       cancelText="取消"
       confirmLoading={loading}
+      okButtonProps={{ disabled: loading }}
+      maskClosable={!loading} // 在加载时禁止点击蒙板关闭
     >
       <div style={{ borderBottom: '1px solid #e8e8e8', paddingBottom: '16px', marginBottom: '24px' }}>
         <Typography.Title level={5} style={{ margin: 0 }}>基本信息</Typography.Title>
       </div>
-      <Form
-        form={form}
-        layout="vertical"
-        name="campusForm"
-        initialValues={{
-          status: 'OPERATING',
-          monthlyRent: 0,
-          propertyFee: 0,
-          utilityFee: 0,
-        }}
-      >
+      <Spin spinning={loading} tip="加载中...">
+        <Form
+          form={form}
+          layout="vertical"
+          name="campusForm"
+          initialValues={{
+            status: 'OPERATING',
+            monthlyRent: 0,
+            propertyFee: 0,
+            utilityFee: 0,
+          }}
+        >
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item
@@ -142,6 +144,7 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
           </Col>
         </Row>
       </Form>
+      </Spin>
     </Modal>
   );
 };

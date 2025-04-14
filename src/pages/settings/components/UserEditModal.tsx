@@ -42,7 +42,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         layout="vertical"
         name="userForm"
         initialValues={{
-          status: 'active',
+          status: 'ENABLED',
         }}
         onValuesChange={(changedValues) => {
           // 当电话字段变化时，自动更新密码字段
@@ -58,27 +58,27 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="姓名"
               rules={[{ required: true, message: '请输入姓名' }]}
             >
-              <Input 
-                placeholder="请输入姓名" 
+              <Input
+                placeholder="请输入姓名"
                 disabled={!!editingUser}
               />
             </Form.Item>
           </Col>
-          
+
           <Col span={8}>
             <Form.Item
               name="phone"
               label="电话"
               rules={[{ required: true, message: '请输入电话' }]}
             >
-              <Input 
-                prefix={<UserOutlined />} 
-                placeholder="请输入电话" 
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="请输入电话"
                 disabled={!!editingUser}
               />
             </Form.Item>
           </Col>
-          
+
           <Col span={8}>
             {!editingUser ? (
               <Form.Item
@@ -86,10 +86,10 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 label="密码"
                 rules={[{ required: true, message: '请输入密码' }]}
               >
-                <Input.Password 
-                  prefix={<LockOutlined />} 
+                <Input.Password
+                  prefix={<LockOutlined />}
                   placeholder="请输入密码"
-                  disabled 
+                  disabled
                 />
               </Form.Item>
             ) : (
@@ -110,7 +110,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               name="status"
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
-              initialValue="active"
             >
               <Select placeholder="请选择状态">
                 {statusOptions.map(option => (
@@ -119,7 +118,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          
+
           <Col span={8}>
             <Form.Item
               name="role"
@@ -133,14 +132,14 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          
+
           <Col span={8}>
             <Form.Item
               noStyle
               shouldUpdate={(prevValues, currentValues) => prevValues.role !== currentValues.role}
             >
               {({ getFieldValue }) => {
-                return getFieldValue('role') === 'manager' ? (
+                return getFieldValue('role') === '3' ? (
                   <Form.Item
                     name="campus"
                     label="所属校区"
@@ -162,4 +161,4 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   );
 };
 
-export default UserEditModal; 
+export default UserEditModal;

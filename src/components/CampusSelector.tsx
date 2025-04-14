@@ -220,13 +220,13 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
       style={{
         position: 'relative',
         marginRight: '15px',
-        height: '32px',
-        minWidth: '120px'
+        height: 'auto',
+        minWidth: '140px'
       }}>
       <button
         onClick={toggleCampusList}
         style={{
-          padding: '0 12px',
+          padding: '4px 12px',
           background: 'rgba(255, 255, 255, 0.1)',
           border: '1px solid rgba(255, 255, 255, 0.2)',
           borderRadius: '16px',
@@ -257,7 +257,9 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '6px' }}>
             <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z"/>
           </svg>
-          {loading ? '加载中...' : (currentCampus ? currentCampus.name : '校区选择')}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {loading ? '加载中...' : (currentCampus ? currentCampus.name : '校区选择')}
+          </div>
         </div>
         <span style={{
           fontSize: '10px',
@@ -281,7 +283,7 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
             padding: '6px',
             marginTop: '8px',
             zIndex: 1000,
-            minWidth: '160px',
+            minWidth: '180px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             animation: 'dropdownFade 0.2s ease'
           }}
@@ -317,7 +319,8 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
                   transition: 'all 0.2s ease',
                   backgroundColor: currentCampus?.id === campus.id ?
                     (isDarkTheme ? 'rgba(52, 152, 219, 0.2)' : 'rgba(52, 152, 219, 0.1)') :
-                    'transparent'
+                    'transparent',
+                  minHeight: '36px'
                 }}
                 onMouseEnter={(e) => {
                   if (currentCampus?.id !== campus.id) {
@@ -338,7 +341,30 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
                     <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
                   </svg>
                 )}
-                <span style={{ marginLeft: currentCampus?.id === campus.id ? '0' : '22px' }}>{campus.name}</span>
+                <div style={{ marginLeft: currentCampus?.id === campus.id ? '0' : '22px', flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div>{campus.name}</div>
+                    <div style={{
+                      fontSize: '9px',
+                      opacity: 0.7,
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginLeft: '8px'
+                    }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          width: '5px',
+                          height: '5px',
+                          borderRadius: '50%',
+                          backgroundColor: campus.status === 'OPERATING' ? '#52c41a' : '#ff4d4f',
+                          marginRight: '3px'
+                        }}
+                      />
+                      {campus.status === 'OPERATING' ? '营业中' : '已关闭'}
+                    </div>
+                  </div>
+                </div>
               </div>
             ))
           )}

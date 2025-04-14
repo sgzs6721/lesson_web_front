@@ -19,7 +19,12 @@ export const mockCampuses: Campus[] = [
     courseCount: 45,
     monthlyRent: 50000,
     propertyFee: 5000,
-    utilityFee: 3000
+    utilityFee: 3000,
+    manager: {
+      id: 1,
+      name: '张经理',
+      phone: '010-12345678'
+    }
   },
   {
     id: '2',
@@ -37,7 +42,12 @@ export const mockCampuses: Campus[] = [
     courseCount: 35,
     monthlyRent: 45000,
     propertyFee: 4500,
-    utilityFee: 2800
+    utilityFee: 2800,
+    manager: {
+      id: 2,
+      name: '李经理',
+      phone: '010-87654321'
+    }
   }
 ];
 

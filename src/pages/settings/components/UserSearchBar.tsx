@@ -1,8 +1,9 @@
 import React from 'react';
-import { Row, Col, Input, Select, Button, Space } from 'antd';
+import { Row, Col, Input, Select, Button, Space, Spin } from 'antd';
 import { SearchOutlined, RedoOutlined } from '@ant-design/icons';
 import { UserSearchParams } from '../types/user';
-import { roleOptions, campusOptions, statusOptions } from '../constants/userOptions';
+import { roleOptions, statusOptions } from '../constants/userOptions';
+import { useCampusOptions } from '../hooks/useCampusOptions';
 
 const { Option } = Select;
 
@@ -13,7 +14,7 @@ interface UserSearchBarProps {
   onTextChange: (value: string) => void;
   onRoleChange: (value: string[]) => void;
   onCampusChange: (value: string[]) => void;
-  onStatusChange: (value: ('active' | 'inactive')[]) => void;
+  onStatusChange: (value: 'ENABLED' | 'DISABLED' | undefined) => void;
 }
 
 const UserSearchBar: React.FC<UserSearchBarProps> = ({
@@ -25,6 +26,8 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
   onCampusChange,
   onStatusChange
 }) => {
+  // 使用校区选项钩子
+  const { campusOptions, loading: campusLoading, error: campusError } = useCampusOptions();
   return (
     <Row gutter={[16, 16]} style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 16 }}>
       <Col style={{ flex: 1, minWidth: '180px' }}>
@@ -36,7 +39,7 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
           allowClear
         />
       </Col>
-      
+
       <Col style={{ flex: 1, minWidth: '150px' }}>
         <Select
           mode="multiple"
@@ -52,7 +55,7 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
           ))}
         </Select>
       </Col>
-      
+
       <Col style={{ flex: 1, minWidth: '150px' }}>
         <Select
           mode="multiple"
@@ -62,29 +65,33 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
           onChange={onCampusChange}
           allowClear
           maxTagCount="responsive"
+          loading={campusLoading}
+          notFoundContent={
+            campusLoading ? <Spin size="small" /> :
+            campusError ? <div style={{ color: 'red' }}>加载失败</div> :
+            <div>暂无校区</div>
+          }
         >
           {campusOptions.map(option => (
             <Option key={option.value} value={option.value}>{option.label}</Option>
           ))}
         </Select>
       </Col>
-      
+
       <Col style={{ flex: 1, minWidth: '150px' }}>
         <Select
-          mode="multiple"
-          placeholder="选择状态 (可多选)"
+          placeholder="选择状态"
           style={{ width: '100%' }}
           value={params.selectedStatus}
           onChange={onStatusChange}
           allowClear
-          maxTagCount="responsive"
         >
           {statusOptions.map(option => (
             <Option key={option.value} value={option.value}>{option.label}</Option>
           ))}
         </Select>
       </Col>
-      
+
       <Col style={{ flex: 'none' }}>
         <Space size="middle">
           <Button
@@ -106,4 +113,4 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
   );
 };
 
-export default UserSearchBar; 
+export default UserSearchBar;

@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { logout } from '@/redux/slices/authSlice';
 import CampusSelector, { getCampusList } from '@/components/CampusSelector';
+import UserProfileModal from '@/components/UserProfileModal';
 import { Campus } from '@/api/campus/types';
 
 const MainLayout: React.FC = () => {
@@ -14,10 +15,12 @@ const MainLayout: React.FC = () => {
   const [currentCampus, setCurrentCampus] = useState<Campus | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Get user info from redux store
   const auth = useAppSelector((state) => state.auth);
-  const username = auth && (auth as any).user?.username || '管理员';
+  const username = auth && (auth as any).user?.name || '管理员';
+  const userRole = auth && (auth as any).user?.role || '超级管理员';
 
   // 设置当前活动菜单
   useEffect(() => {
@@ -391,7 +394,9 @@ const MainLayout: React.FC = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    padding: '0 4px'
+                    padding: '0 4px',
+                    minWidth: '80px',
+                    textAlign: 'center'
                   }}>
                     <div style={{
                       fontWeight: 600,
@@ -403,7 +408,7 @@ const MainLayout: React.FC = () => {
                       fontSize: '11px',
                       opacity: '0.85',
                       letterSpacing: '0.2px'
-                    }}>超级管理员</div>
+                    }}>{userRole}</div>
                   </div>
                   <div style={{
                     width: '28px',
@@ -497,7 +502,7 @@ const MainLayout: React.FC = () => {
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}
-                    onClick={(e) => { e.stopPropagation(); navigate('/profile'); }}
+                    onClick={(e) => { e.stopPropagation(); setShowProfileModal(true); setShowDropdown(false); }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px' }}>
                         <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
@@ -577,6 +582,11 @@ const MainLayout: React.FC = () => {
           <Outlet />
         </div>
       </div>
+      {/* 个人信息模态框 */}
+      <UserProfileModal
+        visible={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
     </div>
   );
 };

@@ -1,12 +1,20 @@
-export type UserRole = 'admin' | 'manager' | 'teacher' | 'finance' | 'receptionist';
+export type UserRole = '1' | '2' | '3';
 
 export interface User {
   id: string;
   phone: string;
   name: string;
-  role: UserRole;
-  campus?: string;
-  status: 'active' | 'inactive';
+  role: UserRole | {
+    id: number | string;
+    name: string;
+  };
+  roleName?: string; // 角色名称，用于显示
+  campus?: string | {
+    id: number | string;
+    name: string | null;
+  };
+  status: 'ENABLED' | 'DISABLED' | number;
+  statusText?: string; // 状态文本，用于显示
   createdAt: string;
   lastLogin?: string;
 }
@@ -25,5 +33,5 @@ export type UserSearchParams = {
   searchText: string;
   selectedRole: string[];
   selectedCampus: string[];
-  selectedStatus: ('active' | 'inactive')[];
-}; 
+  selectedStatus: 'ENABLED' | 'DISABLED' | undefined;
+};

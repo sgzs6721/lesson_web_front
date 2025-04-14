@@ -2,11 +2,9 @@ import { RoleOption, CampusOption } from '../types/user';
 
 // 角色选项配置
 export const roleOptions: RoleOption[] = [
-  { value: 'admin', label: '系统管理员' },
-  { value: 'manager', label: '校区经理' },
-  { value: 'teacher', label: '教练' },
-  { value: 'finance', label: '财务' },
-  { value: 'receptionist', label: '前台' }
+  { value: '1', label: '超级管理员' },
+  { value: '2', label: '协同管理员' },
+  { value: '3', label: '校区管理员' }
 ];
 
 // 校区选项配置
@@ -20,6 +18,6 @@ export const campusOptions: CampusOption[] = [
 
 // 状态选项
 export const statusOptions = [
-  { value: 'active', label: '启用' },
-  { value: 'inactive', label: '禁用' }
-]; 
+  { value: 'ENABLED', label: '启用' },
+  { value: 'DISABLED', label: '禁用' }
+];

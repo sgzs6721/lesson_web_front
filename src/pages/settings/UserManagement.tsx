@@ -22,10 +22,11 @@ const UserManagement: React.FC = () => {
     addUser,
     updateUser,
     deleteUser,
+    resetPassword,
     filterUsers,
     resetData
   } = useUserData();
-  
+
   // 使用搜索功能钩子
   const {
     searchParams,
@@ -37,25 +38,30 @@ const UserManagement: React.FC = () => {
     handleSearch,
     handleReset
   } = useUserSearch((params, page, pageSize) => {
-    // 如果所有筛选条件都为空，则调用resetData重置到初始状态
-    if (
-      !params.searchText && 
-      params.selectedRole.length === 0 && 
-      params.selectedCampus.length === 0 && 
-      params.selectedStatus.length === 0
-    ) {
-      resetData(page, pageSize);
-    } else {
-      // 否则使用筛选条件查询
-      filterUsers(params, page, pageSize);
-    }
+    // 无论是否有筛选条件，都使用 filterUsers 函数来处理
+    // 这样可以避免重复调用 API
+    filterUsers(params, page, pageSize);
   });
-  
+
   // 页面加载时初始化数据
+  // 使用引用标记来跟踪是否已经初始化
+  const isInitializedRef = React.useRef(false);
+
   useEffect(() => {
-    resetData(1, pagination.pageSize);
-  }, []);
-  
+    // 只在组件首次挂载时执行初始化
+    if (!isInitializedRef.current) {
+      // 首次加载时触发搜索，使用空的搜索参数
+      const emptyParams = {
+        searchText: '',
+        selectedRole: [],
+        selectedCampus: [],
+        selectedStatus: []
+      };
+      filterUsers(emptyParams, 1, pagination.pageSize);
+      isInitializedRef.current = true;
+    }
+  }, [filterUsers, pagination.pageSize]); // 添加依赖项
+
   // 使用表单管理钩子
   const {
     form,
@@ -67,8 +73,8 @@ const UserManagement: React.FC = () => {
     handleModalOk,
     handleModalCancel,
     handleResetPassword
-  } = useUserForm(addUser, updateUser);
-  
+  } = useUserForm(addUser, updateUser, resetPassword);
+
   // 使用删除管理钩子
   const {
     isDeleteModalVisible,
@@ -77,11 +83,14 @@ const UserManagement: React.FC = () => {
     handleDeleteUser,
     handleDeleteCancel
   } = useUserDelete(deleteUser);
-  
+
   // 处理重置密码
-  const onResetPassword = () => {
+  const onResetPassword = async () => {
     if (editingUser) {
-      message.success(`已将用户"${editingUser.name}"的密码重置为与电话号码相同`);
+      const success = await handleResetPassword();
+      if (success) {
+        message.success(`已将用户"${editingUser.name}"的密码重置为与电话号码相同`);
+      }
     }
   };
 
@@ -92,9 +101,9 @@ const UserManagement: React.FC = () => {
           <Title level={4}>用户管理</Title>
         </Col>
         <Col>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
             onClick={showAddModal}
           >
             添加用户
@@ -114,7 +123,7 @@ const UserManagement: React.FC = () => {
           onCampusChange={setSelectedCampus}
           onStatusChange={setSelectedStatus}
         />
-        
+
         {/* 用户表格 */}
         <UserTable
           users={users}
@@ -127,7 +136,7 @@ const UserManagement: React.FC = () => {
           onPageChange={pagination.handlePageChange}
         />
       </Card>
-      
+
       {/* 编辑/添加模态框 */}
       <UserEditModal
         visible={isModalVisible}
@@ -138,7 +147,7 @@ const UserManagement: React.FC = () => {
         onSubmit={handleModalOk}
         onResetPassword={onResetPassword}
       />
-      
+
       {/* 删除确认模态框 */}
       <UserDeleteModal
         visible={isDeleteModalVisible}
@@ -150,4 +159,4 @@ const UserManagement: React.FC = () => {
   );
 };
 
-export default UserManagement; 
+export default UserManagement;

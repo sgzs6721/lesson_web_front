@@ -294,10 +294,10 @@ export const useCampusData = () => {
 
       // 计算新状态
       const newStatus = record.status === 'CLOSED' ? 'OPERATING' : 'CLOSED';
-      const statusValue = newStatus === 'OPERATING' ? 1 : 0; // 1表示营业中，0表示已关闭
 
       // 调用API更新校区状态，使用updateStatus接口
-      await API.campus.updateStatus(String(record.id), statusValue);
+      // 直接传递字符串状态值：'OPERATING' 或 'CLOSED'
+      await API.campus.updateStatus(String(record.id), newStatus);
       console.log('校区状态更新成功:', record.id, newStatus);
 
       message.success(`校区状态已更新为${newStatus === 'OPERATING' ? '运营中' : '已关闭'}`);
