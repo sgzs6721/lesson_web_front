@@ -1,10 +1,5 @@
 /* 全局下拉菜单样式 */
 
-/* 确保下拉菜单宽度与输入框一致 */
-.ant-select-dropdown {
-  min-width: 100% !important;
-}
-
 /* 确保下拉选项文本不换行 */
 .ant-select-dropdown .ant-select-item-option-content {
   white-space: nowrap !important;

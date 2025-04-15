@@ -24,10 +24,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     if (forcedValue && props.onChange) {
       // 如果有强制值，则触发onChange事件
       setTimeout(() => {
-        props.onChange(forcedValue, {
-          value: forcedValue,
-          label: defaultText || options.find((opt: any) => opt.value === forcedValue)?.label || forcedValue
-        });
+        // 确保 onChange 是函数类型
+        if (typeof props.onChange === 'function') {
+          props.onChange(forcedValue, {
+            value: forcedValue,
+            label: defaultText || options.find((opt: any) => opt.value === forcedValue)?.label || forcedValue
+          });
+        }
       }, 100);
     }
   }, [forcedValue, props.onChange, defaultText, options]);
@@ -43,7 +46,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       className={`custom-select ${showPlaceholder ? 'show-placeholder' : ''}`}
       dropdownMatchSelectWidth={true}
       listHeight={256}
-      getPopupContainer={(triggerNode) => triggerNode.parentNode}
+      getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
     />
   );
 };

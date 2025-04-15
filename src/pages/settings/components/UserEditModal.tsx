@@ -119,13 +119,12 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
             >
-              <CustomSelect
+              <Select
                 placeholder="请选择状态"
                 style={{ width: '100%' }}
                 defaultValue="ENABLED"
-                forcedValue="ENABLED"
-                defaultText="启用"
                 options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
+                dropdownStyle={{ width: '234px' }}
               />
             </Form.Item>
           </Col>
@@ -136,10 +135,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="角色"
               rules={[{ required: true, message: '请选择角色' }]}
             >
-              <CustomSelect
+              <Select
                 placeholder="请选择角色"
                 style={{ width: '100%' }}
                 options={roleOptions.map(option => ({ value: option.value, label: option.label }))}
+                dropdownStyle={{ width: '234px' }}
               />
             </Form.Item>
           </Col>
@@ -156,7 +156,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     label="所属校区"
                     rules={[{ required: true, message: '请选择所属校区' }]}
                   >
-                    <CustomSelect
+                    <Select
                       placeholder="请选择校区"
                       loading={campusLoading}
                       style={{ width: '100%' }}
@@ -166,6 +166,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                         campusError ? <div style={{ color: 'red' }}>加载失败</div> :
                         <div>暂无校区</div>
                       }
+                      dropdownStyle={{ width: '234px' }}
                     />
                   </Form.Item>
                 ) : null;
