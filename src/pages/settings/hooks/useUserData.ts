@@ -20,8 +20,8 @@ export const useUserData = () => {
         phone: values.phone,
         password: values.phone.substring(values.phone.length - 6), // 默认密码为手机号后6位
         realName: values.name,
-        roleId: values.role, // 这里需要根据实际情况调整
-        campusId: values.campus // 这里需要根据实际情况调整
+        roleId: typeof values.role === 'object' ? values.role.id : values.role, // 处理对象类型的角色
+        campusId: typeof values.campus === 'object' ? values.campus.id : values.campus // 处理对象类型的校区
       });
 
       // 创建新用户对象
@@ -58,8 +58,8 @@ export const useUserData = () => {
         id,
         phone: values.phone,
         realName: values.name,
-        roleId: values.role, // 这里需要根据实际情况调整
-        campusId: values.campus // 这里需要根据实际情况调整
+        roleId: typeof values.role === 'object' ? values.role.id : values.role, // 处理对象类型的角色
+        campusId: typeof values.campus === 'object' ? values.campus.id : values.campus // 处理对象类型的校区
       });
 
       // 如果状态发生变化，调用更新状态API

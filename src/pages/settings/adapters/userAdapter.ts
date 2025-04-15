@@ -108,6 +108,9 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
 };
 
 // 将前端用户状态映射到API用户状态
-export const userStatusToApiStatus = (status: 'ENABLED' | 'DISABLED'): UserStatus => {
+export const userStatusToApiStatus = (status: 'ENABLED' | 'DISABLED' | number): UserStatus => {
+  if (typeof status === 'number') {
+    return status === 1 ? UserStatus.ACTIVE : UserStatus.INACTIVE;
+  }
   return status === 'ENABLED' ? UserStatus.ACTIVE : UserStatus.INACTIVE;
 };
