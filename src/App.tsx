@@ -18,9 +18,6 @@ function App() {
     <ConfigProvider locale={zhCN}>
       <RouterProvider
         router={router}
-        future={{
-          v7_startTransition: true
-        }}
       />
     </ConfigProvider>
   );

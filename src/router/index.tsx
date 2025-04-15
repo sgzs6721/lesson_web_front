@@ -77,7 +77,6 @@ const appRoutes: RouteObject[] = [
 // 创建路由器并启用未来标志
 export const router = createBrowserRouter(appRoutes, {
   future: {
-    v7_startTransition: true,
     v7_relativeSplatPath: true
   },
   // 添加更多配置以确保所有路由都使用未来标志

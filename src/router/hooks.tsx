@@ -42,8 +42,8 @@ export function useSearchParams(defaultInit?: Parameters<typeof useOriginalSearc
 }
 
 // 包装 useMatch 钩子
-export function useMatch<ParamKey extends string = string>(pattern: Parameters<typeof useOriginalMatch>[0]) {
-  return useOriginalMatch<ParamKey>(pattern);
+export function useMatch<ParamKey extends string = string, RouteData = unknown>(pattern: Parameters<typeof useOriginalMatch>[0]) {
+  return useOriginalMatch<ParamKey, RouteData>(pattern);
 }
 
 // 导出其他可能需要的钩子
