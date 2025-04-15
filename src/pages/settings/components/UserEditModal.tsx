@@ -119,13 +119,16 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
             >
-              <Select
-                placeholder="请选择状态"
-                style={{ width: '100%' }}
-                defaultValue="ENABLED"
-                options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
-                dropdownStyle={{ width: '234px' }}
-              />
+              <div className="select-wrapper">
+                <Select
+                  placeholder="请选择状态"
+                  style={{ width: '100%' }}
+                  defaultValue="ENABLED"
+                  options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
+                  popupMatchSelectWidth
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                />
+              </div>
             </Form.Item>
           </Col>
 
@@ -135,12 +138,17 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="角色"
               rules={[{ required: true, message: '请选择角色' }]}
             >
-              <Select
-                placeholder="请选择角色"
-                style={{ width: '100%' }}
-                options={roleOptions.map(option => ({ value: option.value, label: option.label }))}
-                dropdownStyle={{ width: '234px' }}
-              />
+              <div className="select-wrapper">
+                <Select
+                  placeholder="请选择角色"
+                  style={{ width: '100%' }}
+                  options={roleOptions.map(option => ({ value: option.value, label: option.label }))}
+                  popupMatchSelectWidth
+                  className="role-select"
+                  popupClassName="role-select-dropdown"
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                />
+              </div>
             </Form.Item>
           </Col>
 
@@ -156,18 +164,21 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     label="所属校区"
                     rules={[{ required: true, message: '请选择所属校区' }]}
                   >
-                    <Select
-                      placeholder="请选择校区"
-                      loading={campusLoading}
-                      style={{ width: '100%' }}
-                      options={campusOptions.map(option => ({ value: option.value, label: option.label }))}
-                      notFoundContent={
-                        campusLoading ? <Spin size="small" /> :
-                        campusError ? <div style={{ color: 'red' }}>加载失败</div> :
-                        <div>暂无校区</div>
-                      }
-                      dropdownStyle={{ width: '234px' }}
-                    />
+                    <div className="select-wrapper">
+                      <Select
+                        placeholder="请选择校区"
+                        loading={campusLoading}
+                        style={{ width: '100%' }}
+                        options={campusOptions.map(option => ({ value: option.value, label: option.label }))}
+                        notFoundContent={
+                          campusLoading ? <Spin size="small" /> :
+                          campusError ? <div style={{ color: 'red' }}>加载失败</div> :
+                          <div>暂无校区</div>
+                        }
+                        popupMatchSelectWidth
+                        getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                      />
+                    </div>
                   </Form.Item>
                 ) : null;
               }}
