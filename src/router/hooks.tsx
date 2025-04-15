@@ -1,4 +1,7 @@
-// 直接重新导出 React Router 的钩子
+// 从 React 导出 useContext
+import { useContext } from 'react';
+
+// 从 React Router 导出钩子
 export {
   useNavigate,
   useLocation,
@@ -6,6 +9,8 @@ export {
   useRoutes,
   useSearchParams,
   useMatch,
-  useContext,
   UNSAFE_NavigationContext
 } from 'react-router-dom';
+
+// 重新导出 useContext
+export { useContext };
