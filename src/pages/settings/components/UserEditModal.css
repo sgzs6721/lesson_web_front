@@ -1,0 +1,4 @@
+/* 确保下拉框宽度正确 */
+.ant-select {
+  width: 100% !important;
+}

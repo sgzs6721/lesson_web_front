@@ -6,6 +6,7 @@ import App from '@/App';
 import '@/assets/styles/index.css';
 import '@/assets/styles/darkTheme.css';
 import '@/assets/styles/sidebar-fix.css'; // 修复侧边栏样式
+import '@/assets/styles/dropdown.css'; // 下拉菜单样式
 
 // 使用 Ant Design 图标库代替 Font Awesome
 // 如果需要使用 Font Awesome，建议通过 npm 安装或使用最新的 CDN 链接

@@ -16,8 +16,11 @@ export const campusOptions: CampusOption[] = [
   { value: 'campus5', label: '广州天河校区' }
 ];
 
-// 状态选项
+// 状态选项 - 启用放在第一位
 export const statusOptions = [
   { value: 'ENABLED', label: '启用' },
   { value: 'DISABLED', label: '禁用' }
 ];
+
+// 默认状态值
+export const DEFAULT_STATUS = 'ENABLED';

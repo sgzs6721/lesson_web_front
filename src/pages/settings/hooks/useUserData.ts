@@ -4,6 +4,7 @@ import { message } from 'antd';
 import { API } from '@/api';
 import { UserStatus } from '@/api/user/types';
 import { apiUserToUser, userStatusToApiStatus } from '../adapters/userAdapter';
+import { DEFAULT_STATUS } from '../constants/userOptions';
 
 export const useUserData = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -21,7 +22,8 @@ export const useUserData = () => {
         password: values.phone.substring(values.phone.length - 6), // 默认密码为手机号后6位
         realName: values.name,
         roleId: typeof values.role === 'object' ? values.role.id : values.role, // 处理对象类型的角色
-        campusId: typeof values.campus === 'object' ? values.campus.id : values.campus // 处理对象类型的校区
+        campusId: typeof values.campus === 'object' ? values.campus.id : values.campus, // 处理对象类型的校区
+        status: values.status === 'ENABLED' ? UserStatus.ACTIVE : UserStatus.INACTIVE // 添加状态参数
       });
 
       // 创建新用户对象
@@ -31,7 +33,7 @@ export const useUserData = () => {
         name: values.name,
         role: values.role,
         campus: values.campus,
-        status: 'ENABLED',
+        status: DEFAULT_STATUS,
         createdAt: new Date().toISOString().split('T')[0],
       };
 

@@ -60,6 +60,7 @@ export interface UserCreateParams {
   roleId: number | string;
   institutionId?: number | string;
   campusId?: number | string;
+  status: UserStatus; // 添加状态参数
 }
 
 // 用户更新参数

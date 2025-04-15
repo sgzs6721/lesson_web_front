@@ -3,7 +3,8 @@ import { Row, Col, Input, Select, Button, Space, Spin } from 'antd';
 import { SearchOutlined, RedoOutlined } from '@ant-design/icons';
 import { UserSearchParams } from '../types/user';
 import { roleOptions, statusOptions } from '../constants/userOptions';
-import { useCampusOptions } from '../hooks/useCampusOptions';
+import { useRealCampusOptions } from '../hooks/useRealCampusOptions';
+import './UserSearchBar.css';
 
 const { Option } = Select;
 
@@ -26,8 +27,8 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
   onCampusChange,
   onStatusChange
 }) => {
-  // 使用校区选项钩子
-  const { campusOptions, loading: campusLoading, error: campusError } = useCampusOptions();
+  // 使用真实校区选项钩子
+  const { campusOptions, loading: campusLoading, error: campusError } = useRealCampusOptions();
   return (
     <Row gutter={[16, 16]} style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 16 }}>
       <Col style={{ flex: 1, minWidth: '180px' }}>

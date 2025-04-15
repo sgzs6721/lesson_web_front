@@ -47,7 +47,6 @@ const CampusTable: React.FC<CampusTableProps> = ({
         showQuickJumper: true,
         showTotal: total => `共 ${total} 条记录`,
         onChange: onPageChange,
-        // 添加以下配置以确保分页显示中文
         pageSizeOptions: ['10', '20', '50', '100'],
         locale: {
           items_per_page: '条/页',

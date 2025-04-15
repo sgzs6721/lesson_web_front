@@ -297,8 +297,21 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
               {error}
             </div>
           ) : campusList.length === 0 ? (
-            <div style={{ padding: '10px', textAlign: 'center', color: isDarkTheme ? '#f0f0f0' : '#333' }}>
-              暂无校区信息
+            <div
+              className="campus-item"
+              style={{
+                padding: '8px 12px',
+                margin: '2px',
+                color: isDarkTheme ? '#f0f0f0' : '#333',
+                borderRadius: '8px',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                minHeight: '36px',
+                justifyContent: 'center'
+              }}
+            >
+              <div style={{ marginLeft: '22px' }}>暂无校区信息</div>
             </div>
           ) : (
             // 校区列表渲染前打印日志

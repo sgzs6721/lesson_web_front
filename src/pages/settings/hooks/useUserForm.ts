@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Form } from 'antd';
 import { User } from '../types/user';
+import { DEFAULT_STATUS } from '../constants/userOptions';
 
 export const useUserForm = (
   onAddUser: (values: any) => Promise<any>,
@@ -14,23 +15,37 @@ export const useUserForm = (
 
   // 显示添加用户模态框
   const showAddModal = () => {
+    // 重置表单字段
     form.resetFields();
-    form.setFieldsValue({ status: 'ENABLED' });
     setEditingUser(null);
     setIsModalVisible(true);
+
+    // 使用setTimeout确保在模态框渲染后设置默认值
+    setTimeout(() => {
+      form.setFieldsValue({
+        status: DEFAULT_STATUS
+      });
+    }, 200);
   };
 
   // 显示编辑用户模态框
   const showEditModal = (record: User) => {
+    // 先重置表单
+    form.resetFields();
     setEditingUser(record);
-    form.setFieldsValue({
-      name: record.name,
-      phone: record.phone,
-      role: record.role,
-      campus: record.campus,
-      status: record.status
-    });
     setIsModalVisible(true);
+
+    // 使用setTimeout确保在模态框渲染后设置表单值
+    setTimeout(() => {
+      form.setFieldsValue({
+        name: record.name,
+        phone: record.phone,
+        role: record.role,
+        campus: record.campus,
+        // 如果没有状态则默认为启用
+        status: record.status || DEFAULT_STATUS
+      });
+    }, 200);
   };
 
   // 处理模态框确认
@@ -60,8 +75,10 @@ export const useUserForm = (
 
   // 处理模态框取消
   const handleModalCancel = () => {
-    form.resetFields();
     setIsModalVisible(false);
+    setTimeout(() => {
+      form.resetFields();
+    }, 100);
   };
 
   // 处理重置密码

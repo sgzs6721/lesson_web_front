@@ -433,3 +433,40 @@
 }
 
 /* 修复重复的样式 */
+
+/* 人工验证组件样式 */
+.human-verification {
+  margin-bottom: 10px;
+}
+
+.verification-problem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.verification-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.verification-input.valid {
+  border-color: #52c41a;
+  background-color: #f6ffed;
+}
+
+.verification-input.invalid {
+  border-color: #f5222d;
+  background-color: #fff1f0;
+}
+
+.refresh-btn:hover {
+  color: #096dd9;
+  text-decoration: underline;
+}

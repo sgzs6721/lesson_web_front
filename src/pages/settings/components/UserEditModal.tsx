@@ -1,8 +1,11 @@
 import React from 'react';
-import { Modal, Form, Input, Select, Row, Col, Divider, Button } from 'antd';
+import { Modal, Form, Input, Row, Col, Divider, Button, Spin, Select } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { User } from '../types/user';
-import { roleOptions, campusOptions, statusOptions } from '../constants/userOptions';
+import { roleOptions, statusOptions, DEFAULT_STATUS } from '../constants/userOptions';
+import { useRealCampusOptions } from '../hooks/useRealCampusOptions';
+import CustomSelect from '@/components/CustomSelect';
+import './UserEditModal.css';
 
 const { Option } = Select;
 
@@ -25,6 +28,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   onSubmit,
   onResetPassword
 }) => {
+  // 使用真实校区列表
+  const { campusOptions, loading: campusLoading, error: campusError } = useRealCampusOptions();
+
+  // 状态默认值已在Form的initialValues中设置
+
   return (
     <Modal
       title={<div style={{ fontSize: '18px', fontWeight: 'bold' }}>{editingUser ? '编辑用户' : '添加用户'}</div>}
@@ -42,7 +50,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         layout="vertical"
         name="userForm"
         initialValues={{
-          status: 'ENABLED',
+          status: DEFAULT_STATUS
         }}
         onValuesChange={(changedValues) => {
           // 当电话字段变化时，自动更新密码字段
@@ -111,11 +119,14 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
             >
-              <Select placeholder="请选择状态">
-                {statusOptions.map(option => (
-                  <Option key={option.value} value={option.value}>{option.label}</Option>
-                ))}
-              </Select>
+              <CustomSelect
+                placeholder="请选择状态"
+                style={{ width: '100%' }}
+                defaultValue="ENABLED"
+                forcedValue="ENABLED"
+                defaultText="启用"
+                options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
+              />
             </Form.Item>
           </Col>
 
@@ -125,11 +136,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="角色"
               rules={[{ required: true, message: '请选择角色' }]}
             >
-              <Select placeholder="请选择角色">
-                {roleOptions.map(option => (
-                  <Option key={option.value} value={option.value}>{option.label}</Option>
-                ))}
-              </Select>
+              <CustomSelect
+                placeholder="请选择角色"
+                style={{ width: '100%' }}
+                options={roleOptions.map(option => ({ value: option.value, label: option.label }))}
+              />
             </Form.Item>
           </Col>
 
@@ -145,11 +156,17 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     label="所属校区"
                     rules={[{ required: true, message: '请选择所属校区' }]}
                   >
-                    <Select placeholder="请选择校区">
-                      {campusOptions.map(option => (
-                        <Option key={option.value} value={option.value}>{option.label}</Option>
-                      ))}
-                    </Select>
+                    <CustomSelect
+                      placeholder="请选择校区"
+                      loading={campusLoading}
+                      style={{ width: '100%' }}
+                      options={campusOptions.map(option => ({ value: option.value, label: option.label }))}
+                      notFoundContent={
+                        campusLoading ? <Spin size="small" /> :
+                        campusError ? <div style={{ color: 'red' }}>加载失败</div> :
+                        <div>暂无校区</div>
+                      }
+                    />
                   </Form.Item>
                 ) : null;
               }}

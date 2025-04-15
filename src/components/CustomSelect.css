@@ -1,0 +1,30 @@
+/* 占位符样式 */
+.ant-select-selection-placeholder {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.25) !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* 选中项样式 */
+.ant-select-selection-item {
+  color: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* 显示占位符的特殊类 */
+.show-placeholder .ant-select-selection-placeholder {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 确保下拉框宽度正确 */
+.ant-select {
+  width: 100% !important;
+}
+
+/* 确保下拉菜单宽度与输入框一致 */
+.ant-select-dropdown {
+  min-width: 100% !important;
+  width: 100% !important;
+}

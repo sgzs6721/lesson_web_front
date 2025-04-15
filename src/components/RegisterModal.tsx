@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from '@/router/hooks';
 import { register } from '@/redux/slices/authSlice';
+import HumanVerification from './HumanVerification';
 import './Modal.css'; // 引入模态框样式
 
 interface RegisterModalProps {
@@ -31,6 +32,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
   const [loading, setLoading] = useState(false); // 新增：loading 状态
   const [success, setSuccess] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false); // 新增：显示成功模态框状态
+  const [isVerified, setIsVerified] = useState(false); // 人工验证状态
 
   // 验证手机号格式
   const validatePhone = (value: string) => {
@@ -90,7 +92,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
            isOrgNameValid &&
            isPasswordValid &&
            isConfirmPasswordValid &&
-           isRepresentativeNameValid;
+           isRepresentativeNameValid &&
+           isVerified; // 添加人工验证检查
   };
 
   // 手机号输入处理 - 简化逻辑
@@ -194,6 +197,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
     setRepresentativeName('');
     setDescription('');
     setSuccess(false);
+    setIsVerified(false); // 重置验证状态
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -208,6 +212,9 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
       // 使用验证函数再次验证表单
       if (!isFormValid()) {
         setLoading(false);
+        if (!isVerified) {
+          setError('请完成人工验证');
+        }
         return;
       }
 
@@ -404,6 +411,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
                   disabled={loading}
                 />
               </div>
+              <div className="form-group">
+                <label htmlFor="human-verification">人工验证 <span className="required-asterisk">*</span></label>
+                <HumanVerification onChange={(valid) => setIsVerified(valid)} />
+              </div>
               {/* 只显示网络相关错误，其他业务错误由顶部消息通知显示 */}
               {error && <p className="error-message">{error}</p>}
               <div className="button-group">
@@ -419,6 +430,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
                   type="submit"
                   className="submit-btn"
                   disabled={loading || !isFormValid()}
+                  title={!isVerified ? '请完成人工验证' : ''}
                 >
                   {loading ? '注册中...' : '注册'}
                 </button>
