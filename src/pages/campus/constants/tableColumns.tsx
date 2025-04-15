@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Campus } from '../types/campus';
 import type { ColumnsType } from 'antd/es/table';
+import CampusScale from '../components/CampusScale';
 
 // 获取表格列配置
 export const getTableColumns = (
@@ -43,12 +44,13 @@ export const getTableColumns = (
     title: '校区规模',
     key: 'scale',
     align: 'center',
+    width: 220,
     render: (_, record) => (
-      <>
-        <div>学员数: {record.studentCount}</div>
-        <div>教练数: {record.coachCount}</div>
-        <div>待销课时: {record.courseCount}</div>
-      </>
+      <CampusScale
+        studentCount={record.studentCount || 0}
+        coachCount={record.coachCount || 0}
+        pendingLessonCount={record.pendingLessonCount || 0}
+      />
     ),
   },
   {

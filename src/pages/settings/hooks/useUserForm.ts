@@ -35,17 +35,55 @@ export const useUserForm = (
     setEditingUser(record);
     setIsModalVisible(true);
 
+    // 打印记录信息，便于调试
+    console.log('编辑用户记录:', JSON.stringify(record, null, 2));
+
+    // 处理角色数据
+    let roleValue = record.role;
+    if (typeof record.role === 'object' && record.role !== null) {
+      roleValue = String(record.role.id);
+    }
+    console.log('处理后的角色值:', roleValue);
+
+    // 处理校区数据
+    let campusValue = record.campus;
+    if (typeof record.campus === 'object' && record.campus !== null) {
+      campusValue = String(record.campus.id);
+    }
+    console.log('处理后的校区值:', campusValue);
+
+    // 处理状态数据
+    let statusValue = record.status;
+    if (typeof statusValue === 'number') {
+      statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
+    }
+    console.log('处理后的状态值:', statusValue);
+
     // 使用setTimeout确保在模态框渲染后设置表单值
     setTimeout(() => {
-      form.setFieldsValue({
+      // 设置表单值
+      const formValues = {
         name: record.name,
         phone: record.phone,
-        role: record.role,
-        campus: record.campus,
-        // 如果没有状态则默认为启用
-        status: record.status || DEFAULT_STATUS
-      });
-    }, 200);
+        role: roleValue,
+        status: statusValue || DEFAULT_STATUS
+      };
+
+      // 如果有校区数据且角色是校区管理员，添加校区字段
+      if (roleValue === '3' || String(roleValue) === '3') {
+        formValues.campus = campusValue || '';
+      }
+
+      console.log('设置表单值:', formValues);
+      form.setFieldsValue(formValues);
+
+      // 强制触发表单重新渲染
+      setTimeout(() => {
+        // 再次检查表单值
+        const currentValues = form.getFieldsValue();
+        console.log('设置后的表单值:', currentValues);
+      }, 100);
+    }, 300);
   };
 
   // 处理模态框确认
@@ -54,12 +92,30 @@ export const useUserForm = (
       const values = await form.validateFields();
       setLoading(true);
 
+      console.log('表单提交的原始值:', values);
+
       // 模拟API调用
       await new Promise(resolve => setTimeout(resolve, 500));
 
       if (editingUser) {
         // 编辑现有用户
-        onUpdateUser(editingUser.id, values);
+        // 准备更新数据
+        const updateValues = {
+          ...values,
+          // 确保姓名和电话字段存在
+          name: values.name || editingUser.name,
+          phone: values.phone || editingUser.phone,
+          // 确保状态字段存在
+          status: values.status || editingUser.status || 'ENABLED'
+        };
+
+        // 如果角色不是校区管理员，删除校区字段
+        if (updateValues.role !== '3') {
+          delete updateValues.campus;
+        }
+
+        console.log('更新用户的处理后的值:', updateValues);
+        onUpdateUser(editingUser.id, updateValues);
       } else {
         // 添加新用户
         onAddUser(values);

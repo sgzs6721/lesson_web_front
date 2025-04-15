@@ -66,10 +66,13 @@ export interface UserCreateParams {
 // 用户更新参数
 export interface UserUpdateParams {
   id: number | string;
-  phone?: string;
-  realName?: string;
-  roleId?: number | string;
-  campusId?: number | string;
+  phone: string;
+  realName: string;
+  password?: string;
+  roleId: number | string;
+  institutionId?: number | string;
+  campusId: number | string;
+  status: string; // 'ENABLED' 或 'DISABLED'
 }
 
 // 用户状态更新参数

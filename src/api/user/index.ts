@@ -205,11 +205,14 @@ export const user = {
         realName: data.realName || mockUsers[userIndex].realName,
         roleId: data.roleId || mockUsers[userIndex].roleId,
         roleName,
-        campusId: data.campusId !== undefined ? data.campusId : mockUsers[userIndex].campusId
+        campusId: data.campusId !== undefined ? data.campusId : mockUsers[userIndex].campusId,
+        status: data.status === 'ENABLED' ? UserStatus.ACTIVE : UserStatus.INACTIVE
       };
 
       return null;
     }
+
+    console.log('发送用户更新请求:', data);
 
     const response: UserUpdateResponse = await request(USER_API_PATHS.UPDATE, {
       method: 'POST',

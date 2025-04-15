@@ -5,6 +5,24 @@ import { API } from '@/api';
 import { UserStatus } from '@/api/user/types';
 import { apiUserToUser, userStatusToApiStatus } from '../adapters/userAdapter';
 import { DEFAULT_STATUS } from '../constants/userOptions';
+import { getCampusList } from '@/components/CampusSelector';
+
+// 根据校区ID获取校区名称
+const getCampusNameById = async (campusId: string | number): Promise<string> => {
+  try {
+    // 获取所有校区列表
+    const campusList = await getCampusList();
+
+    // 查找匹配的校区
+    const campus = campusList.find(campus => String(campus.id) === String(campusId));
+
+    // 如果找到则返回名称，否则返回未设置
+    return campus ? campus.name : '未设置';
+  } catch (error) {
+    console.error('获取校区名称失败:', error);
+    return '未知校区';
+  }
+};
 
 export const useUserData = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -32,7 +50,13 @@ export const useUserData = () => {
         phone: values.phone,
         name: values.name,
         role: values.role,
-        campus: values.campus,
+        // 处理校区数据，确保它是一个包含 id 和 name 的对象
+        campus: typeof values.campus === 'object'
+          ? values.campus
+          : {
+              id: values.campus,
+              name: await getCampusNameById(values.campus)
+            },
         status: DEFAULT_STATUS,
         createdAt: new Date().toISOString().split('T')[0],
       };
@@ -55,28 +79,49 @@ export const useUserData = () => {
     try {
       setLoading(true);
 
-      // 调用API更新用户
-      await API.user.update({
-        id,
-        phone: values.phone,
-        realName: values.name,
-        roleId: typeof values.role === 'object' ? values.role.id : values.role, // 处理对象类型的角色
-        campusId: typeof values.campus === 'object' ? values.campus.id : values.campus // 处理对象类型的校区
-      });
+      console.log('更新用户原始数据:', { id, values });
 
-      // 如果状态发生变化，调用更新状态API
-      if (values.status) {
-        await API.user.updateStatus({
-          id,
-          status: userStatusToApiStatus(values.status)
-        });
+      // 处理角色ID
+      const roleId = typeof values.role === 'object' ? values.role.id : values.role;
+
+      // 处理校区ID
+      const campusId = typeof values.campus === 'object' ? values.campus.id : values.campus;
+
+      // 处理状态
+      const status = values.status ?
+        (values.status === 'ENABLED' ? 'ENABLED' : 'DISABLED') :
+        'ENABLED';
+
+      // 构建符合API要求的参数
+      const updateParams = {
+        id: Number(id) || 0,  // 确保是数字
+        realName: values.name || '',
+        phone: values.phone || '',
+        roleId: Number(roleId) || 0,
+        // institutionId 不需要传递
+        campusId: campusId ? Number(campusId) : 0,
+        status: status
+      };
+
+      console.log('发送给API的更新参数:', updateParams);
+
+      // 调用API更新用户
+      await API.user.update(updateParams);
+
+      // 处理校区数据，确保它是一个包含 id 和 name 的对象
+      let updatedValues = { ...values };
+      if (values.campus && typeof values.campus !== 'object') {
+        updatedValues.campus = {
+          id: values.campus,
+          name: await getCampusNameById(values.campus)
+        };
       }
 
       // 更新本地状态
       setUsers(prevUsers =>
         prevUsers.map(user =>
           user.id === id
-            ? { ...user, ...values }
+            ? { ...user, ...updatedValues }
             : user
         )
       );

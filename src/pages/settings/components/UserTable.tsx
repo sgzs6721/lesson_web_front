@@ -63,7 +63,9 @@ const UserTable: React.FC<UserTableProps> = ({
       dataIndex: 'campus',
       key: 'campus',
       align: 'center' as const,
-      render: (campus: any) => {
+      render: (campus: any, record: User) => {
+        console.log('渲染校区数据:', campus);
+
         // 如果 campus 是对象并且有 name 属性
         if (campus && typeof campus === 'object') {
           // 如果 name 为 null，返回未设置
@@ -76,8 +78,21 @@ const UserTable: React.FC<UserTableProps> = ({
         // 兼容旧的数据结构，如果 campus 是字符串
         if (typeof campus === 'string') {
           if (!campus) return '-';
+
+          // 先尝试从静态选项中查找
           const campusOption = campusOptions.find(option => option.value === campus);
-          return campusOption ? campusOption.label : campus;
+          if (campusOption) {
+            return campusOption.label;
+          }
+
+          // 如果是数字字符串，可能是校区 ID，直接显示原始值
+          // 在实际应用中，这里应该调用一个函数根据 ID 获取校区名称
+          return campus;
+        }
+
+        // 如果是数字，可能是校区 ID
+        if (typeof campus === 'number') {
+          return String(campus);
         }
 
         return '-';

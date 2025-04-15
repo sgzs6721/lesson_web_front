@@ -56,13 +56,36 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
   // 保留原始的 role 对象
   const roleObj = apiUser.role && typeof apiUser.role === 'object' ? apiUser.role : undefined;
 
-  // 保留原始的 campus 对象
-  const campusObj = apiUser.campus && typeof apiUser.campus === 'object' ? apiUser.campus : undefined;
+  // 处理校区数据，确保它是一个包含 id 和 name 的对象
+  let campusData;
 
-  // 判断校区信息是对象还是字符串
-  const campusInfo = apiUser.campus ?
-    (typeof apiUser.campus === 'object' ? apiUser.campus.name : apiUser.campus) :
-    apiUser.campusName;
+  if (apiUser.campus) {
+    // 如果校区数据是对象
+    if (typeof apiUser.campus === 'object') {
+      campusData = apiUser.campus;
+    }
+    // 如果校区数据是字符串或数字，创建一个对象
+    else {
+      campusData = {
+        id: apiUser.campus,
+        name: apiUser.campusName || `校区${apiUser.campus}`
+      };
+    }
+  }
+  // 如果有校区ID但没有校区对象
+  else if (apiUser.campusId) {
+    campusData = {
+      id: apiUser.campusId,
+      name: apiUser.campusName || `校区${apiUser.campusId}`
+    };
+  }
+  // 如果只有校区名称
+  else if (apiUser.campusName) {
+    campusData = {
+      id: '0', // 临时ID
+      name: apiUser.campusName
+    };
+  }
 
   // 处理日期格式
   let createdAt = '';
@@ -90,17 +113,37 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
     }
   }
 
+  // 处理状态数据
+  let statusValue = apiUser.status;
+  // 确保状态值是字符串类型的'ENABLED'或'DISABLED'
+  if (typeof statusValue === 'number') {
+    statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
+  } else if (typeof statusValue === 'string') {
+    // 如果已经是字符串，确保是大写形式
+    statusValue = statusValue.toUpperCase();
+    // 确保值是有效的
+    if (statusValue !== 'ENABLED' && statusValue !== 'DISABLED') {
+      statusValue = 'ENABLED'; // 默认启用
+    }
+  } else {
+    // 如果状态值无效，使用默认值
+    statusValue = 'ENABLED';
+  }
+
   const user: User = {
     id: String(apiUser.id),
     phone: apiUser.phone,
     name: apiUser.realName,
+    realName: apiUser.realName, // 保留原始的realName字段
     role: roleObj || mapRoleToUserRole(roleName),
     roleName: roleName,
-    campus: campusObj || campusInfo || undefined,
-    status: apiUser.status,
-    statusText: apiUser.statusText,
+    campus: campusData, // 使用处理后的校区数据
+    status: statusValue, // 使用处理后的状态值
+    statusText: apiUser.statusText || (statusValue === 'ENABLED' ? '启用' : '禁用'),
     createdAt: createdAt,
-    lastLogin: lastLogin
+    lastLogin: lastLogin,
+    createdTime: apiUser.createdTime, // 保留原始的createdTime字段
+    lastLoginTime: apiUser.lastLoginTime // 保留原始的lastLoginTime字段
   };
 
   console.log('Transformed User:', user);

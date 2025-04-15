@@ -1,0 +1,97 @@
+:root {
+  --label-width: 80px;
+  --icon-size: 24px;
+  --value-width: 30px;
+}
+
+.campus-scale-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scale-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  justify-content: space-between;
+}
+
+.scale-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Student item styling */
+.scale-item-student {
+  background-color: rgba(52, 152, 219, 0.08);
+  border: 1px solid rgba(52, 152, 219, 0.15);
+}
+
+/* Coach item styling */
+.scale-item-coach {
+  background-color: rgba(46, 204, 113, 0.08);
+  border: 1px solid rgba(46, 204, 113, 0.15);
+}
+
+/* Lesson item styling */
+.scale-item-lesson {
+  background-color: rgba(243, 156, 18, 0.08);
+  border: 1px solid rgba(243, 156, 18, 0.15);
+}
+
+.scale-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.scale-icon-student {
+  background-color: rgba(52, 152, 219, 0.15);
+}
+
+.scale-icon-coach {
+  background-color: rgba(46, 204, 113, 0.15);
+}
+
+.scale-icon-lesson {
+  background-color: rgba(243, 156, 18, 0.15);
+}
+
+.scale-label {
+  font-size: 14px;
+  color: #333;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  padding-left: 5px;
+  width: var(--label-width);
+  display: inline-block;
+  text-align: left;
+}
+
+.scale-value {
+  font-weight: 600;
+  margin-left: auto;
+  min-width: var(--value-width);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.scale-value-student {
+  color: #3498db;
+}
+
+.scale-value-coach {
+  color: #2ecc71;
+}
+
+.scale-value-lesson {
+  color: #f39c12;
+}

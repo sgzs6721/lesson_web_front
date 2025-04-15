@@ -115,6 +115,11 @@ export const useCampusData = () => {
 
       console.log('最终处理后的校区列表数据:', campusList);
 
+      // 检查待销课时数据
+      campusList.forEach(campus => {
+        console.log(`校区 ${campus.name} 的待销课时数据:`, campus.pendingLessonCount);
+      });
+
       // 更新缓存
       campusListCache = {
         data: campusList,
@@ -194,6 +199,7 @@ export const useCampusData = () => {
         studentCount: 0,
         coachCount: 0,
         courseCount: 0,
+        pendingLessonCount: 0,
         capacity: campusData.capacity,
         area: campusData.area,
         facilities: campusData.facilities,
