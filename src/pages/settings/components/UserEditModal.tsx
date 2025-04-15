@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal, Form, Input, Row, Col, Divider, Button, Spin, Select } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { User } from '../types/user';
@@ -29,7 +29,16 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   onResetPassword
 }) => {
   // 使用真实校区列表
-  const { campusOptions, loading: campusLoading, error: campusError } = useRealCampusOptions();
+  const { campusOptions, loading: campusLoading, error: campusError, refreshCampusOptions } = useRealCampusOptions();
+
+  // 当模态框打开时加载校区列表
+  useEffect(() => {
+    // 只在模态框可见时加载校区列表
+    if (visible) {
+      console.log('模态框打开，加载校区列表');
+      refreshCampusOptions();
+    }
+  }, [visible, refreshCampusOptions]);
 
   // 状态默认值已在Form的initialValues中设置
 
@@ -147,6 +156,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                   className="role-select"
                   popupClassName="role-select-dropdown"
                   getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  onChange={(value) => {
+                    console.log('Role changed to:', value);
+                    // Force re-render when role changes
+                    form.setFieldsValue({ role: value });
+                  }}
                 />
               </div>
             </Form.Item>
@@ -158,7 +172,9 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               shouldUpdate={(prevValues, currentValues) => prevValues.role !== currentValues.role}
             >
               {({ getFieldValue }) => {
-                return getFieldValue('role') === '3' ? (
+                const roleValue = getFieldValue('role');
+                // 当角色为校区管理员时显示校区选择框
+                return roleValue === '3' ? (
                   <Form.Item
                     name="campus"
                     label="所属校区"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getCampusList } from '@/components/CampusSelector';
 import { Campus } from '@/api/campus/types';
 
@@ -13,8 +13,8 @@ export const useRealCampusOptions = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 获取校区列表
-  const fetchCampusOptions = async () => {
+  // 获取校区列表 - 使用useCallback进行缓存以避免无限循环
+  const fetchCampusOptions = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -36,7 +36,7 @@ export const useRealCampusOptions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // 组件挂载时获取校区列表
   useEffect(() => {
