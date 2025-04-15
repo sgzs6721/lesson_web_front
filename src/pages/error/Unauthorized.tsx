@@ -1,5 +1,5 @@
 import { Button, Result } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/router/hooks';
 
 const Unauthorized: React.FC = () => {
   const navigate = useNavigate();
@@ -18,4 +18,4 @@ const Unauthorized: React.FC = () => {
   );
 };
 
-export default Unauthorized; 
+export default Unauthorized;

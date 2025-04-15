@@ -262,83 +262,174 @@
   max-width: 550px;
 }
 
-/* 成功模态框样式 */
+/* 成功模态框样式 - 现代设计 */
 .success-modal {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 30px 20px;
   text-align: center;
+  background-color: #ffffff;
+  border-radius: 8px;
 }
 
 .success-icon {
-  font-size: 50px;
-  color: #52c41a;
-  margin-bottom: 15px;
-  height: 60px;
-  width: 60px;
+  font-size: 32px;
+  color: #ffffff;
+  margin-bottom: 24px;
+  height: 80px;
+  width: 80px;
   border-radius: 50%;
-  background-color: rgba(82, 196, 26, 0.1);
+  background: linear-gradient(135deg, #52c41a, #389e0d);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 6px 16px rgba(82, 196, 26, 0.3);
+  animation: pulse 1.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .success-title {
-  font-size: 22px;
-  color: #333;
-  margin-bottom: 10px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
 }
 
 .success-message {
   font-size: 16px;
-  color: #666;
-  margin-bottom: 5px;
+  color: #595959;
+  margin-bottom: 24px;
+  background-color: #f6ffed;
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: 1px solid #b7eb8f;
+  width: 100%;
+  max-width: 360px;
 }
 
-.success-institution {
+.success-info-container {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.success-info-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.success-institution,
+.success-phone {
   font-size: 16px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
+  font-weight: normal;
+  color: #262626;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  position: relative;
+  margin-bottom: 0;
+}
+
+.success-institution .label,
+.success-phone .label {
+  display: inline-block;
+  min-width: 80px;
+}
+
+.success-institution .label {
+  letter-spacing: 5px; /* 保持机构名称的字间距 */
+}
+
+.success-institution .colon,
+.success-phone .colon {
+  display: inline-block;
+  width: 10px;
+  text-align: center;
+}
+
+.success-institution .value,
+.success-phone .value {
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.success-institution::before,
+.success-phone::before {
+  display: inline-block;
+  width: 30px;
+  text-align: center;
+  margin-right: 5px;
+}
+
+.success-institution::before {
+  content: '🏢';
+}
+
+.success-phone::before {
+  content: '📱';
 }
 
 .success-phone {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.button-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
 }
 
 .login-now-btn {
-  background-color: #1890ff;
+  background: linear-gradient(135deg, #1890ff, #096dd9);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
+  padding: 12px 24px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s;
+  font-weight: normal;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
 }
 
 .login-now-btn:hover {
-  background-color: #40a9ff;
+  background: linear-gradient(135deg, #40a9ff, #1890ff);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
 }
 
 .later-btn {
-  background-color: white;
-  color: #666;
+  background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+  color: #595959;
   border: 1px solid #d9d9d9;
-  padding: 10px 20px;
-  border-radius: 4px;
+  padding: 12px 24px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
-  margin-right: 10px;
+  font-weight: normal;
   transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .later-btn:hover {
-  color: #40a9ff;
-  border-color: #40a9ff;
-} 
+  color: #1890ff;
+  border-color: #1890ff;
+  background: linear-gradient(135deg, #f0f8ff, #e6f7ff);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 修复重复的样式 */

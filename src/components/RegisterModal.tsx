@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/router/hooks';
 import { register } from '@/redux/slices/authSlice';
 import './Modal.css'; // 引入模态框样式
 
@@ -19,7 +19,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
   const [confirmPassword, setConfirmPassword] = useState(''); // 新增：确认密码
   const [representativeName, setRepresentativeName] = useState(''); // 新增：机构负责人
   const [description, setDescription] = useState(''); // 新增：机构描述 (可选)
-  
+
   // 添加各字段的错误状态
   const [orgNameError, setOrgNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
@@ -27,7 +27,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [representativeNameError, setRepresentativeNameError] = useState('');
   const [error, setError] = useState(''); // 通用错误信息
-  
+
   const [loading, setLoading] = useState(false); // 新增：loading 状态
   const [success, setSuccess] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false); // 新增：显示成功模态框状态
@@ -37,7 +37,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
     if (!value) {
       return true; // 空值视为有效
     }
-    
+
     const phoneRegex = /^1[3-9]\d{9}$/;
     return value.length === 11 && phoneRegex.test(value);
   };
@@ -47,7 +47,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
     if (!value) {
       return false;
     }
-    
+
     return value.length > 0 && value.length <= 12;
   };
 
@@ -56,7 +56,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
     if (!value) {
       return false;
     }
-    
+
     return value.length >= 8;
   };
 
@@ -65,7 +65,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
     if (!value) {
       return false;
     }
-    
+
     return value === password;
   };
 
@@ -74,10 +74,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
     if (!value) {
       return false;
     }
-    
+
     return value.length > 0;
   };
-  
+
   // 检查表单是否有效 - 纯函数不设置状态
   const isFormValid = () => {
     const isPhoneValid = validatePhone(phone);
@@ -85,21 +85,21 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
     const isPasswordValid = validatePassword(password);
     const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
     const isRepresentativeNameValid = validateRepresentativeName(representativeName);
-    
-    return isPhoneValid && 
-           isOrgNameValid && 
-           isPasswordValid && 
-           isConfirmPasswordValid && 
+
+    return isPhoneValid &&
+           isOrgNameValid &&
+           isPasswordValid &&
+           isConfirmPasswordValid &&
            isRepresentativeNameValid;
   };
-  
+
   // 手机号输入处理 - 简化逻辑
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // 只允许输入数字，且最多11位
     if (value === '' || (/^\d+$/.test(value) && value.length <= 11)) {
       setPhone(value);
-      
+
       // 只在有实际值时验证
       if (value && value.length === 11) {
         const isValid = /^1[3-9]\d{9}$/.test(value);
@@ -111,7 +111,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
       }
     }
   };
-  
+
   // 机构名称输入处理
   const handleOrgNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -123,37 +123,37 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
       setOrgNameError('');
     }
   };
-  
+
   // 密码输入处理
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
-    
+
     // 验证密码
     if (value && value.length > 0 && value.length < 8) {
       setPasswordError('密码长度至少为8位');
     } else {
       setPasswordError('');
     }
-    
+
     // 如果已经输入了确认密码，验证一致性
     if (confirmPassword) {
       setConfirmPasswordError(value === confirmPassword ? '' : '两次输入的密码不一致');
     }
   };
-  
+
   // 确认密码输入处理
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setConfirmPassword(value);
-    
+
     if (value) {
       setConfirmPasswordError(value === password ? '' : '两次输入的密码不一致');
     } else {
       setConfirmPasswordError('');
     }
   };
-  
+
   // 负责人姓名输入处理
   const handleRepresentativeNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -240,7 +240,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
         console.log('注册成功');
         setSuccess(true);
         setLoading(false);
-        
+
         // 显示成功模态框
         setShowSuccessModal(true);
       } else if (result.type && result.type.endsWith('/rejected')) {
@@ -291,8 +291,24 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onRegist
               <div className="success-icon">✓</div>
               <h4 className="success-title">注册成功！</h4>
               <p className="success-message">您的机构账号已创建成功</p>
-              <p className="success-institution">机构名称: {orgName}</p>
-              <p className="success-phone">登录手机号: {phone}</p>
+
+              <div className="success-info-container">
+                <div className="success-info-row">
+                  <p className="success-institution">
+                    <span className="label">机构名称</span>
+                    <span className="colon">:</span>
+                    <span className="value">{orgName}</span>
+                  </p>
+                </div>
+                <div className="success-info-row">
+                  <p className="success-phone">
+                    <span className="label">登录手机号</span>
+                    <span className="colon">:</span>
+                    <span className="value">{phone}</span>
+                  </p>
+                </div>
+              </div>
+
               <div className="button-group">
                 <button
                   type="button"

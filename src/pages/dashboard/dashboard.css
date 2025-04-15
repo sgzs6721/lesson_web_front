@@ -224,7 +224,7 @@
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  /* 移除过渡效果 */
   font-weight: 500;
 }
 
@@ -352,7 +352,7 @@
   cursor: pointer;
   font-size: 14px;
   color: #7f8c8d;
-  transition: all 0.2s;
+  /* 移除过渡效果 */
 }
 
 .period-tab.active {
@@ -378,4 +378,4 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
-} 
+}

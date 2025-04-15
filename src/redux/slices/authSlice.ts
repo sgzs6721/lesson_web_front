@@ -40,9 +40,6 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
-  hasCampus: boolean | null; // 是否有校区
-  showCampusModal: boolean; // 是否显示校区创建模态框
-  total: number | null; // 校区总数
 }
 
 // 初始状态
@@ -50,10 +47,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
   loading: false,
-  error: null,
-  hasCampus: null,
-  showCampusModal: false,
-  total: null
+  error: null
 };
 
 // 从localStorage和cookie检查认证状态
@@ -201,15 +195,6 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    // 设置校区模态框显示状态
-    setCampusModalVisible: (state, action) => {
-      console.log('设置校区模态框显示状态:', action.payload);
-      state.showCampusModal = action.payload;
-    },
-    // 设置校区状态
-    setHasCampus: (state, action) => {
-      state.hasCampus = action.payload;
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -232,9 +217,6 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
-        state.hasCampus = null;
-        state.showCampusModal = false;
-        state.total = null;
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isAuthenticated = true;
@@ -245,9 +227,6 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.loading = false;
         state.error = action.payload as string || '登录失败';
-        state.hasCampus = null;
-        state.showCampusModal = false;
-        state.total = null;
       })
       // 注册
       .addCase(register.pending, (state) => {
@@ -265,11 +244,9 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.isAuthenticated = false;
         state.user = null;
-        state.hasCampus = null;
-        state.showCampusModal = false;
       });
   },
 });
 
-export const { clearError, setCampusModalVisible, setHasCampus } = authSlice.actions;
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;

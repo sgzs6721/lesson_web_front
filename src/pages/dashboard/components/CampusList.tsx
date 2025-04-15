@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Table, Typography, Button, Space, Tag } from 'antd';
 import { BuildOutlined, PlusOutlined } from '@ant-design/icons';
 import { Campus } from '@/api/campus/types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/router/hooks';
 
 const { Title } = Typography;
 

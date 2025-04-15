@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/lib/locale/zh_CN';
-import AppRouter from '@/router';
+import { router } from '@/router';
 import { useAppDispatch } from '@/hooks/reduxHooks';
 import { checkAuth } from '@/redux/slices/authSlice';
 
@@ -16,9 +16,12 @@ function App() {
 
   return (
     <ConfigProvider locale={zhCN}>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
+      <RouterProvider
+        router={router}
+        future={{
+          v7_startTransition: true
+        }}
+      />
     </ConfigProvider>
   );
 }

@@ -7,9 +7,20 @@
     <meta name="description" content="培训机构管理系统 - 专业培训管理解决方案" />
     <meta name="theme-color" content="#1a2980" />
     <title>培训机构管理系统 - 专业培训管理解决方案</title>
+    <!-- 使用 Ant Design 图标库替代 Font Awesome -->
+    <!-- 侧边栏样式已移至 sidebar-fix.css -->
   </head>
   <body>
     <div id="root"></div>
+    <!-- 启用 React Router 的未来标志 -->
+    <script>
+      window.__reactRouterFutureFlags = {
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      };
+    </script>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- 侧边栏样式修复脚本 -->
+    <script type="module" src="/src/assets/js/sidebar-fix.js"></script>
   </body>
-</html> 
+</html>

@@ -1,10 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from '@/router/hooks';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { logout } from '@/redux/slices/authSlice';
 import CampusSelector, { getCampusList } from '@/components/CampusSelector';
 import UserProfileModal from '@/components/UserProfileModal';
 import { Campus } from '@/api/campus/types';
+import {
+  HomeTwoTone,
+  BankTwoTone,
+  UserOutlined,
+  TeamOutlined,
+  CalendarTwoTone,
+  CheckSquareTwoTone,
+  DollarCircleTwoTone,
+  BarChartOutlined,
+  SettingTwoTone,
+  ReadOutlined,
+  UserSwitchOutlined,
+  LineChartOutlined
+} from '@ant-design/icons';
 
 const MainLayout: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -207,20 +222,20 @@ const MainLayout: React.FC = () => {
           </button>
         </div>
 
-        <ul className="sidebar-menu">
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/dashboard')} className={activeMenu === '/dashboard' ? 'active' : ''}><i>🏠</i> {!sidebarCollapsed && <span>首页</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/campuses')} className={activeMenu === '/campuses' ? 'active' : ''}><i>🏢</i> {!sidebarCollapsed && <span>校区管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/users')} className={activeMenu === '/users' ? 'active' : ''}><i>👤</i> {!sidebarCollapsed && <span>用户管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/coaches')} className={activeMenu === '/coaches' ? 'active' : ''}><i>🏋️</i> {!sidebarCollapsed && <span>教练管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/courses')} className={activeMenu === '/courses' ? 'active' : ''}><i>📚</i> {!sidebarCollapsed && <span>课程管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/students')} className={activeMenu === '/students' ? 'active' : ''}><i>👨‍🎓</i> {!sidebarCollapsed && <span>学员管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/schedules')} className={activeMenu === '/schedules' ? 'active' : ''}><i>📅</i> {!sidebarCollapsed && <span>课表管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/attendance')} className={activeMenu === '/attendance' ? 'active' : ''}><i>✅</i> {!sidebarCollapsed && <span>打卡消课</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/payments')} className={activeMenu === '/payments' ? 'active' : ''}><i>💰</i> {!sidebarCollapsed && <span>缴费记录</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/expenses')} className={activeMenu === '/expenses' ? 'active' : ''}><i>💸</i> {!sidebarCollapsed && <span>收支管理</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/statistics')} className={activeMenu === '/statistics' ? 'active' : ''}><i>📈</i> {!sidebarCollapsed && <span>数据统计</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/analysis')} className={activeMenu === '/analysis' ? 'active' : ''}><i>🏢</i> {!sidebarCollapsed && <span>校区分析</span>}</a></li>
-          <li><a href="#" onClick={(e) => handleMenuClick(e, '/settings')} className={activeMenu === '/settings' ? 'active' : ''}><i>⚙️</i> {!sidebarCollapsed && <span>系统设置</span>}</a></li>
+        <ul className="sidebar-menu" style={{ padding: '0 15px' }}>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/dashboard')} className={activeMenu === '/dashboard' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><HomeTwoTone style={{ marginRight: '6px', fontSize: '18px' }} twoToneColor="#1890ff" /> {!sidebarCollapsed && <span>首页</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/campuses')} className={activeMenu === '/campuses' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><BankTwoTone style={{ marginRight: '6px', fontSize: '18px' }} twoToneColor="#52c41a" /> {!sidebarCollapsed && <span>校区管理</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/users')} className={activeMenu === '/users' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><UserOutlined style={{ marginRight: '6px', fontSize: '18px', color: '#722ed1' }} /> {!sidebarCollapsed && <span>用户管理</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/coaches')} className={activeMenu === '/coaches' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><TeamOutlined style={{ marginRight: '6px', fontSize: '18px', color: '#eb2f96' }} /> {!sidebarCollapsed && <span>教练管理</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/courses')} className={activeMenu === '/courses' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><ReadOutlined style={{ marginRight: '6px', fontSize: '18px', color: '#fa8c16' }} /> {!sidebarCollapsed && <span>课程管理</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/students')} className={activeMenu === '/students' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><UserSwitchOutlined style={{ marginRight: '6px', fontSize: '18px', color: '#13c2c2' }} /> {!sidebarCollapsed && <span>学员管理</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/schedules')} className={activeMenu === '/schedules' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><CalendarTwoTone style={{ marginRight: '6px', fontSize: '18px' }} twoToneColor="#f5222d" /> {!sidebarCollapsed && <span>课表管理</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/attendance')} className={activeMenu === '/attendance' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><CheckSquareTwoTone style={{ marginRight: '6px', fontSize: '18px' }} twoToneColor="#faad14" /> {!sidebarCollapsed && <span>打卡消课</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/payments')} className={activeMenu === '/payments' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><DollarCircleTwoTone style={{ marginRight: '6px', fontSize: '18px' }} twoToneColor="#52c41a" /> {!sidebarCollapsed && <span>缴费记录</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/expenses')} className={activeMenu === '/expenses' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><DollarCircleTwoTone style={{ marginRight: '6px', fontSize: '18px' }} twoToneColor="#1890ff" /> {!sidebarCollapsed && <span>收支管理</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/statistics')} className={activeMenu === '/statistics' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><BarChartOutlined style={{ marginRight: '6px', fontSize: '18px', color: '#faad14' }} /> {!sidebarCollapsed && <span>数据统计</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/analysis')} className={activeMenu === '/analysis' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><LineChartOutlined style={{ marginRight: '6px', fontSize: '18px', color: '#2f54eb' }} /> {!sidebarCollapsed && <span>校区分析</span>}</a></li>
+          <li><a href="#" onClick={(e) => handleMenuClick(e, '/settings')} className={activeMenu === '/settings' ? 'active' : ''} style={{ display: 'flex', alignItems: 'center' }}><SettingTwoTone style={{ marginRight: '6px', fontSize: '18px' }} twoToneColor="#722ed1" /> {!sidebarCollapsed && <span>系统设置</span>}</a></li>
         </ul>
       </div>
 

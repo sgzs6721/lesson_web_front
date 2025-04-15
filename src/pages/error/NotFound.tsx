@@ -1,5 +1,5 @@
 import { Button, Result } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/router/hooks';
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
@@ -18,4 +18,4 @@ const NotFound: React.FC = () => {
   );
 };
 
-export default NotFound; 
+export default NotFound;

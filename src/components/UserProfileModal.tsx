@@ -20,7 +20,7 @@ interface UserProfileModalProps {
   onClose: () => void;
 }
 
-const { TabPane } = Tabs;
+// TabPane 已弃用，使用 items 属性代替
 
 const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose }) => {
   const [activeTab, setActiveTab] = useState('1');
@@ -96,7 +96,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
       footer={null}
       width={700}
       centered
-      bodyStyle={{ padding: '20px' }}
+      styles={{ body: { padding: '20px' } }}
     >
       <Divider style={{ margin: '0 0 24px 0' }} />
 
@@ -149,127 +149,139 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ visible, onClose })
         </div>
       </div>
 
-      <Tabs activeKey={activeTab} onChange={handleTabChange} type="card">
-        <TabPane tab="基本信息" key="1">
-          <Spin spinning={loading}>
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleUpdateProfile}
-              initialValues={{
-                name: user.name || '',
-                email: user.email || '',
-                phone: user.phone || '',
-                role: user.role || ''
-              }}
-            >
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <Form.Item
-                  name="name"
-                  label="姓名"
-                  style={{ flex: 1 }}
-                  rules={[{ required: true, message: '请输入姓名' }]}
+      <Tabs
+        activeKey={activeTab}
+        onChange={handleTabChange}
+        type="card"
+        items={[
+          {
+            key: '1',
+            label: '基本信息',
+            children: (
+              <Spin spinning={loading}>
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleUpdateProfile}
+                  initialValues={{
+                    name: user.name || '',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    role: user.role || ''
+                  }}
                 >
-                  <Input prefix={<UserOutlined />} placeholder="请输入姓名" />
-                </Form.Item>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <Form.Item
+                      name="name"
+                      label="姓名"
+                      style={{ flex: 1 }}
+                      rules={[{ required: true, message: '请输入姓名' }]}
+                    >
+                      <Input prefix={<UserOutlined />} placeholder="请输入姓名" />
+                    </Form.Item>
 
-                <Form.Item
-                  name="role"
-                  label="角色"
-                  style={{ flex: 1 }}
+                    <Form.Item
+                      name="role"
+                      label="角色"
+                      style={{ flex: 1 }}
+                    >
+                      <Input prefix={<IdcardOutlined />} disabled />
+                    </Form.Item>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <Form.Item
+                      name="phone"
+                      label="手机号码"
+                      style={{ flex: 1 }}
+                      rules={[
+                        { required: true, message: '请输入手机号码' },
+                        { pattern: /^1\d{10}$/, message: '请输入有效的手机号码' }
+                      ]}
+                    >
+                      <Input prefix={<PhoneOutlined />} placeholder="请输入手机号码" />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="email"
+                      label="电子邮箱"
+                      style={{ flex: 1 }}
+                      rules={[
+                        { type: 'email', message: '请输入有效的电子邮箱' }
+                      ]}
+                    >
+                      <Input prefix={<MailOutlined />} placeholder="请输入电子邮箱" />
+                    </Form.Item>
+                  </div>
+
+                  <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                      保存修改
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </Spin>
+            )
+          },
+          {
+            key: '2',
+            label: '修改密码',
+            children: (
+              <Spin spinning={loading}>
+                <Form
+                  form={passwordForm}
+                  layout="vertical"
+                  onFinish={handleUpdatePassword}
                 >
-                  <Input prefix={<IdcardOutlined />} disabled />
-                </Form.Item>
-              </div>
+                  <Form.Item
+                    name="currentPassword"
+                    label="当前密码"
+                    rules={[{ required: true, message: '请输入当前密码' }]}
+                  >
+                    <Input.Password prefix={<LockOutlined />} placeholder="请输入当前密码" />
+                  </Form.Item>
 
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <Form.Item
-                  name="phone"
-                  label="手机号码"
-                  style={{ flex: 1 }}
-                  rules={[
-                    { required: true, message: '请输入手机号码' },
-                    { pattern: /^1\d{10}$/, message: '请输入有效的手机号码' }
-                  ]}
-                >
-                  <Input prefix={<PhoneOutlined />} placeholder="请输入手机号码" />
-                </Form.Item>
+                  <Form.Item
+                    name="newPassword"
+                    label="新密码"
+                    rules={[
+                      { required: true, message: '请输入新密码' },
+                      { min: 6, message: '密码长度不能少于6个字符' }
+                    ]}
+                  >
+                    <Input.Password prefix={<LockOutlined />} placeholder="请输入新密码" />
+                  </Form.Item>
 
-                <Form.Item
-                  name="email"
-                  label="电子邮箱"
-                  style={{ flex: 1 }}
-                  rules={[
-                    { type: 'email', message: '请输入有效的电子邮箱' }
-                  ]}
-                >
-                  <Input prefix={<MailOutlined />} placeholder="请输入电子邮箱" />
-                </Form.Item>
-              </div>
+                  <Form.Item
+                    name="confirmPassword"
+                    label="确认新密码"
+                    dependencies={['newPassword']}
+                    rules={[
+                      { required: true, message: '请确认新密码' },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          if (!value || getFieldValue('newPassword') === value) {
+                            return Promise.resolve();
+                          }
+                          return Promise.reject(new Error('两次输入的密码不一致'));
+                        },
+                      }),
+                    ]}
+                  >
+                    <Input.Password prefix={<LockOutlined />} placeholder="请确认新密码" />
+                  </Form.Item>
 
-              <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  保存修改
-                </Button>
-              </Form.Item>
-            </Form>
-          </Spin>
-        </TabPane>
-
-        <TabPane tab="修改密码" key="2">
-          <Spin spinning={loading}>
-            <Form
-              form={passwordForm}
-              layout="vertical"
-              onFinish={handleUpdatePassword}
-            >
-              <Form.Item
-                name="currentPassword"
-                label="当前密码"
-                rules={[{ required: true, message: '请输入当前密码' }]}
-              >
-                <Input.Password prefix={<LockOutlined />} placeholder="请输入当前密码" />
-              </Form.Item>
-
-              <Form.Item
-                name="newPassword"
-                label="新密码"
-                rules={[
-                  { required: true, message: '请输入新密码' },
-                  { min: 6, message: '密码长度不能少于6个字符' }
-                ]}
-              >
-                <Input.Password prefix={<LockOutlined />} placeholder="请输入新密码" />
-              </Form.Item>
-
-              <Form.Item
-                name="confirmPassword"
-                label="确认新密码"
-                dependencies={['newPassword']}
-                rules={[
-                  { required: true, message: '请确认新密码' },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue('newPassword') === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(new Error('两次输入的密码不一致'));
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password prefix={<LockOutlined />} placeholder="请确认新密码" />
-              </Form.Item>
-
-              <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  更新密码
-                </Button>
-              </Form.Item>
-            </Form>
-          </Spin>
-        </TabPane>
-      </Tabs>
+                  <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                      更新密码
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </Spin>
+            )
+          }
+        ]}
+      />
     </Modal>
   );
 };

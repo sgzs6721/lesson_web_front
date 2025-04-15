@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, RouteObject, useRoutes } from 'react-router-dom';
+import { Navigate, RouteObject, createBrowserRouter } from 'react-router-dom';
 import { Spin } from 'antd';
 import MainLayout from '@/layouts/MainLayout';
 
@@ -74,9 +74,12 @@ const appRoutes: RouteObject[] = [
   },
 ];
 
-const AppRouter = () => {
-  const routes = useRoutes(appRoutes);
-  return routes;
-};
-
-export default AppRouter; 
+// 创建路由器并启用未来标志
+export const router = createBrowserRouter(appRoutes, {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  },
+  // 添加更多配置以确保所有路由都使用未来标志
+  basename: '/' // 确保基础路径正确
+});

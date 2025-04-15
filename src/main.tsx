@@ -5,12 +5,10 @@ import { store } from '@/redux/store';
 import App from '@/App';
 import '@/assets/styles/index.css';
 import '@/assets/styles/darkTheme.css';
+import '@/assets/styles/sidebar-fix.css'; // 修复侧边栏样式
 
-// Add Font Awesome script to the document
-const fontAwesomeScript = document.createElement('script');
-fontAwesomeScript.src = 'https://kit.fontawesome.com/a076d05399.js';
-fontAwesomeScript.crossOrigin = 'anonymous';
-document.head.appendChild(fontAwesomeScript);
+// 使用 Ant Design 图标库代替 Font Awesome
+// 如果需要使用 Font Awesome，建议通过 npm 安装或使用最新的 CDN 链接
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -18,4 +16,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <App />
     </Provider>
   </React.StrictMode>
-); 
+);

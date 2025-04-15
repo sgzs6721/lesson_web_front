@@ -1,0 +1,57 @@
+/* 侧边栏菜单样式修复 - 整合版 */
+
+/* 基本菜单项样式 */
+.sidebar-menu a {
+  display: flex !important;
+  align-items: center !important;
+  padding: 10px 2px !important;
+  position: relative !important;
+}
+
+/* 图标样式 */
+.sidebar-menu a i,
+.sidebar-menu a svg,
+.sidebar-menu a span[role="img"] {
+  margin-right: 0 !important;
+  margin-left: -8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 彩色图标样式 */
+.sidebar-menu a .anticon {
+  font-size: 18px !important;
+  transition: all 0.3s ease !important;
+}
+
+.sidebar-menu a:hover .anticon {
+  transform: scale(1.1) !important;
+}
+
+/* 文字样式 */
+.sidebar-menu a span:not([role="img"]) {
+  letter-spacing: -1px !important;
+  position: relative !important;
+  top: 1px !important;
+  left: -14px !important;
+  margin-left: -8px !important;
+}
+
+/* 侧边栏菜单整体样式 */
+.sidebar-menu {
+  padding: 0 10px !important;
+}
+
+/* 移动端样式调整 */
+@media (max-width: 768px) {
+  .sidebar.collapsed .sidebar-menu a span[role="img"] {
+    margin-right: 6px !important;
+    margin-left: 0 !important;
+  }
+
+  .sidebar.collapsed .sidebar-menu a span:not([role="img"]) {
+    left: 0 !important;
+    margin-left: 0 !important;
+  }
+}

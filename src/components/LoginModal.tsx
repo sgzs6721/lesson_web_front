@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { login, setCampusModalVisible } from '@/redux/slices/authSlice';
-import { RootState } from '@/redux/store';
-import { Form, Modal } from 'antd';
-import CampusAddAfterLogin from '@/pages/campus/components/CampusAddAfterLogin';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from '@/router/hooks';
+import { login } from '@/redux/slices/authSlice';
 import './Modal.css';
 
 interface LoginModalProps {
@@ -24,12 +21,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // 创建校区表单
-  const [campusForm] = Form.useForm();
-  const [campusFormLoading] = useState(false);
-
-  // 从campusSlice中获取校区状态
-  const { showCampusModal } = useSelector((state: RootState) => state.auth);
+  // 登录状态
 
   // 当 initialPhone 变化时更新 phone 状态
   useEffect(() => {
@@ -114,7 +106,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
       if (resultAction.type.endsWith('/fulfilled')) {
         // 登录成功
         setSuccess(true);
-        
+
         // 登录成功后直接进入系统，不再立即调用campus/list接口
         setTimeout(() => {
           onClose();
@@ -169,28 +161,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
 
   if (!isOpen) return null;
 
-  // 处理校区模态框关闭
-  const handleCampusModalClose = () => {
-    dispatch(setCampusModalVisible(false));
-    campusForm.resetFields();
-  };
 
-  // 处理校区创建成功
-  const handleCampusCreated = () => {
-    // 校区创建成功后，显示登录成功信息
-    setSuccess(true);
-    setError('');
-
-    // 显示成功信息2秒后关闭
-    setTimeout(() => {
-      onClose(); // 登录成功，关闭模态框
-    }, 2000);
-  };
-
-  // 处理取消按钮点击
-  const handleCancel = () => {
-    onClose();
-  };
 
   return (
     <>
@@ -257,15 +228,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
           </div>
         </div>
       </div>
-
-      {/* 校区创建模态框 */}
-      <CampusAddAfterLogin
-        visible={showCampusModal}
-        loading={campusFormLoading}
-        form={campusForm}
-        onCancel={handleCampusModalClose}
-        onSuccess={handleCampusCreated}
-      />
     </>
   );
 };

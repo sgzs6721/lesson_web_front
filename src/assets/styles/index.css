@@ -101,7 +101,7 @@ body {
 
 .sidebar-menu {
   list-style: none;
-  padding: 0 20px;
+  padding: 0 15px; /* 减少侧边栏菜单的左右内边距 */
 }
 
 .sidebar-menu li {
@@ -111,7 +111,7 @@ body {
 .sidebar-menu a {
   display: flex;
   align-items: center;
-  padding: 10px 20px;
+  padding: 10px 12px; /* 减少左右内边距 */
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   border-radius: 8px;
@@ -125,8 +125,9 @@ body {
   justify-content: center;
 }
 
-.sidebar-menu a i {
-  margin-right: 20px;
+.sidebar-menu a i,
+.sidebar-menu a svg {
+  margin-right: 8px; /* 减少图标与文字的间距 */
   width: 24px;
   height: 20px;
   display: flex;
@@ -135,18 +136,22 @@ body {
   font-size: 18px;
   transition: all 0.3s;
   flex-shrink: 0;
+  position: relative;
+  top: 1px; /* 微调图标位置使其与文字垂直对齐 */
 }
 
-.sidebar.collapsed .sidebar-menu a i {
+.sidebar.collapsed .sidebar-menu a i,
+.sidebar.collapsed .sidebar-menu a svg {
   margin-right: 0;
   margin-left: 0;
   font-size: 20px;
 }
 
 .sidebar-menu a span {
-  padding-left: 5px;
+  padding-left: 0; /* 移除文字的左内边距 */
   flex: 1;
   text-align: left;
+  letter-spacing: 0.5px; /* 增加字间距使文字更清晰 */
 }
 
 .sidebar-menu a:hover,
@@ -919,12 +924,7 @@ body {
   text-decoration: underline;
 }
 
-/* 脉冲动画效果 */
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.1); }
-  70% { box-shadow: 0 0 0 4px rgba(52, 152, 219, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
-}
+/* 脉冲动画效果 - 已移除 */
 
 /* Loading spinner */
 @keyframes spin {
@@ -1025,7 +1025,7 @@ body {
 
 /* 今日概览卡片样式 */
 #today-overview-card .stats-bar {
-  animation: pulse 3s infinite;
+  /* 移除动画效果 */
 }
 
 /* 教练员课时统计表格样式 */
@@ -1503,13 +1503,12 @@ body {
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  /* 移除过渡效果 */
   border-bottom: 3px solid transparent;
 }
 
 .stat-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  /* 移除悬停效果 */
 }
 
 .stat-box:nth-child(1) {
