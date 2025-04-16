@@ -38,50 +38,62 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
         />
       </Col>
       <Col xs={24} sm={12} md={6} lg={5}>
-        <Select
-          placeholder="选择课程分类"
-          style={{ width: '100%' }}
-          value={params.selectedCategory}
-          onChange={value => onCategoryChange(value)}
-          allowClear
-        >
-          {categoryOptions.map(option => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
+        <div className="select-wrapper">
+          <Select
+            placeholder="选择课程分类"
+            style={{ width: '100%' }}
+            value={params.selectedCategory}
+            onChange={value => onCategoryChange(value)}
+            allowClear
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          >
+            {categoryOptions.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
       </Col>
       <Col xs={24} sm={12} md={6} lg={5}>
-        <Select
-          placeholder="选择课程状态"
-          style={{ width: '100%' }}
-          value={params.selectedStatus}
-          onChange={value => onStatusChange(value)}
-          allowClear
-        >
-          {statusOptions.map(option => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
+        <div className="select-wrapper">
+          <Select
+            placeholder="选择课程状态"
+            style={{ width: '100%' }}
+            value={params.selectedStatus}
+            onChange={value => onStatusChange(value)}
+            allowClear
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          >
+            {statusOptions.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
       </Col>
       <Col xs={24} sm={12} md={6} lg={5}>
-        <Select
-          placeholder="排序方式"
-          style={{ width: '100%' }}
-          value={params.sortOrder}
-          onChange={value => onSortOrderChange(value)}
-          allowClear
-          suffixIcon={<SortAscendingOutlined />}
-        >
-          {sortOptions.map(option => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
+        <div className="select-wrapper">
+          <Select
+            placeholder="排序方式"
+            style={{ width: '100%' }}
+            value={params.sortOrder}
+            onChange={value => onSortOrderChange(value)}
+            allowClear
+            suffixIcon={<SortAscendingOutlined />}
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          >
+            {sortOptions.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
       </Col>
       <Col xs={24} lg={4} style={{ display: 'flex', justifyContent: 'center' }}>
         <Space size="middle">
@@ -104,4 +116,4 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
   );
 };
 
-export default CourseSearchBar; 
+export default CourseSearchBar;

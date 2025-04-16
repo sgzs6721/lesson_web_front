@@ -75,10 +75,16 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
             >
-              <Select placeholder="请选择状态">
-                <Option value="OPERATING">营业中</Option>
-                <Option value="CLOSED">已关闭</Option>
-              </Select>
+              <div className="select-wrapper">
+                <Select
+                  placeholder="请选择状态"
+                  popupMatchSelectWidth={true}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                >
+                  <Option value="OPERATING">营业中</Option>
+                  <Option value="CLOSED">已关闭</Option>
+                </Select>
+              </div>
             </Form.Item>
           </Col>
         </Row>

@@ -12,7 +12,8 @@ import {
   UserDeleteResponse,
   UserStatusUpdateResponse,
   ResetPasswordResponse,
-  RoleListResponse
+  RoleListResponse,
+  UserStatus
 } from './types';
 import { PaginatedResponse } from '../types';
 import { mockApiResponse, mockUsers, mockRoles, mockPaginatedResponse } from './mock';
@@ -206,7 +207,7 @@ export const user = {
         roleId: data.roleId || mockUsers[userIndex].roleId,
         roleName,
         campusId: data.campusId !== undefined ? data.campusId : mockUsers[userIndex].campusId,
-        status: data.status === 'ENABLED' ? UserStatus.ACTIVE : UserStatus.INACTIVE
+        status: data.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED
       };
 
       return null;

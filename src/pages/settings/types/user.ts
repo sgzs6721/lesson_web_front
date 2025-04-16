@@ -14,7 +14,7 @@ export interface User {
     id: number | string;
     name: string | null;
   };
-  status: 'ENABLED' | 'DISABLED' | number;
+  status: 'ENABLED' | 'DISABLED';
   statusText?: string; // 状态文本，用于显示
   createdAt: string;
   lastLogin?: string;

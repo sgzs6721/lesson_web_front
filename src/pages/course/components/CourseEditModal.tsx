@@ -63,13 +63,19 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
               label="课程类型"
               rules={[{ required: true, message: '请选择课程类型' }]}
             >
-              <Select placeholder="请选择课程类型">
-                {categoryOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
+              <div className="select-wrapper">
+                <Select
+                  placeholder="请选择课程类型"
+                  popupMatchSelectWidth={true}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                >
+                  {categoryOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
             </Form.Item>
           </Col>
         </Row>
@@ -94,16 +100,20 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
               label="上课教练"
               rules={[{ required: true, message: '请选择上课教练' }]}
             >
-              <Select 
-                placeholder="请选择上课教练"
-                style={{ width: '100%' }}
-              >
-                {coachOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
+              <div className="select-wrapper">
+                <Select
+                  placeholder="请选择上课教练"
+                  style={{ width: '100%' }}
+                  popupMatchSelectWidth={true}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                >
+                  {coachOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
             </Form.Item>
           </Col>
         </Row>
@@ -151,4 +161,4 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
   );
 };
 
-export default CourseEditModal; 
+export default CourseEditModal;

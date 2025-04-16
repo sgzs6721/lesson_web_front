@@ -42,11 +42,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       if (editingUser && editingUser.status) {
         // 延迟一下再设置，确保模态框已完全渲染
         setTimeout(() => {
-          let statusValue = editingUser.status;
-          if (typeof statusValue === 'string') {
-            statusValue = statusValue.toUpperCase();
-          } else if (typeof statusValue === 'number') {
-            statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
+          let statusValue: 'ENABLED' | 'DISABLED';
+          if (typeof editingUser.status === 'string') {
+            statusValue = editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
+          } else if (typeof editingUser.status === 'number') {
+            statusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
+          } else {
+            statusValue = 'ENABLED';
           }
 
           console.log('在模态框打开时直接设置状态值:', statusValue);
@@ -63,11 +65,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       console.log('状态选项配置:', statusOptions);
 
       // 处理角色数据
-      let roleValue = editingUser.role;
+      let roleValue: string;
       if (typeof editingUser.role === 'object' && editingUser.role !== null) {
         roleValue = String(editingUser.role.id);
-        console.log('处理后的角色值:', roleValue);
+      } else {
+        roleValue = String(editingUser.role);
       }
+      console.log('处理后的角色值:', roleValue);
 
       // 处理校区数据
       let campusValue = editingUser.campus;
@@ -77,18 +81,18 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       }
 
       // 处理状态数据 - 直接使用API返回的status字段
-      let statusValue = editingUser.status;
-      console.log('原始状态值:', statusValue, typeof statusValue);
+      let statusValue: 'ENABLED' | 'DISABLED';
+      console.log('原始状态值:', editingUser.status, typeof editingUser.status);
 
       // 确保状态值是字符串类型的'ENABLED'或'DISABLED'
-      if (typeof statusValue === 'number') {
-        statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
-      } else if (typeof statusValue === 'string') {
+      if (typeof editingUser.status === 'number') {
+        statusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
+      } else if (typeof editingUser.status === 'string') {
         // 如果已经是字符串，确保是大写形式
-        statusValue = statusValue.toUpperCase();
+        statusValue = editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
       } else {
         // 如果状态值无效，使用默认值
-        statusValue = DEFAULT_STATUS;
+        statusValue = DEFAULT_STATUS as 'ENABLED';
       }
       console.log('处理后的状态值:', statusValue);
 
@@ -97,7 +101,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       console.log('状态值在选项中存在:', statusOptionExists);
 
       // 设置表单值 - 使用 realName 而不是 name
-      const formValues = {
+      const formValues: any = {
         name: editingUser.realName || editingUser.name, // 兼容两种字段名
         phone: editingUser.phone,
         role: roleValue,
@@ -163,7 +167,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           if (roleValue === '3') {
             setCampusValue(form.getFieldValue('campus'));
           }
-        }).catch(err => {
+        }).catch((err: any) => {
           console.error('字段验证错误:', err);
         });
       }, 100);
@@ -171,40 +175,52 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   }, [visible, editingUser, form, statusOptions]);
 
   // 使用状态值作为依赖项的状态变量，强制重新渲染
-  const [statusValue, setStatusValue] = useState<string>(() => {
+  const [statusValue, setStatusValue] = useState<'ENABLED' | 'DISABLED' | undefined>(() => {
     // 如果是编辑模式，使用用户的状态
     if (editingUser?.status) {
-      return editingUser.status.toUpperCase();
+      if (typeof editingUser.status === 'string') {
+        return editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
+      }
+      return editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
     }
     // 如果是添加模式，不预选状态，显示占位符
     return undefined;
   });
 
   // 使用角色值作为依赖项的状态变量，强制重新渲染
-  const [roleValue, setRoleValue] = useState<string>(() => {
+  const [roleValue, setRoleValue] = useState<string | undefined>(() => {
     // 如果是编辑模式，使用用户的角色
     if (editingUser?.role) {
-      return editingUser.role.id ? String(editingUser.role.id) : '';
+      if (typeof editingUser.role === 'object' && editingUser.role !== null) {
+        return editingUser.role.id ? String(editingUser.role.id) : '';
+      }
+      return String(editingUser.role);
     }
     // 如果是添加模式，不预选角色，显示占位符
     return undefined;
   });
 
   // 使用校区值作为依赖项的状态变量，强制重新渲染
-  const [campusValue, setCampusValue] = useState<string>(
-    editingUser?.campus?.id && editingUser.campus.id !== -1 ? String(editingUser.campus.id) : ''
-  );
+  const [campusValue, setCampusValue] = useState<string | undefined>(() => {
+    if (editingUser?.campus) {
+      if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
+        return editingUser.campus.id && String(editingUser.campus.id) !== '-1' ? String(editingUser.campus.id) : '';
+      }
+      return String(editingUser.campus) !== '-1' ? String(editingUser.campus) : '';
+    }
+    return '';
+  });
 
   // 当编辑用户变化时，更新状态值、角色值和校区值
   useEffect(() => {
     if (editingUser) {
       // 处理状态值
       if (editingUser.status) {
-        let newStatusValue = editingUser.status;
-        if (typeof newStatusValue === 'string') {
-          newStatusValue = newStatusValue.toUpperCase();
-        } else if (typeof newStatusValue === 'number') {
-          newStatusValue = newStatusValue === 1 ? 'ENABLED' : 'DISABLED';
+        let newStatusValue: 'ENABLED' | 'DISABLED';
+        if (typeof editingUser.status === 'string') {
+          newStatusValue = editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
+        } else {
+          newStatusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
         }
         setStatusValue(newStatusValue);
         console.log('更新状态值状态变量:', newStatusValue);
@@ -227,10 +243,10 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         let newCampusValue = '';
         if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
           // 如果校区ID不是-1，才设置值
-          if (editingUser.campus.id !== -1) {
+          if (String(editingUser.campus.id) !== '-1') {
             newCampusValue = String(editingUser.campus.id);
           }
-        } else if (editingUser.campus !== -1) {
+        } else if (String(editingUser.campus) !== '-1') {
           // 如果校区不是对象，且不是-1，直接使用该值
           newCampusValue = String(editingUser.campus);
         }
@@ -260,9 +276,9 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         name="userForm"
         preserve={false}
         initialValues={{
-          status: editingUser?.status?.toUpperCase() || undefined, // 添加用户时不预选状态
-          role: editingUser?.role?.id ? String(editingUser.role.id) : undefined, // 添加用户时不预选角色
-          campus: editingUser?.campus?.id && editingUser.campus.id !== -1 ? String(editingUser.campus.id) : ''
+          status: editingUser ? (typeof editingUser.status === 'string' ? editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED' : (editingUser.status === 1 ? 'ENABLED' : 'DISABLED')) : undefined, // 添加用户时不预选状态
+          role: editingUser?.role ? (typeof editingUser.role === 'object' ? String(editingUser.role.id) : String(editingUser.role)) : undefined, // 添加用户时不预选角色
+          campus: editingUser?.campus ? (typeof editingUser.campus === 'object' ? (String(editingUser.campus.id) !== '-1' ? String(editingUser.campus.id) : '') : (String(editingUser.campus) !== '-1' ? String(editingUser.campus) : '')) : ''
         }}
         key={`user-form-${editingUser?.id || 'new'}`}
         onValuesChange={(changedValues, allValues) => {
@@ -354,7 +370,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                   onChange={(value) => {
                     console.log('状态已更改为:', value);
                     // 更新状态变量
-                    setStatusValue(value as string);
+                    setStatusValue(value as 'ENABLED' | 'DISABLED');
                     // 直接设置表单值
                     form.setFieldsValue({ status: value });
                   }}
@@ -365,11 +381,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
 
                       // 如果有编辑用户数据，确保状态值正确设置
                       if (editingUser && editingUser.status) {
-                        let statusValue = editingUser.status;
-                        if (typeof statusValue === 'string') {
-                          statusValue = statusValue.toUpperCase();
-                        } else if (typeof statusValue === 'number') {
-                          statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
+                        let statusValue: 'ENABLED' | 'DISABLED';
+                        if (typeof editingUser.status === 'string') {
+                          statusValue = editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
+                        } else if (typeof editingUser.status === 'number') {
+                          statusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
+                        } else {
+                          statusValue = 'ENABLED';
                         }
 
                         // 如果当前值不正确，尝试再次设置
@@ -504,7 +522,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                               let newCampusValue = '';
                               if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
                                 // 如果校区ID不是-1，才设置值
-                                if (editingUser.campus.id !== -1) {
+                                if (String(editingUser.campus.id) !== '-1') {
                                   newCampusValue = String(editingUser.campus.id);
                                 }
                               }

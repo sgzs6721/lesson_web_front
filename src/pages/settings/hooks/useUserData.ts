@@ -38,10 +38,10 @@ export const useUserData = () => {
       const userId = await API.user.create({
         phone: values.phone,
         password: values.phone.substring(values.phone.length - 6), // 默认密码为手机号后6位
-        realName: values.name,
+        realName: values.name || '',
         roleId: typeof values.role === 'object' ? values.role.id : values.role, // 处理对象类型的角色
         campusId: typeof values.campus === 'object' ? values.campus.id : values.campus, // 处理对象类型的校区
-        status: values.status === 'ENABLED' ? UserStatus.ACTIVE : UserStatus.INACTIVE // 添加状态参数
+        status: values.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED // 添加状态参数
       });
 
       // 创建新用户对象
@@ -53,10 +53,12 @@ export const useUserData = () => {
         // 处理校区数据，确保它是一个包含 id 和 name 的对象
         campus: typeof values.campus === 'object'
           ? values.campus
-          : {
+          : values.campus
+          ? {
               id: values.campus,
               name: await getCampusNameById(values.campus)
-            },
+            }
+          : undefined,
         status: DEFAULT_STATUS,
         createdAt: new Date().toISOString().split('T')[0],
       };
@@ -89,8 +91,8 @@ export const useUserData = () => {
 
       // 处理状态
       const status = values.status ?
-        (values.status === 'ENABLED' ? 'ENABLED' : 'DISABLED') :
-        'ENABLED';
+        (values.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED) :
+        UserStatus.ENABLED;
 
       // 构建符合API要求的参数
       const updateParams = {

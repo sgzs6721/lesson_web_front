@@ -1,8 +1,8 @@
 import React from 'react';
 import { Form, Input, Select, Button, Space, Row, Col, DatePicker } from 'antd';
-import { 
-  SearchOutlined, 
-  ReloadOutlined, 
+import {
+  SearchOutlined,
+  ReloadOutlined,
   ExportOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined
@@ -54,34 +54,42 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
         </Col>
         <Col flex={1}>
           <Form.Item style={{ margin: 0, width: '100%' }}>
-            <Select
-              placeholder="选择状态"
-              style={{ width: '100%' }}
-              value={params.selectedStatus}
-              onChange={onStatusChange}
-              allowClear
-            >
-              <Option value="active">在学</Option>
-              <Option value="inactive">停课</Option>
-              <Option value="pending">待处理</Option>
-            </Select>
+            <div className="select-wrapper">
+              <Select
+                placeholder="选择状态"
+                style={{ width: '100%' }}
+                value={params.selectedStatus}
+                onChange={onStatusChange}
+                allowClear
+                popupMatchSelectWidth={true}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+              >
+                <Option value="active">在学</Option>
+                <Option value="inactive">停课</Option>
+                <Option value="pending">待处理</Option>
+              </Select>
+            </div>
           </Form.Item>
         </Col>
         <Col flex={1}>
           <Form.Item style={{ margin: 0, width: '100%' }}>
-            <Select
-              placeholder="选择课程"
-              style={{ width: '100%' }}
-              value={params.selectedCourse}
-              onChange={onCourseChange}
-              allowClear
-            >
-              {courseOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
+            <div className="select-wrapper">
+              <Select
+                placeholder="选择课程"
+                style={{ width: '100%' }}
+                value={params.selectedCourse}
+                onChange={onCourseChange}
+                allowClear
+                popupMatchSelectWidth={true}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+              >
+                {courseOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </div>
           </Form.Item>
         </Col>
         <Col flex={1}>
@@ -99,62 +107,66 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
         </Col>
         <Col flex={1}>
           <Form.Item style={{ margin: 0, width: '100%' }}>
-            <Select
-              placeholder="排序方式"
-              style={{ width: '100%' }}
-              value={params.sortOrder}
-              onChange={onSortOrderChange}
-              allowClear
-            >
-              <Option value="enrollDateAsc">
-                <Space>
-                  <SortAscendingOutlined />
-                  报名日期升序
-                </Space>
-              </Option>
-              <Option value="enrollDateDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  报名日期降序
-                </Space>
-              </Option>
-              <Option value="ageAsc">
-                <Space>
-                  <SortAscendingOutlined />
-                  年龄升序
-                </Space>
-              </Option>
-              <Option value="ageDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  年龄降序
-                </Space>
-              </Option>
-              <Option value="remainingClassesAsc">
-                <Space>
-                  <SortAscendingOutlined />
-                  剩余课时升序
-                </Space>
-              </Option>
-              <Option value="remainingClassesDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  剩余课时降序
-                </Space>
-              </Option>
-              <Option value="lastClassDateAsc">
-                <Space>
-                  <SortAscendingOutlined />
-                  上课时间升序
-                </Space>
-              </Option>
-              <Option value="lastClassDateDesc">
-                <Space>
-                  <SortDescendingOutlined />
-                  上课时间降序
-                </Space>
-              </Option>
-            </Select>
+            <div className="select-wrapper">
+              <Select
+                placeholder="排序方式"
+                style={{ width: '100%' }}
+                value={params.sortOrder}
+                onChange={onSortOrderChange}
+                allowClear
+                popupMatchSelectWidth={true}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+              >
+                <Option value="enrollDateAsc">
+                  <Space>
+                    <SortAscendingOutlined />
+                    报名日期升序
+                  </Space>
+                </Option>
+                <Option value="enrollDateDesc">
+                  <Space>
+                    <SortDescendingOutlined />
+                    报名日期降序
+                  </Space>
+                </Option>
+                <Option value="ageAsc">
+                  <Space>
+                    <SortAscendingOutlined />
+                    年龄升序
+                  </Space>
+                </Option>
+                <Option value="ageDesc">
+                  <Space>
+                    <SortDescendingOutlined />
+                    年龄降序
+                  </Space>
+                </Option>
+                <Option value="remainingClassesAsc">
+                  <Space>
+                    <SortAscendingOutlined />
+                    剩余课时升序
+                  </Space>
+                </Option>
+                <Option value="remainingClassesDesc">
+                  <Space>
+                    <SortDescendingOutlined />
+                    剩余课时降序
+                  </Space>
+                </Option>
+                <Option value="lastClassDateAsc">
+                  <Space>
+                    <SortAscendingOutlined />
+                    上课时间升序
+                  </Space>
+                </Option>
+                <Option value="lastClassDateDesc">
+                  <Space>
+                    <SortDescendingOutlined />
+                    上课时间降序
+                  </Space>
+                </Option>
+              </Select>
+            </div>
           </Form.Item>
         </Col>
         <Col>
@@ -177,4 +189,4 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
   );
 };
 
-export default StudentSearchBar; 
+export default StudentSearchBar;

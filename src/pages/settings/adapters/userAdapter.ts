@@ -37,8 +37,13 @@ const mapRoleToUserRole = (role: string | { id: number | string; name: string })
 };
 
 // 将API用户状态映射到前端用户状态
-const mapStatusToUserStatus = (status: UserStatus): 'ENABLED' | 'DISABLED' => {
-  return status === UserStatus.ACTIVE ? 'ENABLED' : 'DISABLED';
+const mapStatusToUserStatus = (status: UserStatus | string | number): 'ENABLED' | 'DISABLED' => {
+  if (status === 'ENABLED') return 'ENABLED';
+  if (status === 'DISABLED') return 'DISABLED';
+  if (typeof status === 'number') {
+    return status === 1 ? 'ENABLED' : 'DISABLED';
+  }
+  return 'ENABLED';
 };
 
 // 将API用户数据转换为前端用户数据
@@ -114,20 +119,11 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
   }
 
   // 处理状态数据
-  let statusValue = apiUser.status;
-  // 确保状态值是字符串类型的'ENABLED'或'DISABLED'
-  if (typeof statusValue === 'number') {
-    statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
-  } else if (typeof statusValue === 'string') {
-    // 如果已经是字符串，确保是大写形式
-    statusValue = statusValue.toUpperCase();
-    // 确保值是有效的
-    if (statusValue !== 'ENABLED' && statusValue !== 'DISABLED') {
-      statusValue = 'ENABLED'; // 默认启用
-    }
-  } else {
-    // 如果状态值无效，使用默认值
-    statusValue = 'ENABLED';
+  let statusValue: 'ENABLED' | 'DISABLED' = 'ENABLED';
+
+  // 使用映射函数处理状态
+  if (apiUser.status !== undefined) {
+    statusValue = mapStatusToUserStatus(apiUser.status);
   }
 
   const user: User = {
@@ -151,9 +147,9 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
 };
 
 // 将前端用户状态映射到API用户状态
-export const userStatusToApiStatus = (status: 'ENABLED' | 'DISABLED' | number): UserStatus => {
-  if (typeof status === 'number') {
-    return status === 1 ? UserStatus.ACTIVE : UserStatus.INACTIVE;
+export const userStatusToApiStatus = (status: 'ENABLED' | 'DISABLED'): UserStatus => {
+  if (status === 'ENABLED') {
+    return UserStatus.ENABLED;
   }
-  return status === 'ENABLED' ? UserStatus.ACTIVE : UserStatus.INACTIVE;
+  return UserStatus.DISABLED;
 };

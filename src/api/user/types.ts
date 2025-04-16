@@ -3,7 +3,9 @@ import { ApiResponse, PaginatedResponse } from '../types';
 // 用户状态枚举
 export enum UserStatus {
   ACTIVE = 1,
-  INACTIVE = 0
+  INACTIVE = 0,
+  ENABLED = 'ENABLED',
+  DISABLED = 'DISABLED'
 }
 
 // 用户角色类型
@@ -72,7 +74,7 @@ export interface UserUpdateParams {
   roleId: number | string;
   institutionId?: number | string;
   campusId: number | string;
-  status: string; // 'ENABLED' 或 'DISABLED'
+  status: UserStatus; // UserStatus.ENABLED 或 UserStatus.DISABLED
 }
 
 // 用户状态更新参数

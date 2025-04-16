@@ -39,9 +39,11 @@ export const useUserForm = (
     console.log('编辑用户记录:', JSON.stringify(record, null, 2));
 
     // 处理角色数据
-    let roleValue = record.role;
+    let roleValue: string;
     if (typeof record.role === 'object' && record.role !== null) {
       roleValue = String(record.role.id);
+    } else {
+      roleValue = String(record.role);
     }
     console.log('处理后的角色值:', roleValue);
 
@@ -62,7 +64,7 @@ export const useUserForm = (
     // 使用setTimeout确保在模态框渲染后设置表单值
     setTimeout(() => {
       // 设置表单值
-      const formValues = {
+      const formValues: any = {
         name: record.name,
         phone: record.phone,
         role: roleValue,
@@ -100,7 +102,7 @@ export const useUserForm = (
       if (editingUser) {
         // 编辑现有用户
         // 准备更新数据
-        const updateValues = {
+        const updateValues: any = {
           ...values,
           // 确保姓名和电话字段存在
           name: values.name || editingUser.name,

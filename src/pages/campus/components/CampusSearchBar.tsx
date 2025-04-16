@@ -33,16 +33,20 @@ const CampusSearchBar: React.FC<CampusSearchBarProps> = ({
         />
       </Col>
       <Col style={{ flex: '1 1 150px', minWidth: '150px' }}> {/* 状态选择 - flex-grow: 1 */}
-        <Select
-          placeholder="选择状态"
-          style={{ width: '100%' }}
-          value={params.selectedStatus}
-          onChange={value => onStatusChange(value)}
-          allowClear
-        >
-          <Option value="OPERATING">营业中</Option>
-          <Option value="CLOSED">已关闭</Option>
-        </Select>
+        <div className="select-wrapper">
+          <Select
+            placeholder="选择状态"
+            style={{ width: '100%' }}
+            value={params.selectedStatus}
+            onChange={value => onStatusChange(value)}
+            allowClear
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          >
+            <Option value="OPERATING">营业中</Option>
+            <Option value="CLOSED">已关闭</Option>
+          </Select>
+        </div>
       </Col>
       {/* 按钮组 */}
       <Col style={{ flex: 'none' }}> {/* 让按钮组根据内容自适应宽度 */}

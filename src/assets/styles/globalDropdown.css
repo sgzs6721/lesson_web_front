@@ -1,0 +1,33 @@
+/* Global dropdown styles to ensure consistent behavior across the application */
+
+/* Ensure all Select dropdowns match their input width */
+.ant-select-dropdown {
+  min-width: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Fix dropdown positioning */
+.ant-select-dropdown-placement-bottomLeft,
+.ant-select-dropdown-placement-topLeft {
+  left: 0 !important;
+}
+
+/* Ensure all Select components take full width of their container */
+.ant-select {
+  width: 100% !important;
+}
+
+/* Ensure placeholder text is visible */
+.ant-select-selection-placeholder {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.25) !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Select wrapper to help with positioning */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}

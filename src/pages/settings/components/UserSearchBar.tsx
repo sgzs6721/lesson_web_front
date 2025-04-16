@@ -42,55 +42,67 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
       </Col>
 
       <Col style={{ flex: 1, minWidth: '150px' }}>
-        <Select
-          mode="multiple"
-          placeholder="选择角色 (可多选)"
-          style={{ width: '100%' }}
-          value={params.selectedRole}
-          onChange={onRoleChange}
-          allowClear
-          maxTagCount="responsive"
-        >
-          {roleOptions.map(option => (
-            <Option key={option.value} value={option.value}>{option.label}</Option>
-          ))}
-        </Select>
+        <div className="select-wrapper">
+          <Select
+            mode="multiple"
+            placeholder="选择角色 (可多选)"
+            style={{ width: '100%' }}
+            value={params.selectedRole}
+            onChange={onRoleChange}
+            allowClear
+            maxTagCount="responsive"
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          >
+            {roleOptions.map(option => (
+              <Option key={option.value} value={option.value}>{option.label}</Option>
+            ))}
+          </Select>
+        </div>
       </Col>
 
       <Col style={{ flex: 1, minWidth: '150px' }}>
-        <Select
-          mode="multiple"
-          placeholder="选择校区 (可多选)"
-          style={{ width: '100%' }}
-          value={params.selectedCampus}
-          onChange={onCampusChange}
-          allowClear
-          maxTagCount="responsive"
-          loading={campusLoading}
-          notFoundContent={
-            campusLoading ? <Spin size="small" /> :
-            campusError ? <div style={{ color: 'red' }}>加载失败</div> :
-            <div>暂无校区</div>
-          }
-        >
-          {campusOptions.map(option => (
-            <Option key={option.value} value={option.value}>{option.label}</Option>
-          ))}
-        </Select>
+        <div className="select-wrapper">
+          <Select
+            mode="multiple"
+            placeholder="选择校区 (可多选)"
+            style={{ width: '100%' }}
+            value={params.selectedCampus}
+            onChange={onCampusChange}
+            allowClear
+            maxTagCount="responsive"
+            loading={campusLoading}
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+            notFoundContent={
+              campusLoading ? <Spin size="small" /> :
+              campusError ? <div style={{ color: 'red' }}>加载失败</div> :
+              <div>暂无校区</div>
+            }
+          >
+            {campusOptions.map(option => (
+              <Option key={option.value} value={option.value}>{option.label}</Option>
+            ))}
+          </Select>
+        </div>
       </Col>
 
       <Col style={{ flex: 1, minWidth: '150px' }}>
-        <Select
-          placeholder="选择状态"
-          style={{ width: '100%' }}
-          value={params.selectedStatus}
-          onChange={onStatusChange}
-          allowClear
-        >
-          {statusOptions.map(option => (
-            <Option key={option.value} value={option.value}>{option.label}</Option>
-          ))}
-        </Select>
+        <div className="select-wrapper">
+          <Select
+            placeholder="选择状态"
+            style={{ width: '100%' }}
+            value={params.selectedStatus}
+            onChange={onStatusChange}
+            allowClear
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          >
+            {statusOptions.map(option => (
+              <Option key={option.value} value={option.value}>{option.label}</Option>
+            ))}
+          </Select>
+        </div>
       </Col>
 
       <Col style={{ flex: 'none' }}>
