@@ -83,8 +83,8 @@ export const useUserData = () => {
 
       console.log('更新用户原始数据:', { id, values });
 
-      // 处理角色ID
-      const roleId = typeof values.role === 'object' ? values.role.id : values.role;
+      // 处理角色ID - 只有当values中包含角色信息时才处理
+      const roleId = values.role ? (typeof values.role === 'object' ? values.role.id : values.role) : undefined;
 
       // 处理校区ID
       const campusId = typeof values.campus === 'object' ? values.campus.id : values.campus;
@@ -95,15 +95,23 @@ export const useUserData = () => {
         UserStatus.ENABLED;
 
       // 构建符合API要求的参数
-      const updateParams = {
+      const updateParams: any = {
         id: Number(id) || 0,  // 确保是数字
         realName: values.name || '',
         phone: values.phone || '',
-        roleId: Number(roleId) || 0,
         // institutionId 不需要传递
-        campusId: campusId ? Number(campusId) : 0,
         status: status
       };
+
+      // 只有当提供了角色信息时才添加roleId字段
+      if (roleId !== undefined) {
+        updateParams.roleId = Number(roleId) || 0;
+      }
+
+      // 只有当提供了校区信息时才添加campusId字段
+      if (campusId) {
+        updateParams.campusId = Number(campusId) || 0;
+      }
 
       console.log('发送给API的更新参数:', updateParams);
 

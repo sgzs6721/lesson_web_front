@@ -360,7 +360,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             >
               <div className="select-wrapper">
                 <Select
-                  placeholder={editingUser ? '请选择状态' : '请选择状态'}
+                  placeholder={editingUser ? '请选择状态' : '请选择用户状态'}
                   style={{ width: '100%' }}
                   options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
                   popupMatchSelectWidth
@@ -411,7 +411,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             >
               <div className="select-wrapper">
                 <Select
-                  placeholder={editingUser ? '请选择角色' : '请选择角色'}
+                  placeholder={editingUser ? '请选择角色' : '请选择用户角色'}
                   style={{ width: '100%' }}
                   options={roleOptions
                     .filter(option => editingUser ? true : option.value !== '1') // 添加用户时过滤掉超级管理员
@@ -422,6 +422,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                   getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
                   value={roleValue} // 使用角色状态变量作为值
                   key={`role-select-${roleValue || 'default'}`} // 使用角色状态变量作为key
+                  disabled={editingUser && (roleValue === '1' || roleValue === 1)} // 如果是编辑超级管理员，禁用选择框
                   onChange={(value) => {
                     console.log('Role changed to:', value);
                     // 更新角色状态变量
