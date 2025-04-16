@@ -49,13 +49,14 @@ const CoachManagement: React.FC = () => {
     editingCoach,
     selectedAvatar,
     loading: formLoading,
+    detailLoading: formDetailLoading,
     handleAdd,
     handleEdit,
     handleSubmit,
     handleCancel,
     handleAvatarSelect,
     handleGenderChange
-  } = useCoachForm(addCoach, updateCoach);
+  } = useCoachForm(addCoach, updateCoach, () => fetchCoaches(currentPage, pageSize, searchParams));
 
   // 使用详情管理钩子
   const {
@@ -63,6 +64,7 @@ const CoachManagement: React.FC = () => {
     viewingCoach,
     deleteModalVisible,
     recordToDelete,
+    loading: detailLoading,
     showDetail,
     closeDetail,
     showDeleteConfirm,
@@ -102,15 +104,20 @@ const CoachManagement: React.FC = () => {
   // 处理确认删除
   const handleConfirmDelete = () => {
     if (recordToDelete) {
-      deleteCoach(recordToDelete);
-      cancelDelete();
-      // 如果删除后数据不足一页，则回到第一页
-      if (coaches.length === 1 && currentPage > 1) {
-        setCurrentPage(prev => prev - 1);
-        fetchCoaches(currentPage - 1, pageSize, searchParams);
-      } else {
-        fetchCoaches(currentPage, pageSize, searchParams);
-      }
+      deleteCoach(recordToDelete)
+        .then(() => {
+          cancelDelete();
+          // 如果删除后数据不足一页，则回到第一页
+          if (coaches.length === 1 && currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+            fetchCoaches(currentPage - 1, pageSize, searchParams);
+          } else {
+            fetchCoaches(currentPage, pageSize, searchParams);
+          }
+        })
+        .catch(error => {
+          console.error('删除教练失败:', error);
+        });
     }
   };
 
@@ -170,7 +177,7 @@ const CoachManagement: React.FC = () => {
       {/* 编辑/添加模态框 */}
       <CoachEditModal
         visible={visible}
-        loading={formLoading}
+        loading={formLoading || formDetailLoading}
         form={form}
         editingCoach={editingCoach}
         selectedAvatar={selectedAvatar}
@@ -184,6 +191,7 @@ const CoachManagement: React.FC = () => {
       <CoachDetailModal
         visible={detailVisible}
         coach={viewingCoach}
+        loading={detailLoading}
         onCancel={closeDetail}
       />
 
@@ -197,4 +205,4 @@ const CoachManagement: React.FC = () => {
   );
 };
 
-export default CoachManagement; 
+export default CoachManagement;

@@ -1,0 +1,12 @@
+/* 确保下拉选项不会超出容器 */
+.ant-select-item-option-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 确保下拉菜单与输入框对齐 */
+.job-title-select .ant-select-selector,
+.status-select .ant-select-selector {
+  border-radius: 8px !important;
+}

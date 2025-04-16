@@ -7,17 +7,18 @@ export const generateCoachId = (length: number): string => {
 export const getStatusTagInfo = (status: string): { color: string; text: string } => {
   let color = '';
   let text = '';
-  
+
+  // 直接使用大写状态值进行比较
   switch (status) {
-    case 'active':
+    case 'ACTIVE':
       color = 'green';
       text = '在职';
       break;
-    case 'vacation':
+    case 'VACATION':
       color = 'orange';
       text = '休假中';
       break;
-    case 'resigned':
+    case 'RESIGNED':
       color = 'red';
       text = '已离职';
       break;
@@ -25,6 +26,6 @@ export const getStatusTagInfo = (status: string): { color: string; text: string 
       color = 'default';
       text = status;
   }
-  
+
   return { color, text };
-}; 
+};

@@ -1605,4 +1605,22 @@ body {
 
 .stat-highlight-primary {
   color: #3498db;
-} /* 确保管理员信息区域垂直居中 */ .campus-info .user-info { display: flex; align-items: center; height: 100% !important; } .campus-info .campus-name { display: flex; align-items: center; height: 100% !important; } .campus-info-content > div > div:first-child { display: flex !important; align-items: center !important; min-height: 50px !important; }
+} /* 确保管理员信息区域垂直居中 */
+.campus-info .user-info { display: flex; align-items: center; height: 100% !important; }
+.campus-info .campus-name { display: flex; align-items: center; height: 100% !important; }
+.campus-info-content > div > div:first-child { display: flex !important; align-items: center !important; min-height: 50px !important; }
+
+/* 下拉菜单宽度控制 */
+.short-dropdown .ant-select-dropdown-menu {
+  max-width: 160px !important;
+}
+
+.ant-select-dropdown {
+  min-width: auto !important;
+}
+
+.ant-select-dropdown-menu-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

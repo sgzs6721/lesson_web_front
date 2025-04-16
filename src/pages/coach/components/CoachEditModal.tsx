@@ -4,8 +4,8 @@ import { UserOutlined, PhoneOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import { avatarOptions } from '../constants/avatarOptions';
 import { Gender } from '../types/coach';
+import './CoachEditModal.css';
 
-const { Option } = Select;
 const { TextArea } = Input;
 
 interface CoachEditModalProps {
@@ -48,16 +48,20 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
         layout="vertical"
         name="coachForm"
         initialValues={{
-          status: 'active',
+          status: 'ACTIVE',
           experience: 1,
           age: 25,
+          // campusId 从 banner 组件获取
+          baseSalary: 0,
+          socialInsurance: 0,
+          classFee: 0,
           performanceBonus: 0,
           commission: 0,
           dividend: 0,
         }}
       >
         <Divider orientation="left">基本信息</Divider>
-        
+
         <Row gutter={24} justify="space-between">
           <Col span={16}>
             <Row gutter={16}>
@@ -77,8 +81,8 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   rules={[{ required: true, message: '请选择性别' }]}
                 >
                   <Radio.Group onChange={onGenderChange}>
-                    <Radio value="male">男</Radio>
-                    <Radio value="female">女</Radio>
+                    <Radio value="MALE">男</Radio>
+                    <Radio value="FEMALE">女</Radio>
                   </Radio.Group>
                 </Form.Item>
               </Col>
@@ -112,11 +116,18 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   label="职位"
                   rules={[{ required: true, message: '请输入职位' }]}
                 >
-                  <Select placeholder="请选择职位">
-                    <Option value="高级教练">高级教练</Option>
-                    <Option value="中级教练">中级教练</Option>
-                    <Option value="初级教练">初级教练</Option>
-                  </Select>
+                  <Select
+                    placeholder="请选择职位"
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: '高级教练', label: '高级教练' },
+                      { value: '中级教练', label: '中级教练' },
+                      { value: '初级教练', label: '初级教练' }
+                    ]}
+                    popupMatchSelectWidth={true}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    className="job-title-select"
+                  />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -146,15 +157,22 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   label="状态"
                   rules={[{ required: true, message: '请选择状态' }]}
                 >
-                  <Select placeholder="请选择状态">
-                    <Option value="active">在职</Option>
-                    <Option value="vacation">休假中</Option>
-                    <Option value="resigned">已离职</Option>
-                  </Select>
+                  <Select
+                    placeholder="请选择状态"
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: 'ACTIVE', label: '在职' },
+                      { value: 'VACATION', label: '休假中' },
+                      { value: 'RESIGNED', label: '已离职' }
+                    ]}
+                    popupMatchSelectWidth={true}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    className="status-select"
+                  />
                 </Form.Item>
               </Col>
             </Row>
-            
+
             <Form.Item
               name="certifications"
               label="持有证书"
@@ -181,7 +199,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                         <Avatar
                           size={48}
                           src={avatar.url}
-                          style={{ 
+                          style={{
                             cursor: 'pointer',
                             border: selectedAvatar === avatar.url ? '2px solid #1890ff' : 'none'
                           }}
@@ -190,9 +208,9 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                       </Col>
                     ))}
                   </Row>
-                  
+
                   <Divider style={{ margin: '12px 0' }} />
-                  
+
                   <div style={{ fontWeight: 'bold', marginBottom: 8 }}>女性头像</div>
                   <Row gutter={[8, 8]} justify="space-between">
                     {avatarOptions.female.map(avatar => (
@@ -200,7 +218,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                         <Avatar
                           size={48}
                           src={avatar.url}
-                          style={{ 
+                          style={{
                             cursor: 'pointer',
                             border: selectedAvatar === avatar.url ? '2px solid #1890ff' : 'none'
                           }}
@@ -214,9 +232,9 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
-        
+
         <Divider orientation="left" style={{ marginTop: 16 }}>薪资信息</Divider>
-        
+
         <Row gutter={[16, 0]}>
           <Col span={8}>
             <Form.Item
@@ -229,7 +247,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
           </Col>
           <Col span={8}>
             <Form.Item
-              name="socialSecurity"
+              name="socialInsurance"
               label="社保费"
               rules={[{ required: true, message: '请输入社保费' }]}
             >
@@ -238,7 +256,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
           </Col>
           <Col span={8}>
             <Form.Item
-              name="hourlyRate"
+              name="classFee"
               label="课时费"
               rules={[{ required: true, message: '请输入课时费' }]}
             >
@@ -281,4 +299,4 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
   );
 };
 
-export default CoachEditModal; 
+export default CoachEditModal;
