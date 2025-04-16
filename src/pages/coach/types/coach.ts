@@ -1,7 +1,8 @@
 import { Dayjs } from 'dayjs';
+import { CoachGender, CoachStatus } from '../../../api/coach/types';
 
 // 性别类型定义
-export type Gender = 'male' | 'female' | 'MALE' | 'FEMALE';
+export type Gender = CoachGender;
 
 // 教练接口
 export interface Coach {
@@ -14,7 +15,7 @@ export interface Coach {
   jobTitle: string;
   certifications: string[] | string;
   experience: number;
-  status: 'active' | 'vacation' | 'resigned' | 'ACTIVE' | 'VACATION' | 'RESIGNED';
+  status: CoachStatus;
   hireDate: string;
   baseSalary?: number;
   socialInsurance?: number;

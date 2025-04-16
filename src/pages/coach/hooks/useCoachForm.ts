@@ -4,7 +4,7 @@ import { Coach } from '../types/coach';
 import dayjs from 'dayjs';
 import { API } from '@/api';
 import { message } from 'antd';
-import { convertApiCoachToCoach } from './useCoachDetail';
+import { convertApiCoachToCoach, coachDetailCache } from './useCoachDetail';
 
 export const useCoachForm = (
   addCoach: (values: Omit<Coach, 'id'>) => Promise<Coach>,
@@ -22,9 +22,23 @@ export const useCoachForm = (
   const fetchCoachDetail = async (id: string | number) => {
     setDetailLoading(true);
     try {
+      // 检查缓存中是否已有此教练数据
+      const stringId = String(id);
+      if (coachDetailCache[stringId]) {
+        console.log('编辑表单：使用缓存的教练详情数据:', stringId);
+        return coachDetailCache[stringId];
+      }
+
+      // 如果缓存中没有，则调用API获取
       const apiCoachDetail = await API.coach.getDetail(id);
-      // 转换为页面使用的Coach类型
-      return apiCoachDetail ? convertApiCoachToCoach(apiCoachDetail) : null;
+      if (apiCoachDetail) {
+        // 转换为页面使用的Coach类型
+        const coach = convertApiCoachToCoach(apiCoachDetail);
+        // 存入缓存
+        coachDetailCache[stringId] = coach;
+        return coach;
+      }
+      return null;
     } catch (error) {
       message.error('获取教练详情失败');
       console.error('获取教练详情失败:', error);
@@ -40,6 +54,7 @@ export const useCoachForm = (
     // 设置默认值
     form.setFieldsValue({
       status: 'ACTIVE',
+      gender: 'MALE', // 设置默认性别
       experience: 1,
       age: 25,
       // campusId 从 banner 组件获取
@@ -52,24 +67,43 @@ export const useCoachForm = (
     });
     // 打印默认值
     console.log('设置默认值:', form.getFieldsValue());
-    setSelectedAvatar('');
+    
+    // 设置默认头像
+    const { avatarOptions } = require('../constants/avatarOptions');
+    const defaultMaleAvatar = avatarOptions.MALE[0]?.url || avatarOptions.male[0]?.url;
+    setSelectedAvatar(defaultMaleAvatar || '');
+    
     setEditingCoach(null);
     setVisible(true);
   };
 
   // 显示编辑教练模态框
   const handleEdit = async (record: Coach) => {
+    // 先显示模态框和加载状态
+    setVisible(true);
     setDetailLoading(true);
+    form.resetFields(); // 先重置表单，避免显示上一次的数据
+
     try {
-      // 通过API获取最新的教练详情
-      const coachDetail = await fetchCoachDetail(record.id);
+      // 检查缓存中是否已有此教练详情
+      const stringId = String(record.id);
+      let coachDetail;
+      
+      if (coachDetailCache[stringId]) {
+        console.log('编辑表单：使用缓存的教练详情数据:', stringId);
+        coachDetail = coachDetailCache[stringId];
+      } else {
+        // 通过API获取最新的教练详情
+        coachDetail = await fetchCoachDetail(record.id);
+      }
       
       if (!coachDetail) {
         message.error('无法获取教练信息，请重试');
+        setVisible(false);
         return;
       }
       
-      // 使用API返回的最新数据
+      // 使用API返回的最新数据或缓存数据
       const formValues = {
         ...coachDetail,
         hireDate: dayjs(coachDetail.hireDate),
@@ -95,11 +129,10 @@ export const useCoachForm = (
       if (coachDetail.avatar) {
         setSelectedAvatar(coachDetail.avatar);
       }
-
-      setVisible(true);
     } catch (error) {
       console.error('加载教练编辑信息失败:', error);
       message.error('加载教练信息失败');
+      setVisible(false);
     } finally {
       setDetailLoading(false);
     }
@@ -160,6 +193,16 @@ export const useCoachForm = (
           // 编辑现有教练
           updateCoach(editingCoach.id, formattedValues)
             .then(() => {
+              // 在成功更新后更新缓存
+              if (editingCoach.id) {
+                // 更新缓存中的数据
+                coachDetailCache[editingCoach.id] = {
+                  ...coachDetailCache[editingCoach.id],
+                  ...formattedValues,
+                  id: editingCoach.id
+                };
+                console.log('教练数据已更新到缓存:', editingCoach.id);
+              }
               handleCancel();
               if (onSuccess) onSuccess();
             })
@@ -169,7 +212,12 @@ export const useCoachForm = (
         } else {
           // 添加新教练
           addCoach(formattedValues)
-            .then(() => {
+            .then((newCoach) => {
+              // 将新添加的教练添加到缓存
+              if (newCoach && newCoach.id) {
+                coachDetailCache[newCoach.id] = newCoach;
+                console.log('新教练数据已添加到缓存:', newCoach.id);
+              }
               handleCancel();
               if (onSuccess) onSuccess();
             })
@@ -203,12 +251,32 @@ export const useCoachForm = (
   const handleGenderChange = (value: any) => {
     const gender = value.target ? value.target.value : value;
     console.log('Gender changed to:', gender);
-    // 可以在这里添加性别变化时的默认头像逻辑
+    
     // 确保性别值为大写的MALE或FEMALE
     if (gender === 'male') {
       form.setFieldsValue({ gender: 'MALE' });
     } else if (gender === 'female') {
       form.setFieldsValue({ gender: 'FEMALE' });
+    }
+    
+    // 如果用户还没有选择头像，则根据性别设置默认头像
+    if (!selectedAvatar || selectedAvatar === '') {
+      // 导入头像选项
+      const { avatarOptions } = require('../constants/avatarOptions');
+      
+      if (gender === 'MALE' || gender === 'male') {
+        // 选择第一个男性头像
+        const defaultMaleAvatar = avatarOptions.MALE[0]?.url || avatarOptions.male[0]?.url;
+        if (defaultMaleAvatar) {
+          setSelectedAvatar(defaultMaleAvatar);
+        }
+      } else if (gender === 'FEMALE' || gender === 'female') {
+        // 选择第一个女性头像
+        const defaultFemaleAvatar = avatarOptions.FEMALE[0]?.url || avatarOptions.female[0]?.url;
+        if (defaultFemaleAvatar) {
+          setSelectedAvatar(defaultFemaleAvatar);
+        }
+      }
     }
   };
 

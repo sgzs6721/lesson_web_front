@@ -1,8 +1,10 @@
 import React from 'react';
-import { Modal, Descriptions, Avatar, Tag, Space, Button, Spin, Divider } from 'antd';
+import { Modal, Descriptions, Avatar, Tag, Space, Button, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo } from '../utils/formatters';
+import { CoachGender } from '../../../api/coach/types';
+import { UserOutlined } from '@ant-design/icons';
 
 interface CoachDetailModalProps {
   visible: boolean;
@@ -25,6 +27,13 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
     return <Tag color={color}>{text}</Tag>;
   };
 
+  // 自定义标题样式
+  const titleStyle = {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    display: 'block'
+  };
+
   return (
     <Modal
       title="教练详情"
@@ -40,15 +49,27 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
       <Spin spinning={loading}>
         {coach ? (
           <>
-            <Descriptions bordered column={2} size="small" title="基本信息">
+            <Descriptions 
+              bordered 
+              column={2} 
+              size="small" 
+              title={<div style={titleStyle as React.CSSProperties}>基本信息</div>}
+            >
               <Descriptions.Item label="教练ID" span={1}>{coach.id}</Descriptions.Item>
               <Descriptions.Item label="年龄" span={1}>{coach.age}</Descriptions.Item>
 
               <Descriptions.Item label="姓名" span={1}>
                 <Space>
-                  {coach.avatar && <Avatar size="small" src={coach.avatar} />}
+                  <Avatar 
+                    size="small" 
+                    src={coach.avatar}
+                    style={{
+                      backgroundColor: !coach.avatar ? (coach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined
+                    }}
+                    icon={!coach.avatar && <UserOutlined />}
+                  />
                   {coach.name}
-                  {coach.gender === 'MALE' || coach.gender === 'male' ?
+                  {coach.gender === CoachGender.MALE ?
                     <span style={{ color: '#1890ff' }}>♂</span> :
                     <span style={{ color: '#eb2f96' }}>♀</span>
                   }
@@ -79,9 +100,13 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               </Descriptions.Item>
             </Descriptions>
             
-            <Divider style={{ margin: '16px 0' }} />
-            
-            <Descriptions bordered column={2} size="small" title="薪资信息">
+            <Descriptions 
+              bordered 
+              column={2} 
+              size="small" 
+              title={<div style={titleStyle as React.CSSProperties}>薪资信息</div>}
+              style={{ marginTop: '24px' }}
+            >
               {coach.salaryEffectiveDate && (
                 <Descriptions.Item label="薪资生效日期" span={2}>
                   {coach.salaryEffectiveDate}

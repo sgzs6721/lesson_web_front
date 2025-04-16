@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Coach } from '../types/coach';
 import { message } from 'antd';
 import { API } from '@/api';
@@ -45,6 +45,9 @@ export const convertApiCoachToCoach = (apiCoach: any): Coach => {
   };
 };
 
+// 创建一个共享的教练详情缓存，用于跨组件共享
+export const coachDetailCache: Record<string, Coach> = {};
+
 export const useCoachDetail = () => {
   const [detailVisible, setDetailVisible] = useState(false);
   const [viewingCoach, setViewingCoach] = useState<Coach | null>(null);
@@ -56,9 +59,23 @@ export const useCoachDetail = () => {
   const fetchCoachDetail = async (id: string | number) => {
     setLoading(true);
     try {
+      // 检查缓存中是否已有此教练数据
+      const stringId = String(id);
+      if (coachDetailCache[stringId]) {
+        console.log('使用缓存的教练详情数据:', stringId);
+        return coachDetailCache[stringId];
+      }
+
+      // 如果缓存中没有，则调用API获取
       const apiCoachDetail = await API.coach.getDetail(id);
-      // 转换为页面使用的Coach类型
-      return apiCoachDetail ? convertApiCoachToCoach(apiCoachDetail) : null;
+      if (apiCoachDetail) {
+        // 转换为页面使用的Coach类型
+        const coach = convertApiCoachToCoach(apiCoachDetail);
+        // 存入缓存
+        coachDetailCache[stringId] = coach;
+        return coach;
+      }
+      return null;
     } catch (error) {
       message.error('获取教练详情失败');
       console.error('获取教练详情失败:', error);
@@ -70,16 +87,53 @@ export const useCoachDetail = () => {
 
   // 显示教练详情
   const showDetail = async (record: Coach) => {
+    // 先显示模态框和加载状态
+    setDetailVisible(true);
+    setLoading(true);
+    setViewingCoach(null); // 先清空数据，显示加载中
+
     try {
+      // 检查缓存中是否已有此教练详情
+      const stringId = String(record.id);
+      if (coachDetailCache[stringId]) {
+        console.log('使用缓存的教练详情数据:', stringId);
+        setViewingCoach(coachDetailCache[stringId]);
+        setLoading(false);
+        return;
+      }
+
       // 通过API获取完整的教练详情
       const coachDetail = await fetchCoachDetail(record.id);
       if (coachDetail) {
         setViewingCoach(coachDetail);
-        setDetailVisible(true);
+      } else {
+        // 如果获取详情失败，则关闭模态框
+        message.error('无法获取教练详情');
+        setDetailVisible(false);
       }
     } catch (error) {
       console.error('显示教练详情失败:', error);
+      message.error('获取教练详情失败');
+      setDetailVisible(false);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // 清除特定ID的缓存
+  const clearCoachCache = (id: string) => {
+    if (coachDetailCache[id]) {
+      delete coachDetailCache[id];
+      console.log('已清除教练详情缓存:', id);
+    }
+  };
+
+  // 清除所有缓存
+  const clearAllCoachCache = () => {
+    Object.keys(coachDetailCache).forEach(key => {
+      delete coachDetailCache[key];
+    });
+    console.log('已清除所有教练详情缓存');
   };
 
   // 关闭详情模态框
@@ -111,5 +165,7 @@ export const useCoachDetail = () => {
     closeDetail,
     showDeleteConfirm,
     cancelDelete,
+    clearCoachCache,
+    clearAllCoachCache
   };
 }; 

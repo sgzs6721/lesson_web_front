@@ -10,3 +10,24 @@
 .status-select .ant-select-selector {
   border-radius: 8px !important;
 }
+
+/* 美化Modal标题样式 */
+.ant-modal-title {
+  padding: 6px 0 !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #333 !important;
+}
+
+/* 增强标题区域 */
+.ant-modal-header {
+  border-radius: 8px 8px 0 0 !important;
+  padding: 8px 16px !important;
+}
+
+/* 基本信息和薪资信息标题样式 */
+.section-title {
+  text-align: center !important;
+  font-weight: bold !important;
+  margin-bottom: 16px !important;
+}

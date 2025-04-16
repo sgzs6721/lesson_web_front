@@ -1,10 +1,11 @@
 import React from 'react';
-import { Table, Button, Space, Tooltip } from 'antd';
-import { EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tooltip, Avatar } from 'antd';
+import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo } from '../utils/formatters';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
+import { CoachGender } from '../../../api/coach/types';
 
 interface CoachTableProps {
   data: Coach[];
@@ -48,23 +49,19 @@ const CoachTable: React.FC<CoachTableProps> = ({
       key: 'name',
       align: 'center',
       render: (text, record) => (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {record.avatar && (
-            <img 
-              src={record.avatar} 
-              alt={text} 
-              style={{ 
-                width: 32, 
-                height: 32, 
-                marginRight: 8, 
-                borderRadius: '50%',
-                objectFit: 'cover'
-              }}
-            />
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+          <Avatar 
+            src={record.avatar} 
+            style={{ 
+              marginRight: 8,
+              backgroundColor: record.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96'
+            }}
+            icon={<UserOutlined />}
+            size={32}
+          />
           <span>
             {text} 
-            {record.gender === 'male' ? 
+            {record.gender === CoachGender.MALE ? 
               <span style={{ color: '#1890ff', marginLeft: 5 }}>♂</span> : 
               <span style={{ color: '#eb2f96', marginLeft: 5 }}>♀</span>
             }
@@ -109,12 +106,25 @@ const CoachTable: React.FC<CoachTableProps> = ({
       render: (years) => `${years}年`,
     },
     {
-      title: '证书',
+      title: <div style={{ textAlign: 'center' }}>证书</div>,
       dataIndex: 'certifications',
       key: 'certifications',
       ellipsis: true,
       width: 200,
-      align: 'left',
+      align: 'center',
+      render: (certifications) => {
+        if (!certifications || 
+            (Array.isArray(certifications) && certifications.length === 0) || 
+            (typeof certifications === 'string' && certifications.trim() === '')) {
+          return <div style={{ color: '#999', textAlign: 'center' }}>无</div>;
+        }
+        
+        if (Array.isArray(certifications)) {
+          return <div style={{ textAlign: 'center' }}>{certifications.join('、')}</div>;
+        }
+        
+        return <div style={{ textAlign: 'center' }}>{certifications}</div>;
+      }
     },
     {
       title: '状态',

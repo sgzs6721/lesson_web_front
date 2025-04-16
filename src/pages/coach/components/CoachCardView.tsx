@@ -1,8 +1,9 @@
 import React from 'react';
 import { List, Card, Avatar, Row, Col, Divider, Tooltip } from 'antd';
-import { EditOutlined, DeleteOutlined, PhoneOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PhoneOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo } from '../utils/formatters';
+import { CoachGender } from '../../../api/coach/types';
 
 interface CoachCardViewProps {
   data: Coach[];
@@ -79,14 +80,18 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
               <Avatar 
                 size={64} 
                 src={coach.avatar}
-                style={{ marginRight: 16 }}
+                style={{ 
+                  marginRight: 16,
+                  backgroundColor: !coach.avatar ? (coach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined
+                }}
+                icon={!coach.avatar && <UserOutlined />}
               />
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <Row gutter={[8, 4]} justify="space-between">
                   <Col span={14}>
                     <div style={{ fontWeight: 'bold', fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {coach.name}
-                      {coach.gender === 'male' ? 
+                      {coach.gender === CoachGender.MALE ? 
                         <span style={{ color: '#1890ff', marginLeft: 5 }}>♂</span> : 
                         <span style={{ color: '#eb2f96', marginLeft: 5 }}>♀</span>
                       }

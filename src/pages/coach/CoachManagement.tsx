@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Card } from 'antd';
 import CoachViewToggle from './components/CoachViewToggle';
 import CoachSearchBar from './components/CoachSearchBar';
@@ -20,6 +20,7 @@ const CoachManagement: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const initialLoadRef = useRef(true);
 
   // 使用数据管理钩子
   const {
@@ -73,8 +74,12 @@ const CoachManagement: React.FC = () => {
 
   // 初始加载
   useEffect(() => {
-    fetchCoaches(currentPage, pageSize);
-  }, []);
+    // 使用ref确保只在初次渲染时加载数据
+    if (initialLoadRef.current) {
+      fetchCoaches(currentPage, pageSize);
+      initialLoadRef.current = false;
+    }
+  }, [currentPage, pageSize, fetchCoaches]);
 
   // 处理查询
   const handleSearch = () => {
