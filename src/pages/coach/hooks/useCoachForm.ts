@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { API } from '@/api';
 import { message } from 'antd';
 import { convertApiCoachToCoach, coachDetailCache } from './useCoachDetail';
+import { avatarOptions } from '../constants/avatarOptions';
 
 export const useCoachForm = (
   addCoach: (values: Omit<Coach, 'id'>) => Promise<Coach>,
@@ -69,8 +70,7 @@ export const useCoachForm = (
     console.log('设置默认值:', form.getFieldsValue());
     
     // 设置默认头像
-    const { avatarOptions } = require('../constants/avatarOptions');
-    const defaultMaleAvatar = avatarOptions.MALE[0]?.url || avatarOptions.male[0]?.url;
+    const defaultMaleAvatar = avatarOptions.MALE?.[0]?.url || avatarOptions.male?.[0]?.url;
     setSelectedAvatar(defaultMaleAvatar || '');
     
     setEditingCoach(null);
@@ -261,18 +261,15 @@ export const useCoachForm = (
     
     // 如果用户还没有选择头像，则根据性别设置默认头像
     if (!selectedAvatar || selectedAvatar === '') {
-      // 导入头像选项
-      const { avatarOptions } = require('../constants/avatarOptions');
-      
       if (gender === 'MALE' || gender === 'male') {
         // 选择第一个男性头像
-        const defaultMaleAvatar = avatarOptions.MALE[0]?.url || avatarOptions.male[0]?.url;
+        const defaultMaleAvatar = avatarOptions.MALE?.[0]?.url || avatarOptions.male?.[0]?.url;
         if (defaultMaleAvatar) {
           setSelectedAvatar(defaultMaleAvatar);
         }
       } else if (gender === 'FEMALE' || gender === 'female') {
         // 选择第一个女性头像
-        const defaultFemaleAvatar = avatarOptions.FEMALE[0]?.url || avatarOptions.female[0]?.url;
+        const defaultFemaleAvatar = avatarOptions.FEMALE?.[0]?.url || avatarOptions.female?.[0]?.url;
         if (defaultFemaleAvatar) {
           setSelectedAvatar(defaultFemaleAvatar);
         }

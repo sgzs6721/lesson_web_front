@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Modal, Form, Input, Radio, Select, DatePicker, Row, Col, Divider, Avatar, Spin } from 'antd';
 import { UserOutlined, PhoneOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
@@ -31,6 +31,25 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
   onAvatarSelect,
   onGenderChange
 }) => {
+  // 监听gender字段变化
+  const gender = Form.useWatch('gender', form);
+  
+  // 使用useMemo处理头像背景色，避免在表单未准备好时使用form.getFieldValue
+  const avatarStyle = useMemo(() => {
+    // 如果有选择头像，则不需要设置背景色
+    if (selectedAvatar) {
+      return { marginBottom: 16 };
+    }
+    
+    // 使用监听到的gender值，如果不存在则使用默认值
+    const currentGender = gender || 'MALE';
+    
+    return {
+      marginBottom: 16,
+      backgroundColor: currentGender === 'MALE' ? '#1890ff' : '#eb2f96'
+    };
+  }, [selectedAvatar, gender]);
+
   return (
     <Modal
       title={
@@ -209,10 +228,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   <Avatar
                     size={100}
                     src={selectedAvatar}
-                    style={{ 
-                      marginBottom: 16,
-                      backgroundColor: !selectedAvatar ? (form.getFieldValue('gender') === 'MALE' ? '#1890ff' : '#eb2f96') : undefined
-                    }}
+                    style={avatarStyle}
                     icon={!selectedAvatar && <UserOutlined />}
                   />
                 </div>
