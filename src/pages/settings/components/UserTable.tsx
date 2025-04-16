@@ -140,9 +140,22 @@ const UserTable: React.FC<UserTableProps> = ({
       key: 'createdAt',
       align: 'center' as const,
       render: (createdAt: string, record: User) => {
-        // 如果是 ISO 格式，取前 10 位
+        // 优先使用 createdTime 字段，它包含完整的时间信息
+        if (record.createdTime) {
+          return record.createdTime;
+        }
+        // 如果是 ISO 格式，保留完整时间
         if (createdAt && createdAt.includes('T')) {
-          return createdAt.split('T')[0];
+          const date = new Date(createdAt);
+          return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          }).replace(/\//g, '-');
         }
         return createdAt || '-';
       }
@@ -152,10 +165,23 @@ const UserTable: React.FC<UserTableProps> = ({
       dataIndex: 'lastLogin',
       key: 'lastLogin',
       align: 'center' as const,
-      render: (lastLogin?: string) => {
-        // 如果是 ISO 格式，取前 10 位
+      render: (lastLogin: string | undefined, record: User) => {
+        // 优先使用 lastLoginTime 字段，它包含完整的时间信息
+        if (record.lastLoginTime) {
+          return record.lastLoginTime;
+        }
+        // 如果是 ISO 格式，保留完整时间
         if (lastLogin && lastLogin.includes('T')) {
-          return lastLogin.split('T')[0];
+          const date = new Date(lastLogin);
+          return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          }).replace(/\//g, '-');
         }
         return lastLogin || '-';
       }

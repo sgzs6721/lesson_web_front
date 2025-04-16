@@ -92,30 +92,30 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
     };
   }
 
-  // 处理日期格式
+  // 处理日期格式 - 保留完整时间信息（包含时分秒）
   let createdAt = '';
   if (apiUser.createdTime) {
-    // 如果是 ISO 格式，取前 10 位
-    if (apiUser.createdTime.includes('T')) {
-      createdAt = apiUser.createdTime.split('T')[0];
-    } else {
-      // 如果是普通日期格式，取空格前的部分
-      createdAt = apiUser.createdTime.split(' ')[0];
-    }
+    // 直接使用原始时间字符串，不做处理
+    createdAt = apiUser.createdTime;
   } else {
-    createdAt = new Date().toISOString().split('T')[0];
+    // 如果没有创建时间，使用当前时间
+    const now = new Date();
+    createdAt = now.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(/\//g, '-');
   }
 
-  // 处理最后登录时间
+  // 处理最后登录时间 - 保留完整时间信息（包含时分秒）
   let lastLogin = undefined;
   if (apiUser.lastLoginTime) {
-    // 如果是 ISO 格式，取前 10 位
-    if (apiUser.lastLoginTime.includes('T')) {
-      lastLogin = apiUser.lastLoginTime.split('T')[0];
-    } else {
-      // 如果是普通日期格式，取空格前的部分
-      lastLogin = apiUser.lastLoginTime.split(' ')[0];
-    }
+    // 直接使用原始时间字符串，不做处理
+    lastLogin = apiUser.lastLoginTime;
   }
 
   // 处理状态数据
