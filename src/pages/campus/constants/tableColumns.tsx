@@ -33,12 +33,17 @@ export const getTableColumns = (
     title: '联系方式',
     key: 'contact',
     align: 'center',
-    render: (_, record) => (
-      <>
-        <div>{record.contactPerson || '未设置'}</div>
-        <div>{record.phone || '未设置'}</div>
-      </>
-    ),
+    render: (_, record) => {
+      // 打印记录信息，用于调试
+      console.log('校区联系方式数据:', record);
+
+      return (
+        <>
+          <div>{record.managerName || '未设置'}</div>
+          <div>{record.managerPhone || '未设置'}</div>
+        </>
+      );
+    },
   },
   {
     title: '校区规模',

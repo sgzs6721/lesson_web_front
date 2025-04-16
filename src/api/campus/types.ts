@@ -36,11 +36,6 @@ export interface Campus {
 export interface CampusCreateParams {
   name: string;
   address: string;
-  phone: string;
-  contactPerson?: string;
-  capacity?: number;
-  area?: number;
-  facilities?: string[];
   status?: 'OPERATING' | 'CLOSED';
   monthlyRent?: number;
   propertyFee?: number;

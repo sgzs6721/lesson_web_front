@@ -101,9 +101,21 @@ export const campus = {
       mockCampuses.push(newCampus);
       return newId;
     }
+
+    // 打印请求数据，用于调试
+    console.log('API调用前的校区数据:', data);
+
+    // 确保状态值正确
+    const requestData = {
+      ...data,
+      status: data.status || 'OPERATING'
+    };
+
+    console.log('API调用前的最终校区数据:', requestData);
+
     return request(`${CAMPUS_API_PATHS.CREATE}`, {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(requestData)
     });
   },
 

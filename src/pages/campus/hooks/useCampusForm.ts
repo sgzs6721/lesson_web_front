@@ -27,17 +27,26 @@ export const useCampusForm = (
     // 先设置初始编辑状态
     setEditingCampus(record);
 
+    // 打印记录中的状态值，用于调试
+    console.log('编辑校区时的原始状态值:', record.status);
+
     // 先用记录中的数据填充表单，以便立即显示
     form.setFieldsValue({
       name: record.name,
       address: record.address,
-      status: record.status,
+      status: record.status, // 确保使用记录中的状态值
       monthlyRent: record.monthlyRent || 0,
       propertyFee: record.propertyFee || 0,
       utilityFee: record.utilityFee || 0,
       contactPerson: record.contactPerson || '',
       phone: record.phone || ''
     });
+
+    // 再次确认状态值已正确设置
+    setTimeout(() => {
+      const currentStatus = form.getFieldValue('status');
+      console.log('表单设置后的状态值:', currentStatus);
+    }, 0);
 
     // 立即显示模态框
     setVisible(true);
@@ -76,11 +85,14 @@ export const useCampusForm = (
           utilityFeeValue = (detailData as any).utilitiesFee;
         }
 
+        // 打印详情中的状态值，用于调试
+        console.log('校区详情中的状态值:', detailData.status);
+
         // 设置表单字段值
         const formValues = {
           name: detailData.name,
           address: detailData.address,
-          status: detailData.status,
+          status: detailData.status, // 确保使用详情中的状态值
           monthlyRent: detailData.monthlyRent || 0,
           propertyFee: detailData.propertyFee || 0,
           utilityFee: utilityFeeValue,
@@ -90,6 +102,12 @@ export const useCampusForm = (
 
         console.log('设置表单字段值:', formValues);
         form.setFieldsValue(formValues);
+
+        // 再次确认状态值已正确设置
+        setTimeout(() => {
+          const currentStatus = form.getFieldValue('status');
+          console.log('详情加载后的状态值:', currentStatus);
+        }, 0);
       })
       .catch(error => {
         console.error('获取校区详情失败:', error);
@@ -109,14 +127,12 @@ export const useCampusForm = (
       if (editingCampus) {
         // 编辑现有校区
         try {
-          // 提取联系人和联系电话信息
+          // 提取表单字段值
           const { contactPerson, phone, utilityFee, ...otherValues } = values;
 
-          // 将联系人和联系电话信息存储到校区对象中
+          // 准备校区更新数据，不包含 contactPerson 和 phone
           const updateData = {
             ...otherValues,
-            contactPerson, // 保存联系人字段
-            phone, // 保存联系电话字段
             utilityFee, // 保存固定水电费字段
             utilitiesFee: utilityFee, // 同时保存 utilitiesFee 字段，以兼容后端
           };
@@ -136,14 +152,20 @@ export const useCampusForm = (
       } else {
         // 添加新校区
         try {
-          // 提取联系人和联系电话信息
+          // 提取表单字段值
           const { contactPerson, phone, utilityFee, ...otherValues } = values;
 
-          // 将联系人和联系电话信息存储到校区对象中
+          // 打印表单中的状态值，用于调试
+          console.log('表单提交时的状态值:', otherValues.status);
+
+          // 确保状态值正确
+          const status = otherValues.status || 'OPERATING';
+          console.log('最终使用的状态值:', status);
+
+          // 准备校区创建数据，不包含 contactPerson、phone、area 和 facilities
           const createData = {
             ...otherValues,
-            contactPerson, // 保存联系人字段
-            phone, // 保存联系电话字段
+            status, // 确保状态值正确
             utilityFee, // 保存固定水电费字段
             utilitiesFee: utilityFee, // 同时保存 utilitiesFee 字段，以兼容后端
           };

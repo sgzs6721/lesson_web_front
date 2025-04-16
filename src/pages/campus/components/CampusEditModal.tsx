@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select, InputNumber, Typography, Row, Col, Spin } from 'antd';
 import { HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Campus } from '../types/campus';
@@ -22,6 +22,15 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
   onCancel,
   onSubmit
 }) => {
+  // 监听编辑校区变化，确保状态值正确设置
+  useEffect(() => {
+    if (editingCampus) {
+      console.log('编辑校区变化，状态值:', editingCampus.status);
+      // 确保状态值正确设置
+      form.setFieldValue('status', editingCampus.status);
+    }
+  }, [editingCampus, form]);
+
   return (
     <Modal
       title={<div style={{ fontSize: '18px', fontWeight: 'bold' }}>{editingCampus ? '编辑校区' : '添加校区'}</div>}
@@ -44,7 +53,7 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
           layout="vertical"
           name="campusForm"
           initialValues={{
-            status: 'OPERATING',
+            status: 'OPERATING', // 默认状态为营业中
             monthlyRent: 0,
             propertyFee: 0,
             utilityFee: 0,
@@ -74,12 +83,19 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
               name="status"
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
+              initialValue={editingCampus?.status || 'OPERATING'}
             >
               <div className="select-wrapper">
                 <Select
                   placeholder="请选择状态"
                   popupMatchSelectWidth={true}
                   getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  onChange={(value) => {
+                    console.log('状态选择改变为:', value);
+                    // 确保表单值被正确设置
+                    form.setFieldValue('status', value);
+                  }}
+                  value={form.getFieldValue('status')}
                 >
                   <Option value="OPERATING">营业中</Option>
                   <Option value="CLOSED">已关闭</Option>

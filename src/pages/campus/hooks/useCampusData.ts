@@ -165,20 +165,25 @@ export const useCampusData = () => {
     try {
       setLoading(true);
 
-      // 准备请求数据
+      // 打印表单中的状态值，用于调试
+      console.log('表单中的状态值:', values.status);
+
+      // 准备请求数据 - 只包含必要的字段，不包含 area、contactPerson、facilities、phone
       const campusData = {
         name: values.name || '',
         address: values.address || '',
-        phone: values.phone || '',
-        contactPerson: values.contactPerson || '',
+        // 确保状态值正确传递，不要覆盖用户选择
         status: values.status || 'OPERATING',
         monthlyRent: values.monthlyRent || 0,
         propertyFee: values.propertyFee || 0,
         utilityFee: values.utilityFee || (values as any).utilitiesFee || 0, // 兼容表单字段名
-        capacity: 200, // 使用默认值
-        area: 1000, // 使用默认值
-        facilities: [] // 使用默认空数组
       };
+
+      // 再次确认状态值
+      console.log('最终发送给后端的状态值:', campusData.status);
+
+      // 打印请求数据，用于调试
+      console.log('发送给后端的校区数据:', campusData);
 
       // 调用API创建校区
       const newCampusId = await API.campus.create(campusData);
