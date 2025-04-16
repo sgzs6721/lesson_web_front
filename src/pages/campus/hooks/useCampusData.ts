@@ -194,8 +194,6 @@ export const useCampusData = () => {
         id: newCampusId,
         name: campusData.name,
         address: campusData.address,
-        phone: campusData.phone,
-        contactPerson: campusData.contactPerson,
         status: campusData.status as 'OPERATING' | 'CLOSED',
         monthlyRent: campusData.monthlyRent,
         propertyFee: campusData.propertyFee,
@@ -205,9 +203,6 @@ export const useCampusData = () => {
         coachCount: 0,
         courseCount: 0,
         pendingLessonCount: 0,
-        capacity: campusData.capacity,
-        area: campusData.area,
-        facilities: campusData.facilities,
         image: '',
       };
 

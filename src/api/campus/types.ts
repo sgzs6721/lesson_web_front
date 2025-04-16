@@ -40,6 +40,12 @@ export interface CampusCreateParams {
   monthlyRent?: number;
   propertyFee?: number;
   utilityFee?: number;
+  // 以下属性在前端使用，但实际API请求中不需要
+  phone?: string;
+  contactPerson?: string;
+  capacity?: number;
+  area?: number;
+  facilities?: string[];
 }
 
 // 校区查询参数

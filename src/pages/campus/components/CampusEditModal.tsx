@@ -24,12 +24,18 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
 }) => {
   // 监听编辑校区变化，确保状态值正确设置
   useEffect(() => {
-    if (editingCampus) {
+    if (editingCampus && editingCampus.status) {
       console.log('编辑校区变化，状态值:', editingCampus.status);
-      // 确保状态值正确设置
-      form.setFieldValue('status', editingCampus.status);
+      // 使用 setTimeout 来避免循环引用
+      setTimeout(() => {
+        // 检查当前表单值是否与 editingCampus 中的状态值不同
+        const currentStatus = form.getFieldValue('status');
+        if (currentStatus !== editingCampus.status) {
+          form.setFieldValue('status', editingCampus.status);
+        }
+      }, 0);
     }
-  }, [editingCampus, form]);
+  }, [editingCampus]);
 
   return (
     <Modal
@@ -83,24 +89,15 @@ const CampusEditModal: React.FC<CampusEditModalProps> = ({
               name="status"
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
-              initialValue={editingCampus?.status || 'OPERATING'}
             >
-              <div className="select-wrapper">
-                <Select
-                  placeholder="请选择状态"
-                  popupMatchSelectWidth={true}
-                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                  onChange={(value) => {
-                    console.log('状态选择改变为:', value);
-                    // 确保表单值被正确设置
-                    form.setFieldValue('status', value);
-                  }}
-                  value={form.getFieldValue('status')}
-                >
-                  <Option value="OPERATING">营业中</Option>
-                  <Option value="CLOSED">已关闭</Option>
-                </Select>
-              </div>
+              <Select
+                placeholder="请选择状态"
+                popupMatchSelectWidth={true}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+              >
+                <Option value="OPERATING">营业中</Option>
+                <Option value="CLOSED">已关闭</Option>
+              </Select>
             </Form.Item>
           </Col>
         </Row>

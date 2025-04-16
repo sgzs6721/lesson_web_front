@@ -1,3 +1,6 @@
+/* Import global dropdown styles */
+@import url('./globalDropdown.css');
+
 :root {
   --primary: #3498db;
   --secondary: #2ecc71;
@@ -9,9 +12,6 @@
   --border: #e9ecef;
   --bg-light: #f5f7fa;
 }
-
-/* Import global dropdown styles */
-@import url('./globalDropdown.css');
 
 * {
   margin: 0;

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { suppressReactRouterWarnings } from './src/plugins/suppressReactRouterWarnings';
+import { suppressReactWarnings } from './src/plugins/suppressReactWarnings';
 
 // 定义API主机常量
 const LESSON_API_HOST = 'http://lesson.devtesting.top';
@@ -25,17 +26,11 @@ export default defineConfig({
   plugins: [
     react(),
     suppressReactRouterWarnings(),
+    suppressReactWarnings(),
   ],
   define: {
     // 禁用 React Router 的 v7_startTransition 警告
     '__REACT_ROUTER_FUTURE_FLAG.v7_startTransition': 'true',
-    // 覆盖 console.warn 来禁止特定警告
-    'console.warn': `(function(msg) {
-      if (typeof msg === 'string' && msg.includes('v7_startTransition')) {
-        return;
-      }
-      return console.warn.apply(console, arguments);
-    })`,
   },
   resolve: {
     alias: {
