@@ -119,9 +119,16 @@ export const useUserData = () => {
         status: status
       };
 
-      // 只有当提供了角色信息时才添加roleId字段，且不是超级管理员
-      if (roleId !== undefined && !isSuperAdmin) {
-        updateParams.roleId = Number(roleId) || 0;
+      // 强制添加roleId字段，无论是否是超级管理员
+      if (currentUser && currentUser.role) {
+        // 使用当前用户的角色ID
+        updateParams.roleId = typeof currentUser.role === 'object' ?
+          Number(currentUser.role.id) : Number(currentUser.role);
+        console.log('强制添加角色ID:', updateParams.roleId);
+      } else {
+        // 如果无法获取当前用户的角色ID，使用默认值2（协同管理员）
+        updateParams.roleId = 2;
+        console.log('无法获取角色ID，使用默认值:', updateParams.roleId);
       }
 
       // 只有当提供了校区信息时才添加campusId字段

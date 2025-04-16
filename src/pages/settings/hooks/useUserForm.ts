@@ -111,15 +111,13 @@ export const useUserForm = (
           status: values.status || editingUser.status || 'ENABLED'
         };
 
-        // 判断是否是超级管理员
-        const isSuperAdmin = typeof editingUser.role === 'object'
-          ? String(editingUser.role.id) === '1'
-          : String(editingUser.role) === '1';
-
-        // 如果是超级管理员，删除角色字段，不向后端发送角色信息
-        if (isSuperAdmin) {
-          delete updateValues.role;
-          console.log('编辑超级管理员，删除角色字段');
+        // 确保角色字段存在，无论是否是超级管理员
+        if (!updateValues.role) {
+          // 如果没有角色字段，使用原始用户的角色
+          updateValues.role = typeof editingUser.role === 'object'
+            ? String(editingUser.role.id)
+            : String(editingUser.role);
+          console.log('使用原始用户的角色:', updateValues.role);
         }
 
         // 如果角色不是校区管理员，删除校区字段
