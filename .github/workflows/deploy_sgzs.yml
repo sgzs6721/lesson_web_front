@@ -22,6 +22,15 @@ jobs:
 
       - name: Build
         run: npm run build
+      
+      - name: clean Server Old Files
+        uses: fifsky/ssh-action@master
+        with:
+          command: rm -rf /root/lesson/lesson_web_front/assets/*
+          host: ${{ secrets.HW_TEST_SERVER }}
+          user: ${{ secrets.HW_SERVER_USERNAME }}
+          pass: ${{ secrets.HW_SERVER_PWD }}
+          args: "-tt"
 
       - name: Scp dist To HW Server
         uses: appleboy/scp-action@master
