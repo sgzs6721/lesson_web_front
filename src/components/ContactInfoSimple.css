@@ -1,0 +1,80 @@
+:root {
+  --icon-size: 24px;
+  --value-width: 30px;
+}
+
+/* 合并容器样式 */
+.contact-info-simple-container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  margin: 0 auto;
+  width: 100%;
+  max-width: 220px;
+  position: relative;
+}
+
+/* 内容区域样式 */
+.contact-info-simple-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 合并项目样式 */
+.contact-info-simple-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 15px;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 最后一个项目没有底部边框 */
+.contact-info-simple-item:last-child {
+  border-bottom: none;
+}
+
+/* 鼠标悬停效果 */
+.contact-info-simple-item:hover {
+  background-color: #f9f9f9;
+}
+
+/* 负责人项目样式 */
+.contact-info-simple-item:nth-child(1) {
+  border-left: 3px solid #3498db;
+}
+
+/* 联系电话项目样式 */
+.contact-info-simple-item:nth-child(2) {
+  border-left: 3px solid #2ecc71;
+}
+
+.contact-info-simple-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.contact-info-simple-icon-manager {
+  background-color: rgba(52, 152, 219, 0.15);
+}
+
+.contact-info-simple-icon-phone {
+  background-color: rgba(46, 204, 113, 0.15);
+}
+
+.contact-info-simple-value {
+  font-weight: 600;
+  color: #333;
+  flex-grow: 1;
+  text-align: left;
+}

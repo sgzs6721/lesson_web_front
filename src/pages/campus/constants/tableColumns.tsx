@@ -9,6 +9,7 @@ import {
 import { Campus } from '../types/campus';
 import type { ColumnsType } from 'antd/es/table';
 import CampusScale from '../components/CampusScale';
+import ContactInfoSimple from '@/components/ContactInfoSimple';
 
 // 获取表格列配置
 export const getTableColumns = (
@@ -33,17 +34,13 @@ export const getTableColumns = (
     title: '联系方式',
     key: 'contact',
     align: 'center',
-    render: (_, record) => {
-      // 打印记录信息，用于调试
-      console.log('校区联系方式数据:', record);
-
-      return (
-        <>
-          <div>{record.managerName || '未设置'}</div>
-          <div>{record.managerPhone || '未设置'}</div>
-        </>
-      );
-    },
+    width: 220,
+    render: (_, record) => (
+      <ContactInfoSimple
+        managerName={record.managerName || '未设置'}
+        managerPhone={record.managerPhone || '未设置'}
+      />
+    ),
   },
   {
     title: '校区规模',
