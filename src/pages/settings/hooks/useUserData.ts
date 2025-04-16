@@ -29,6 +29,12 @@ export const useUserData = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // 跟踪当前的搜索参数和分页信息
+  const [currentQueryParams, setCurrentQueryParams] = useState<any>({
+    page: 1,
+    pageSize: 10
+  });
+
   // 添加用户
   const addUser = async (values: Omit<User, 'id' | 'createdAt'>) => {
     try {
@@ -83,8 +89,18 @@ export const useUserData = () => {
 
       console.log('更新用户原始数据:', { id, values });
 
+      // 检查是否是超级管理员
+      // 获取当前用户的完整信息
+      const currentUser = users.find(user => user.id === id);
+      const isSuperAdmin = currentUser && (
+        (typeof currentUser.role === 'object' && currentUser.role !== null && String(currentUser.role.id) === '1') ||
+        (typeof currentUser.role === 'string' && String(currentUser.role) === '1')
+      );
+
+      console.log('当前用户是否超级管理员:', isSuperAdmin);
+
       // 处理角色ID - 只有当values中包含角色信息时才处理
-      const roleId = values.role ? (typeof values.role === 'object' ? values.role.id : values.role) : undefined;
+      const roleId = !isSuperAdmin && values.role ? (typeof values.role === 'object' ? values.role.id : values.role) : undefined;
 
       // 处理校区ID
       const campusId = typeof values.campus === 'object' ? values.campus.id : values.campus;
@@ -103,8 +119,8 @@ export const useUserData = () => {
         status: status
       };
 
-      // 只有当提供了角色信息时才添加roleId字段
-      if (roleId !== undefined) {
+      // 只有当提供了角色信息时才添加roleId字段，且不是超级管理员
+      if (roleId !== undefined && !isSuperAdmin) {
         updateParams.roleId = Number(roleId) || 0;
       }
 
@@ -118,23 +134,31 @@ export const useUserData = () => {
       // 调用API更新用户
       await API.user.update(updateParams);
 
-      // 处理校区数据，确保它是一个包含 id 和 name 的对象
-      let updatedValues = { ...values };
-      if (values.campus && typeof values.campus !== 'object') {
-        updatedValues.campus = {
-          id: values.campus,
-          name: await getCampusNameById(values.campus)
-        };
-      }
+      // 更新成功后，重新获取用户列表数据
+      try {
+        // 使用当前的查询参数重新获取数据
+        // 这样可以保持当前的搜索条件和分页信息
+        const queryParams = { ...currentQueryParams };
 
-      // 更新本地状态
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === id
-            ? { ...user, ...updatedValues }
-            : user
-        )
-      );
+        // 删除搜索参数，因为它不是API需要的参数
+        delete queryParams.searchParams;
+
+        console.log('重新获取用户列表的查询参数:', queryParams);
+
+        // 调用API获取用户列表
+        const result = await API.user.getList(queryParams);
+
+        // 转换数据格式
+        const transformedUsers = result.list.map(apiUserToUser);
+
+        // 更新状态
+        setUsers(transformedUsers);
+        setTotal(result.total);
+
+        console.log('更新用户后重新获取用户列表成功');
+      } catch (error) {
+        console.error('更新用户后重新获取用户列表失败:', error);
+      }
 
       message.success('用户信息已更新');
     } catch (error: any) {
@@ -215,6 +239,12 @@ export const useUserData = () => {
         // 直接使用状态值
         queryParams.status = params.selectedStatus;
       }
+
+      // 更新当前的查询参数
+      setCurrentQueryParams({
+        ...queryParams,
+        searchParams: { ...params }  // 保存原始的搜索参数，以便后续重新查询
+      });
 
       // 调用API获取用户列表
       const result = await API.user.getList(queryParams);

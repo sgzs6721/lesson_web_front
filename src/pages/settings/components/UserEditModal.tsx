@@ -4,10 +4,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { User } from '../types/user';
 import { roleOptions, statusOptions, DEFAULT_STATUS } from '../constants/userOptions';
 import { useRealCampusOptions } from '../hooks/useRealCampusOptions';
-import CustomSelect from '@/components/CustomSelect';
 import './UserEditModal.css';
-
-const { Option } = Select;
 
 interface UserEditModalProps {
   visible: boolean;
@@ -35,7 +32,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   useEffect(() => {
     // 只在模态框可见时加载校区列表
     if (visible) {
-      console.log('模态框打开，加载校区列表');
+      // 加载校区列表
       refreshCampusOptions();
 
       // 如果是编辑模式，确保状态值正确设置
@@ -51,7 +48,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             statusValue = 'ENABLED';
           }
 
-          console.log('在模态框打开时直接设置状态值:', statusValue);
+          // 设置状态值
           form.setFieldsValue({ status: statusValue });
         }, 300);
       }
@@ -61,8 +58,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   // 当编辑用户变化时，确保表单值正确设置
   useEffect(() => {
     if (visible && editingUser) {
-      console.log('编辑用户原始数据:', JSON.stringify(editingUser, null, 2));
-      console.log('状态选项配置:', statusOptions);
+      // 处理编辑用户数据
 
       // 处理角色数据
       let roleValue: string;
@@ -71,18 +67,18 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       } else {
         roleValue = String(editingUser.role);
       }
-      console.log('处理后的角色值:', roleValue);
+      // 角色值已处理
 
       // 处理校区数据
       let campusValue = editingUser.campus;
       if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
         campusValue = String(editingUser.campus.id);
-        console.log('处理后的校区值:', campusValue);
+        // 校区值已处理
       }
 
       // 处理状态数据 - 直接使用API返回的status字段
       let statusValue: 'ENABLED' | 'DISABLED';
-      console.log('原始状态值:', editingUser.status, typeof editingUser.status);
+      // 处理状态值
 
       // 确保状态值是字符串类型的'ENABLED'或'DISABLED'
       if (typeof editingUser.status === 'number') {
@@ -94,11 +90,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         // 如果状态值无效，使用默认值
         statusValue = DEFAULT_STATUS as 'ENABLED';
       }
-      console.log('处理后的状态值:', statusValue);
-
-      // 检查状态值是否在选项中
-      const statusOptionExists = statusOptions.some(option => option.value === statusValue);
-      console.log('状态值在选项中存在:', statusOptionExists);
+      // 确保状态值有效
 
       // 设置表单值 - 使用 realName 而不是 name
       const formValues: any = {
@@ -113,7 +105,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         formValues.campus = campusValue || '';
       }
 
-      console.log('在useEffect中设置表单值:', formValues);
+      // 设置表单值
 
       // 重置表单并设置值
       form.resetFields();
@@ -142,11 +134,10 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             name: 'campus',
             value: campusValue
           }]);
-          console.log('单独设置校区字段后的值:', form.getFieldValue('campus'));
+          // 校区字段已设置
         }
 
-        console.log('单独设置状态字段后的值:', form.getFieldValue('status'));
-        console.log('单独设置角色字段后的值:', form.getFieldValue('role'));
+        // 状态和角色字段已设置
 
         // 强制触发表单更新
         const fieldsToValidate = ['status', 'role'];
@@ -155,18 +146,12 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         }
 
         form.validateFields(fieldsToValidate).then(() => {
-          console.log('字段验证后的值 - 状态:', form.getFieldValue('status'));
-          console.log('字段验证后的值 - 角色:', form.getFieldValue('role'));
-          if (roleValue === '3') {
-            console.log('字段验证后的值 - 校区:', form.getFieldValue('campus'));
-          }
+          // 字段验证完成
 
           // 更新状态变量，确保与表单一致
           setStatusValue(form.getFieldValue('status'));
           setRoleValue(form.getFieldValue('role'));
-          if (roleValue === '3') {
-            setCampusValue(form.getFieldValue('campus'));
-          }
+          // 删除对 setCampusValue 的调用
         }).catch((err: any) => {
           console.error('字段验证错误:', err);
         });
@@ -200,16 +185,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
     return undefined;
   });
 
-  // 使用校区值作为依赖项的状态变量，强制重新渲染
-  const [campusValue, setCampusValue] = useState<string | undefined>(() => {
-    if (editingUser?.campus) {
-      if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
-        return editingUser.campus.id && String(editingUser.campus.id) !== '-1' ? String(editingUser.campus.id) : '';
-      }
-      return String(editingUser.campus) !== '-1' ? String(editingUser.campus) : '';
-    }
-    return '';
-  });
+  // 删除未使用的 campusValue 状态变量
 
   // 当编辑用户变化时，更新状态值、角色值和校区值
   useEffect(() => {
@@ -223,7 +199,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           newStatusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
         }
         setStatusValue(newStatusValue);
-        console.log('更新状态值状态变量:', newStatusValue);
+        // 状态值已更新
       }
 
       // 处理角色值
@@ -235,24 +211,10 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           newRoleValue = String(editingUser.role);
         }
         setRoleValue(newRoleValue);
-        console.log('更新角色值状态变量:', newRoleValue);
+        // 角色值已更新
       }
 
-      // 处理校区值 - 如果id为-1，则设置为空字符串
-      if (editingUser.campus) {
-        let newCampusValue = '';
-        if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
-          // 如果校区ID不是-1，才设置值
-          if (String(editingUser.campus.id) !== '-1') {
-            newCampusValue = String(editingUser.campus.id);
-          }
-        } else if (String(editingUser.campus) !== '-1') {
-          // 如果校区不是对象，且不是-1，直接使用该值
-          newCampusValue = String(editingUser.campus);
-        }
-        setCampusValue(newCampusValue);
-        console.log('更新校区值状态变量:', newCampusValue);
-      }
+      // 校区值已在其他地方处理
     }
   }, [editingUser]);
 
@@ -278,7 +240,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         initialValues={{
           status: editingUser ? (typeof editingUser.status === 'string' ? editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED' : (editingUser.status === 1 ? 'ENABLED' : 'DISABLED')) : undefined, // 添加用户时不预选状态
           role: editingUser?.role ? (typeof editingUser.role === 'object' ? String(editingUser.role.id) : String(editingUser.role)) : undefined, // 添加用户时不预选角色
-          campus: editingUser?.campus ? (typeof editingUser.campus === 'object' ? (String(editingUser.campus.id) !== '-1' ? String(editingUser.campus.id) : '') : (String(editingUser.campus) !== '-1' ? String(editingUser.campus) : '')) : ''
+          campus: editingUser?.campus ? (
+            typeof editingUser.campus === 'object' ?
+              (editingUser.campus.id && String(editingUser.campus.id) !== '-1' && String(editingUser.campus.id) !== 'null' && editingUser.campus.id !== null ?
+                String(editingUser.campus.id) : undefined) :
+              (editingUser.campus && String(editingUser.campus) !== '-1' && String(editingUser.campus) !== 'null' && editingUser.campus !== null ?
+                String(editingUser.campus) : undefined)
+          ) : undefined
         }}
         key={`user-form-${editingUser?.id || 'new'}`}
         onValuesChange={(changedValues, allValues) => {
@@ -317,11 +285,32 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             <Form.Item
               name="phone"
               label="电话"
-              rules={[{ required: true, message: '请输入电话' }]}
+              rules={[
+                { required: true, message: '请输入电话' },
+                { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码' }
+              ]}
             >
               <Input
                 prefix={<UserOutlined />}
                 placeholder="请输入电话"
+                maxLength={11}
+                onKeyDown={(e) => {
+                  // 只允许输入数字
+                  const keyCode = e.key;
+                  if (!/[0-9]/.test(keyCode) && keyCode !== 'Backspace' && keyCode !== 'Delete' && keyCode !== 'ArrowLeft' && keyCode !== 'ArrowRight') {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) => {
+                  // 强制只能输入数字
+                  const value = e.target.value;
+                  const numericValue = value.replace(/[^\d]/g, '');
+                  if (value !== numericValue) {
+                    e.target.value = numericValue;
+                    // 触发一个新的变化事件来更新表单值
+                    form.setFieldsValue({ phone: numericValue });
+                  }
+                }}
               />
             </Form.Item>
           </Col>
@@ -358,48 +347,46 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="状态"
               rules={[{ required: true, message: '请选择状态' }]}
             >
-              <div className="select-wrapper">
-                <Select
-                  placeholder={editingUser ? '请选择状态' : '请选择用户状态'}
-                  style={{ width: '100%' }}
-                  options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
-                  popupMatchSelectWidth
-                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                  value={statusValue} // 使用状态变量作为值
-                  key={`status-select-${statusValue}`} // 使用状态变量作为key
-                  onChange={(value) => {
-                    console.log('状态已更改为:', value);
-                    // 更新状态变量
-                    setStatusValue(value as 'ENABLED' | 'DISABLED');
-                    // 直接设置表单值
-                    form.setFieldsValue({ status: value });
-                  }}
-                  onDropdownVisibleChange={(open) => {
-                    if (open) {
-                      // 当下拉菜单打开时，输出当前值以便调试
-                      console.log('状态下拉菜单打开，当前值:', form.getFieldValue('status'));
+              <Select
+                placeholder={editingUser ? '请选择状态' : '请选择用户状态'}
+                style={{ width: '100%' }}
+                options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
+                popupMatchSelectWidth
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                value={statusValue} // 使用状态变量作为值
+                key={`status-select-${statusValue}`} // 使用状态变量作为key
+                onChange={(value) => {
+                  console.log('状态已更改为:', value);
+                  // 更新状态变量
+                  setStatusValue(value as 'ENABLED' | 'DISABLED');
+                  // 直接设置表单值
+                  form.setFieldsValue({ status: value });
+                }}
+                onDropdownVisibleChange={(open) => {
+                  if (open) {
+                    // 当下拉菜单打开时，输出当前值以便调试
+                    console.log('状态下拉菜单打开，当前值:', form.getFieldValue('status'));
 
-                      // 如果有编辑用户数据，确保状态值正确设置
-                      if (editingUser && editingUser.status) {
-                        let statusValue: 'ENABLED' | 'DISABLED';
-                        if (typeof editingUser.status === 'string') {
-                          statusValue = editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
-                        } else if (typeof editingUser.status === 'number') {
-                          statusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
-                        } else {
-                          statusValue = 'ENABLED';
-                        }
+                    // 如果有编辑用户数据，确保状态值正确设置
+                    if (editingUser && editingUser.status) {
+                      let statusValue: 'ENABLED' | 'DISABLED';
+                      if (typeof editingUser.status === 'string') {
+                        statusValue = editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
+                      } else if (typeof editingUser.status === 'number') {
+                        statusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
+                      } else {
+                        statusValue = 'ENABLED';
+                      }
 
-                        // 如果当前值不正确，尝试再次设置
-                        if (form.getFieldValue('status') !== statusValue) {
-                          console.log('在下拉菜单打开时设置状态值:', statusValue);
-                          form.setFieldsValue({ status: statusValue });
-                        }
+                      // 如果当前值不正确，尝试再次设置
+                      if (form.getFieldValue('status') !== statusValue) {
+                        console.log('在下拉菜单打开时设置状态值:', statusValue);
+                        form.setFieldsValue({ status: statusValue });
                       }
                     }
-                  }}
-                />
-              </div>
+                  }
+                }}
+              />
             </Form.Item>
           </Col>
 
@@ -409,57 +396,80 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               label="角色"
               rules={[{ required: true, message: '请选择角色' }]}
             >
-              <div className="select-wrapper">
-                <Select
-                  placeholder={editingUser ? '请选择角色' : '请选择用户角色'}
-                  style={{ width: '100%' }}
-                  options={roleOptions
-                    .filter(option => editingUser ? true : option.value !== '1') // 添加用户时过滤掉超级管理员
-                    .map(option => ({ value: option.value, label: option.label }))}
-                  popupMatchSelectWidth
-                  className="role-select"
-                  popupClassName="role-select-dropdown"
-                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                  value={roleValue} // 使用角色状态变量作为值
-                  key={`role-select-${roleValue || 'default'}`} // 使用角色状态变量作为key
-                  disabled={editingUser && (roleValue === '1' || roleValue === 1)} // 如果是编辑超级管理员，禁用选择框
-                  onChange={(value) => {
-                    console.log('Role changed to:', value);
-                    // 更新角色状态变量
-                    setRoleValue(value as string);
-                    // 设置表单值
-                    form.setFieldsValue({ role: value });
+              <Select
+                placeholder={editingUser ? '请选择角色' : '请选择用户角色'}
+                style={{ width: '100%' }}
+                options={roleOptions
+                  .filter(option => {
+                    // 添加用户时过滤掉超级管理员
+                    if (!editingUser) return option.value !== '1';
 
-                    // 如果角色不是校区管理员，清除校区字段
-                    if (value !== '3') {
-                      form.setFieldsValue({ campus: undefined });
+                    // 编辑用户时，如果当前用户是超级管理员，显示所有角色
+                    if (roleValue === '1') return true;
+
+                    // 编辑用户时，如果当前用户不是超级管理员，过滤掉超级管理员选项
+                    return option.value !== '1';
+                  })
+                  .map(option => ({ value: option.value, label: option.label }))}
+                popupMatchSelectWidth
+                className="role-select"
+                popupClassName="role-select-dropdown"
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                value={roleValue} // 使用角色状态变量作为值
+                key={`role-select-${roleValue || 'default'}`} // 使用角色状态变量作为key
+                disabled={!!editingUser && roleValue === '1'} // 如果是编辑超级管理员，禁用选择框
+                onChange={(value) => {
+                  console.log('Role changed to:', value);
+                  // 更新角色状态变量
+                  setRoleValue(value as string);
+                  // 设置表单值
+                  form.setFieldsValue({ role: value });
+
+                  // 无论是否是校区管理员，都先清除校区字段
+                  form.resetFields(['campus']);
+
+                  // 强制设置校区字段为 undefined，确保显示占位符文本
+                  form.setFields([{
+                    name: 'campus',
+                    value: undefined
+                  }]);
+
+                  // 强制重新渲染校区选择框
+                  setTimeout(() => {
+                    // 再次确认校区字段已被重置为 undefined
+                    if (form.getFieldValue('campus') === null || form.getFieldValue('campus') === 'null') {
+                      form.setFields([{
+                        name: 'campus',
+                        value: undefined
+                      }]);
                     }
-                  }}
-                  onDropdownVisibleChange={(open) => {
-                    if (open) {
-                      // 当下拉菜单打开时，输出当前值以便调试
-                      console.log('角色下拉菜单打开，当前值:', roleValue, form.getFieldValue('role'));
+                  }, 0);
 
-                      // 如果有编辑用户数据，确保角色值正确设置
-                      if (editingUser && editingUser.role) {
-                        let newRoleValue;
-                        if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-                          newRoleValue = String(editingUser.role.id);
-                        } else {
-                          newRoleValue = String(editingUser.role);
-                        }
-
-                        // 如果当前值不正确，尝试再次设置
-                        if (form.getFieldValue('role') !== newRoleValue) {
-                          console.log('在下拉菜单打开时设置角色值:', newRoleValue);
-                          form.setFieldsValue({ role: newRoleValue });
-                          setRoleValue(newRoleValue);
-                        }
-                      }
+                  // 如果是校区管理员，确保校区列表已加载
+                  if (value === '3') {
+                    if (campusOptions.length === 0) {
+                      refreshCampusOptions();
                     }
-                  }}
-                />
-              </div>
+                  }
+                }}
+                onDropdownVisibleChange={(open) => {
+                  if (open && editingUser && editingUser.role) {
+                    // 如果有编辑用户数据，确保角色值正确设置
+                    let newRoleValue;
+                    if (typeof editingUser.role === 'object' && editingUser.role !== null) {
+                      newRoleValue = String(editingUser.role.id);
+                    } else {
+                      newRoleValue = String(editingUser.role);
+                    }
+
+                    // 如果当前值不正确，尝试再次设置
+                    if (form.getFieldValue('role') !== newRoleValue) {
+                      form.setFieldsValue({ role: newRoleValue });
+                      setRoleValue(newRoleValue);
+                    }
+                  }
+                }}
+              />
             </Form.Item>
           </Col>
 
@@ -470,7 +480,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             >
               {({ getFieldValue }) => {
                 const roleValue = getFieldValue('role');
-                console.log('当前角色值:', roleValue);
+                // 检查当前角色值
                 // 当角色为校区管理员时显示校区选择框
                 return roleValue === '3' ? (
                   <Form.Item
@@ -479,74 +489,39 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     rules={[{ required: true, message: '请选择所属校区' }]}
                     help={campusOptions.length === 0 ? '暂无可选校区，请先添加校区' : ''}
                   >
-                    <div className="select-wrapper">
-                      <Select
-                        placeholder="请选择校区"
-                        loading={campusLoading}
-                        style={{ width: '100%' }}
-                        options={campusOptions.map(option => ({ value: option.value, label: option.label }))}
-                        notFoundContent={
-                          campusLoading ? <Spin size="small" /> :
-                          campusError ? <div style={{ color: 'red' }}>加载失败</div> :
-                          <div>暂无校区</div>
+                    <Select
+                      placeholder="请选择所属校区"
+                      loading={campusLoading}
+                      style={{ width: '100%' }}
+                      options={campusOptions.map(option => ({ value: option.value, label: option.label }))}
+                      notFoundContent={
+                        campusLoading ? <Spin size="small" /> :
+                        campusError ? <div style={{ color: 'red' }}>加载失败</div> :
+                        <div>暂无校区</div>
+                      }
+                      popupMatchSelectWidth
+                      getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                      // 显式设置 value 属性，确保在值为 null 时显示占位符文本
+                      value={form.getFieldValue('campus') === null || form.getFieldValue('campus') === 'null' ? undefined : form.getFieldValue('campus')}
+                      key="campus-select" // 使用固定的key，避免在campusValue变化时组件重新渲染
+                      onChange={(value) => {
+                        // 处理 null 值，确保显示占位符文本
+                        const finalValue = value === null || value === 'null' ? undefined : value;
+
+                        // 使用单一的方式更新表单值，避免循环引用
+                        form.setFields([{
+                          name: 'campus',
+                          value: finalValue,
+                          errors: []
+                        }]);
+                      }}
+                      onDropdownVisibleChange={(open) => {
+                        // 当下拉菜单打开时，确保校区列表已加载
+                        if (open && campusOptions.length === 0) {
+                          refreshCampusOptions();
                         }
-                        popupMatchSelectWidth
-                        getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                        value={campusValue} // 使用校区状态变量作为值
-                        key={`campus-select-${campusValue || 'default'}`} // 使用校区状态变量作为key
-                        onChange={(value) => {
-                          console.log('校区已更改为:', value);
-                          // 更新校区状态变量
-                          setCampusValue(value as string);
-                          // 设置表单值
-                          form.setFieldsValue({ campus: value });
-
-                          // 当选择校区时，立即清除错误提示并验证该字段
-                          if (value) {
-                            // 先清除错误提示
-                            form.setFields([{
-                              name: 'campus',
-                              value: value,
-                              errors: []
-                            }]);
-                            // 然后验证字段
-                            form.validateFields(['campus']);
-                          }
-                        }}
-                        onDropdownVisibleChange={(open) => {
-                          // 当下拉菜单打开时，输出当前值以便调试
-                          if (open) {
-                            console.log('校区下拉菜单打开，当前值:', campusValue, form.getFieldValue('campus'));
-
-                            // 如果有编辑用户数据，确保校区值正确设置
-                            if (editingUser && editingUser.campus) {
-                              let newCampusValue = '';
-                              if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
-                                // 如果校区ID不是-1，才设置值
-                                if (String(editingUser.campus.id) !== '-1') {
-                                  newCampusValue = String(editingUser.campus.id);
-                                }
-                              }
-
-                              // 如果当前值不正确，尝试再次设置
-                              if (form.getFieldValue('campus') !== newCampusValue) {
-                                console.log('在下拉菜单打开时设置校区值:', newCampusValue);
-                                form.setFieldsValue({ campus: newCampusValue });
-                                setCampusValue(newCampusValue);
-                              }
-                            }
-
-                            // 使用setFields清除错误提示，但保留当前值
-                            const currentValue = form.getFieldValue('campus');
-                            form.setFields([{
-                              name: 'campus',
-                              value: currentValue,
-                              errors: []
-                            }]);
-                          }
-                        }}
-                      />
-                    </div>
+                      }}
+                    />
                   </Form.Item>
                 ) : null;
               }}

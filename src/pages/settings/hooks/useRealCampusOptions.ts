@@ -21,7 +21,7 @@ export const useRealCampusOptions = () => {
     try {
       // 使用共享的getCampusList函数获取校区列表
       const campusList = await getCampusList();
-      console.log('从banner获取的校区列表:', campusList);
+      // 校区列表已获取
 
       // 转换为选项格式
       const options = campusList.map(item => ({
@@ -31,7 +31,7 @@ export const useRealCampusOptions = () => {
 
       setCampusOptions(options);
     } catch (err) {
-      console.error('获取校区列表失败:', err);
+      // 获取校区列表失败
       setError('获取校区列表失败');
     } finally {
       setLoading(false);
