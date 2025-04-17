@@ -12,6 +12,7 @@ import { useCoachSearch } from './hooks/useCoachSearch';
 import { useCoachForm } from './hooks/useCoachForm';
 import { useCoachDetail } from './hooks/useCoachDetail';
 import { ViewMode } from './types/coach';
+import './components/CoachManagement.css';
 
 const { Title } = Typography;
 
@@ -136,16 +137,16 @@ const CoachManagement: React.FC = () => {
 
   return (
     <div className="coach-management">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={4}>教练管理</Title>
-        <CoachViewToggle
-          viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
-          onAddCoach={handleAdd}
-        />
-      </div>
+      <Card className="coach-management-card">
+        <div className="coach-header">
+          <Title level={4} className="coach-title">教练管理</Title>
+          <CoachViewToggle
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            onAddCoach={handleAdd}
+          />
+        </div>
 
-      <Card>
         {/* 搜索栏 */}
         <CoachSearchBar
           params={searchParams}

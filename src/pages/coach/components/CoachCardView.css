@@ -197,7 +197,7 @@
   left: 0;
   right: 0;
   height: 75px;
-  background: linear-gradient(135deg, #58a9ff 0%, #3988e1 100%);
+  background: linear-gradient(135deg, rgba(26, 41, 128, 0.7) 0%, #26d0ce 100%);
   z-index: 0;
   overflow: hidden;
 }
