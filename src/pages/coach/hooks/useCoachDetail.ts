@@ -17,7 +17,11 @@ export const convertApiCoachToCoach = (apiCoach: any): Coach => {
   // 处理certifications，确保其为数组
   const certifications = apiCoach.certifications || [];
 
-  return {
+  // 记录原始API响应用于调试
+  console.log('API返回的教练数据:', apiCoach);
+
+  // 构建转换后的教练对象
+  const coach: any = {
     id: String(apiCoach.id), // 确保id是字符串类型
     name: apiCoach.name,
     gender: apiCoach.gender,
@@ -30,19 +34,28 @@ export const convertApiCoachToCoach = (apiCoach: any): Coach => {
     status: apiCoach.status,
     hireDate: formatDate(apiCoach.hireDate),
     // 从salary对象中提取工资信息，如果存在
-    baseSalary: apiCoach.salary?.baseSalary || apiCoach.baseSalary,
-    socialInsurance: apiCoach.salary?.socialInsurance || apiCoach.socialInsurance,
-    classFee: apiCoach.salary?.classFee || apiCoach.classFee,
-    performanceBonus: apiCoach.salary?.performanceBonus || apiCoach.performanceBonus,
-    commission: apiCoach.salary?.commission || apiCoach.commission,
-    dividend: apiCoach.salary?.dividend || apiCoach.dividend,
+    baseSalary: apiCoach.salary?.baseSalary || apiCoach.baseSalary || 0,
+    socialInsurance: apiCoach.salary?.socialInsurance || apiCoach.socialInsurance || 0,
+    classFee: apiCoach.salary?.classFee || apiCoach.classFee || 0,
+    performanceBonus: apiCoach.salary?.performanceBonus || apiCoach.performanceBonus || 0,
+    commission: apiCoach.salary?.commission || apiCoach.commission || 0,
+    dividend: apiCoach.salary?.dividend || apiCoach.dividend || 0,
     campusId: apiCoach.campusId,
     campusName: apiCoach.campusName,
     // 保存其他有用的信息
     institutionId: apiCoach.institutionId,
-    institutionName: apiCoach.institutionName,
-    salaryEffectiveDate: apiCoach.salary?.effectiveDate ? formatDate(apiCoach.salary.effectiveDate) : undefined
+    institutionName: apiCoach.institutionName
   };
+
+  // 如果API返回的数据中包含salary对象，则保留该对象
+  if (apiCoach.salary) {
+    coach.salary = {
+      ...apiCoach.salary
+    };
+    console.log('保存嵌套的salary对象:', coach.salary);
+  }
+
+  return coach as Coach;
 };
 
 // 创建一个共享的教练详情缓存，用于跨组件共享

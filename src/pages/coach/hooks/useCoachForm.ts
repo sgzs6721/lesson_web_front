@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { Form } from 'antd';
-import { Coach } from '../types/coach';
-import dayjs from 'dayjs';
+import { Coach, CoachSalary } from '../types/coach';
+import dayjs, { Dayjs } from 'dayjs';
 import { API } from '@/api';
 import { message } from 'antd';
 import { convertApiCoachToCoach, coachDetailCache } from './useCoachDetail';
 import { avatarOptions } from '../constants/avatarOptions';
+import { safeDayjs } from '@/utils/date';
+
+// 拓展表单值的接口，包含Dayjs类型
+interface CoachFormValues extends Omit<Coach, 'hireDate'> {
+  hireDate?: Dayjs;
+  // 其他可能是Dayjs类型的字段
+}
 
 export const useCoachForm = (
   addCoach: (values: Omit<Coach, 'id'>) => Promise<Coach>,
@@ -104,12 +111,56 @@ export const useCoachForm = (
       }
       
       // 使用API返回的最新数据或缓存数据
-      const formValues = {
+      const formValues: any = {
         ...coachDetail,
-        hireDate: dayjs(coachDetail.hireDate),
+        hireDate: safeDayjs(coachDetail.hireDate),
         // 设置校区ID
         campusId: coachDetail.campusId || localStorage.getItem('currentCampusId') || 1,
       };
+
+      // 处理嵌套的salary对象中的字段
+      if (coachDetail.salary) {
+        console.log('发现嵌套的salary对象:', coachDetail.salary);
+        
+        // 直接从salary对象中提取各个薪资字段
+        formValues.baseSalary = coachDetail.salary.baseSalary;
+        formValues.socialInsurance = coachDetail.salary.socialInsurance;
+        formValues.classFee = coachDetail.salary.classFee;
+        formValues.performanceBonus = coachDetail.salary.performanceBonus;
+        formValues.commission = coachDetail.salary.commission;
+        formValues.dividend = coachDetail.salary.dividend;
+        
+        // 打印提取的薪资信息，用于调试
+        console.log('从salary对象中提取的薪资信息:', {
+          baseSalary: formValues.baseSalary,
+          socialInsurance: formValues.socialInsurance,
+          classFee: formValues.classFee,
+          performanceBonus: formValues.performanceBonus,
+          commission: formValues.commission,
+          dividend: formValues.dividend
+        });
+      } else {
+        // 如果没有salary对象，但可能有直接的薪资字段
+        console.log('没有嵌套的salary对象，检查直接字段');
+        
+        // 确保基本薪资字段有值，如果没有则使用默认值
+        formValues.baseSalary = coachDetail.baseSalary || 0;
+        formValues.socialInsurance = coachDetail.socialInsurance || 0;
+        formValues.classFee = coachDetail.classFee || 0;
+        formValues.performanceBonus = coachDetail.performanceBonus || 0;
+        formValues.commission = coachDetail.commission || 0;
+        formValues.dividend = coachDetail.dividend || 0;
+        
+        // 打印直接字段的薪资信息，用于调试
+        console.log('直接字段中的薪资信息:', {
+          baseSalary: formValues.baseSalary,
+          socialInsurance: formValues.socialInsurance,
+          classFee: formValues.classFee,
+          performanceBonus: formValues.performanceBonus,
+          commission: formValues.commission,
+          dividend: formValues.dividend
+        });
+      }
 
       // 处理证书数据
       if (coachDetail.certifications) {
@@ -141,18 +192,42 @@ export const useCoachForm = (
   // 处理模态框确认
   const handleSubmit = () => {
     setLoading(true);
+    
+    // 先进行额外的Date类型验证，处理dayjs对象可能存在的问题
+    const validateDates = () => {
+      try {
+        const hireDateValue = form.getFieldValue('hireDate');
+        
+        // 使用安全日期函数重新设置表单值
+        form.setFieldsValue({ 
+          hireDate: safeDayjs(hireDateValue)
+        });
+        
+        return true;
+      } catch (error) {
+        console.error('日期验证失败:', error);
+        return false;
+      }
+    };
+    
+    // 执行日期验证
+    const datesValid = validateDates();
+    if (!datesValid) {
+      message.warning('日期格式有误，已自动修正');
+    }
+    
     form.validateFields()
       .then(values => {
         // 直接使用硬编码的完整数据对象
         // 根据实际API要求设置字段名
-        const formattedValues = {
+        const formattedValues: any = {
           name: values.name,
           gender: values.gender,
           age: Number(values.age),
           phone: values.phone,
           avatar: selectedAvatar || values.avatar,
           jobTitle: values.jobTitle,
-          hireDate: values.hireDate ? values.hireDate.format('YYYY-MM-DD') : '',
+          hireDate: safeDayjs(values.hireDate).format('YYYY-MM-DD'),
           experience: Number(values.experience),
           certifications: values.certifications ? values.certifications.split('\n').filter((cert: string) => cert.trim() !== '') : [],
           status: values.status,
@@ -167,6 +242,21 @@ export const useCoachForm = (
           // 保留institutionId
           institutionId: editingCoach?.institutionId || 0
         };
+
+        // 同时准备salary对象格式，以防API需要
+        const salaryObject: CoachSalary = {
+          baseSalary: Number(values.baseSalary || 0),
+          socialInsurance: Number(values.socialInsurance || 0),
+          classFee: Number(values.classFee || 0),
+          performanceBonus: Number(values.performanceBonus || 0),
+          commission: Number(values.commission || 0),
+          dividend: Number(values.dividend || 0)
+        };
+
+        // 如果原始对象中有salary对象，添加到formattedValues中
+        if (editingCoach?.salary) {
+          formattedValues.salary = salaryObject;
+        }
 
         // 打印所有字段名称以便调试
         console.log('所有字段名称:', Object.keys(formattedValues));

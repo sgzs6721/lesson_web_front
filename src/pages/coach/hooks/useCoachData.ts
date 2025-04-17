@@ -90,8 +90,15 @@ export const useCoachData = () => {
         performanceBonus: values.performanceBonus,
         commission: values.commission,
         dividend: values.dividend,
-        campusId: campusId
+        campusId: campusId,
+        // 包含薪资生效日期
+        salaryEffectiveDate: values.salaryEffectiveDate
       };
+
+      // 如果values中有salary对象，也添加到请求参数中
+      if (values.salary) {
+        (apiParams as any).salary = values.salary;
+      }
 
       // 调用API创建教练
       const newId = await API.coach.create(apiParams);
@@ -152,8 +159,15 @@ export const useCoachData = () => {
         performanceBonus: updatedCoach.performanceBonus,
         commission: updatedCoach.commission,
         dividend: updatedCoach.dividend,
-        campusId: campusId
+        campusId: campusId,
+        // 包含薪资生效日期
+        salaryEffectiveDate: updatedCoach.salaryEffectiveDate
       };
+
+      // 如果updatedCoach中有salary对象，也添加到请求参数中
+      if (updatedCoach.salary || values.salary) {
+        (apiParams as any).salary = updatedCoach.salary || values.salary;
+      }
 
       // 调用API更新教练
       await API.coach.update(apiParams);

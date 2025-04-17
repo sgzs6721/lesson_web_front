@@ -86,6 +86,15 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               <Descriptions.Item label="所属校区" span={1}>{coach.campusName || '-'}</Descriptions.Item>
               <Descriptions.Item label="所属机构" span={1}>{coach.institutionName || '-'}</Descriptions.Item>
 
+              <Descriptions.Item label="基本工资" span={1}>{`¥${coach.baseSalary?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+              <Descriptions.Item label="社保费" span={1}>{`¥${coach.socialInsurance?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+              
+              <Descriptions.Item label="课时费" span={1}>{`¥${coach.classFee?.toLocaleString() ?? 'N/A'} /时`}</Descriptions.Item>
+              <Descriptions.Item label="绩效奖金" span={1}>{`¥${coach.performanceBonus?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+              
+              <Descriptions.Item label="提成" span={1}>{`${coach.commission ?? 'N/A'}%`}</Descriptions.Item>
+              <Descriptions.Item label="分红" span={1}>{`¥${coach.dividend?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
+
               <Descriptions.Item label="证书" span={2}>
                 {Array.isArray(coach.certifications) && coach.certifications.length > 0
                   ? coach.certifications.map((cert, index) => (
@@ -98,27 +107,6 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
                     : '无'
                 }
               </Descriptions.Item>
-            </Descriptions>
-            
-            <Descriptions 
-              bordered 
-              column={2} 
-              size="small" 
-              title={<div style={titleStyle as React.CSSProperties}>薪资信息</div>}
-              style={{ marginTop: '24px' }}
-            >
-              {coach.salaryEffectiveDate && (
-                <Descriptions.Item label="薪资生效日期" span={2}>
-                  {coach.salaryEffectiveDate}
-                </Descriptions.Item>
-              )}
-              
-              <Descriptions.Item label="基本工资" span={1}>{`¥${coach.baseSalary?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
-              <Descriptions.Item label="社保费" span={1}>{`¥${coach.socialInsurance?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
-              <Descriptions.Item label="课时费" span={1}>{`¥${coach.classFee?.toLocaleString() ?? 'N/A'} /时`}</Descriptions.Item>
-              <Descriptions.Item label="绩效奖金" span={1}>{`¥${coach.performanceBonus?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
-              <Descriptions.Item label="提成" span={1}>{`${coach.commission ?? 'N/A'}%`}</Descriptions.Item>
-              <Descriptions.Item label="分红" span={1}>{`¥${coach.dividend?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
             </Descriptions>
           </>
         ) : (

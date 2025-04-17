@@ -4,6 +4,16 @@ import { CoachGender, CoachStatus } from '../../../api/coach/types';
 // 性别类型定义
 export type Gender = CoachGender;
 
+// 薪资对象接口
+export interface CoachSalary {
+  baseSalary: number;
+  socialInsurance: number;
+  classFee: number;
+  performanceBonus: number;
+  commission: number;
+  dividend: number;
+}
+
 // 教练接口
 export interface Coach {
   id: string;
@@ -17,16 +27,20 @@ export interface Coach {
   experience: number;
   status: CoachStatus;
   hireDate: string;
+  // 可以直接访问的薪资字段
   baseSalary?: number;
   socialInsurance?: number;
   classFee?: number;
   performanceBonus?: number;
   commission?: number;
   dividend?: number;
+  // 也支持通过salary对象访问
+  salary?: CoachSalary;
   campusId?: number | string;
   campusName?: string;
   institutionId?: number | string;
   institutionName?: string;
+  // 薪资生效日期
   salaryEffectiveDate?: string;
 }
 
