@@ -31,6 +31,7 @@ const CoachManagement: React.FC = () => {
     fetchCoaches,
     addCoach,
     updateCoach,
+    updateCoachStatus,
     deleteCoach
   } = useCoachData();
 
@@ -58,7 +59,7 @@ const CoachManagement: React.FC = () => {
     handleCancel,
     handleAvatarSelect,
     handleGenderChange
-  } = useCoachForm(addCoach, updateCoach, () => fetchCoaches(currentPage, pageSize, searchParams));
+  } = useCoachForm(addCoach, updateCoach);
 
   // 使用详情管理钩子
   const {
@@ -105,6 +106,18 @@ const CoachManagement: React.FC = () => {
   // 处理视图模式变更
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
+  };
+
+  // 处理状态变更
+  const handleStatusChange = (id: string, newStatus: string) => {
+    // 确保传递给 API 的是正确的类型
+    updateCoachStatus(id, newStatus as any)
+      .then(() => {
+        console.log('教练状态更新成功:', id, newStatus);
+      })
+      .catch(error => {
+        console.error('更新教练状态失败:', error);
+      });
   };
 
   // 处理确认删除
@@ -167,6 +180,7 @@ const CoachManagement: React.FC = () => {
             onEdit={handleEdit}
             onDelete={showDeleteConfirm}
             onViewDetail={showDetail}
+            onStatusChange={handleStatusChange}
           />
         ) : (
           <CoachCardView
@@ -176,6 +190,7 @@ const CoachManagement: React.FC = () => {
             onEdit={handleEdit}
             onDelete={showDeleteConfirm}
             onViewDetail={showDetail}
+            onStatusChange={handleStatusChange}
           />
         )}
       </Card>

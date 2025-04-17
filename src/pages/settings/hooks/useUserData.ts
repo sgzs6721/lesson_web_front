@@ -11,7 +11,7 @@ import { getCampusList } from '@/components/CampusSelector';
 const getCampusNameById = async (campusId: string | number): Promise<string> => {
   try {
     // 获取所有校区列表
-    const campusList = await getCampusList();
+    const campusList = await getCampusList('用户管理校区名称查询');
 
     // 查找匹配的校区
     const campus = campusList.find(campus => String(campus.id) === String(campusId));

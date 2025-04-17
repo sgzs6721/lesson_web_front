@@ -20,7 +20,8 @@ import { request, USE_MOCK, API_HOST } from '../config';
 // API Path Constants
 const COACH_API_PATHS = {
   LIST: '/lesson/api/coach/list',
-  DETAIL: (id: string | number) => `/lesson/api/coach/detail?id=${id}`,
+  DETAIL: (id: string | number, campusId?: string | number) => 
+    `/lesson/api/coach/detail?id=${id}${campusId ? `&campusId=${campusId}` : ''}`,
   CREATE: '/lesson/api/coach/create',
   UPDATE: '/lesson/api/coach/update',
   DELETE: (id: string | number) => `/lesson/api/coach/delete?id=${id}`,
@@ -131,7 +132,7 @@ export const coach = {
         queryParams.append('campusIds', String(campusId));
       });
     } else if (params?.campusId) {
-      queryParams.append('campusIds', String(params.campusId));
+      queryParams.append('campusId', String(params.campusId));
     }
 
     // 排序参数
@@ -149,7 +150,7 @@ export const coach = {
   },
 
   // 获取教练详情
-  getDetail: async (id: string | number): Promise<Coach> => {
+  getDetail: async (id: string | number, campusId?: string | number): Promise<Coach> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -161,7 +162,19 @@ export const coach = {
       return coach;
     }
 
-    const response: CoachDetailResponse = await request(COACH_API_PATHS.DETAIL(id));
+    // 如果没有提供campusId，尝试从localStorage获取
+    const currentCampusId = localStorage.getItem('currentCampusId');
+    let finalCampusId = campusId;
+    
+    if (!finalCampusId && currentCampusId) {
+      finalCampusId = Number(currentCampusId);
+    }
+    
+    if (!finalCampusId) {
+      console.warn('获取教练详情时没有提供campusId，将使用默认值');
+    }
+    
+    const response: CoachDetailResponse = await request(COACH_API_PATHS.DETAIL(id, finalCampusId));
     return response.data;
   },
 

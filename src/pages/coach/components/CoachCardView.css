@@ -338,7 +338,7 @@
   color: #444;
   padding: 2px 8px;
   background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
+  border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
@@ -376,15 +376,15 @@
 .coach-actions-premium {
   display: flex;
   justify-content: center;
-  gap: 0;
+  gap: 8px;
   position: absolute;
-  top: 0px;
-  right: 0px;
-  z-index: 3;
+  top: -10px;
+  right: 8px;
+  z-index: 5;
   background-color: white;
-  border-radius: 16px;
-  padding: 1px 2px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  padding: 2px 5px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .action-button {
@@ -392,13 +392,13 @@
   opacity: 1;
   border: none;
   background-color: transparent !important;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  margin: 0 1px;
+  margin: 0;
 }
 
 .action-button:hover {
@@ -420,10 +420,10 @@
 .coach-info-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   background-color: #f9f9f9;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
   margin-top: 0;
   margin-bottom: 6px;
@@ -447,22 +447,24 @@
 .coach-info-item {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   position: relative;
-  margin-bottom: 0px;
+  margin-bottom: 2px;
 }
 
 .info-icon {
   color: #1890ff;
   font-size: 12px;
-  width: 14px;
+  width: 16px;
+  flex-shrink: 0;
 }
 
 .info-label {
   color: #666;
   font-weight: 500;
   font-size: 12px;
-  width: 38px;
+  width: 42px;
+  flex-shrink: 0;
 }
 
 .info-value {
@@ -474,6 +476,7 @@
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+  padding-left: 2px;
 }
 
 /* 旧样式兼容 */
@@ -565,4 +568,47 @@
   margin-top: -8px;
   margin-bottom: 4px;
   margin-left: 2px;
+}
+
+/* 证书显示相关样式 */
+.coach-certifications {
+  margin-top: 6px;
+  align-items: center !important;
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.certifications-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 0;
+  align-items: center;
+}
+
+.cert-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cert-tag {
+  margin-right: 0;
+  font-size: 11px !important;
+  padding: 0 10px !important;
+  height: 22px !important;
+  line-height: 22px !important;
+  border-radius: 4px !important;
+  margin-bottom: 0;
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+  border: none !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.no-cert {
+  color: #999;
+  font-size: 12px;
+  font-style: italic;
 } 

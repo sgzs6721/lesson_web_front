@@ -1,6 +1,6 @@
 import React from 'react';
-import { Table, Button, Space, Tooltip, Avatar } from 'antd';
-import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tooltip, Avatar, Dropdown, Menu } from 'antd';
+import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo } from '../utils/formatters';
 import dayjs from 'dayjs';
@@ -19,6 +19,7 @@ interface CoachTableProps {
   onEdit: (record: Coach) => void;
   onDelete: (id: string) => void;
   onViewDetail: (record: Coach) => void;
+  onStatusChange?: (id: string, newStatus: string) => void;
 }
 
 const CoachTable: React.FC<CoachTableProps> = ({
@@ -27,12 +28,53 @@ const CoachTable: React.FC<CoachTableProps> = ({
   pagination,
   onEdit,
   onDelete,
-  onViewDetail
+  onViewDetail,
+  onStatusChange
 }) => {
   // 渲染状态标签
-  const renderStatusTag = (status: string) => {
+  const renderStatusTag = (status: string, record: Coach) => {
     const { color, text } = getStatusTagInfo(status);
-    return <span style={{ color: color }}>{text}</span>;
+
+    // 如果没有提供状态变更回调，则只显示文本
+    if (!onStatusChange) {
+      return <span style={{ color: color }}>{text}</span>;
+    }
+
+    // 状态选项
+    const statusOptions = [
+      { key: 'ACTIVE', label: '在职', color: '#52c41a' },
+      { key: 'VACATION', label: '休假中', color: '#faad14' },
+      { key: 'RESIGNED', label: '已离职', color: '#ff4d4f' }
+    ];
+
+    // 创建下拉菜单项
+    const items = statusOptions.map(option => ({
+      key: option.key,
+      label: (
+        <span style={{ color: option.color }}>{option.label}</span>
+      ),
+      disabled: option.key === status // 当前状态禁用
+    }));
+
+    // 处理状态变更
+    const handleStatusChange = ({ key }: { key: string }) => {
+      if (key !== status) {
+        onStatusChange(record.id, key);
+      }
+    };
+
+    return (
+      <Dropdown
+        menu={{ items, onClick: handleStatusChange }}
+        trigger={['click']}
+        placement="bottomCenter"
+      >
+        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ color: color, marginRight: 4 }}>{text}</span>
+          <DownOutlined style={{ fontSize: '12px', color: '#999' }} />
+        </div>
+      </Dropdown>
+    );
   };
 
   const columns: ColumnsType<Coach> = [
@@ -50,9 +92,9 @@ const CoachTable: React.FC<CoachTableProps> = ({
       align: 'center',
       render: (text, record) => (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-          <Avatar 
-            src={record.avatar} 
-            style={{ 
+          <Avatar
+            src={record.avatar}
+            style={{
               marginRight: 8,
               backgroundColor: record.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96'
             }}
@@ -60,9 +102,9 @@ const CoachTable: React.FC<CoachTableProps> = ({
             size={32}
           />
           <span>
-            {text} 
-            {record.gender === CoachGender.MALE ? 
-              <span style={{ color: '#1890ff', marginLeft: 5 }}>♂</span> : 
+            {text}
+            {record.gender === CoachGender.MALE ?
+              <span style={{ color: '#1890ff', marginLeft: 5 }}>♂</span> :
               <span style={{ color: '#eb2f96', marginLeft: 5 }}>♀</span>
             }
           </span>
@@ -113,16 +155,16 @@ const CoachTable: React.FC<CoachTableProps> = ({
       width: 200,
       align: 'center',
       render: (certifications) => {
-        if (!certifications || 
-            (Array.isArray(certifications) && certifications.length === 0) || 
+        if (!certifications ||
+            (Array.isArray(certifications) && certifications.length === 0) ||
             (typeof certifications === 'string' && certifications.trim() === '')) {
           return <div style={{ color: '#999', textAlign: 'center' }}>无</div>;
         }
-        
+
         if (Array.isArray(certifications)) {
           return <div style={{ textAlign: 'center' }}>{certifications.join('、')}</div>;
         }
-        
+
         return <div style={{ textAlign: 'center' }}>{certifications}</div>;
       }
     },
@@ -131,7 +173,8 @@ const CoachTable: React.FC<CoachTableProps> = ({
       dataIndex: 'status',
       key: 'status',
       align: 'center',
-      render: renderStatusTag,
+      render: (status, record) => renderStatusTag(status, record),
+      width: 100,
     },
     {
       title: '操作',
@@ -141,11 +184,11 @@ const CoachTable: React.FC<CoachTableProps> = ({
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="编辑">
-            <Button 
-              type="text" 
-              size="small" 
-              icon={<EditOutlined />} 
-              onClick={() => onEdit(record)} 
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => onEdit(record)}
             />
           </Tooltip>
           <Tooltip title="查看详情">
@@ -157,10 +200,10 @@ const CoachTable: React.FC<CoachTableProps> = ({
             />
           </Tooltip>
           <Tooltip title="删除">
-            <Button 
-              type="text" 
-              size="small" 
-              danger 
+            <Button
+              type="text"
+              size="small"
+              danger
               icon={<DeleteOutlined />}
               onClick={() => onDelete(record.id)}
             />
@@ -186,4 +229,4 @@ const CoachTable: React.FC<CoachTableProps> = ({
   );
 };
 
-export default CoachTable; 
+export default CoachTable;

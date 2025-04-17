@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/reduxHooks';
-import { getCampusList } from '@/components/CampusSelector';
+import { getCampusList, clearCampusListCache } from '@/components/CampusSelector';
 import NoCampusModal from '@/components/NoCampusModal';
 
 // 定义Context类型
@@ -66,6 +66,14 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
   // 刷新校区检查
   const refreshCampusCheck = async (): Promise<void> => {
     setCheckingCampus(true);
+    
+    // 如果用户已登录，确保清除缓存以获取最新数据
+    if (isAuthenticated) {
+      // 清除校区列表缓存
+      clearCampusListCache();
+      console.log('刷新校区检查前先清除校区列表缓存');
+    }
+    
     const result = await checkCampus();
     setHasCampus(result);
     setCheckingCampus(false);
@@ -122,7 +130,12 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
       return false;
     }
 
-    // 如果不确定是否有校区，进行检查
+    // 如果不确定是否有校区，先清除缓存再进行检查
+    if (isAuthenticated) {
+      clearCampusListCache();
+      console.log('导航检查校区前先清除校区列表缓存');
+    }
+    
     const hasAnyCampus = await checkCampus();
     setHasCampus(hasAnyCampus);
     setCheckingCampus(false);

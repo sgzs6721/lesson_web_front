@@ -4,6 +4,7 @@ import { message } from 'antd';
 import { generateCoachId } from '../utils/formatters';
 import { API } from '@/api';
 import { CoachGender, CoachStatus } from '@/api/coach/types';
+import { coachDetailCache } from './useCoachDetail';
 
 export const useCoachData = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
@@ -18,6 +19,9 @@ export const useCoachData = () => {
   ) => {
     setLoading(true);
     try {
+      // 获取当前选中的校区ID
+      const currentCampusId = localStorage.getItem('currentCampusId') || undefined;
+
       // 构建API请求参数
       const apiParams = {
         pageNum: currentPage,
@@ -26,7 +30,8 @@ export const useCoachData = () => {
         status: params?.selectedStatus as CoachStatus,
         jobTitle: params?.selectedJobTitle,
         sortField: params?.sortField,
-        sortOrder: 'desc' as 'asc' | 'desc' // 默认降序
+        sortOrder: 'desc' as 'asc' | 'desc', // 默认降序
+        campusId: currentCampusId // 添加当前校区ID
       };
 
       // 调用API获取教练列表
@@ -67,56 +72,33 @@ export const useCoachData = () => {
   };
 
   // 添加教练
-  const addCoach = async (values: Omit<Coach, 'id'>) => {
+  const addCoach = async (values: Omit<Coach, 'id'>): Promise<Coach> => {
     try {
-      // 确保campusId非空
-      const campusId = values.campusId || localStorage.getItem('currentCampusId') || 1;
-      
-      // 构建API请求参数
-      const apiParams = {
-        name: values.name,
-        gender: values.gender as CoachGender,
-        age: values.age,
-        phone: values.phone,
-        avatar: values.avatar,
-        jobTitle: values.jobTitle,
-        certifications: values.certifications,
-        experience: values.experience,
-        status: values.status as CoachStatus,
-        hireDate: values.hireDate,
-        baseSalary: values.baseSalary,
-        socialInsurance: values.socialInsurance,
-        classFee: values.classFee,
-        performanceBonus: values.performanceBonus,
-        commission: values.commission,
-        dividend: values.dividend,
-        campusId: campusId,
-        // 包含薪资生效日期
-        salaryEffectiveDate: values.salaryEffectiveDate
-      };
-
-      // 如果values中有salary对象，也添加到请求参数中
-      if (values.salary) {
-        (apiParams as any).salary = values.salary;
+      // 确保有校区ID
+      const campusId = values.campusId || localStorage.getItem('currentCampusId') || '';
+      if (!campusId) {
+        throw new Error('未选择校区');
       }
 
-      // 调用API创建教练
-      const newId = await API.coach.create(apiParams);
-
-      // 创建成功后刷新列表
-      message.success('教练添加成功');
-
-      // 返回新创建的教练对象
-      const newCoach: Coach = {
-        id: newId.toString(),
+      // 构建API请求参数
+      const apiParams = {
         ...values,
-        campusId: campusId
+        campusId: Number(campusId)
       };
 
-      // 更新列表和总数
-      setCoaches(prevCoaches => [newCoach, ...prevCoaches]);
-      setTotal(prev => prev + 1);
+      // 调用API创建教练
+      const id = await API.coach.create(apiParams);
 
+      // 创建新教练对象
+      const newCoach: Coach = {
+        ...values,
+        id: String(id)
+      };
+
+      // 更新本地状态
+      setCoaches(prevCoaches => [...prevCoaches, newCoach]);
+
+      message.success('教练已成功添加');
       return newCoach;
     } catch (error) {
       message.error('添加教练失败');
@@ -136,11 +118,14 @@ export const useCoachData = () => {
 
       // 合并当前教练数据和更新值
       const updatedCoach = { ...currentCoach, ...values };
-      
-      // 确保campusId非空
-      const campusId = updatedCoach.campusId || localStorage.getItem('currentCampusId') || 1;
 
-      // 构建API请求参数
+      // 确保campusId非空
+      const campusId = updatedCoach.campusId || localStorage.getItem('currentCampusId') || '';
+      if (!campusId) {
+        throw new Error('未选择校区');
+      }
+
+      // 构建API请求参数 - 符合后端接口格式
       const apiParams = {
         id: id,
         name: updatedCoach.name,
@@ -153,30 +138,52 @@ export const useCoachData = () => {
         experience: updatedCoach.experience,
         status: updatedCoach.status as CoachStatus,
         hireDate: updatedCoach.hireDate,
-        baseSalary: updatedCoach.baseSalary,
-        socialInsurance: updatedCoach.socialInsurance,
-        classFee: updatedCoach.classFee,
-        performanceBonus: updatedCoach.performanceBonus,
-        commission: updatedCoach.commission,
-        dividend: updatedCoach.dividend,
-        campusId: campusId,
-        // 包含薪资生效日期
-        salaryEffectiveDate: updatedCoach.salaryEffectiveDate
+        // 薪资相关字段
+        baseSalary: updatedCoach.baseSalary || 0,
+        socialInsurance: updatedCoach.socialInsurance || 0,
+        classFee: updatedCoach.classFee || 0,
+        performanceBonus: updatedCoach.performanceBonus || 0,
+        commission: updatedCoach.commission || 0,
+        dividend: updatedCoach.dividend || 0,
+        // 校区ID
+        campusId: Number(campusId)
       };
-
-      // 如果updatedCoach中有salary对象，也添加到请求参数中
-      if (updatedCoach.salary || values.salary) {
-        (apiParams as any).salary = updatedCoach.salary || values.salary;
-      }
 
       // 调用API更新教练
       await API.coach.update(apiParams);
 
       // 更新成功后更新本地状态
+      // 创建一个完整的更新后的教练对象
+      const updatedCoachForList = {
+        ...currentCoach,  // 保留原始教练对象中的其他字段
+        ...values,       // 更新提交的字段
+        id: id,          // 确保 ID 不变
+        // 确保这些字段存在，即使在 values 中没有提供
+        baseSalary: values.baseSalary !== undefined ? values.baseSalary : currentCoach.baseSalary,
+        socialInsurance: values.socialInsurance !== undefined ? values.socialInsurance : currentCoach.socialInsurance,
+        classFee: values.classFee !== undefined ? values.classFee : currentCoach.classFee,
+        performanceBonus: values.performanceBonus !== undefined ? values.performanceBonus : currentCoach.performanceBonus,
+        commission: values.commission !== undefined ? values.commission : currentCoach.commission,
+        dividend: values.dividend !== undefined ? values.dividend : currentCoach.dividend
+      };
+
+      // 将更新后的数据保存到缓存中
+      const stringId = String(id);
+      if (stringId) {
+        // 如果缓存中已有数据，则更新缓存
+        if (coachDetailCache[stringId]) {
+          coachDetailCache[stringId] = {
+            ...coachDetailCache[stringId],
+            ...updatedCoachForList
+          };
+          console.log('在 updateCoach 中更新缓存:', stringId, coachDetailCache[stringId]);
+        }
+      }
+
       setCoaches(prevCoaches =>
         prevCoaches.map(coach =>
           coach.id === id
-            ? { ...coach, ...values }
+            ? updatedCoachForList
             : coach
         )
       );
@@ -184,6 +191,57 @@ export const useCoachData = () => {
       message.success('教练信息已更新');
     } catch (error) {
       message.error('更新教练信息失败');
+      console.error(error);
+      throw error;
+    }
+  };
+
+  // 更新教练状态
+  const updateCoachStatus = async (id: string, newStatus: CoachStatus) => {
+    try {
+      // 查找当前教练对象
+      const currentCoach = coaches.find(coach => coach.id === id);
+      if (!currentCoach) {
+        throw new Error('教练不存在');
+      }
+
+      // 构建 API 请求参数
+      const apiParams = {
+        id: Number(id), // 确保 ID 是数字类型
+        status: newStatus as CoachStatus
+      };
+
+      console.log('发送状态更新请求:', apiParams);
+
+      // 调用 API 更新教练状态
+      await API.coach.updateStatus(apiParams);
+
+      // 更新成功后更新本地状态
+      const updatedCoach = { ...currentCoach, status: newStatus };
+
+      // 更新缓存
+      const stringId = String(id);
+      if (coachDetailCache[stringId]) {
+        coachDetailCache[stringId] = {
+          ...coachDetailCache[stringId],
+          status: newStatus
+        };
+        console.log('在 updateCoachStatus 中更新缓存:', stringId, coachDetailCache[stringId]);
+      }
+
+      // 更新列表数据
+      setCoaches(prevCoaches =>
+        prevCoaches.map(coach =>
+          coach.id === id
+            ? updatedCoach
+            : coach
+        )
+      );
+
+      message.success('教练状态已更新');
+      return updatedCoach;
+    } catch (error) {
+      message.error('更新教练状态失败');
       console.error(error);
       throw error;
     }
@@ -214,6 +272,7 @@ export const useCoachData = () => {
     fetchCoaches,
     addCoach,
     updateCoach,
+    updateCoachStatus,
     deleteCoach,
   };
 };

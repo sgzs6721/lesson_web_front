@@ -7,8 +7,8 @@ let isFetchingCampusList = false;
 let campusListCallbacks: ((campusList: Campus[]) => void)[] = [];
 
 // 导出清除缓存的函数
-export const clearCampusListCache = () => {
-  console.log('清除校区选择器缓存');
+export const clearCampusListCache = (reason?: string) => {
+  console.log(`清除校区选择器缓存${reason ? '，原因: ' + reason : ''}`);
   campusListCache = null;
 };
 
@@ -34,16 +34,16 @@ export const refreshAllCampusSelectors = () => {
 };
 
 // 导出获取校区列表的工具函数，可以在其他组件中使用
-export const getCampusList = async (): Promise<Campus[]> => {
+export const getCampusList = async (callerInfo?: string): Promise<Campus[]> => {
   // 如果已经有缓存数据，直接返回
   if (campusListCache !== null) {
-    console.log('使用缓存的校区列表数据');
+    console.log(`[getCampusList] 使用缓存的校区列表数据${callerInfo ? '，调用来源: ' + callerInfo : ''}`);
     return campusListCache;
   }
 
   // 如果已经有请求在进行，等待该请求完成
   if (isFetchingCampusList) {
-    console.log('等待现有的校区列表请求完成');
+    console.log(`[getCampusList] 等待现有的校区列表请求完成${callerInfo ? '，调用来源: ' + callerInfo : ''}`);
     return new Promise((resolve) => {
       campusListCallbacks.push((campusList) => {
         resolve(campusList);
@@ -53,7 +53,7 @@ export const getCampusList = async (): Promise<Campus[]> => {
 
   // 发起新的请求
   isFetchingCampusList = true;
-  console.log('发起新的campus/list API请求');
+  console.log(`[getCampusList] 发起新的campus/list API请求${callerInfo ? '，调用来源: ' + callerInfo : ''}`);
 
   try {
     // 直接使用fetch调用API，并添加必要的跨域和认证头
@@ -76,7 +76,7 @@ export const getCampusList = async (): Promise<Campus[]> => {
     });
 
     const responseData = await response.json();
-    console.log('原始 API 响应:', responseData);
+    console.log('[getCampusList] 原始 API 响应:', responseData);
 
     // 根据实际响应结构提取校区列表
     // 响应结构为: { code: 200, message: "操作成功", data: { list: [...], total: 1, ... } }
@@ -137,7 +137,7 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
 
     try {
       // 使用共享的获取函数
-      const campusList = await getCampusList();
+      const campusList = await getCampusList('CampusSelector组件');
       console.log('校区选择器组件获取到的校区列表:', campusList);
 
       // 更新组件状态

@@ -3,7 +3,8 @@ import { message } from 'antd';
 import dayjs from 'dayjs';
 import { Campus, CampusSearchParams } from '../types/campus';
 import { API } from '@/api';
-import { refreshAllCampusSelectors } from '@/components/CampusSelector';
+import { refreshAllCampusSelectors, clearCampusListCache as clearSelectorCache } from '@/components/CampusSelector';
+import { useCampusCheck } from '@/contexts/CampusCheckContext';
 
 // 创建模块级缓存
 let campusListCache: {
@@ -14,6 +15,22 @@ let campusListCache: {
   timestamp: number;
   searchParams?: CampusSearchParams;
 } | null = null;
+
+// 获取全局刷新校区检查的函数
+let globalRefreshCampusCheck: (() => Promise<void>) | null = null;
+
+// 导出设置全局刷新函数的方法
+export const setGlobalRefreshCampusCheck = (refreshFn: () => Promise<void>) => {
+  globalRefreshCampusCheck = refreshFn;
+};
+
+// 清除校区列表缓存
+export const clearCampusListCache = (reason?: string) => {
+  console.log(`清除校区列表缓存${reason ? '，原因: ' + reason : ''}`);
+  campusListCache = null;
+  // 同时清除CampusSelector中的缓存
+  clearSelectorCache(reason);
+};
 
 // 缓存过期时间（毫秒）
 const CACHE_EXPIRY = 60000; // 1分钟
@@ -28,6 +45,23 @@ export const useCampusData = () => {
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // 获取校区检查上下文，如果在组件中可用
+  const campusCheck = useCampusCheck();
+
+  // 当组件挂载时，设置全局刷新函数
+  useEffect(() => {
+    if (campusCheck && campusCheck.refreshCampusCheck) {
+      setGlobalRefreshCampusCheck(campusCheck.refreshCampusCheck);
+    }
+    
+    return () => {
+      // 组件卸载时清除全局引用
+      if (globalRefreshCampusCheck === campusCheck?.refreshCampusCheck) {
+        globalRefreshCampusCheck = null;
+      }
+    };
+  }, [campusCheck]);
 
   // 记录当前的搜索参数
   const searchParamsRef = useRef<CampusSearchParams | undefined>();
@@ -145,7 +179,7 @@ export const useCampusData = () => {
       setTotal(0);
 
       // 清除缓存
-      campusListCache = null;
+      clearCampusListCache('获取校区列表失败');
     } finally {
       isFetchingCampusList = false;
       setLoading(false);
@@ -206,14 +240,23 @@ export const useCampusData = () => {
         image: '',
       };
 
-      // 清除缓存
-      campusListCache = null;
+      // 清除校区列表缓存
+      clearCampusListCache('校区数据变更');
 
       // 重新获取最新数据，更新表格
       await fetchCampuses(searchParamsRef.current);
 
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
+      
+      // 刷新校区检查状态
+      if (campusCheck?.refreshCampusCheck) {
+        console.log('校区添加成功，刷新校区检查状态');
+        await campusCheck.refreshCampusCheck();
+      } else if (globalRefreshCampusCheck) {
+        console.log('校区添加成功，使用全局函数刷新校区检查状态');
+        await globalRefreshCampusCheck();
+      }
 
       return newCampus;
     } catch (error) {
@@ -246,20 +289,26 @@ export const useCampusData = () => {
       await API.campus.update(String(id), updateData);
       console.log('校区更新成功:', id);
 
-      // 清除缓存
-      campusListCache = null;
-
-      // 重新获取最新数据，更新表格
+      // 清除校区列表缓存
+      clearCampusListCache('校区数据变更');
+      
+      // 重新获取校区列表
       await fetchCampuses(searchParamsRef.current);
-
-      // 成功提示已移至useCampusForm.ts中处理，这里不再显示
-
+      
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
+      
+      // 刷新校区检查状态
+      if (campusCheck?.refreshCampusCheck) {
+        console.log('校区更新成功，刷新校区检查状态');
+        await campusCheck.refreshCampusCheck();
+      } else if (globalRefreshCampusCheck) {
+        console.log('校区更新成功，使用全局函数刷新校区检查状态');
+        await globalRefreshCampusCheck();
+      }
     } catch (error) {
       console.error('更新校区失败:', error);
       message.error('更新校区失败');
-      // 重新抛出错误，使调用者知道函数失败
       throw error;
     } finally {
       setLoading(false);
@@ -275,16 +324,26 @@ export const useCampusData = () => {
       await API.campus.delete(String(id));
       console.log('校区删除成功:', id);
 
-      message.success('校区已删除');
+      // 清除校区列表缓存
+      clearCampusListCache('校区数据变更');
 
-      // 清除缓存
-      campusListCache = null;
-
-      // 重新获取最新数据，更新表格
+      // 重新获取校区列表
       await fetchCampuses(searchParamsRef.current);
+
+      // 成功提示
+      message.success('校区已删除');
 
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
+      
+      // 刷新校区检查状态
+      if (campusCheck?.refreshCampusCheck) {
+        console.log('校区删除成功，刷新校区检查状态');
+        await campusCheck.refreshCampusCheck();
+      } else if (globalRefreshCampusCheck) {
+        console.log('校区删除成功，使用全局函数刷新校区检查状态');
+        await globalRefreshCampusCheck();
+      }
     } catch (error) {
       console.error('删除校区失败:', error);
       message.error('删除校区失败');
@@ -298,27 +357,38 @@ export const useCampusData = () => {
     try {
       setLoading(true);
 
-      // 计算新状态
-      const newStatus = record.status === 'CLOSED' ? 'OPERATING' : 'CLOSED';
+      // 准备状态数据
+      const newStatus = record.status === 'OPERATING' ? 'CLOSED' : 'OPERATING';
+      console.log('切换校区状态:', record.name, record.status, '->', newStatus);
 
-      // 调用API更新校区状态，使用updateStatus接口
-      // 直接传递字符串状态值：'OPERATING' 或 'CLOSED'
+      // 调用API更新状态
       await API.campus.updateStatus(String(record.id), newStatus);
-      console.log('校区状态更新成功:', record.id, newStatus);
+      console.log('校区状态更新成功:', record.id);
 
-      message.success(`校区状态已更新为${newStatus === 'OPERATING' ? '运营中' : '已关闭'}`);
+      // 清除校区列表缓存
+      clearCampusListCache('校区状态更新');
 
-      // 清除缓存
-      campusListCache = null;
-
-      // 重新获取最新数据，更新表格
+      // 重新获取校区列表
       await fetchCampuses(searchParamsRef.current);
+
+      // 成功提示
+      message.success(`校区已${newStatus === 'OPERATING' ? '开启' : '关闭'}`);
 
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
+      
+      // 刷新校区检查状态
+      if (campusCheck?.refreshCampusCheck) {
+        console.log('校区状态更新成功，刷新校区检查状态');
+        await campusCheck.refreshCampusCheck();
+      } else if (globalRefreshCampusCheck) {
+        console.log('校区状态更新成功，使用全局函数刷新校区检查状态');
+        await globalRefreshCampusCheck();
+      }
     } catch (error) {
       console.error('更新校区状态失败:', error);
       message.error('更新校区状态失败');
+      throw error;
     } finally {
       setLoading(false);
     }

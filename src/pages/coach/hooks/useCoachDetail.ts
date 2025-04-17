@@ -80,7 +80,8 @@ export const useCoachDetail = () => {
       }
 
       // 如果缓存中没有，则调用API获取
-      const apiCoachDetail = await API.coach.getDetail(id);
+      const currentCampusId = localStorage.getItem('currentCampusId');
+      const apiCoachDetail = await API.coach.getDetail(id, currentCampusId ? Number(currentCampusId) : undefined);
       if (apiCoachDetail) {
         // 转换为页面使用的Coach类型
         const coach = convertApiCoachToCoach(apiCoachDetail);

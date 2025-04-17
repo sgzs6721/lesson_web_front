@@ -20,7 +20,7 @@ export const useRealCampusOptions = () => {
 
     try {
       // 使用共享的getCampusList函数获取校区列表
-      const campusList = await getCampusList();
+      const campusList = await getCampusList('设置页面校区选项');
       // 校区列表已获取
 
       // 转换为选项格式

@@ -27,7 +27,7 @@ export const useDashboardData = () => {
   const fetchCampusList = async () => {
     try {
       // 使用共享的获取函数，避免重复调用API
-      const campusData = await getCampusList();
+      const campusData = await getCampusList('Dashboard组件');
       console.log('从getCampusList获取的校区数据:', campusData);
 
       // 更新状态

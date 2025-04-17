@@ -2,6 +2,8 @@ import React from 'react';
 import { Modal, Button, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { useCampusCheck } from '@/contexts/CampusCheckContext';
+import { clearCampusListCache } from '@/components/CampusSelector';
 
 const { Title, Paragraph } = Typography;
 
@@ -16,9 +18,12 @@ interface NoCampusModalProps {
  */
 const NoCampusModal: React.FC<NoCampusModalProps> = ({ visible, onClose }) => {
   const navigate = useNavigate();
+  const { refreshCampusCheck } = useCampusCheck();
 
   // 跳转到校区管理页面
   const handleGoToCampusManagement = () => {
+    // 清除校区列表缓存，确保下次获取最新数据
+    clearCampusListCache();
     onClose();
     navigate('/campuses');
   };
