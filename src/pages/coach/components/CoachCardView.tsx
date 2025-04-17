@@ -170,9 +170,9 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
         xs: 1,
         sm: 2,
         md: 2,
-        lg: 4,
-        xl: 4,
-        xxl: 4
+        lg: 3,
+        xl: 3,
+        xxl: 3
       }}
       dataSource={data}
       loading={loading}
@@ -237,39 +237,60 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                 {renderJobTitleTag(coach.jobTitle)}
               </div>
 
-              <div className="coach-info-content">
-                <div className="coach-info-item">
-                  <PhoneOutlined className="info-icon" />
-                  <span className="info-label">电话：</span>
-                  <span className="info-value">{coach.phone}</span>
+              <div style={{ display: 'flex', gap: '32px', width: '100%' }}>
+                {/* 左栏：基本信息 */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>电话：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.phone}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>ID：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.id}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>教龄：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.experience}年</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>入职：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{formatDate(coach.hireDate)}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>证书：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {Array.isArray(coach.certifications) && coach.certifications.length > 0
+                        ? coach.certifications[0]
+                        : <span className="no-cert">暂无证书</span>}
+                    </span>
+                  </div>
                 </div>
-
-                <div className="coach-info-item">
-                  <IdcardOutlined className="info-icon" />
-                  <span className="info-label">ID：</span>
-                  <span className="info-value">{coach.id}</span>
-                </div>
-
-                <div className="coach-info-item">
-                  <TrophyOutlined className="info-icon" />
-                  <span className="info-label">教龄：</span>
-                  <span className="info-value">{coach.experience}年</span>
-                </div>
-
-                <div className="coach-info-item">
-                  <CalendarOutlined className="info-icon" />
-                  <span className="info-label">入职：</span>
-                  <span className="info-value">{formatDate(coach.hireDate)}</span>
-                </div>
-
-                <div className="coach-info-item coach-certifications">
-                  <SafetyCertificateOutlined className="info-icon" />
-                  <span className="info-label">证书：</span>
-                  <span className="info-value">
-                    {Array.isArray(coach.certifications) && coach.certifications.length > 0
-                      ? <Tag color="blue" className="cert-tag">{coach.certifications[0]}</Tag>
-                      : <span className="no-cert">暂无证书</span>}
-                  </span>
+                {/* 右栏：薪资信息 */}
+                <div style={{ flex: 1, minWidth: 0, paddingLeft: 16, borderLeft: '1px solid #f0f0f0' }}>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>基本工资：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.baseSalary?.toLocaleString() ?? 'N/A'}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>社保费：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.socialInsurance?.toLocaleString() ?? 'N/A'}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>课时费：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.classFee?.toLocaleString() ?? 'N/A'} /时</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>绩效奖：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.performanceBonus?.toLocaleString() ?? 'N/A'}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>提成：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.commission ?? 'N/A'}%</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>分红：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.dividend?.toLocaleString() ?? 'N/A'}</span>
+                  </div>
                 </div>
               </div>
 
