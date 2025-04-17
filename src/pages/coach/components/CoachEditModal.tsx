@@ -8,6 +8,38 @@ import './CoachEditModal.css';
 
 const { TextArea } = Input;
 
+// 手机号验证函数
+const validatePhoneNumber = (_: any, value: string) => {
+  if (!value) {
+    return Promise.reject(new Error('请输入联系电话'));
+  }
+
+  // 基本格式检查：11位数字，以1开头
+  if (!/^1\d{10}$/.test(value)) {
+    return Promise.reject(new Error('手机号必须是11位数字且以1开头'));
+  }
+
+  // 运营商前缀检查
+  const validPrefixes = [
+    // 移动
+    '134', '135', '136', '137', '138', '139', '150', '151', '152', '157', '158', '159',
+    '182', '183', '184', '187', '188', '147', '178', '198',
+    // 联通
+    '130', '131', '132', '155', '156', '185', '186', '145', '146', '166', '175', '176',
+    // 电信
+    '133', '153', '180', '181', '189', '177', '173', '199',
+    // 虚拟运营商
+    '170', '171'
+  ];
+
+  const prefix = value.substring(0, 3);
+  if (!validPrefixes.includes(prefix)) {
+    return Promise.reject(new Error('请输入有效的手机号码前缀'));
+  }
+
+  return Promise.resolve();
+};
+
 interface CoachEditModalProps {
   visible: boolean;
   loading: boolean;
@@ -143,7 +175,9 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   <Form.Item
                     name="phone"
                     label="联系电话"
-                    rules={[{ required: true, message: '请输入联系电话' }]}
+                    rules={[
+                      { validator: validatePhoneNumber }
+                    ]}
                   >
                     <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
                   </Form.Item>
