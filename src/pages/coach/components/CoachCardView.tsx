@@ -95,14 +95,17 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
               fontSize: '11px',
               padding: '0 8px',
               fontWeight: 600,
-              marginRight: 4,
+              marginRight: 0,
               border: 'none',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
             }}
           >
             {text}
+            <DownOutlined style={{ fontSize: '10px', color: '#999', marginLeft: '2px' }} />
           </Tag>
-          <DownOutlined style={{ fontSize: '10px', color: '#999' }} />
         </div>
       </Dropdown>
     );
