@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import { useLocation, useNavigate } from '@/router/hooks';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { logout } from '@/redux/slices/authSlice';
 import CampusSelector, { getCampusList } from '@/components/CampusSelector';
 import UserProfileModal from '@/components/UserProfileModal';
 import { Campus } from '@/api/campus/types';
+import { useCampusCheck } from '@/contexts/CampusCheckContext';
 import {
   HomeTwoTone,
   BankTwoTone,
@@ -31,6 +31,9 @@ const MainLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  
+  // 使用校区检查Context
+  const { refreshCampusCheck, checkCampusBeforeNavigate } = useCampusCheck();
 
   // Get user info from redux store
   const auth = useAppSelector((state) => state.auth);
@@ -43,29 +46,79 @@ const MainLayout: React.FC = () => {
     setActiveMenu(pathKey);
   }, [location.pathname]);
 
-  // 在组件加载时预加载校区列表
+  // 初始化加载校区信息
   useEffect(() => {
-    const preloadCampusList = async () => {
+    const loadCampusInfo = async () => {
       try {
-        console.log('预加载校区列表...');
-        const campusList = await getCampusList();
-        console.log('预加载校区列表成功:', campusList);
-
-        // 如果有校区且当前没有选中校区，选择第一个
-        if (campusList.length > 0 && !currentCampus) {
-          setCurrentCampus(campusList[0]);
+        // 只有在用户已登录的情况下才加载校区信息
+        if (auth.isAuthenticated) {
+          console.log('MainLayout: 开始加载校区信息');
+          const campusList = await getCampusList();
+          
+          if (campusList && campusList.length > 0) {
+            // 尝试从localStorage中获取上次选择的校区ID
+            const savedCampusId = localStorage.getItem('currentCampusId');
+            const selectedCampus = savedCampusId 
+              ? campusList.find(c => String(c.id) === savedCampusId)
+              : campusList[0];
+              
+            if (selectedCampus) {
+              console.log('MainLayout: 设置当前校区:', selectedCampus.name);
+              setCurrentCampus(selectedCampus);
+            }
+          }
+          
+          // 更新校区检查状态
+          refreshCampusCheck();
         }
       } catch (error) {
-        console.error('预加载校区列表失败:', error);
+        console.error('加载校区信息失败:', error);
       }
     };
 
-    preloadCampusList();
-  }, []);
+    loadCampusInfo();
+  }, [auth.isAuthenticated, refreshCampusCheck]);
 
-  const handleLogout = async () => {
-    await dispatch(logout());
+  // 处理菜单点击
+  const handleMenuClick = async (e: React.MouseEvent, path: string) => {
+    e.preventDefault();
+    
+    // 使用校区检查逻辑，只有校区检查通过才导航
+    const canProceed = await checkCampusBeforeNavigate(path);
+    
+    if (canProceed) {
+      // 导航到目标页面
+      navigate(path);
+      setActiveMenu(path);
+    }
+    // 如果canProceed为false，表示没有校区，此时已显示模态框，不进行导航
+  };
+
+  // 处理校区切换
+  const handleCampusChange = (campus: Campus) => {
+    console.log('切换到校区:', campus.name);
+    setCurrentCampus(campus);
+  };
+
+  // 处理登出
+  const handleLogout = () => {
+    dispatch(logout());
     navigate('/home');
+  };
+
+  // 处理切换主题
+  const handleThemeToggle = () => {
+    setIsDarkTheme(!isDarkTheme);
+  };
+
+  // 处理侧边栏折叠/展开
+  const handleSidebarCollapse = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  // 处理显示用户资料
+  const handleShowProfile = () => {
+    setShowProfileModal(true);
   };
 
   // 切换主题
@@ -82,30 +135,6 @@ const MainLayout: React.FC = () => {
     if (isMobile) {
       // For mobile, collapsed actually means visible/expanded
       document.body.style.overflow = !sidebarCollapsed ? 'hidden' : '';
-    }
-  };
-
-  // 处理校区变更
-  const handleCampusChange = (campus: Campus) => {
-    setCurrentCampus(campus);
-    console.log('选择校区:', campus);
-    console.log('校区负责人信息:', {
-      managerName: campus.managerName,
-      managerPhone: campus.managerPhone,
-      contactPerson: campus.contactPerson,
-      phone: campus.phone
-    });
-  };
-
-  // Close sidebar when clicking on menu item on mobile
-  const handleMenuClick = (e: React.MouseEvent, path: string) => {
-    e.preventDefault();
-    navigate(path);
-
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile && !sidebarCollapsed) {
-      setSidebarCollapsed(true);
-      document.body.style.overflow = '';
     }
   };
 

@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { RouterProvider } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/lib/locale/zh_CN';
-import { router } from '@/router';
+import AppRoutes from '@/router/AppRoutes';
 import { useAppDispatch } from '@/hooks/reduxHooks';
 import { checkAuth } from '@/redux/slices/authSlice';
+import CampusCheckProvider from '@/contexts/CampusCheckContext';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -16,9 +17,11 @@ function App() {
 
   return (
     <ConfigProvider locale={zhCN}>
-      <RouterProvider
-        router={router}
-      />
+      <BrowserRouter>
+        <CampusCheckProvider>
+          <AppRoutes />
+        </CampusCheckProvider>
+      </BrowserRouter>
     </ConfigProvider>
   );
 }
