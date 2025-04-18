@@ -82,7 +82,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
       <Dropdown
         menu={{ items, onClick: handleStatusChange }}
         trigger={['click']}
-        placement="bottomCenter"
+        placement="bottom"
       >
         <div
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -269,27 +269,56 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                 <div style={{ flex: 1, minWidth: 0, paddingLeft: 16, borderLeft: '1px solid #f0f0f0' }}>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>基本工资：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.baseSalary?.toLocaleString() ?? 'N/A'}</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {typeof coach.baseSalary === 'number' && coach.baseSalary > 0 
+                        ? `¥${coach.baseSalary.toLocaleString()}` 
+                        : 'N/A'}
+                    </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>社保费：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.socialInsurance?.toLocaleString() ?? 'N/A'}</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {typeof coach.socialInsurance === 'number' && coach.socialInsurance > 0 
+                        ? `¥${coach.socialInsurance.toLocaleString()}` 
+                        : 'N/A'}
+                    </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>课时费：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.classFee?.toLocaleString() ?? 'N/A'} /时</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {(() => {
+                        if (typeof coach.classFee === 'number' && coach.classFee > 0) {
+                          const fee = coach.classFee.toLocaleString();
+                          const noBreakSpace = '\u200B'; // 零宽度空格
+                          return `¥${fee}${noBreakSpace}/时`;
+                        }
+                        return 'N/A/时';
+                      })()}
+                    </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>绩效奖：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.performanceBonus?.toLocaleString() ?? 'N/A'}</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {typeof coach.performanceBonus === 'number' && coach.performanceBonus > 0 
+                        ? `¥${coach.performanceBonus.toLocaleString()}` 
+                        : 'N/A'}
+                    </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>提成：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.commission ?? 'N/A'}%</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {typeof coach.commission === 'number' && coach.commission > 0 
+                        ? `${coach.commission}%` 
+                        : 'N/A%'}
+                    </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>分红：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>¥{coach.dividend?.toLocaleString() ?? 'N/A'}</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {typeof coach.dividend === 'number' && coach.dividend > 0 
+                        ? `¥${coach.dividend.toLocaleString()}` 
+                        : 'N/A'}
+                    </span>
                   </div>
                 </div>
               </div>

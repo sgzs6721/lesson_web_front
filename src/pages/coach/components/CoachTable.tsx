@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Space, Tooltip, Avatar, Dropdown, Menu } from 'antd';
+import { Table, Button, Space, Tooltip, Avatar, Dropdown, Menu, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo } from '../utils/formatters';
@@ -67,7 +67,7 @@ const CoachTable: React.FC<CoachTableProps> = ({
       <Dropdown
         menu={{ items, onClick: handleStatusChange }}
         trigger={['click']}
-        placement="bottomCenter"
+        placement="bottom"
       >
         <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: color, marginRight: 4 }}>{text}</span>
@@ -123,6 +123,21 @@ const CoachTable: React.FC<CoachTableProps> = ({
       dataIndex: 'jobTitle',
       key: 'jobTitle',
       align: 'center',
+      render: (jobTitle) => (
+        <Tag
+          color="blue"
+          style={{
+            padding: '1px 5px',
+            borderRadius: '3px',
+            fontSize: '11px',
+            lineHeight: '1.3',
+            height: '18px',
+            margin: '2px',
+          }}
+        >
+          {jobTitle}
+        </Tag>
+      ),
     },
     {
       title: '联系电话',
@@ -161,11 +176,71 @@ const CoachTable: React.FC<CoachTableProps> = ({
           return <div style={{ color: '#999', textAlign: 'center' }}>无</div>;
         }
 
+        // 将证书数据转换为数组
+        let certArray: string[] = [];
         if (Array.isArray(certifications)) {
-          return <div style={{ textAlign: 'center' }}>{certifications.join('、')}</div>;
+          certArray = certifications.filter(c => c.trim());
+        } else if (typeof certifications === 'string') {
+          certArray = certifications.split(/[,，\n\r]/).map(c => c.trim()).filter(c => c);
         }
 
-        return <div style={{ textAlign: 'center' }}>{certifications}</div>;
+        if (certArray.length === 0) {
+          return <div style={{ color: '#999', textAlign: 'center' }}>无</div>;
+        }
+
+        // 限制最多显示2个证书，超出部分显示+N
+        const maxShow = 2;
+        const hasMore = certArray.length > maxShow;
+        const visibleCerts = certArray.slice(0, maxShow);
+
+        return (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            flexWrap: 'nowrap',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            gap: '4px' 
+          }}>
+            {visibleCerts.map((cert, index) => (
+              <Tag
+                key={index}
+                color="blue"
+                style={{
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  fontSize: '11px',
+                  lineHeight: '1.3',
+                  height: '18px',
+                  margin: '0 2px',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '80px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
+                {cert}
+              </Tag>
+            ))}
+            {hasMore && (
+              <Tag
+                color="default"
+                style={{
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  fontSize: '11px',
+                  lineHeight: '1.3',
+                  height: '18px',
+                  margin: '0 2px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                +{certArray.length - maxShow}
+              </Tag>
+            )}
+          </div>
+        );
       }
     },
     {

@@ -53,7 +53,6 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               bordered 
               column={2} 
               size="small" 
-              title={<div style={titleStyle as React.CSSProperties}>基本信息</div>}
             >
               <Descriptions.Item label="教练ID" span={1}>{coach.id}</Descriptions.Item>
               <Descriptions.Item label="年龄" span={1}>{coach.age}</Descriptions.Item>
@@ -89,23 +88,66 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               <Descriptions.Item label="基本工资" span={1}>{`¥${coach.baseSalary?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
               <Descriptions.Item label="社保费" span={1}>{`¥${coach.socialInsurance?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
               
-              <Descriptions.Item label="课时费" span={1}>{`¥${coach.classFee?.toLocaleString() ?? 'N/A'} /时`}</Descriptions.Item>
+              <Descriptions.Item label="课时费" span={1}>
+                {(() => {
+                  // 直接以字符串形式连接，而不是使用React组件
+                  const fee = coach.classFee?.toLocaleString() ?? 'N/A';
+                  // 使用Unicode零宽度空格来强制浏览器不插入空格
+                  const noBreakSpace = '\u200B'; // 零宽度空格
+                  return `¥${fee}${noBreakSpace}/时`;
+                })()}
+              </Descriptions.Item>
               <Descriptions.Item label="绩效奖金" span={1}>{`¥${coach.performanceBonus?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
               
               <Descriptions.Item label="提成" span={1}>{`${coach.commission ?? 'N/A'}%`}</Descriptions.Item>
               <Descriptions.Item label="分红" span={1}>{`¥${coach.dividend?.toLocaleString() ?? 'N/A'}`}</Descriptions.Item>
 
               <Descriptions.Item label="证书" span={2}>
-                {Array.isArray(coach.certifications) && coach.certifications.length > 0
-                  ? coach.certifications.map((cert, index) => (
-                      <Tag key={index} style={{ marginBottom: 4 }}>{cert.trim()}</Tag>
-                    ))
-                  : typeof coach.certifications === 'string' && coach.certifications
-                    ? coach.certifications.split('，').map((cert, index) => (
-                        <Tag key={index} style={{ marginBottom: 4 }}>{cert.trim()}</Tag>
-                      ))
-                    : '无'
-                }
+                <div className="certification-content" style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '0',
+                  margin: '-4px 0',
+                }}>
+                  {(() => {
+                    // 将任何类型的数据转换为标准数组
+                    if (!coach.certifications) return '无';
+                    
+                    let certArray: string[] = [];
+                    
+                    if (typeof coach.certifications === 'string') {
+                      certArray = coach.certifications.split(/[,，\n\r]/).map(c => c.trim()).filter(c => c);
+                    } else if (Array.isArray(coach.certifications)) {
+                      certArray = coach.certifications.filter(c => c.trim());
+                    }
+                    
+                    if (certArray.length === 0) {
+                      return '无';
+                    }
+                    
+                    // 使用Tag组件显示每个证书
+                    return (
+                      <Space size={[6, 4]} wrap style={{ marginTop: '-2px', marginBottom: '-2px' }}>
+                        {certArray.map((cert, index) => (
+                          <Tag 
+                            key={index} 
+                            color="blue" 
+                            style={{ 
+                              marginBottom: 4, 
+                              padding: '1px 5px',
+                              borderRadius: '3px',
+                              fontSize: '11px',
+                              lineHeight: '1.3',
+                              height: '18px'
+                            }}
+                          >
+                            {cert}
+                          </Tag>
+                        ))}
+                      </Space>
+                    );
+                  })()}
+                </div>
               </Descriptions.Item>
             </Descriptions>
           </>

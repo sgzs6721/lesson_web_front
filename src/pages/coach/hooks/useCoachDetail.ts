@@ -17,6 +17,19 @@ export const convertApiCoachToCoach = (apiCoach: any): Coach => {
   // 处理certifications，确保其为数组
   const certifications = apiCoach.certifications || [];
 
+  // 处理薪资数据，确保数字类型
+  const getSalaryValue = (salaryField: string): number => {
+    // 如果有嵌套的salary对象，优先使用
+    if (apiCoach.salary && apiCoach.salary[salaryField] !== undefined && apiCoach.salary[salaryField] !== null) {
+      return Number(apiCoach.salary[salaryField]) || 0;
+    }
+    // 如果没有嵌套的salary对象，或者嵌套对象中没有该字段，尝试从顶层对象获取
+    if (apiCoach[salaryField] !== undefined && apiCoach[salaryField] !== null) {
+      return Number(apiCoach[salaryField]) || 0;
+    }
+    return 0; // 默认值
+  };
+
   // 记录原始API响应用于调试
   console.log('API返回的教练数据:', apiCoach);
 
@@ -33,24 +46,32 @@ export const convertApiCoachToCoach = (apiCoach: any): Coach => {
     experience: apiCoach.experience, 
     status: apiCoach.status,
     hireDate: formatDate(apiCoach.hireDate),
-    // 从salary对象中提取工资信息，如果存在
-    baseSalary: apiCoach.salary?.baseSalary || apiCoach.baseSalary || 0,
-    socialInsurance: apiCoach.salary?.socialInsurance || apiCoach.socialInsurance || 0,
-    classFee: apiCoach.salary?.classFee || apiCoach.classFee || 0,
-    performanceBonus: apiCoach.salary?.performanceBonus || apiCoach.performanceBonus || 0,
-    commission: apiCoach.salary?.commission || apiCoach.commission || 0,
-    dividend: apiCoach.salary?.dividend || apiCoach.dividend || 0,
+    // 使用新的薪资提取函数获取薪资信息
+    baseSalary: getSalaryValue('baseSalary'),
+    socialInsurance: getSalaryValue('socialInsurance'),
+    classFee: getSalaryValue('classFee'),
+    performanceBonus: getSalaryValue('performanceBonus'),
+    commission: getSalaryValue('commission'),
+    dividend: getSalaryValue('dividend'),
     campusId: apiCoach.campusId,
     campusName: apiCoach.campusName,
     // 保存其他有用的信息
     institutionId: apiCoach.institutionId,
-    institutionName: apiCoach.institutionName
+    institutionName: apiCoach.institutionName,
+    // 薪资生效日期
+    salaryEffectiveDate: apiCoach.salary?.effectiveDate || apiCoach.salaryEffectiveDate
   };
 
   // 如果API返回的数据中包含salary对象，则保留该对象
   if (apiCoach.salary) {
     coach.salary = {
-      ...apiCoach.salary
+      baseSalary: getSalaryValue('baseSalary'),
+      socialInsurance: getSalaryValue('socialInsurance'),
+      classFee: getSalaryValue('classFee'),
+      performanceBonus: getSalaryValue('performanceBonus'),
+      commission: getSalaryValue('commission'),
+      dividend: getSalaryValue('dividend'),
+      effectiveDate: apiCoach.salary.effectiveDate
     };
     console.log('保存嵌套的salary对象:', coach.salary);
   }

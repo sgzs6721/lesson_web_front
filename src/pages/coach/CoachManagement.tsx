@@ -10,32 +10,27 @@ import CoachDeleteModal from './components/CoachDeleteModal';
 import { useCoachData } from './hooks/useCoachData';
 import { useCoachSearch } from './hooks/useCoachSearch';
 import { useCoachForm } from './hooks/useCoachForm';
-import { useCoachDetail } from './hooks/useCoachDetail';
+import { useCoachDetail, coachDetailCache } from './hooks/useCoachDetail';
 import { ViewMode } from './types/coach';
 import './components/CoachManagement.css';
 
 const { Title } = Typography;
 
 const CoachManagement: React.FC = () => {
-  // 视图模式状态
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  // 初始加载引用
   const initialLoadRef = useRef(true);
 
-  // 使用数据管理钩子
-  const {
-    coaches,
-    total,
-    loading,
-    fetchCoaches,
-    addCoach,
-    updateCoach,
-    updateCoachStatus,
-    deleteCoach
-  } = useCoachData();
+  // 视图模式状态
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
-  // 使用搜索钩子
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // 数据相关钩子
+  const { coaches, total, loading, fetchCoaches, addCoach, updateCoach, updateCoachStatus, deleteCoach } = useCoachData();
+
+  // 搜索相关钩子
   const {
     searchParams,
     setSearchText,
@@ -45,67 +40,74 @@ const CoachManagement: React.FC = () => {
     resetSearchParams
   } = useCoachSearch();
 
-  // 使用表单管理钩子
-  const {
-    form,
-    visible,
-    editingCoach,
-    selectedAvatar,
-    loading: formLoading,
-    detailLoading: formDetailLoading,
-    handleAdd,
-    handleEdit,
-    handleSubmit,
-    handleCancel,
-    handleAvatarSelect,
-    handleGenderChange
-  } = useCoachForm(addCoach, updateCoach);
+  // 表单相关钩子
+  const { form, visible, editingCoach, loading: formLoading, detailLoading: formDetailLoading, selectedAvatar, handleAdd, handleEdit, handleSubmit, handleCancel, handleAvatarSelect, handleGenderChange } = useCoachForm(addCoach, updateCoach);
+  
+  // 详情相关
+  const { detailVisible, viewingCoach, deleteModalVisible, recordToDelete, loading: detailLoading, fetchCoachDetail, showDetail, closeDetail, showDeleteConfirm, cancelDelete } = useCoachDetail();
 
-  // 使用详情管理钩子
-  const {
-    detailVisible,
-    viewingCoach,
-    deleteModalVisible,
-    recordToDelete,
-    loading: detailLoading,
-    showDetail,
-    closeDetail,
-    showDeleteConfirm,
-    cancelDelete
-  } = useCoachDetail();
-
-  // 初始加载
-  useEffect(() => {
-    // 使用ref确保只在初次渲染时加载数据
-    if (initialLoadRef.current) {
-      fetchCoaches(currentPage, pageSize);
-      initialLoadRef.current = false;
-    }
-  }, [currentPage, pageSize, fetchCoaches]);
-
-  // 处理查询
-  const handleSearch = () => {
-    setCurrentPage(1);
-    fetchCoaches(1, pageSize, searchParams);
+  // 预加载教练详情数据
+  const preloadCoachDetails = async () => {
+    // 对列表中的每个教练，如果详情缓存中没有，则加载详情
+    coaches.forEach(async (coach) => {
+      if (!coachDetailCache[coach.id]) {
+        try {
+          // 静默加载教练详情，不显示加载状态
+          const coachDetail = await fetchCoachDetail(coach.id);
+          console.log(`预加载教练 ${coach.id} 详情成功`);
+        } catch (error) {
+          console.error(`预加载教练 ${coach.id} 详情失败:`, error);
+        }
+      }
+    });
   };
 
-  // 处理重置
+  // 加载教练列表
+  const loadCoaches = async (page = currentPage, size = pageSize) => {
+    await fetchCoaches(page, size, searchParams);
+
+    // 如果当前是卡片视图模式，预加载所有教练的详情数据
+    if (viewMode === 'card') {
+      preloadCoachDetails();
+    }
+  };
+
+  // 页码变更处理
+  const handlePageChange = (page: number, size: number) => {
+    setCurrentPage(page);
+    setPageSize(size);
+    loadCoaches(page, size);
+  };
+
+  // 分页配置
+  const paginationConfig = {
+    current: currentPage,
+    pageSize: pageSize,
+    total: total,
+    onChange: handlePageChange
+  };
+
+  // 处理搜索
+  const handleSearch = async () => {
+    setCurrentPage(1);
+    loadCoaches(1, pageSize);
+  };
+
+  // 重置搜索
   const handleReset = () => {
     resetSearchParams();
     setCurrentPage(1);
-    fetchCoaches(1, pageSize);
-  };
-
-  // 处理分页变化
-  const handlePageChange = (page: number, pageSize: number) => {
-    setCurrentPage(page);
-    setPageSize(pageSize);
-    fetchCoaches(page, pageSize, searchParams);
+    loadCoaches(1, pageSize);
   };
 
   // 处理视图模式变更
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
+  const handleViewModeChange = (newMode: ViewMode) => {
+    setViewMode(newMode);
+    
+    // 如果切换到卡片视图，预加载教练详情
+    if (newMode === 'card') {
+      preloadCoachDetails();
+    }
   };
 
   // 处理状态变更
@@ -129,9 +131,9 @@ const CoachManagement: React.FC = () => {
           // 如果删除后数据不足一页，则回到第一页
           if (coaches.length === 1 && currentPage > 1) {
             setCurrentPage(prev => prev - 1);
-            fetchCoaches(currentPage - 1, pageSize, searchParams);
+            loadCoaches(currentPage - 1, pageSize);
           } else {
-            fetchCoaches(currentPage, pageSize, searchParams);
+            loadCoaches(currentPage, pageSize);
           }
         })
         .catch(error => {
@@ -140,13 +142,13 @@ const CoachManagement: React.FC = () => {
     }
   };
 
-  // 分页配置
-  const paginationConfig = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: total,
-    onChange: handlePageChange
-  };
+  // 初始加载教练列表
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      loadCoaches();
+      initialLoadRef.current = false;
+    }
+  }, []);
 
   return (
     <div className="coach-management">
@@ -184,7 +186,7 @@ const CoachManagement: React.FC = () => {
           />
         ) : (
           <CoachCardView
-            data={coaches}
+            data={coaches.map(coach => coachDetailCache[coach.id] || coach)} // 优先使用缓存中的详情数据
             loading={loading}
             pagination={paginationConfig}
             onEdit={handleEdit}

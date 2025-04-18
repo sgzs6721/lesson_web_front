@@ -143,18 +143,20 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   <Form.Item
                     name="name"
                     label="姓名"
+                    htmlFor="coach_name"
                     rules={[{ required: true, message: '请输入教练姓名' }]}
                   >
-                    <Input prefix={<UserOutlined />} placeholder="请输入教练姓名" />
+                    <Input id="coach_name" prefix={<UserOutlined />} placeholder="请输入教练姓名" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
                     name="gender"
                     label="性别"
+                    htmlFor="coach_gender"
                     rules={[{ required: true, message: '请选择性别' }]}
                   >
-                    <Radio.Group onChange={onGenderChange}>
+                    <Radio.Group id="coach_gender" onChange={onGenderChange}>
                       <Radio value="MALE">男</Radio>
                       <Radio value="FEMALE">女</Radio>
                     </Radio.Group>
@@ -167,20 +169,22 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   <Form.Item
                     name="age"
                     label="年龄"
+                    htmlFor="coach_age"
                     rules={[{ required: true, message: '请输入年龄' }]}
                   >
-                    <Input type="number" placeholder="请输入年龄" />
+                    <Input id="coach_age" type="number" placeholder="请输入年龄" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
                     name="phone"
                     label="联系电话"
+                    htmlFor="coach_phone"
                     rules={[
                       { validator: validatePhoneNumber }
                     ]}
                   >
-                    <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
+                    <Input id="coach_phone" prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
                   </Form.Item>
                 </Col>
               </Row>
@@ -190,9 +194,11 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   <Form.Item
                     name="jobTitle"
                     label="职位"
+                    htmlFor="coach_job_title"
                     rules={[{ required: true, message: '请输入职位' }]}
                   >
                     <Select
+                      id="coach_job_title"
                       placeholder="请选择职位"
                       style={{ width: '100%' }}
                       options={[
@@ -210,9 +216,10 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   <Form.Item
                     name="experience"
                     label="教龄(年)"
+                    htmlFor="coach_experience"
                     rules={[{ required: true, message: '请输入教龄' }]}
                   >
-                    <Input type="number" placeholder="请输入教龄" />
+                    <Input id="coach_experience" type="number" placeholder="请输入教龄" />
                   </Form.Item>
                 </Col>
               </Row>
@@ -222,18 +229,21 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                   <Form.Item
                     name="hireDate"
                     label="入职日期"
+                    htmlFor="coach_hire_date"
                     rules={[{ required: true, message: '请选择入职日期' }]}
                   >
-                    <DatePicker style={{ width: '100%' }} />
+                    <DatePicker id="coach_hire_date" style={{ width: '100%' }} />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
                     name="status"
                     label="状态"
+                    htmlFor="coach_status"
                     rules={[{ required: true, message: '请选择状态' }]}
                   >
                     <Select
+                      id="coach_status"
                       placeholder="请选择状态"
                       style={{ width: '100%' }}
                       options={[
@@ -252,14 +262,15 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
               <Form.Item
                 name="certifications"
                 label="持有证书"
+                htmlFor="coach_certifications"
                 extra="每行输入一个证书"
               >
-                <TextArea rows={4} placeholder="请输入持有的证书，每行一个" />
+                <TextArea id="coach_certifications" rows={4} placeholder="请输入持有的证书，每行一个" />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="选择头像">
-                <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <Form.Item label="选择头像" htmlFor="coach_avatar">
+                <div id="coach_avatar" style={{ textAlign: 'center', marginBottom: 16 }}>
                   <Avatar
                     size={100}
                     src={selectedAvatar}
@@ -336,27 +347,30 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
               <Form.Item
                 name="baseSalary"
                 label="基本工资"
+                htmlFor="coach_base_salary"
                 rules={[{ required: true, message: '请输入基本工资' }]}
               >
-                <Input type="number" placeholder="请输入基本工资" prefix="¥" suffix="元" />
+                <Input id="coach_base_salary" type="number" placeholder="请输入基本工资" prefix="¥" suffix="元" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
                 name="socialInsurance"
                 label="社保费"
+                htmlFor="coach_social_insurance"
                 rules={[{ required: true, message: '请输入社保费' }]}
               >
-                <Input type="number" placeholder="请输入社保费" prefix="¥" suffix="元" />
+                <Input id="coach_social_insurance" type="number" placeholder="请输入社保费" prefix="¥" suffix="元" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
                 name="classFee"
                 label="课时费"
+                htmlFor="coach_class_fee"
                 rules={[{ required: true, message: '请输入课时费' }]}
               >
-                <Input type="number" placeholder="请输入课时费" prefix="¥" suffix="元/时" />
+                <Input id="coach_class_fee" type="number" placeholder="请输入课时费" prefix="¥" suffix="元/时" />
               </Form.Item>
             </Col>
           </Row>
@@ -366,27 +380,30 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
               <Form.Item
                 name="performanceBonus"
                 label="绩效奖金"
+                htmlFor="coach_performance_bonus"
                 rules={[{ required: true, message: '请输入绩效奖金' }]}
               >
-                <Input type="number" placeholder="请输入绩效奖金" prefix="¥" suffix="元" />
+                <Input id="coach_performance_bonus" type="number" placeholder="请输入绩效奖金" prefix="¥" suffix="元" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
                 name="commission"
                 label="提成"
+                htmlFor="coach_commission"
                 rules={[{ required: true, message: '请输入提成' }]}
               >
-                <Input type="number" placeholder="请输入提成比例" suffix="%" />
+                <Input id="coach_commission" type="number" placeholder="请输入提成比例" suffix="%" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
                 name="dividend"
                 label="分红"
+                htmlFor="coach_dividend"
                 rules={[{ required: true, message: '请输入分红' }]}
               >
-                <Input type="number" placeholder="请输入分红" prefix="¥" suffix="元" />
+                <Input id="coach_dividend" type="number" placeholder="请输入分红" prefix="¥" suffix="元" />
               </Form.Item>
             </Col>
           </Row>
