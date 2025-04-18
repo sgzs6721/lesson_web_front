@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Row, Col, Divider, Button, Spin, Select } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import { User } from '../types/user';
 import { roleOptions, statusOptions, DEFAULT_STATUS } from '../constants/userOptions';
 import { useRealCampusOptions } from '../hooks/useRealCampusOptions';
@@ -185,9 +185,26 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
     return undefined;
   });
 
+  // 使用密码值作为依赖项的状态变量，强制重新渲染
+  const [passwordValue, setPasswordValue] = useState<string>(() => {
+    // 如果是编辑模式，使用用户手机号的后8位
+    if (editingUser?.phone) {
+      if (editingUser.phone.length >= 8) {
+        const last8 = editingUser.phone.slice(-8);
+        console.log('初始化密码为手机号后8位:', last8, '手机号:', editingUser.phone);
+        return last8;
+      }
+      console.log('手机号不足8位，使用全部:', editingUser.phone);
+      return editingUser.phone;
+    }
+    // 如果是添加模式，初始化为空
+    console.log('添加模式，初始化密码为空');
+    return '';
+  });
+
   // 删除未使用的 campusValue 状态变量
 
-  // 当编辑用户变化时，更新状态值、角色值和校区值
+  // 当编辑用户变化时，更新状态值、角色值、密码值和校区值
   useEffect(() => {
     if (editingUser) {
       // 处理状态值
@@ -214,7 +231,28 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         // 角色值已更新
       }
 
+      // 处理密码值 - 设置为手机号的后8位
+      if (editingUser.phone) {
+        console.log('useEffect 中设置密码，手机号:', editingUser.phone, '长度:', editingUser.phone.length);
+        if (editingUser.phone.length >= 8) {
+          const last8 = editingUser.phone.slice(-8);
+          console.log('useEffect 中设置密码为手机号后8位:', last8);
+          setPasswordValue(last8);
+          // 同时设置表单字段
+          form.setFieldsValue({ password: last8 });
+        } else {
+          console.log('useEffect 中手机号不足8位，设置密码为全部手机号:', editingUser.phone);
+          setPasswordValue(editingUser.phone);
+          // 同时设置表单字段
+          form.setFieldsValue({ password: editingUser.phone });
+        }
+        // 密码值已更新
+      }
+
       // 校区值已在其他地方处理
+    } else {
+      // 如果是添加模式，初始化密码为空
+      setPasswordValue('');
     }
   }, [editingUser]);
 
@@ -257,9 +295,21 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             console.log('状态字段变化为:', changedValues.status);
           }
 
-          // 当电话字段变化时，自动更新密码字段
-          if (!editingUser && changedValues.phone) {
-            form.setFieldsValue({ password: changedValues.phone });
+          // 当电话字段变化时，自动将密码设置为手机号的后8位
+          if (changedValues.phone) {
+            const phone = changedValues.phone;
+            console.log('电话号码变化:', phone, '长度:', phone.length);
+            // 确保手机号长度足够
+            if (phone && phone.length >= 8) {
+              const last8Digits = phone.slice(-8); // 获取后8位
+              console.log('设置密码为手机号后8位:', last8Digits);
+              form.setFieldsValue({ password: last8Digits });
+              setPasswordValue(last8Digits); // 更新密码状态变量
+            } else {
+              console.log('手机号不足8位，设置密码为全部手机号:', phone);
+              form.setFieldsValue({ password: phone }); // 如果不足8位，使用全部
+              setPasswordValue(phone); // 更新密码状态变量
+            }
           }
 
           // 当校区字段变化时，立即验证该字段以清除错误提示
@@ -413,45 +463,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row gutter={16}>
-          <Col span={16}>
-            <Form.Item
-              label="密码"
-              name="password"
-            >
-              <div style={{ position: 'relative', width: '100%' }}>
-                <Input.Password
-                  placeholder="如需修改请输入新密码，否则留空"
-                  style={{ width: '100%' }}
-                />
-                <Button
-                  type="link"
-                  style={{ position: 'absolute', right: '-100px', top: '0', height: '32px' }}
-                  onClick={() => {
-                    const phone = editingUser?.phone || '';
-                    Modal.confirm({
-                      title: '确认重置密码',
-                      content: `是否重置手机号为${phone}的密码？`,
-                      okText: '确认',
-                      cancelText: '取消',
-                      onOk: () => {
-                        if (typeof onResetPassword === 'function') {
-                          onResetPassword();
-                        }
-                      }
-                    });
-                  }}
-                >
-                  重置密码
-                </Button>
-              </div>
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
           <Col span={8}>
             <Form.Item
               noStyle
@@ -504,6 +516,62 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                   </Form.Item>
                 ) : null;
               }}
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={16}>
+            <Form.Item
+              label="密码"
+              name="password"
+            >
+              <div style={{ position: 'relative', width: '100%' }}>
+                <Input.Password
+                  style={{
+                    width: '100%'
+                  }}
+                  disabled={true}
+                  value={passwordValue} // 直接使用密码状态变量作为值
+                  visibilityToggle={false} // 移除显示/隐藏密码的切换按钮
+                />
+                {editingUser && (
+                  <Button
+                    type="link"
+                    style={{ position: 'absolute', right: '-100px', top: '0', height: '32px' }}
+                    onClick={() => {
+                      const phone = editingUser?.phone || '';
+                      Modal.confirm({
+                        title: '确认重置密码',
+                        content: `是否重置手机号为${phone}的密码？密码将被重置为手机号后8位。`,
+                        okText: '确认',
+                        cancelText: '取消',
+                        onOk: () => {
+                          if (typeof onResetPassword === 'function') {
+                            onResetPassword();
+
+                            // 重置密码后更新密码状态变量
+                            if (phone.length >= 8) {
+                              const last8 = phone.slice(-8);
+                              console.log('重置密码后设置密码为手机号后8位:', last8, '手机号:', phone);
+                              setPasswordValue(last8);
+                              // 同时设置表单字段
+                              form.setFieldsValue({ password: last8 });
+                            } else {
+                              console.log('重置密码后手机号不足8位，设置密码为全部手机号:', phone);
+                              setPasswordValue(phone);
+                              // 同时设置表单字段
+                              form.setFieldsValue({ password: phone });
+                            }
+                          }
+                        }
+                      });
+                    }}
+                  >
+                    重置密码
+                  </Button>
+                )}
+              </div>
             </Form.Item>
           </Col>
         </Row>

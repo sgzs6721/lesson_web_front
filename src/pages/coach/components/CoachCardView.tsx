@@ -1,6 +1,6 @@
 import React from 'react';
-import { List, Card, Avatar, Row, Col, Divider, Tooltip, Tag, Button, Space, Dropdown } from 'antd';
-import { EditOutlined, DeleteOutlined, PhoneOutlined, ClockCircleOutlined, UserOutlined, IdcardOutlined, CalendarOutlined, TrophyOutlined, SafetyCertificateOutlined, DownOutlined } from '@ant-design/icons';
+import { List, Card, Avatar, Row, Col, Divider, Tooltip, Tag, Button, Space, Dropdown, Spin } from 'antd';
+import { EditOutlined, DeleteOutlined, PhoneOutlined, ClockCircleOutlined, UserOutlined, IdcardOutlined, CalendarOutlined, TrophyOutlined, SafetyCertificateOutlined, DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo } from '../utils/formatters';
 import { CoachGender } from '../../../api/coach/types';
@@ -20,6 +20,7 @@ interface CoachCardViewProps {
   onDelete: (id: string) => void;
   onViewDetail: (record: Coach) => void;
   onStatusChange?: (id: string, newStatus: string) => void;
+  rowLoading?: Record<string, boolean>; // 每一行的加载状态，用于状态变更时显示加载效果
 }
 
 const CoachCardView: React.FC<CoachCardViewProps> = ({
@@ -29,8 +30,10 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
   onEdit,
   onDelete,
   onViewDetail,
-  onStatusChange
+  onStatusChange,
+  rowLoading = {}
 }) => {
+
   // 渲染状态标签
   const renderStatusTag = (status: string, coach: Coach) => {
     const { color, text } = getStatusTagInfo(status);
@@ -72,42 +75,86 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
     }));
 
     // 处理状态变更
-    const handleStatusChange = ({ key }: { key: string }) => {
+    const handleStatusChange = (info: any) => {
+      const { key, domEvent } = info;
+      // 阻止事件冒泡
+      if (domEvent) {
+        domEvent.stopPropagation();
+        domEvent.preventDefault();
+      }
+
       if (key !== status) {
         onStatusChange(coach.id, key);
       }
     };
 
+    // 判断当前教练是否处于状态变更中
+    const isStatusChanging = rowLoading[coach.id];
+
+    // 自定义加载图标
+    const antIcon = <LoadingOutlined style={{ fontSize: 16, color: '#1890ff' }} spin />;
+
     return (
-      <Dropdown
-        menu={{ items, onClick: handleStatusChange }}
-        trigger={['click']}
-        placement="bottom"
-      >
-        <div
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={(e) => e.stopPropagation()} // 阻止点击事件传播到卡片
-        >
-          <Tag
-            color={color}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {isStatusChanging ? (
+          <div
             style={{
-              borderRadius: '4px',
-              fontSize: '11px',
-              padding: '0 8px',
-              fontWeight: 600,
-              marginRight: 0,
-              border: 'none',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              display: 'inline-flex',
+              display: 'flex',
               alignItems: 'center',
-              gap: '4px',
+              justifyContent: 'center',
+              position: 'relative',
+              zIndex: 1000 // 增加状态标签的z-index
+            }}
+            onClick={(e) => {
+              e.stopPropagation(); // 阻止点击事件传播到卡片
+              e.preventDefault(); // 阻止默认行为
             }}
           >
-            {text}
-            <DownOutlined style={{ fontSize: '10px', color: '#999', marginLeft: '2px' }} />
-          </Tag>
-        </div>
-      </Dropdown>
+            <Spin indicator={antIcon} size="small" />
+          </div>
+        ) : (
+          <Dropdown
+            menu={{ items, onClick: handleStatusChange }}
+            trigger={['click']}
+            placement="bottom"
+            disabled={isStatusChanging}
+            overlayStyle={{ zIndex: 1050 }} // 增加下拉菜单的z-index
+          >
+            <div
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                zIndex: 1000 // 增加状态标签的z-index
+              }}
+              onClick={(e) => {
+                e.stopPropagation(); // 阻止点击事件传播到卡片
+                e.preventDefault(); // 阻止默认行为
+              }}
+            >
+              <Tag
+                color={color}
+                style={{
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  padding: '0 8px',
+                  fontWeight: 600,
+                  marginRight: 0,
+                  border: 'none',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                }}
+              >
+                {text}
+                <DownOutlined style={{ fontSize: '10px', color: '#999', marginLeft: '2px' }} />
+              </Tag>
+            </div>
+          </Dropdown>
+        )}
+      </div>
     );
   };
 
@@ -134,33 +181,6 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     return dayjs(dateString).format('YYYY-MM-DD');
-  };
-
-  // 渲染证书标签
-  const renderCertifications = (certifications: string[] | string) => {
-    if (!certifications || (Array.isArray(certifications) && certifications.length === 0)) {
-      return <span className="no-cert">暂无证书</span>;
-    }
-
-    const certArray = Array.isArray(certifications)
-      ? certifications
-      : typeof certifications === 'string'
-        ? certifications.split('，')
-        : [];
-
-    if (certArray.length === 0) {
-      return <span className="no-cert">暂无证书</span>;
-    }
-
-    return (
-      <div className="cert-tags">
-        {certArray.map((cert, index) => (
-          <Tag color="blue" key={index} className="cert-tag">
-            {cert}
-          </Tag>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -225,11 +245,13 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
               </div>
 
               <div className="coach-job-title-wrapper">
-                <div className="coach-status-badge" style={{ gap: '20px' }}>
+                <div className="coach-status-badge" style={{ gap: '20px', position: 'relative' }}>
                   <div className="coach-age-wrapper" style={{ marginLeft: '-15px' }}>
                     <span className="coach-age-premium">{coach.age}岁</span>
                   </div>
-                  {renderStatusTag(coach.status, coach)}
+                  <div style={{ position: 'relative' }}>
+                    {renderStatusTag(coach.status, coach)}
+                  </div>
                 </div>
               </div>
 
@@ -270,54 +292,54 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>基本工资：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
-                      {typeof coach.baseSalary === 'number' && coach.baseSalary > 0 
-                        ? `¥${coach.baseSalary.toLocaleString()}` 
-                        : 'N/A'}
+                      {typeof coach.baseSalary === 'number'
+                        ? `¥${coach.baseSalary.toLocaleString()}`
+                        : '¥0'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>社保费：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
-                      {typeof coach.socialInsurance === 'number' && coach.socialInsurance > 0 
-                        ? `¥${coach.socialInsurance.toLocaleString()}` 
-                        : 'N/A'}
+                      {typeof coach.socialInsurance === 'number'
+                        ? `¥${coach.socialInsurance.toLocaleString()}`
+                        : '¥0'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>课时费：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
                       {(() => {
-                        if (typeof coach.classFee === 'number' && coach.classFee > 0) {
+                        const noBreakSpace = '\u200B'; // 零宽度空格
+                        if (typeof coach.classFee === 'number') {
                           const fee = coach.classFee.toLocaleString();
-                          const noBreakSpace = '\u200B'; // 零宽度空格
                           return `¥${fee}${noBreakSpace}/时`;
                         }
-                        return 'N/A/时';
+                        return `¥0${noBreakSpace}/时`;
                       })()}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>绩效奖：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
-                      {typeof coach.performanceBonus === 'number' && coach.performanceBonus > 0 
-                        ? `¥${coach.performanceBonus.toLocaleString()}` 
-                        : 'N/A'}
+                      {typeof coach.performanceBonus === 'number'
+                        ? `¥${coach.performanceBonus.toLocaleString()}`
+                        : '¥0'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>提成：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
-                      {typeof coach.commission === 'number' && coach.commission > 0 
-                        ? `${coach.commission}%` 
-                        : 'N/A%'}
+                      {typeof coach.commission === 'number'
+                        ? `${coach.commission}%`
+                        : '0%'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>分红：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
-                      {typeof coach.dividend === 'number' && coach.dividend > 0 
-                        ? `¥${coach.dividend.toLocaleString()}` 
-                        : 'N/A'}
+                      {typeof coach.dividend === 'number'
+                        ? `¥${coach.dividend.toLocaleString()}`
+                        : '¥0'}
                     </span>
                   </div>
                 </div>

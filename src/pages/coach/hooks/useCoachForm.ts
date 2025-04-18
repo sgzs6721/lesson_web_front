@@ -201,7 +201,9 @@ export const useCoachForm = (
 
   // 处理模态框确认
   const handleSubmit = () => {
+    // 设置加载状态为 true，显示蒙板
     setLoading(true);
+    console.log('点击保存/添加按钮，设置加载状态为 true');
 
     // 先进行额外的Date类型验证，处理dayjs对象可能存在的问题
     const validateDates = () => {
@@ -319,12 +321,22 @@ export const useCoachForm = (
                 // 打印缓存中的数据，用于调试
                 console.log('更新后的缓存数据:', coachDetailCache[editingCoach.id]);
               }
-              // 直接关闭模态框，不再调用 onSuccess 回调
-              // 因为我们已经在 updateCoach 函数中更新了本地状态
-              handleCancel();
+
+              // 延迟关闭加载状态，确保蒙板显示足够时间
+              setTimeout(() => {
+                // 关闭加载状态
+                setLoading(false);
+                console.log('更新教练成功，关闭加载状态');
+
+                // 关闭模态框
+                handleCancel();
+              }, 1000); // 至少显示 1 秒的加载效果
             })
             .catch(error => {
               console.error('更新教练失败:', error);
+              // 在失败时关闭加载状态
+              setLoading(false);
+              console.log('更新教练失败，关闭加载状态');
             });
         } else {
           // 添加新教练
@@ -335,25 +347,41 @@ export const useCoachForm = (
                 coachDetailCache[newCoach.id] = newCoach;
                 console.log('新教练数据已添加到缓存:', newCoach.id);
               }
-              // 直接关闭模态框，不再调用 onSuccess 回调
-              // 因为我们已经在 addCoach 函数中更新了本地状态
-              handleCancel();
+
+              // 延迟关闭加载状态，确保蒙板显示足够时间
+              setTimeout(() => {
+                // 关闭加载状态
+                setLoading(false);
+                console.log('添加教练成功，关闭加载状态');
+
+                // 关闭模态框
+                handleCancel();
+              }, 1000); // 至少显示 1 秒的加载效果
             })
             .catch(error => {
               console.error('添加教练失败:', error);
+              // 在失败时关闭加载状态
+              setLoading(false);
+              console.log('添加教练失败，关闭加载状态');
             });
         }
       })
       .catch(info => {
         console.error('Form validation failed:', info);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      // 注意：我们不在这里清除 loading 状态
+      // loading 状态将在 API 调用成功或失败后的回调函数中清除
   };
 
   // 处理模态框取消
   const handleCancel = () => {
+    // 如果当前处于加载状态，不允许关闭模态框
+    if (loading) {
+      console.log('当前处于加载状态，不允许关闭模态框');
+      return;
+    }
+
+    // 重置表单并关闭模态框
     form.resetFields();
     setVisible(false);
     setEditingCoach(null);

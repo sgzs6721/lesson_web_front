@@ -67,7 +67,15 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
   if (apiUser.campus) {
     // 如果校区数据是对象
     if (typeof apiUser.campus === 'object') {
-      campusData = apiUser.campus;
+      // 如果校区名称为 null，不设置名称，让表格组件显示横线
+      if (apiUser.campus.name === null) {
+        campusData = {
+          id: apiUser.campus.id,
+          name: null
+        };
+      } else {
+        campusData = apiUser.campus;
+      }
     }
     // 如果校区数据是字符串或数字，创建一个对象
     else {

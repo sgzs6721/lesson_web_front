@@ -1,6 +1,6 @@
 import React from 'react';
-import { Table, Button, Space, Tooltip, Avatar, Dropdown, Menu, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tooltip, Avatar, Dropdown, Menu, Tag, Spin } from 'antd';
+import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined, DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo } from '../utils/formatters';
 import dayjs from 'dayjs';
@@ -20,6 +20,7 @@ interface CoachTableProps {
   onDelete: (id: string) => void;
   onViewDetail: (record: Coach) => void;
   onStatusChange?: (id: string, newStatus: string) => void;
+  rowLoading?: Record<string, boolean>; // 每一行的加载状态，用于状态变更时显示加载效果
 }
 
 const CoachTable: React.FC<CoachTableProps> = ({
@@ -29,7 +30,8 @@ const CoachTable: React.FC<CoachTableProps> = ({
   onEdit,
   onDelete,
   onViewDetail,
-  onStatusChange
+  onStatusChange,
+  rowLoading = {}
 }) => {
   // 渲染状态标签
   const renderStatusTag = (status: string, record: Coach) => {
@@ -63,17 +65,30 @@ const CoachTable: React.FC<CoachTableProps> = ({
       }
     };
 
+    // 判断当前教练是否处于状态变更中
+    const isStatusChanging = rowLoading[record.id];
+
+    // 自定义加载图标
+    const antIcon = <LoadingOutlined style={{ fontSize: 16, color: '#1890ff' }} spin />;
+
     return (
-      <Dropdown
-        menu={{ items, onClick: handleStatusChange }}
-        trigger={['click']}
-        placement="bottom"
-      >
-        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: color, marginRight: 4 }}>{text}</span>
-          <DownOutlined style={{ fontSize: '12px', color: '#999' }} />
-        </div>
-      </Dropdown>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {isStatusChanging ? (
+          <Spin indicator={antIcon} size="small" />
+        ) : (
+          <Dropdown
+            menu={{ items, onClick: handleStatusChange }}
+            trigger={['click']}
+            placement="bottom"
+            disabled={isStatusChanging}
+          >
+            <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: color, marginRight: 4 }}>{text}</span>
+              <DownOutlined style={{ fontSize: '12px', color: '#999' }} />
+            </div>
+          </Dropdown>
+        )}
+      </div>
     );
   };
 
@@ -194,14 +209,14 @@ const CoachTable: React.FC<CoachTableProps> = ({
         const visibleCerts = certArray.slice(0, maxShow);
 
         return (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
             alignItems: 'center',
             flexWrap: 'nowrap',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
-            gap: '4px' 
+            gap: '4px'
           }}>
             {visibleCerts.map((cert, index) => (
               <Tag

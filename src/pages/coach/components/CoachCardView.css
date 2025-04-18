@@ -364,6 +364,11 @@
   right: 6px;
 }
 
+/* 状态下拉菜单样式 */
+.ant-dropdown {
+  z-index: 1050 !important;
+}
+
 /* 年龄包装器 */
 .coach-age-wrapper {
   display: flex;
@@ -533,7 +538,7 @@
     height: auto;
     min-width: 260px;
   }
-  
+
   .coach-info-content {
     margin-top: 6px;
   }
@@ -551,12 +556,12 @@
     align-items: flex-start;
     gap: 6px;
   }
-  
+
   .coach-avatar-container-premium {
     align-self: center;
     margin-bottom: 6px;
   }
-  
+
   .coach-card-premium {
     min-width: 100%;
   }
@@ -611,4 +616,4 @@
   color: #999;
   font-size: 12px;
   font-style: italic;
-} 
+}

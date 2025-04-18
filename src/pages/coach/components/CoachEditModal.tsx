@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Modal, Form, Input, Radio, Select, DatePicker, Row, Col, Divider, Avatar, Spin } from 'antd';
-import { UserOutlined, PhoneOutlined } from '@ant-design/icons';
+import { UserOutlined, PhoneOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import { avatarOptions } from '../constants/avatarOptions';
 import { Gender } from '../types/coach';
@@ -51,6 +51,8 @@ interface CoachEditModalProps {
   onCancel: () => void;
   onAvatarSelect: (avatar: string) => void;
   onGenderChange: (value: any) => void;
+  formLoading?: boolean; // 表单提交时的加载状态
+  detailLoading?: boolean; // 加载详情时的加载状态
 }
 
 const CoachEditModal: React.FC<CoachEditModalProps> = ({
@@ -62,26 +64,30 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
   onSubmit,
   onCancel,
   onAvatarSelect,
-  onGenderChange
+  onGenderChange,
+  detailLoading = false
 }) => {
   // 监听gender字段变化
   const gender = Form.useWatch('gender', form);
-  
+
   // 使用useMemo处理头像背景色，避免在表单未准备好时使用form.getFieldValue
   const avatarStyle = useMemo(() => {
     // 如果有选择头像，则不需要设置背景色
     if (selectedAvatar) {
       return { marginBottom: 16 };
     }
-    
+
     // 使用监听到的gender值，如果不存在则使用默认值
     const currentGender = gender || 'MALE';
-    
+
     return {
       marginBottom: 16,
       backgroundColor: currentGender === 'MALE' ? '#1890ff' : '#eb2f96'
     };
   }, [selectedAvatar, gender]);
+
+  // 自定义加载图标，使其更大更明显
+  const antIcon = <LoadingOutlined style={{ fontSize: 32 }} spin />;
 
   return (
     <Modal
@@ -91,14 +97,26 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
         </div>
       }
       open={visible}
-      onOk={onSubmit}
-      onCancel={onCancel}
+      onOk={loading ? undefined : onSubmit}
+      onCancel={loading ? undefined : onCancel}
       width={800}
       confirmLoading={loading}
       okText={editingCoach ? '保存' : '添加'}
       cancelText="取消"
+      maskClosable={!loading}
+      closable={!loading}
+      keyboard={!loading}
     >
-      <Spin spinning={loading} tip="加载中...">
+      <div className="coach-modal-content-wrapper" style={{ position: 'relative' }}>
+        {loading && (
+          <div className="coach-modal-loading-mask" onClick={(e) => e.stopPropagation()}>
+            <Spin
+              indicator={antIcon}
+              tip={loading && !detailLoading ? "正在保存中...请稍候" : "正在加载数据...请稍候"}
+              size="large"
+            />
+          </div>
+        )}
         <Form
           form={form}
           layout="vertical"
@@ -116,14 +134,14 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
             dividend: 0,
           }}
         >
-          <div style={{ 
-            height: '1px', 
-            background: '#f0f0f0', 
+          <div style={{
+            height: '1px',
+            background: '#f0f0f0',
             margin: '10px 0 24px 0',
             position: 'relative'
           }}>
             {/* 基本信息背景覆盖 */}
-            <div style={{ 
+            <div style={{
               position: 'absolute',
               top: '-10px',
               left: '50%',
@@ -322,14 +340,14 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
           </Row>
 
           {/* 分隔线 */}
-          <div style={{ 
-            height: '1px', 
-            background: '#f0f0f0', 
+          <div style={{
+            height: '1px',
+            background: '#f0f0f0',
             margin: '36px 0 10px 0',
             position: 'relative'
           }}>
             {/* 薪资信息背景覆盖 */}
-            <div style={{ 
+            <div style={{
               position: 'absolute',
               top: '-10px',
               left: '50%',
@@ -408,7 +426,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
             </Col>
           </Row>
         </Form>
-      </Spin>
+      </div>
     </Modal>
   );
 };

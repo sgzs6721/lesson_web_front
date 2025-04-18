@@ -23,7 +23,8 @@ export const useUserForm = (
     // 使用setTimeout确保在模态框渲染后设置默认值
     setTimeout(() => {
       form.setFieldsValue({
-        status: DEFAULT_STATUS
+        status: DEFAULT_STATUS,
+        password: '' // 初始化密码字段为空，等待电话号码输入后自动设置
       });
     }, 200);
   };
@@ -70,6 +71,15 @@ export const useUserForm = (
         role: roleValue,
         status: statusValue || DEFAULT_STATUS
       };
+
+      // 设置密码字段为手机号的后8位
+      if (record.phone && record.phone.length >= 8) {
+        formValues.password = record.phone.slice(-8);
+      } else if (record.phone) {
+        formValues.password = record.phone;
+      } else {
+        formValues.password = '';
+      }
 
       // 如果有校区数据且角色是校区管理员，添加校区字段
       if (roleValue === '3' || String(roleValue) === '3') {
@@ -129,7 +139,18 @@ export const useUserForm = (
         onUpdateUser(editingUser.id, updateValues);
       } else {
         // 添加新用户
-        onAddUser(values);
+        // 确保密码字段被设置为手机号的后8位
+        const addValues = { ...values };
+        if (addValues.phone && (!addValues.password || addValues.password.trim() === '')) {
+          // 如果没有设置密码，使用手机号的后8位
+          if (addValues.phone.length >= 8) {
+            addValues.password = addValues.phone.slice(-8);
+          } else {
+            addValues.password = addValues.phone;
+          }
+        }
+        console.log('添加用户的处理后的值:', addValues);
+        onAddUser(addValues);
       }
 
       setIsModalVisible(false);
@@ -154,6 +175,14 @@ export const useUserForm = (
       try {
         setLoading(true);
         await onResetPassword(editingUser.id, editingUser.phone);
+
+        // 重置密码后，更新密码输入框的值为手机号的后8位
+        if (editingUser.phone && editingUser.phone.length >= 8) {
+          form.setFieldsValue({ password: editingUser.phone.slice(-8) });
+        } else if (editingUser.phone) {
+          form.setFieldsValue({ password: editingUser.phone });
+        }
+
         return true;
       } catch (error) {
         console.error('重置密码失败:', error);

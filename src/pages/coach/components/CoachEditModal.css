@@ -31,3 +31,86 @@
   font-weight: bold !important;
   margin-bottom: 16px !important;
 }
+
+/* 内容包装器样式 */
+.coach-modal-content-wrapper {
+  position: relative !important;
+  min-height: 200px !important;
+  overflow: hidden !important;
+}
+
+/* 加载蒙层样式 */
+.coach-modal-loading-mask {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(255, 255, 255, 0.6) !important; /* 调整透明度为60% */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 9999 !important;
+  border-radius: 2px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: not-allowed !important;
+  user-select: none !important;
+  pointer-events: all !important; /* 确保蒙层可以拦截点击事件 */
+}
+
+/* 加载提示文字样式 */
+.coach-modal-loading-mask .ant-spin-text {
+  margin-top: 12px !important;
+  font-size: 16px !important;
+  color: #1890ff !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 2px white !important;
+}
+
+/* 加载图标样式 */
+.coach-modal-loading-mask .ant-spin-dot {
+  font-size: 36px !important;
+}
+
+/* 增强蒙板效果 */
+.coach-modal-loading-mask::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: #fff !important;
+  opacity: 0.6 !important; /* 调整透明度为60% */
+  z-index: -1 !important;
+}
+
+/* 确保蒙层在模态框内容之上 */
+.ant-modal-body {
+  position: relative !important;
+}
+
+/* 当加载中时禁用所有表单元素 */
+.coach-modal-loading-mask ~ form .ant-form-item-control-input,
+.coach-modal-loading-mask ~ form .ant-select,
+.coach-modal-loading-mask ~ form .ant-input,
+.coach-modal-loading-mask ~ form .ant-radio-group,
+.coach-modal-loading-mask ~ form .ant-picker,
+.coach-modal-loading-mask ~ form .ant-btn {
+  pointer-events: none !important;
+  opacity: 0.7 !important;
+}
+
+/* 当加载中时禁用模态框按钮 */
+.ant-modal-root .ant-modal-wrap[aria-modal="true"] .ant-modal-footer .ant-btn {
+  pointer-events: auto !important;
+}
+
+/* 当加载中时禁用模态框关闭按钮 */
+.coach-modal-loading-mask ~ .ant-modal-close {
+  pointer-events: none !important;
+  opacity: 0.5 !important;
+}

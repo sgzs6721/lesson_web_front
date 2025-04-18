@@ -42,7 +42,7 @@ const CoachManagement: React.FC = () => {
 
   // 表单相关钩子
   const { form, visible, editingCoach, loading: formLoading, detailLoading: formDetailLoading, selectedAvatar, handleAdd, handleEdit, handleSubmit, handleCancel, handleAvatarSelect, handleGenderChange } = useCoachForm(addCoach, updateCoach);
-  
+
   // 详情相关
   const { detailVisible, viewingCoach, deleteModalVisible, recordToDelete, loading: detailLoading, fetchCoachDetail, showDetail, closeDetail, showDeleteConfirm, cancelDelete } = useCoachDetail();
 
@@ -53,7 +53,7 @@ const CoachManagement: React.FC = () => {
       if (!coachDetailCache[coach.id]) {
         try {
           // 静默加载教练详情，不显示加载状态
-          const coachDetail = await fetchCoachDetail(coach.id);
+          await fetchCoachDetail(coach.id);
           console.log(`预加载教练 ${coach.id} 详情成功`);
         } catch (error) {
           console.error(`预加载教练 ${coach.id} 详情失败:`, error);
@@ -103,15 +103,21 @@ const CoachManagement: React.FC = () => {
   // 处理视图模式变更
   const handleViewModeChange = (newMode: ViewMode) => {
     setViewMode(newMode);
-    
+
     // 如果切换到卡片视图，预加载教练详情
     if (newMode === 'card') {
       preloadCoachDetails();
     }
   };
 
+  // 状态变更加载状态
+  const [statusLoading, setStatusLoading] = useState<Record<string, boolean>>({});
+
   // 处理状态变更
   const handleStatusChange = (id: string, newStatus: string) => {
+    // 设置对应教练的状态变更加载状态为 true
+    setStatusLoading(prev => ({ ...prev, [id]: true }));
+
     // 确保传递给 API 的是正确的类型
     updateCoachStatus(id, newStatus as any)
       .then(() => {
@@ -119,6 +125,12 @@ const CoachManagement: React.FC = () => {
       })
       .catch(error => {
         console.error('更新教练状态失败:', error);
+      })
+      .finally(() => {
+        // 无论成功还是失败，都将加载状态设置为 false
+        setTimeout(() => {
+          setStatusLoading(prev => ({ ...prev, [id]: false }));
+        }, 500); // 延迟500毫秒，确保用户能看到状态变化
       });
   };
 
@@ -183,6 +195,7 @@ const CoachManagement: React.FC = () => {
             onDelete={showDeleteConfirm}
             onViewDetail={showDetail}
             onStatusChange={handleStatusChange}
+            rowLoading={statusLoading}
           />
         ) : (
           <CoachCardView
@@ -193,6 +206,7 @@ const CoachManagement: React.FC = () => {
             onDelete={showDeleteConfirm}
             onViewDetail={showDetail}
             onStatusChange={handleStatusChange}
+            rowLoading={statusLoading}
           />
         )}
       </Card>
@@ -208,6 +222,7 @@ const CoachManagement: React.FC = () => {
         onCancel={handleCancel}
         onAvatarSelect={handleAvatarSelect}
         onGenderChange={handleGenderChange}
+        detailLoading={formDetailLoading}
       />
 
       {/* 详情模态框 */}

@@ -66,7 +66,24 @@ export const useUserData = () => {
             }
           : undefined,
         status: DEFAULT_STATUS,
-        createdAt: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\//g, '-'),
+        createdTime: new Date().toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\//g, '-'),
       };
 
       // 更新状态

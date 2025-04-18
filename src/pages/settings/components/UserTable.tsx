@@ -68,9 +68,9 @@ const UserTable: React.FC<UserTableProps> = ({
 
         // 如果 campus 是对象并且有 name 属性
         if (campus && typeof campus === 'object') {
-          // 如果 name 为 null，返回未设置
+          // 如果 name 为 null，返回横线
           if (campus.name === null) {
-            return '未设置';
+            return '-';
           }
           return campus.name;
         }
@@ -142,7 +142,13 @@ const UserTable: React.FC<UserTableProps> = ({
       render: (createdAt: string, record: User) => {
         // 优先使用 createdTime 字段，它包含完整的时间信息
         if (record.createdTime) {
-          return record.createdTime;
+          // 确保时间格式包含秒
+          if (record.createdTime.includes(':')) {
+            return record.createdTime;
+          } else {
+            // 如果只有日期，添加时间部分
+            return `${record.createdTime} 00:00:00`;
+          }
         }
         // 如果是 ISO 格式，保留完整时间
         if (createdAt && createdAt.includes('T')) {
@@ -157,6 +163,10 @@ const UserTable: React.FC<UserTableProps> = ({
             hour12: false
           }).replace(/\//g, '-');
         }
+        // 如果只有日期，添加时间部分
+        if (createdAt && !createdAt.includes(':')) {
+          return `${createdAt} 00:00:00`;
+        }
         return createdAt || '-';
       }
     },
@@ -168,7 +178,13 @@ const UserTable: React.FC<UserTableProps> = ({
       render: (lastLogin: string | undefined, record: User) => {
         // 优先使用 lastLoginTime 字段，它包含完整的时间信息
         if (record.lastLoginTime) {
-          return record.lastLoginTime;
+          // 确保时间格式包含秒
+          if (record.lastLoginTime.includes(':')) {
+            return record.lastLoginTime;
+          } else {
+            // 如果只有日期，添加时间部分
+            return `${record.lastLoginTime} 00:00:00`;
+          }
         }
         // 如果是 ISO 格式，保留完整时间
         if (lastLogin && lastLogin.includes('T')) {
@@ -182,6 +198,10 @@ const UserTable: React.FC<UserTableProps> = ({
             second: '2-digit',
             hour12: false
           }).replace(/\//g, '-');
+        }
+        // 如果只有日期，添加时间部分
+        if (lastLogin && !lastLogin.includes(':')) {
+          return `${lastLogin} 00:00:00`;
         }
         return lastLogin || '-';
       }
