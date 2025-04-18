@@ -198,14 +198,16 @@ export const useUserData = () => {
   };
 
   // 重置密码
-  const resetPassword = async (id: string) => {
+  const resetPassword = async (id: string, phone?: string) => {
     try {
       setLoading(true);
 
-      // 调用API重置密码
-      await API.user.resetPassword({ id });
-
-      message.success('密码已重置');
+      // 取手机号后8位作为新密码
+      let password = '';
+      if (phone && phone.length >= 8) {
+        password = phone.slice(-8);
+      }
+      await API.user.resetPassword({ id, password });
     } catch (error: any) {
       message.error(error.message || '重置密码失败');
       throw error;

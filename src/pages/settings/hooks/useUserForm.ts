@@ -6,7 +6,7 @@ import { DEFAULT_STATUS } from '../constants/userOptions';
 export const useUserForm = (
   onAddUser: (values: any) => Promise<any>,
   onUpdateUser: (id: string, values: any) => Promise<void>,
-  onResetPassword?: (id: string) => Promise<void>
+  onResetPassword?: (id: string, phone?: string) => Promise<void>
 ) => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -153,7 +153,7 @@ export const useUserForm = (
     if (editingUser && onResetPassword) {
       try {
         setLoading(true);
-        await onResetPassword(editingUser.id);
+        await onResetPassword(editingUser.id, editingUser.phone);
         return true;
       } catch (error) {
         console.error('重置密码失败:', error);

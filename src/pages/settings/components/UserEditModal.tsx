@@ -314,30 +314,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               />
             </Form.Item>
           </Col>
-
-          <Col span={8}>
-            {!editingUser ? (
-              <Form.Item
-                name="password"
-                label="密码"
-                rules={[{ required: true, message: '请输入密码' }]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="请输入密码"
-                  disabled
-                />
-              </Form.Item>
-            ) : (
-              <Form.Item
-                label="密码"
-              >
-                <Button type="link" style={{ padding: 0 }} onClick={onResetPassword}>
-                  重置密码
-                </Button>
-              </Form.Item>
-            )}
-          </Col>
         </Row>
 
         <Row gutter={16}>
@@ -353,21 +329,14 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 options={statusOptions.map(option => ({ value: option.value, label: option.label }))}
                 popupMatchSelectWidth
                 getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                value={statusValue} // 使用状态变量作为值
-                key={`status-select-${statusValue}`} // 使用状态变量作为key
+                value={statusValue}
+                key={`status-select-${statusValue}`}
                 onChange={(value) => {
-                  console.log('状态已更改为:', value);
-                  // 更新状态变量
                   setStatusValue(value as 'ENABLED' | 'DISABLED');
-                  // 直接设置表单值
                   form.setFieldsValue({ status: value });
                 }}
                 onDropdownVisibleChange={(open) => {
                   if (open) {
-                    // 当下拉菜单打开时，输出当前值以便调试
-                    console.log('状态下拉菜单打开，当前值:', form.getFieldValue('status'));
-
-                    // 如果有编辑用户数据，确保状态值正确设置
                     if (editingUser && editingUser.status) {
                       let statusValue: 'ENABLED' | 'DISABLED';
                       if (typeof editingUser.status === 'string') {
@@ -377,15 +346,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                       } else {
                         statusValue = 'ENABLED';
                       }
-
-                      // 如果当前值不正确，尝试再次设置
                       if (form.getFieldValue('status') !== statusValue) {
-                        console.log('在下拉菜单打开时设置状态值:', statusValue);
                         form.setFieldsValue({ status: statusValue });
                       }
                     }
                   }
                 }}
+                disabled={!!editingUser && roleValue === '1'}
               />
             </Form.Item>
           </Col>
@@ -401,13 +368,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 style={{ width: '100%' }}
                 options={roleOptions
                   .filter(option => {
-                    // 添加用户时过滤掉超级管理员
                     if (!editingUser) return option.value !== '1';
-
-                    // 编辑用户时，如果当前用户是超级管理员，显示所有角色
                     if (roleValue === '1') return true;
-
-                    // 编辑用户时，如果当前用户不是超级管理员，过滤掉超级管理员选项
                     return option.value !== '1';
                   })
                   .map(option => ({ value: option.value, label: option.label }))}
@@ -415,37 +377,19 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 className="role-select"
                 popupClassName="role-select-dropdown"
                 getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                value={roleValue} // 使用角色状态变量作为值
-                key={`role-select-${roleValue || 'default'}`} // 使用角色状态变量作为key
-                disabled={!!editingUser && roleValue === '1'} // 如果是编辑超级管理员，禁用选择框
+                value={roleValue}
+                key={`role-select-${roleValue || 'default'}`}
+                disabled={!!editingUser && roleValue === '1'}
                 onChange={(value) => {
-                  console.log('Role changed to:', value);
-                  // 更新角色状态变量
                   setRoleValue(value as string);
-                  // 设置表单值
                   form.setFieldsValue({ role: value });
-
-                  // 无论是否是校区管理员，都先清除校区字段
                   form.resetFields(['campus']);
-
-                  // 强制设置校区字段为 undefined，确保显示占位符文本
-                  form.setFields([{
-                    name: 'campus',
-                    value: undefined
-                  }]);
-
-                  // 强制重新渲染校区选择框
+                  form.setFields([{ name: 'campus', value: undefined }]);
                   setTimeout(() => {
-                    // 再次确认校区字段已被重置为 undefined
                     if (form.getFieldValue('campus') === null || form.getFieldValue('campus') === 'null') {
-                      form.setFields([{
-                        name: 'campus',
-                        value: undefined
-                      }]);
+                      form.setFields([{ name: 'campus', value: undefined }]);
                     }
                   }, 0);
-
-                  // 如果是校区管理员，确保校区列表已加载
                   if (value === '3') {
                     if (campusOptions.length === 0) {
                       refreshCampusOptions();
@@ -454,15 +398,12 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 }}
                 onDropdownVisibleChange={(open) => {
                   if (open && editingUser && editingUser.role) {
-                    // 如果有编辑用户数据，确保角色值正确设置
                     let newRoleValue;
                     if (typeof editingUser.role === 'object' && editingUser.role !== null) {
                       newRoleValue = String(editingUser.role.id);
                     } else {
                       newRoleValue = String(editingUser.role);
                     }
-
-                    // 如果当前值不正确，尝试再次设置
                     if (form.getFieldValue('role') !== newRoleValue) {
                       form.setFieldsValue({ role: newRoleValue });
                       setRoleValue(newRoleValue);
@@ -472,7 +413,45 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               />
             </Form.Item>
           </Col>
+        </Row>
 
+        <Row gutter={16}>
+          <Col span={16}>
+            <Form.Item
+              label="密码"
+              name="password"
+            >
+              <div style={{ position: 'relative', width: '100%' }}>
+                <Input.Password
+                  placeholder="如需修改请输入新密码，否则留空"
+                  style={{ width: '100%' }}
+                />
+                <Button
+                  type="link"
+                  style={{ position: 'absolute', right: '-100px', top: '0', height: '32px' }}
+                  onClick={() => {
+                    const phone = editingUser?.phone || '';
+                    Modal.confirm({
+                      title: '确认重置密码',
+                      content: `是否重置手机号为${phone}的密码？`,
+                      okText: '确认',
+                      cancelText: '取消',
+                      onOk: () => {
+                        if (typeof onResetPassword === 'function') {
+                          onResetPassword();
+                        }
+                      }
+                    });
+                  }}
+                >
+                  重置密码
+                </Button>
+              </div>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
           <Col span={8}>
             <Form.Item
               noStyle

@@ -89,7 +89,7 @@ const UserManagement: React.FC = () => {
     if (editingUser) {
       const success = await handleResetPassword();
       if (success) {
-        message.success(`已将用户"${editingUser.name}"的密码重置为与电话号码相同`);
+        message.success('密码已重置成功，新密码已设置为手机号后8位');
       }
     }
   };

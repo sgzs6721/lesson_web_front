@@ -86,6 +86,7 @@ export interface UserStatusUpdateParams {
 // 重置密码参数
 export interface ResetPasswordParams {
   id: number | string;
+  password?: string;
 }
 
 // 用户列表响应
