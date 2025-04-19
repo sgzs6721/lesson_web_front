@@ -1,0 +1,48 @@
+/* 用户管理页面样式 */
+.user-management {
+  padding: 0 4px;
+}
+
+.user-management-card {
+  margin-top: -12px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* 添加用户按钮样式增强 */
+.add-user-button {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  padding: 0 16px;
+  height: 32px;
+}
+
+.add-user-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
+  opacity: 0.9;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .user-management {
+    padding: 0;
+  }
+
+  .user-management-card {
+    margin-top: -8px;
+  }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Descriptions, Avatar, Tag, Space, Button, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { Coach } from '../types/coach';
@@ -20,6 +20,24 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
   onCancel
 }) => {
   if (!coach && !loading) return null;
+
+  // 使用状态来存储当前校区信息
+  const [currentCampusName, setCurrentCampusName] = useState<string>('');
+
+  // 在组件挂载时从 localStorage 获取当前校区信息
+  useEffect(() => {
+    if (visible) {
+      try {
+        // 从 localStorage 获取当前校区名称
+        const campusName = localStorage.getItem('currentCampusName');
+        if (campusName) {
+          setCurrentCampusName(campusName);
+        }
+      } catch (error) {
+        console.error('获取当前校区信息失败:', error);
+      }
+    }
+  }, [visible]);
 
   // 渲染状态标签
   const renderStatusTag = (status: string) => {
@@ -82,7 +100,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               <Descriptions.Item label="入职日期" span={1}>{coach.hireDate}</Descriptions.Item>
               <Descriptions.Item label="教龄" span={1}>{`${coach.experience}年`}</Descriptions.Item>
 
-              <Descriptions.Item label="所属校区" span={1}>{coach.campusName || '-'}</Descriptions.Item>
+              <Descriptions.Item label="所属校区" span={1}>{currentCampusName || coach.campusName || '-'}</Descriptions.Item>
               <Descriptions.Item label="所属机构" span={1}>{coach.institutionName || '-'}</Descriptions.Item>
 
               <Descriptions.Item label="基本工资" span={1}>{`¥${coach.baseSalary?.toLocaleString() || '0'}`}</Descriptions.Item>

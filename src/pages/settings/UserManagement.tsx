@@ -10,6 +10,7 @@ import { useUserSearch } from './hooks/useUserSearch';
 import { useUserForm } from './hooks/useUserForm';
 import { useUserDelete } from './hooks/useUserDelete';
 import { message } from 'antd';
+import './components/UserManagement.css';
 
 const { Title } = Typography;
 
@@ -96,23 +97,26 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="user-management">
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={4}>用户管理</Title>
-        </Col>
-        <Col>
+      <Card className="user-management-card">
+        <div className="user-header">
+          <Title level={4} className="user-title">用户管理</Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={showAddModal}
+            style={{
+              background: 'linear-gradient(135deg, #52c41a, #1890ff)',
+              border: 'none',
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+              fontWeight: 500,
+              borderRadius: '8px',
+              transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)'
+            }}
+            className="add-user-button"
           >
             添加用户
           </Button>
-        </Col>
-      </Row>
-
-      {/* 主卡片容器 */}
-      <Card>
+        </div>
         {/* 搜索栏 */}
         <UserSearchBar
           params={searchParams}

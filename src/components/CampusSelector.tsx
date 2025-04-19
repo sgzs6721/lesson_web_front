@@ -149,8 +149,9 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
         const firstCampus = campusList[0];
         console.log('选择第一个校区:', firstCampus);
         setCurrentCampus(firstCampus);
-        // 将校区ID存储到localStorage中，供其他组件使用
+        // 将校区ID和名称存储到localStorage中，供其他组件使用
         localStorage.setItem('currentCampusId', String(firstCampus.id));
+        localStorage.setItem('currentCampusName', firstCampus.name);
         if (onCampusChangeRef.current) {
           onCampusChangeRef.current(firstCampus);
         }
@@ -211,8 +212,9 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
   const selectCampus = (campus: Campus) => {
     setCurrentCampus(campus);
     setShowCampusList(false);
-    // 将校区ID存储到localStorage中，供其他组件使用
+    // 将校区ID和名称存储到localStorage中，供其他组件使用
     localStorage.setItem('currentCampusId', String(campus.id));
+    localStorage.setItem('currentCampusName', campus.name);
     if (onCampusChangeRef.current) {
       onCampusChangeRef.current(campus);
     }

@@ -31,7 +31,7 @@ const MainLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  
+
   // 使用校区检查Context
   const { refreshCampusCheck, checkCampusBeforeNavigate } = useCampusCheck();
 
@@ -54,20 +54,22 @@ const MainLayout: React.FC = () => {
         if (auth.isAuthenticated) {
           console.log('MainLayout: 开始加载校区信息');
           const campusList = await getCampusList();
-          
+
           if (campusList && campusList.length > 0) {
             // 尝试从localStorage中获取上次选择的校区ID
             const savedCampusId = localStorage.getItem('currentCampusId');
-            const selectedCampus = savedCampusId 
+            const selectedCampus = savedCampusId
               ? campusList.find(c => String(c.id) === savedCampusId)
               : campusList[0];
-              
+
             if (selectedCampus) {
               console.log('MainLayout: 设置当前校区:', selectedCampus.name);
               setCurrentCampus(selectedCampus);
+              // 将校区名称存储到localStorage中，供其他组件使用
+              localStorage.setItem('currentCampusName', selectedCampus.name);
             }
           }
-          
+
           // 更新校区检查状态
           refreshCampusCheck();
         }
@@ -82,10 +84,10 @@ const MainLayout: React.FC = () => {
   // 处理菜单点击
   const handleMenuClick = async (e: React.MouseEvent, path: string) => {
     e.preventDefault();
-    
+
     // 使用校区检查逻辑，只有校区检查通过才导航
     const canProceed = await checkCampusBeforeNavigate(path);
-    
+
     if (canProceed) {
       // 导航到目标页面
       navigate(path);
@@ -98,6 +100,8 @@ const MainLayout: React.FC = () => {
   const handleCampusChange = (campus: Campus) => {
     console.log('切换到校区:', campus.name);
     setCurrentCampus(campus);
+    // 将校区名称存储到localStorage中，供其他组件使用
+    localStorage.setItem('currentCampusName', campus.name);
   };
 
   // 处理登出

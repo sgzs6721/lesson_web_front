@@ -10,6 +10,7 @@ import { useCampusData } from './hooks/useCampusData';
 import { useCampusSearch } from './hooks/useCampusSearch';
 import { useCampusForm } from './hooks/useCampusForm';
 import { Campus } from './types/campus';
+import './components/CampusManagement.css';
 
 const { Title } = Typography;
 
@@ -126,24 +127,30 @@ const CampusManagement: React.FC = () => {
 
   return (
     <div className="campus-management">
-      {/* 标题行 */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={4}>校区管理</Title>
-        </Col>
-        <Col>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
-            添加校区
-          </Button>
-        </Col>
-      </Row>
-
-      {/* 主要内容卡片 */}
-      <Card>
+      <Card className="campus-management-card">
+        <Row justify="space-between" align="middle" className="campus-management-header">
+          <Col>
+            <Title level={4} className="campus-title">校区管理</Title>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+              className="add-campus-button"
+              style={{
+                background: 'linear-gradient(135deg, #52c41a, #1890ff)',
+                border: 'none',
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+                fontWeight: 500,
+                borderRadius: '8px',
+                transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)'
+              }}
+            >
+              添加校区
+            </Button>
+          </Col>
+        </Row>
         {/* 搜索栏 */}
         <CampusSearchBar
           params={searchParams}

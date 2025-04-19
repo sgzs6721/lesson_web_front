@@ -19,7 +19,7 @@ const CoachViewToggle: React.FC<CoachViewToggleProps> = ({
     <div className="view-toggle-wrapper">
       <div className="view-toggle-container">
         <Tooltip title="表格视图">
-          <button 
+          <button
             className={`view-toggle-button ${viewMode === 'table' ? 'active' : ''}`}
             onClick={() => onViewModeChange('table')}
           >
@@ -27,7 +27,7 @@ const CoachViewToggle: React.FC<CoachViewToggleProps> = ({
           </button>
         </Tooltip>
         <Tooltip title="卡片视图">
-          <button 
+          <button
             className={`view-toggle-button ${viewMode === 'card' ? 'active' : ''}`}
             onClick={() => onViewModeChange('card')}
           >
@@ -40,6 +40,12 @@ const CoachViewToggle: React.FC<CoachViewToggleProps> = ({
         icon={<PlusOutlined />}
         className="add-coach-button"
         onClick={onAddCoach}
+        style={{
+          background: 'linear-gradient(135deg, #52c41a, #1890ff)',
+          border: 'none',
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+          fontWeight: 500
+        }}
       >
         添加教练
       </Button>
@@ -47,4 +53,4 @@ const CoachViewToggle: React.FC<CoachViewToggleProps> = ({
   );
 };
 
-export default CoachViewToggle; 
+export default CoachViewToggle;

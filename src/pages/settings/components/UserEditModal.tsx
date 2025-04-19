@@ -55,110 +55,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
     }
   }, [visible, refreshCampusOptions, editingUser, form]);
 
-  // 当编辑用户变化时，确保表单值正确设置
-  useEffect(() => {
-    if (visible && editingUser) {
-      // 处理编辑用户数据
-
-      // 处理角色数据
-      let roleValue: string;
-      if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-        roleValue = String(editingUser.role.id);
-      } else {
-        roleValue = String(editingUser.role);
-      }
-      // 角色值已处理
-
-      // 处理校区数据
-      let campusValue = editingUser.campus;
-      if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
-        campusValue = String(editingUser.campus.id);
-        // 校区值已处理
-      }
-
-      // 处理状态数据 - 直接使用API返回的status字段
-      let statusValue: 'ENABLED' | 'DISABLED';
-      // 处理状态值
-
-      // 确保状态值是字符串类型的'ENABLED'或'DISABLED'
-      if (typeof editingUser.status === 'number') {
-        statusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
-      } else if (typeof editingUser.status === 'string') {
-        // 如果已经是字符串，确保是大写形式
-        statusValue = editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
-      } else {
-        // 如果状态值无效，使用默认值
-        statusValue = DEFAULT_STATUS as 'ENABLED';
-      }
-      // 确保状态值有效
-
-      // 设置表单值 - 使用 realName 而不是 name
-      const formValues: any = {
-        name: editingUser.realName || editingUser.name, // 兼容两种字段名
-        phone: editingUser.phone,
-        role: roleValue,
-        status: statusValue
-      };
-
-      // 如果有校区数据且角色是校区管理员，添加校区字段
-      if (roleValue === '3' || String(roleValue) === '3') {
-        formValues.campus = campusValue || '';
-      }
-
-      // 设置表单值
-
-      // 重置表单并设置值
-      form.resetFields();
-
-      // 先设置基本字段，然后单独设置状态、角色和校区字段
-      const { status, role, campus, ...basicValues } = formValues;
-      form.setFieldsValue(basicValues);
-
-      // 延迟设置状态、角色和校区字段，确保基本字段已经设置完成
-      setTimeout(() => {
-        // 单独设置状态字段
-        form.setFields([{
-          name: 'status',
-          value: statusValue
-        }]);
-
-        // 单独设置角色字段
-        form.setFields([{
-          name: 'role',
-          value: roleValue
-        }]);
-
-        // 如果角色是校区管理员，则设置校区字段
-        if (roleValue === '3') {
-          form.setFields([{
-            name: 'campus',
-            value: campusValue
-          }]);
-          // 校区字段已设置
-        }
-
-        // 状态和角色字段已设置
-
-        // 强制触发表单更新
-        const fieldsToValidate = ['status', 'role'];
-        if (roleValue === '3') {
-          fieldsToValidate.push('campus');
-        }
-
-        form.validateFields(fieldsToValidate).then(() => {
-          // 字段验证完成
-
-          // 更新状态变量，确保与表单一致
-          setStatusValue(form.getFieldValue('status'));
-          setRoleValue(form.getFieldValue('role'));
-          // 删除对 setCampusValue 的调用
-        }).catch((err: any) => {
-          console.error('字段验证错误:', err);
-        });
-      }, 100);
-    }
-  }, [visible, editingUser, form, statusOptions]);
-
   // 使用状态值作为依赖项的状态变量，强制重新渲染
   const [statusValue, setStatusValue] = useState<'ENABLED' | 'DISABLED' | undefined>(() => {
     // 如果是编辑模式，使用用户的状态
@@ -202,8 +98,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
     return '';
   });
 
-  // 删除未使用的 campusValue 状态变量
-
   // 当编辑用户变化时，更新状态值、角色值、密码值和校区值
   useEffect(() => {
     if (editingUser) {
@@ -216,7 +110,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           newStatusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
         }
         setStatusValue(newStatusValue);
-        // 状态值已更新
       }
 
       // 处理角色值
@@ -228,7 +121,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           newRoleValue = String(editingUser.role);
         }
         setRoleValue(newRoleValue);
-        // 角色值已更新
       }
 
       // 处理密码值 - 设置为手机号的后8位
@@ -246,17 +138,12 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           // 同时设置表单字段
           form.setFieldsValue({ password: editingUser.phone });
         }
-        // 密码值已更新
       }
-
-      // 校区值已在其他地方处理
     } else {
       // 如果是添加模式，初始化密码为空
       setPasswordValue('');
     }
-  }, [editingUser]);
-
-  // 状态默认值已在Form的initialValues中设置
+  }, [editingUser, form]);
 
   return (
     <Modal
@@ -276,8 +163,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         name="userForm"
         preserve={false}
         initialValues={{
-          status: editingUser ? (typeof editingUser.status === 'string' ? editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED' : (editingUser.status === 1 ? 'ENABLED' : 'DISABLED')) : undefined, // 添加用户时不预选状态
-          role: editingUser?.role ? (typeof editingUser.role === 'object' ? String(editingUser.role.id) : String(editingUser.role)) : undefined, // 添加用户时不预选角色
+          status: editingUser ? (typeof editingUser.status === 'string' ? editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED' : (editingUser.status === 1 ? 'ENABLED' : 'DISABLED')) : undefined,
+          role: editingUser?.role ? (typeof editingUser.role === 'object' ? String(editingUser.role.id) : String(editingUser.role)) : undefined,
           campus: editingUser?.campus ? (
             typeof editingUser.campus === 'object' ?
               (editingUser.campus.id && String(editingUser.campus.id) !== '-1' && String(editingUser.campus.id) !== 'null' && editingUser.campus.id !== null ?
@@ -287,37 +174,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           ) : undefined
         }}
         key={`user-form-${editingUser?.id || 'new'}`}
-        onValuesChange={(changedValues, allValues) => {
-          console.log('表单值变化:', changedValues, '所有值:', allValues);
-
-          // 当状态字段变化时，输出详细信息
-          if ('status' in changedValues) {
-            console.log('状态字段变化为:', changedValues.status);
-          }
-
-          // 当电话字段变化时，自动将密码设置为手机号的后8位
-          if (changedValues.phone) {
-            const phone = changedValues.phone;
-            console.log('电话号码变化:', phone, '长度:', phone.length);
-            // 确保手机号长度足够
-            if (phone && phone.length >= 8) {
-              const last8Digits = phone.slice(-8); // 获取后8位
-              console.log('设置密码为手机号后8位:', last8Digits);
-              form.setFieldsValue({ password: last8Digits });
-              setPasswordValue(last8Digits); // 更新密码状态变量
-            } else {
-              console.log('手机号不足8位，设置密码为全部手机号:', phone);
-              form.setFieldsValue({ password: phone }); // 如果不足8位，使用全部
-              setPasswordValue(phone); // 更新密码状态变量
-            }
-          }
-
-          // 当校区字段变化时，立即验证该字段以清除错误提示
-          if (changedValues.campus) {
-            form.validateFields(['campus']);
-          }
-        }}
       >
+        {/* 名称和电话字段 */}
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item
@@ -326,39 +184,39 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               rules={[{ required: true, message: '请输入姓名' }]}
             >
               <Input
+                prefix={<UserOutlined />}
                 placeholder="请输入姓名"
+                allowClear
               />
             </Form.Item>
           </Col>
-
           <Col span={8}>
             <Form.Item
               name="phone"
-              label="电话"
+              label="手机号"
               rules={[
-                { required: true, message: '请输入电话' },
-                { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码' }
+                { required: true, message: '请输入手机号' },
+                { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }
               ]}
             >
               <Input
-                prefix={<UserOutlined />}
-                placeholder="请输入电话"
-                maxLength={11}
-                onKeyDown={(e) => {
-                  // 只允许输入数字
-                  const keyCode = e.key;
-                  if (!/[0-9]/.test(keyCode) && keyCode !== 'Backspace' && keyCode !== 'Delete' && keyCode !== 'ArrowLeft' && keyCode !== 'ArrowRight') {
-                    e.preventDefault();
-                  }
-                }}
+                placeholder="请输入手机号"
+                allowClear
                 onChange={(e) => {
-                  // 强制只能输入数字
-                  const value = e.target.value;
-                  const numericValue = value.replace(/[^\d]/g, '');
-                  if (value !== numericValue) {
-                    e.target.value = numericValue;
-                    // 触发一个新的变化事件来更新表单值
-                    form.setFieldsValue({ phone: numericValue });
+                  const phone = e.target.value;
+                  
+                  // 当不在编辑模式时，设置默认密码为手机号的后8位
+                  if (!editingUser && phone) {
+                    if (phone.length >= 8) {
+                      const last8 = phone.slice(-8);
+                      console.log('设置密码为手机号后8位:', last8);
+                      setPasswordValue(last8);
+                      form.setFieldsValue({ password: last8 });
+                    } else {
+                      console.log('手机号不足8位，设置密码为全部手机号:', phone);
+                      setPasswordValue(phone);
+                      form.setFieldsValue({ password: phone });
+                    }
                   }
                 }}
               />
@@ -366,6 +224,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           </Col>
         </Row>
 
+        {/* 状态和角色字段 */}
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item
@@ -549,20 +408,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                         onOk: () => {
                           if (typeof onResetPassword === 'function') {
                             onResetPassword();
-
-                            // 重置密码后更新密码状态变量
-                            if (phone.length >= 8) {
-                              const last8 = phone.slice(-8);
-                              console.log('重置密码后设置密码为手机号后8位:', last8, '手机号:', phone);
-                              setPasswordValue(last8);
-                              // 同时设置表单字段
-                              form.setFieldsValue({ password: last8 });
-                            } else {
-                              console.log('重置密码后手机号不足8位，设置密码为全部手机号:', phone);
-                              setPasswordValue(phone);
-                              // 同时设置表单字段
-                              form.setFieldsValue({ password: phone });
-                            }
                           }
                         }
                       });
