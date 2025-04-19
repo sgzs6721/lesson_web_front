@@ -1,153 +1,144 @@
 import { useState } from 'react';
 import { message } from 'antd';
 import { Course, CourseSearchParams } from '../types/course';
-import { mockCourses } from '../constants/mockData';
-import dayjs from 'dayjs';
+import { course as courseAPI } from '@/api/course';
 
 export const useCourseData = () => {
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>(mockCourses);
-  const [total, setTotal] = useState(mockCourses.length);
+  // 存储所有课程数据，用于重置过滤器
+  const [allCourses, setCourses] = useState<Course[]>([]);
+  // 当前展示的过滤后的课程数据
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  
+
   // 添加课程
-  const addCourse = (values: Omit<Course, 'id' | 'createdAt' | 'updatedAt' | 'consumedHours'>) => {
-    const newCourse: Course = {
-      id: `C${10000 + Math.floor(Math.random() * 90000)}`,
-      ...values,
-      consumedHours: 0,
-      createdAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-      updatedAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-      coaches: values.coaches || []
-    };
-    
-    setCourses([newCourse, ...courses]);
-    setFilteredCourses(prev => [newCourse, ...prev]);
-    setTotal(prev => prev + 1);
-    message.success('课程添加成功');
-    return newCourse;
+  const addCourse = async (values: Omit<Course, 'id' | 'createdAt' | 'updatedAt' | 'consumedHours'>) => {
+    setLoading(true);
+    try {
+      // 调用API添加课程
+      const newCourse = await courseAPI.add(values as any);
+
+      // 更新本地状态
+      setCourses(prev => [newCourse as unknown as Course, ...prev]);
+      setFilteredCourses(prev => [newCourse as unknown as Course, ...prev]);
+      setTotal(prev => prev + 1);
+
+      message.success('课程添加成功');
+      return newCourse;
+    } catch (error: any) {
+      message.error(error.message || '添加课程失败');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 更新课程
-  const updateCourse = (id: string, values: Partial<Course>) => {
-    const updatedCourses = courses.map(course => 
-      course.id === id 
-        ? { 
-            ...course, 
-            ...values,
-            updatedAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-          } 
-        : course
-    );
-    
-    setCourses(updatedCourses);
-    setFilteredCourses(prevFiltered => 
-      prevFiltered.map(course => 
-        course.id === id 
-          ? { 
-              ...course, 
-              ...values,
-              updatedAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-            } 
-          : course
-      )
-    );
-    
-    message.success('课程信息已更新');
+  const updateCourse = async (id: string, values: Partial<Course>) => {
+    setLoading(true);
+    try {
+      // 调用API更新课程
+      const updatedCourse = await courseAPI.update(id, values as any);
+
+      // 更新本地状态
+      setCourses(prevCourses =>
+        prevCourses.map(course => course.id === id ? (updatedCourse as unknown as Course) : course)
+      );
+
+      setFilteredCourses(prevFiltered =>
+        prevFiltered.map(course => course.id === id ? (updatedCourse as unknown as Course) : course)
+      );
+
+      message.success('课程信息已更新');
+      return updatedCourse;
+    } catch (error: any) {
+      message.error(error.message || '更新课程失败');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 删除课程
-  const deleteCourse = (id: string) => {
-    setCourses(prevCourses => prevCourses.filter(course => course.id !== id));
-    setFilteredCourses(prevFiltered => prevFiltered.filter(course => course.id !== id));
-    setTotal(prev => prev - 1);
-    message.success('课程已删除');
+  const deleteCourse = async (id: string) => {
+    setLoading(true);
+    try {
+      // 调用API删除课程
+      await courseAPI.delete(id);
+
+      // 更新本地状态
+      setCourses(prevCourses => prevCourses.filter(course => course.id !== id));
+      setFilteredCourses(prevFiltered => prevFiltered.filter(course => course.id !== id));
+      setTotal(prev => prev - 1);
+
+      message.success('课程已删除');
+    } catch (error: any) {
+      message.error(error.message || '删除课程失败');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 过滤课程数据
-  const filterCourses = (page: number, pageSize: number, params: CourseSearchParams) => {
+  const filterCourses = async (page: number, pageSize: number, params: CourseSearchParams) => {
     setLoading(true);
-    
+
     try {
-      // 模拟API调用
-      setTimeout(() => {
-        let result = [...courses];
-        const { searchText, selectedCategory, selectedStatus, sortOrder } = params;
+      // 调用API获取课程列表
+      const result = await courseAPI.getList({
+        page,
+        pageSize,
+        searchText: params.searchText,
+        selectedCategory: params.selectedCategory,
+        selectedStatus: params.selectedStatus,
+        sortOrder: params.sortOrder
+      });
 
-        // 搜索文本过滤
-        if (searchText) {
-          result = result.filter(
-            course =>
-              course.name.toLowerCase().includes(searchText.toLowerCase()) ||
-              course.id.toLowerCase().includes(searchText.toLowerCase())
-          );
-        }
+      // 更新本地状态
+      setFilteredCourses(result.list as unknown as Course[]);
+      setTotal(result.total);
 
-        // 分类过滤
-        if (selectedCategory) {
-          result = result.filter(course => course.category === selectedCategory);
-        }
+      // 如果是第一次加载，也更新全局课程列表
+      if (page === 1 && !params.searchText && !params.selectedCategory && !params.selectedStatus) {
+        setCourses(result.list as unknown as Course[]);
+      }
 
-        // 状态过滤
-        if (selectedStatus) {
-          result = result.filter(course => course.status === selectedStatus);
-        }
-        
-        // 排序
-        if (sortOrder) {
-          switch (sortOrder) {
-            case 'priceAsc':
-              result.sort((a, b) => a.unitPrice - b.unitPrice);
-              break;
-            case 'priceDesc':
-              result.sort((a, b) => b.unitPrice - a.unitPrice);
-              break;
-            case 'hoursAsc':
-              result.sort((a, b) => a.totalHours - b.totalHours);
-              break;
-            case 'hoursDesc':
-              result.sort((a, b) => b.totalHours - a.totalHours);
-              break;
-            case 'consumedHoursAsc':
-              result.sort((a, b) => a.consumedHours - b.consumedHours);
-              break;
-            case 'consumedHoursDesc':
-              result.sort((a, b) => b.consumedHours - a.consumedHours);
-              break;
-            case 'latestUpdate':
-              result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-              break;
-            default:
-              break;
-          }
-        }
-
-        // 计算总数并分页
-        setTotal(result.length);
-        
-        // 分页
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize;
-        const paginatedData = result.slice(start, end);
-        
-        setFilteredCourses(paginatedData);
-        setLoading(false);
-      }, 500); // 模拟加载延迟
-    } catch (error) {
-      message.error('获取课程列表失败');
+      return result.list;
+    } catch (error: any) {
+      message.error(error.message || '获取课程列表失败');
       console.error(error);
+      return [];
+    } finally {
       setLoading(false);
     }
   };
 
   // 重置过滤
-  const resetFilters = () => {
-    setFilteredCourses(courses.slice(0, 10)); // 重置为第一页数据
-    setTotal(courses.length);
+  const resetFilters = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      // 调用API获取课程列表，不带任何过滤条件
+      const result = await courseAPI.getList({ page, pageSize });
+
+      // 更新本地状态
+      setFilteredCourses(result.list as unknown as Course[]);
+      setCourses(result.list as unknown as Course[]);
+      setTotal(result.total);
+
+      return result.list;
+    } catch (error: any) {
+      message.error(error.message || '重置过滤失败');
+      console.error(error);
+      return [];
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
     courses: filteredCourses,
+    allCourses,  // 返回所有课程数据，可用于高级筛选
     totalCount: total,
     loading,
     addCourse,
@@ -156,4 +147,4 @@ export const useCourseData = () => {
     filterCourses,
     resetFilters
   };
-}; 
+};

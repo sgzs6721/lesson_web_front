@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space } from 'antd';
+import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form } from 'antd';
 import { PlusOutlined, ExportOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import StudentSearchBar from './components/StudentSearchBar';
@@ -28,12 +28,13 @@ dayjs.locale('zh-cn');
 const StudentManagement: React.FC = () => {
   // 使用数据和表单管理钩子（整合了数据、搜索、表单相关功能）
   const df = useDataForm();
-  
+
   // 使用UI管理钩子（整合了分页、删除确认、课程记录、课表、缴费、退费转课、导出等功能）
   const ui = useStudentUI(df.data.students, df.data.deleteStudent, df.data.addStudent);
-  
+
   const [attendanceModalVisible, setAttendanceModalVisible] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [attendanceForm] = Form.useForm();
 
   const handleAttendance = (student: Student) => {
     setSelectedStudent(student);
@@ -58,9 +59,9 @@ const StudentManagement: React.FC = () => {
             </Space>
           </Col>
           <Col>
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={df.form.showAddModal}
               style={{ marginRight: 8 }}
             >
@@ -68,7 +69,7 @@ const StudentManagement: React.FC = () => {
             </Button>
           </Col>
         </Row>
-        
+
         <Card style={{ marginBottom: 16 }}>
           {/* 搜索栏 */}
           <StudentSearchBar
@@ -82,7 +83,7 @@ const StudentManagement: React.FC = () => {
             onMonthChange={df.search.setEnrollMonth}
             onSortOrderChange={df.search.setSortOrder}
           />
-          
+
           {/* 数据表格 */}
           <StudentTable
             data={df.data.students}
@@ -103,7 +104,7 @@ const StudentManagement: React.FC = () => {
             onAttendance={handleAttendance}
           />
         </Card>
-        
+
         {/* 添加/编辑模态框 */}
         <StudentFormModal
           visible={df.form.visible}
@@ -123,14 +124,14 @@ const StudentManagement: React.FC = () => {
           removeCourseGroup={df.form.removeCourseGroup}
           startAddCourseGroup={df.form.startAddCourseGroup}
         />
-        
+
         {/* 删除确认模态框 */}
         <StudentDeleteModal
           visible={ui.deleteConfirm.deleteModalVisible}
           onConfirm={ui.deleteConfirm.handleDeleteConfirm}
           onCancel={ui.deleteConfirm.handleCancelDelete}
         />
-        
+
         {/* 课程记录模态框 */}
         <ClassRecordModal
           visible={ui.classRecord.classRecordModalVisible}
@@ -138,7 +139,7 @@ const StudentManagement: React.FC = () => {
           records={ui.classRecord.studentClassRecords.records}
           onCancel={ui.classRecord.handleClassRecordModalCancel}
         />
-        
+
         {/* 课表模态框 */}
         <ScheduleModal
           visible={ui.schedule.scheduleModalVisible}
@@ -146,7 +147,7 @@ const StudentManagement: React.FC = () => {
           schedules={ui.schedule.studentSchedule.schedules}
           onCancel={ui.schedule.handleScheduleModalCancel}
         />
-        
+
         {/* 缴费模态框 */}
         <PaymentModal
           visible={ui.payment.paymentModalVisible}
@@ -165,7 +166,7 @@ const StudentManagement: React.FC = () => {
           onClassHoursChange={ui.payment.handleClassHoursChange}
           onValidUntilChange={ui.payment.handleValidUntilChange}
         />
-        
+
         {/* 退费转课模态框 */}
         <RefundTransferModal
           visible={ui.refundTransfer.isRefundTransferModalVisible}
@@ -189,10 +190,11 @@ const StudentManagement: React.FC = () => {
           handleQuickAddStudentOk={ui.refundTransfer.handleQuickAddStudentOk}
           handleQuickAddStudentCancel={ui.refundTransfer.handleQuickAddStudentCancel}
         />
-        
+
         <AttendanceModal
           visible={attendanceModalVisible}
           student={selectedStudent}
+          form={attendanceForm}
           onCancel={() => setAttendanceModalVisible(false)}
           onOk={handleAttendanceOk}
         />
@@ -201,4 +203,4 @@ const StudentManagement: React.FC = () => {
   );
 };
 
-export default StudentManagement; 
+export default StudentManagement;

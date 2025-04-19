@@ -1,8 +1,11 @@
-import React from 'react';
-import { Modal, Form, Input, Select, Radio, InputNumber, Row, Col } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, Input, Select, InputNumber, Row, Col, Spin } from 'antd';
 import { BookOutlined, DollarOutlined } from '@ant-design/icons';
 import { Course } from '../types/course';
-import { categoryOptions, coachOptions } from '../constants/courseOptions';
+import { categoryOptions } from '../constants/courseOptions';
+import { coach as coachAPI } from '@/api/coach';
+import { CoachSimple } from '@/api/coach/types';
+import CustomRadioGroup from './CustomRadioGroup';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -24,6 +27,29 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
   onCancel,
   onSubmit
 }) => {
+  // 教练列表状态
+  const [coaches, setCoaches] = useState<CoachSimple[]>([]);
+  const [loadingCoaches, setLoadingCoaches] = useState(false);
+
+  // 当模态框打开时获取教练列表
+  useEffect(() => {
+    if (visible) {
+      fetchCoaches();
+    }
+  }, [visible]);
+
+  // 获取教练列表
+  const fetchCoaches = async () => {
+    setLoadingCoaches(true);
+    try {
+      const coachList = await coachAPI.getSimpleList();
+      setCoaches(coachList);
+    } catch (error) {
+      console.error('获取教练列表失败:', error);
+    } finally {
+      setLoadingCoaches(false);
+    }
+  };
   return (
     <Modal
       title={editingCourse ? '编辑课程' : '添加课程'}
@@ -87,11 +113,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
               label="课程状态"
               rules={[{ required: true, message: '请选择课程状态' }]}
             >
-              <Radio.Group>
-                <Radio value="active">开课中</Radio>
-                <Radio value="inactive">已停课</Radio>
-                <Radio value="pending">待开课</Radio>
-              </Radio.Group>
+              <CustomRadioGroup />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -106,10 +128,12 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                   style={{ width: '100%' }}
                   popupMatchSelectWidth={true}
                   getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  loading={loadingCoaches}
+                  notFoundContent={loadingCoaches ? <Spin size="small" /> : null}
                 >
-                  {coachOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
+                  {coaches.map(coach => (
+                    <Option key={coach.id} value={coach.id}>
+                      {coach.name}
                     </Option>
                   ))}
                 </Select>

@@ -1,4 +1,4 @@
-import { Dayjs } from 'dayjs';
+// Course type definitions
 
 export interface Course {
   id: string;
@@ -27,4 +27,4 @@ export type CourseSearchParams = {
   selectedCategory: string | undefined;
   selectedStatus: string | undefined;
   sortOrder: string | undefined;
-}; 
+};

@@ -38,7 +38,7 @@ const QuickAddStudentModal: React.FC<QuickAddStudentModalProps> = ({
       width={600}
       okText="确认添加"
       cancelText="取消"
-      bodyStyle={{ padding: '24px 32px' }}
+      styles={{ body: { padding: '24px 32px' } }}
     >
       <Form
         form={form}

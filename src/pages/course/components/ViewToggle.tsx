@@ -5,20 +5,21 @@ import { UnorderedListOutlined, AppstoreOutlined } from '@ant-design/icons';
 interface ViewToggleProps {
   viewMode: 'list' | 'card';
   onViewModeChange: (mode: 'list' | 'card') => void;
+  style?: React.CSSProperties;
 }
 
-const ViewToggle: React.FC<ViewToggleProps> = ({ viewMode, onViewModeChange }) => {
+const ViewToggle: React.FC<ViewToggleProps> = ({ viewMode, onViewModeChange, style }) => {
   return (
-    <Space>
-      <Button 
-        type={viewMode === 'list' ? 'primary' : 'default'} 
+    <Space style={style}>
+      <Button
+        type={viewMode === 'list' ? 'primary' : 'default'}
         icon={<UnorderedListOutlined />}
         onClick={() => onViewModeChange('list')}
       >
         列表视图
       </Button>
-      <Button 
-        type={viewMode === 'card' ? 'primary' : 'default'} 
+      <Button
+        type={viewMode === 'card' ? 'primary' : 'default'}
         icon={<AppstoreOutlined />}
         onClick={() => onViewModeChange('card')}
       >
@@ -28,4 +29,4 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ viewMode, onViewModeChange }) =
   );
 };
 
-export default ViewToggle; 
+export default ViewToggle;

@@ -27,14 +27,14 @@ const CourseTable: React.FC<CourseTableProps> = ({
   onPageChange
 }) => {
   const columns = getTableColumns(onEdit, onShowDetail, onDelete);
-  
+
   return (
     <Table
       columns={columns}
       dataSource={data}
       rowKey="id"
       loading={loading}
-      pagination={{
+      pagination={total > 0 ? {
         current: currentPage,
         pageSize: pageSize,
         total: total,
@@ -42,9 +42,21 @@ const CourseTable: React.FC<CourseTableProps> = ({
         showQuickJumper: true,
         showTotal: total => `共 ${total} 条记录`,
         onChange: onPageChange,
-      }}
+        locale: {
+          items_per_page: '条/页',
+          jump_to: '跳至',
+          jump_to_confirm: '确定',
+          page: '页',
+          prev_page: '上一页',
+          next_page: '下一页',
+          prev_5: '向前 5 页',
+          next_5: '向后 5 页',
+          prev_3: '向前 3 页',
+          next_3: '向后 3 页'
+        }
+      } : false}
     />
   );
 };
 
-export default CourseTable; 
+export default CourseTable;

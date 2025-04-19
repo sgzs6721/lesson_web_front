@@ -1,0 +1,77 @@
+/* 视图切换整体容器 */
+.view-toggle-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* 视图切换容器 */
+.view-toggle-container {
+  display: flex;
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  padding: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+/* 视图切换按钮基础样式 */
+.view-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  color: #8c8c8c;
+  position: relative;
+  margin: 0 1px;
+  outline: none;
+}
+
+/* 视图切换按钮悬停状态 */
+.view-toggle-button:hover {
+  color: #1a2980;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* 视图切换按钮激活状态 */
+.view-toggle-button.active {
+  background-color: white;
+  color: #1a2980;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* 视图切换按钮图标 */
+.view-toggle-button .anticon {
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+/* 添加课程按钮样式增强 */
+.add-course-button {
+  border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  padding: 0 16px;
+  height: 32px;
+}
+
+.add-course-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
+  opacity: 0.9;
+}
+
+/* 响应式调整 */
+@media (max-width: 576px) {
+  .view-toggle-container {
+    margin-bottom: 10px;
+  }
+}

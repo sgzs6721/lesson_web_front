@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Button, Row, Col } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Typography, Card } from 'antd';
 import CourseTable from './components/CourseTable';
 import CourseCardList from './components/CourseCardList';
 import CourseSearchBar from './components/CourseSearchBar';
 import CourseEditModal from './components/CourseEditModal';
 import CourseDetailModal from './components/CourseDetailModal';
 import CourseDeleteModal from './components/CourseDeleteModal';
-import ViewToggle from './components/ViewToggle';
+import CourseViewToggle from './components/CourseViewToggle';
 import { useCourseData } from './hooks/useCourseData';
 import { useCourseSearch } from './hooks/useCourseSearch';
 import { useCourseForm } from './hooks/useCourseForm';
 import { Course } from './types/course';
+import './components/CourseManagement.css';
 
 const { Title } = Typography;
 
@@ -31,7 +31,7 @@ const CourseManagement: React.FC = () => {
   // 当前页码和页面大小
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   // 使用搜索功能钩子
   const {
     searchParams,
@@ -41,11 +41,11 @@ const CourseManagement: React.FC = () => {
     setSortOrder,
     handleSearch,
     handleReset
-  } = useCourseSearch((params) => {
+  } = useCourseSearch(async (params) => {
     setCurrentPage(1); // 重置到第一页
-    filterCourses(1, pageSize, params);
+    return filterCourses(1, pageSize, params);
   });
-  
+
   // 使用表单管理钩子
   const {
     form,
@@ -57,51 +57,68 @@ const CourseManagement: React.FC = () => {
     handleSubmit,
     handleCancel
   } = useCourseForm(addCourse, updateCourse);
-  
+
   // 视图模式
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
-  
+
   // 详情模态框状态
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [detailCourse, setDetailCourse] = useState<Course | null>(null);
-  
+
   // 删除确认模态框状态
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletingCourse, setDeletingCourse] = useState<{ id: string; name: string } | null>(null);
 
   // 首次加载获取数据
   useEffect(() => {
-    filterCourses(currentPage, pageSize, searchParams);
+    const fetchInitialData = async () => {
+      try {
+        await filterCourses(currentPage, pageSize, searchParams);
+      } catch (error) {
+        console.error('加载课程数据失败:', error);
+      }
+    };
+
+    fetchInitialData();
   }, []);
-  
+
   // 处理分页变化
-  const handlePageChange = (page: number, size: number) => {
+  const handlePageChange = async (page: number, size: number) => {
     setCurrentPage(page);
     setPageSize(size);
-    filterCourses(page, size, searchParams);
+    try {
+      await filterCourses(page, size, searchParams);
+    } catch (error) {
+      console.error('加载分页数据失败:', error);
+    }
   };
-  
+
   // 处理查看详情
   const handleShowDetail = (record: Course) => {
     setDetailCourse(record);
     setDetailModalVisible(true);
   };
-  
+
   // 处理删除确认
   const showDeleteConfirm = (id: string, name: string) => {
     setDeletingCourse({ id, name });
     setDeleteModalVisible(true);
   };
-  
+
   // 执行删除
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingCourse) {
-      deleteCourse(deletingCourse.id);
-      setDeleteModalVisible(false);
-      setDeletingCourse(null);
+      try {
+        await deleteCourse(deletingCourse.id);
+        setDeleteModalVisible(false);
+        setDeletingCourse(null);
+      } catch (error) {
+        // 错误已在 deleteCourse 中处理，这里不需要额外处理
+        console.error('删除课程失败:', error);
+      }
     }
   };
-  
+
   // 取消删除
   const handleCancelDelete = () => {
     setDeleteModalVisible(false);
@@ -110,31 +127,15 @@ const CourseManagement: React.FC = () => {
 
   return (
     <div className="course-management">
-      {/* 标题和操作按钮区域 */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={4}>课程管理</Title>
-        </Col>
-        <Col>
-          <Row gutter={16}>
-            <Col>
-              <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
-            </Col>
-            <Col>
-              <Button 
-                type="primary" 
-                icon={<PlusOutlined />} 
-                onClick={handleAdd}
-              >
-                添加课程
-              </Button>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
-
-      {/* 主内容区域 */}
-      <Card>
+      <Card className="course-management-card">
+        <div className="course-header">
+          <Title level={4} className="course-title">课程管理</Title>
+          <CourseViewToggle
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            onAddCourse={handleAdd}
+          />
+        </div>
         {/* 搜索栏 */}
         <CourseSearchBar
           params={searchParams}
@@ -145,7 +146,7 @@ const CourseManagement: React.FC = () => {
           onStatusChange={setSelectedStatus}
           onSortOrderChange={setSortOrder}
         />
-        
+
         {/* 数据展示 - 根据视图模式显示表格或卡片 */}
         {viewMode === 'list' ? (
           <CourseTable
@@ -172,7 +173,7 @@ const CourseManagement: React.FC = () => {
           />
         )}
       </Card>
-      
+
       {/* 编辑/添加模态框 */}
       <CourseEditModal
         visible={visible}
@@ -182,14 +183,14 @@ const CourseManagement: React.FC = () => {
         onCancel={handleCancel}
         onSubmit={handleSubmit}
       />
-      
+
       {/* 详情模态框 */}
       <CourseDetailModal
         visible={detailModalVisible}
         course={detailCourse}
         onCancel={() => setDetailModalVisible(false)}
       />
-      
+
       {/* 删除确认模态框 */}
       <CourseDeleteModal
         visible={deleteModalVisible}
@@ -201,4 +202,4 @@ const CourseManagement: React.FC = () => {
   );
 };
 
-export default CourseManagement; 
+export default CourseManagement;

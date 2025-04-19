@@ -1,27 +1,28 @@
 import React from 'react';
-import { Space, Button, Tooltip } from 'antd';
+import { Button, Space, Tooltip } from 'antd';
 import { UnorderedListOutlined, AppstoreOutlined, PlusOutlined } from '@ant-design/icons';
-import { ViewMode } from '../types/coach';
-import './CoachViewToggle.css';
+import './CourseViewToggle.css';
 
-interface CoachViewToggleProps {
-  viewMode: ViewMode;
-  onViewModeChange: (mode: ViewMode) => void;
-  onAddCoach: () => void;
+interface CourseViewToggleProps {
+  viewMode: 'list' | 'card';
+  onViewModeChange: (mode: 'list' | 'card') => void;
+  onAddCourse: () => void;
+  style?: React.CSSProperties;
 }
 
-const CoachViewToggle: React.FC<CoachViewToggleProps> = ({
+const CourseViewToggle: React.FC<CourseViewToggleProps> = ({
   viewMode,
   onViewModeChange,
-  onAddCoach
+  onAddCourse,
+  style
 }) => {
   return (
-    <div className="view-toggle-wrapper">
+    <div className="view-toggle-wrapper" style={style}>
       <div className="view-toggle-container">
-        <Tooltip title="表格视图">
+        <Tooltip title="列表视图">
           <button
-            className={`view-toggle-button ${viewMode === 'table' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('table')}
+            className={`view-toggle-button ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => onViewModeChange('list')}
           >
             <UnorderedListOutlined />
           </button>
@@ -38,8 +39,8 @@ const CoachViewToggle: React.FC<CoachViewToggleProps> = ({
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        className="add-coach-button"
-        onClick={onAddCoach}
+        className="add-course-button"
+        onClick={onAddCourse}
         style={{
           background: 'linear-gradient(135deg, #52c41a, #1890ff)',
           border: 'none',
@@ -47,10 +48,10 @@ const CoachViewToggle: React.FC<CoachViewToggleProps> = ({
           fontWeight: 500
         }}
       >
-        添加教练
+        添加课程
       </Button>
     </div>
   );
 };
 
-export default CoachViewToggle;
+export default CourseViewToggle;

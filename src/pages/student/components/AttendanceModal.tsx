@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, DatePicker, TimePicker, Input, Select } from 'antd';
+import { FormInstance } from 'antd/lib/form';
 import dayjs from 'dayjs';
 import { Student } from '../types/student';
 import { getStudentAllCourses } from '../utils/student';
@@ -7,6 +8,7 @@ import { getStudentAllCourses } from '../utils/student';
 interface AttendanceModalProps {
   visible: boolean;
   student: Student | null;
+  form: FormInstance;
   onCancel: () => void;
   onOk: (values: any) => void;
 }
@@ -14,10 +16,10 @@ interface AttendanceModalProps {
 const AttendanceModal: React.FC<AttendanceModalProps> = ({
   visible,
   student,
+  form,
   onCancel,
   onOk,
 }) => {
-  const [form] = Form.useForm();
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(null);
   const [startTime, setStartTime] = useState<dayjs.Dayjs | null>(null);
   const [endTime, setEndTime] = useState<dayjs.Dayjs | null>(null);
@@ -156,4 +158,4 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
   );
 };
 
-export default AttendanceModal; 
+export default AttendanceModal;

@@ -13,6 +13,12 @@ export enum CoachGender {
   FEMALE = 'FEMALE'
 }
 
+// 教练简单信息类型
+export interface CoachSimple {
+  id: number;
+  name: string;
+}
+
 // 教练类型
 export interface Coach {
   id: number | string;
@@ -117,3 +123,6 @@ export interface CoachDeleteResponse extends ApiResponse<null> {}
 
 // 教练状态更新响应
 export interface CoachStatusUpdateResponse extends ApiResponse<null> {}
+
+// 教练简单列表响应
+export interface CoachSimpleListResponse extends ApiResponse<CoachSimple[]> {}

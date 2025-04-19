@@ -9,7 +9,9 @@ import {
   CoachCreateResponse,
   CoachUpdateResponse,
   CoachDeleteResponse,
-  CoachStatusUpdateResponse
+  CoachStatusUpdateResponse,
+  CoachSimple,
+  CoachSimpleListResponse
 } from './types';
 import { PaginatedResponse } from '../types';
 import { mockApiResponse, mockCoaches, mockPaginatedResponse } from './mock';
@@ -20,12 +22,13 @@ import { request, USE_MOCK, API_HOST } from '../config';
 // API Path Constants
 const COACH_API_PATHS = {
   LIST: '/lesson/api/coach/list',
-  DETAIL: (id: string | number, campusId?: string | number) => 
+  DETAIL: (id: string | number, campusId?: string | number) =>
     `/lesson/api/coach/detail?id=${id}${campusId ? `&campusId=${campusId}` : ''}`,
   CREATE: '/lesson/api/coach/create',
   UPDATE: '/lesson/api/coach/update',
   DELETE: (id: string | number) => `/lesson/api/coach/delete?id=${id}`,
-  UPDATE_STATUS: '/lesson/api/coach/updateStatus'
+  UPDATE_STATUS: '/lesson/api/coach/updateStatus',
+  SIMPLE_LIST: '/lesson/api/coach/simple/list'
 };
 
 // 教练管理相关接口
@@ -165,15 +168,15 @@ export const coach = {
     // 如果没有提供campusId，尝试从localStorage获取
     const currentCampusId = localStorage.getItem('currentCampusId');
     let finalCampusId = campusId;
-    
+
     if (!finalCampusId && currentCampusId) {
       finalCampusId = Number(currentCampusId);
     }
-    
+
     if (!finalCampusId) {
       console.warn('获取教练详情时没有提供campusId，将使用默认值');
     }
-    
+
     const response: CoachDetailResponse = await request(COACH_API_PATHS.DETAIL(id, finalCampusId));
     return response.data;
   },
@@ -300,6 +303,22 @@ export const coach = {
       body: JSON.stringify(data)
     });
 
+    return response.data;
+  },
+
+  // 获取教练简单列表
+  getSimpleList: async (): Promise<CoachSimple[]> => {
+    if (USE_MOCK) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // 返回模拟数据
+      return mockCoaches.map(coach => ({
+        id: typeof coach.id === 'string' ? parseInt(coach.id) : coach.id,
+        name: coach.name
+      }));
+    }
+
+    const response: CoachSimpleListResponse = await request(COACH_API_PATHS.SIMPLE_LIST);
     return response.data;
   }
 };

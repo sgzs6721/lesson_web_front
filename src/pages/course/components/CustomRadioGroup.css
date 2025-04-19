@@ -1,0 +1,116 @@
+.custom-radio-group {
+  display: flex;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  height: 32px;
+}
+
+.custom-radio-button {
+  flex: 1;
+  text-align: center;
+  padding: 4px 0;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: #f5f5f5;
+  border: 1px solid #e8e8e8;
+  position: relative;
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  user-select: none;
+  height: 32px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-radio-button:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.custom-radio-button:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.custom-radio-button.active {
+  background-color: #1890ff;
+  color: white;
+  border-color: #1890ff;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(24, 144, 255, 0.15);
+  z-index: 1;
+}
+
+.custom-radio-button:not(.active):hover {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border-color: #91d5ff;
+}
+
+/* 添加图标样式 */
+.custom-radio-button .radio-icon {
+  margin-right: 4px;
+  font-size: 14px;
+  vertical-align: -0.125em;
+}
+
+/* 活跃状态图标 */
+.custom-radio-button.active-status {
+  border-color: #66BB6A;
+}
+
+.custom-radio-button.active-status.active {
+  background-color: #4CAF50;
+  border-color: #43A047;
+  box-shadow: 0 1px 3px rgba(76, 175, 80, 0.15);
+}
+
+.custom-radio-button.active-status:not(.active):hover {
+  background-color: #E8F5E9;
+  color: #43A047;
+  border-color: #81C784;
+}
+
+/* 非活跃状态图标 */
+.custom-radio-button.inactive-status {
+  border-color: #ff4d4f;
+}
+
+.custom-radio-button.inactive-status.active {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+  box-shadow: 0 1px 3px rgba(255, 77, 79, 0.15);
+}
+
+.custom-radio-button.inactive-status:not(.active):hover {
+  background-color: #fff1f0;
+  color: #ff4d4f;
+  border-color: #ffa39e;
+}
+
+/* 待开课状态图标 */
+.custom-radio-button.pending-status {
+  border-color: #faad14;
+}
+
+.custom-radio-button.pending-status.active {
+  background-color: #faad14;
+  border-color: #faad14;
+  box-shadow: 0 1px 3px rgba(250, 173, 20, 0.15);
+}
+
+.custom-radio-button.pending-status:not(.active):hover {
+  background-color: #fffbe6;
+  color: #faad14;
+  border-color: #ffe58f;
+}
+
+/* 隐藏原始单选框 */
+.custom-radio-group-container .ant-radio-wrapper {
+  display: none;
+}
