@@ -49,7 +49,7 @@ export type CoachSearchParams = {
   searchText: string;
   selectedStatus?: string;
   selectedJobTitle?: string;
-  sortField?: 'experience' | 'hireDate';
+  sortField?: 'experience' | 'hireDate' | 'status' | 'age' | 'jobTitle' | 'gender';
 };
 
 // 视图模式

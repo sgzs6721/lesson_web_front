@@ -2,7 +2,7 @@ import React from 'react';
 import { List, Card, Avatar, Row, Col, Divider, Tooltip, Tag, Button, Space, Dropdown, Spin } from 'antd';
 import { EditOutlined, DeleteOutlined, PhoneOutlined, ClockCircleOutlined, UserOutlined, IdcardOutlined, CalendarOutlined, TrophyOutlined, SafetyCertificateOutlined, DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
-import { getStatusTagInfo } from '../utils/formatters';
+import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
 import { CoachGender } from '../../../api/coach/types';
 import dayjs from 'dayjs';
 import './CoachCardView.css';
@@ -160,9 +160,10 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
 
   // 渲染职位标签
   const renderJobTitleTag = (jobTitle: string) => {
+    const { color, text } = getJobTitleTagInfo(jobTitle);
     return (
       <Tag
-        color="blue"
+        color={color}
         style={{
           borderRadius: '4px',
           fontSize: '11px',
@@ -172,7 +173,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}
       >
-        {jobTitle}
+        {text}
       </Tag>
     );
   };
@@ -303,7 +304,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                             {certArray.map((cert, index) => (
                               <Tag
                                 key={index}
-                                color="blue"
+                                color="green"
                                 style={{
                                   margin: '1px 0',
                                   padding: '0 4px',

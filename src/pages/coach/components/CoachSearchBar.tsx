@@ -12,7 +12,7 @@ interface CoachSearchBarProps {
   onTextChange: (value: string) => void;
   onStatusChange: (value: string | undefined) => void;
   onJobTitleChange: (value: string | undefined) => void;
-  onSortFieldChange: (value: 'experience' | 'hireDate' | undefined) => void;
+  onSortFieldChange: (value: 'experience' | 'hireDate' | 'status' | 'age' | 'jobTitle' | 'gender' | undefined) => void;
 }
 
 const CoachSearchBar: React.FC<CoachSearchBarProps> = ({
@@ -82,6 +82,10 @@ const CoachSearchBar: React.FC<CoachSearchBarProps> = ({
           >
             <Option value="experience">按教龄排序</Option>
             <Option value="hireDate">按入职日期排序</Option>
+            <Option value="status">按状态排序</Option>
+            <Option value="age">按年龄排序</Option>
+            <Option value="jobTitle">按职位排序</Option>
+            <Option value="gender">按性别排序</Option>
           </Select>
         </div>
       </Col>

@@ -29,3 +29,22 @@ export const getStatusTagInfo = (status: string): { color: string; text: string 
 
   return { color, text };
 };
+
+// 获取职位标签信息
+export const getJobTitleTagInfo = (jobTitle: string): { color: string; text: string } => {
+  let color = '';
+  let text = jobTitle;
+
+  // 根据职位名称返回不同的颜色
+  if (jobTitle.includes('高级') || jobTitle.includes('资深') || jobTitle.includes('首席')) {
+    color = 'purple'; // 高级教练使用紫色
+  } else if (jobTitle.includes('中级')) {
+    color = 'blue'; // 中级教练使用蓝色
+  } else if (jobTitle.includes('初级')) {
+    color = 'cyan'; // 初级教练使用青色
+  } else {
+    color = 'geekblue'; // 其他职位使用深蓝色
+  }
+
+  return { color, text };
+};

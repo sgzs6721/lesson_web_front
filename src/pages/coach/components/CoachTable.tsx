@@ -2,7 +2,7 @@ import React from 'react';
 import { Table, Button, Space, Tooltip, Avatar, Dropdown, Menu, Tag, Spin } from 'antd';
 import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined, DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
-import { getStatusTagInfo } from '../utils/formatters';
+import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { CoachGender } from '../../../api/coach/types';
@@ -138,21 +138,24 @@ const CoachTable: React.FC<CoachTableProps> = ({
       dataIndex: 'jobTitle',
       key: 'jobTitle',
       align: 'center',
-      render: (jobTitle) => (
-        <Tag
-          color="blue"
-          style={{
-            padding: '1px 5px',
-            borderRadius: '3px',
-            fontSize: '11px',
-            lineHeight: '1.3',
-            height: '18px',
-            margin: '2px',
-          }}
-        >
-          {jobTitle}
-        </Tag>
-      ),
+      render: (jobTitle) => {
+        const { color, text } = getJobTitleTagInfo(jobTitle);
+        return (
+          <Tag
+            color={color}
+            style={{
+              padding: '1px 5px',
+              borderRadius: '3px',
+              fontSize: '11px',
+              lineHeight: '1.3',
+              height: '18px',
+              margin: '2px',
+            }}
+          >
+            {text}
+          </Tag>
+        );
+      },
     },
     {
       title: '联系电话',
@@ -221,7 +224,7 @@ const CoachTable: React.FC<CoachTableProps> = ({
             {visibleCerts.map((cert, index) => (
               <Tag
                 key={index}
-                color="blue"
+                color="green"
                 style={{
                   padding: '1px 5px',
                   borderRadius: '3px',

@@ -26,7 +26,7 @@ export const useCoachSearch = () => {
   };
 
   // 设置排序字段
-  const setSortField = (value: 'experience' | 'hireDate' | undefined) => {
+  const setSortField = (value: 'experience' | 'hireDate' | 'status' | 'age' | 'jobTitle' | 'gender' | undefined) => {
     setSearchParams(prev => ({ ...prev, sortField: value }));
   };
 
@@ -48,4 +48,4 @@ export const useCoachSearch = () => {
     setSortField,
     resetSearchParams
   };
-}; 
+};

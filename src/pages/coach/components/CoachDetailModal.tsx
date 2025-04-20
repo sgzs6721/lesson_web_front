@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Descriptions, Avatar, Tag, Space, Button, Spin } from 'antd';
 import { Coach } from '../types/coach';
-import { getStatusTagInfo } from '../utils/formatters';
+import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
 import { CoachGender, CoachStatus } from '../../../api/coach/types';
 import { UserOutlined } from '@ant-design/icons';
 
@@ -73,7 +73,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
         {certArray.map((cert, index) => (
           <Tag
             key={index}
-            color="blue"
+            color="green"
             style={{
               marginBottom: 4,
               padding: '1px 5px',
@@ -156,7 +156,13 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
           <Descriptions.Item label="状态" span={1}>{displayCoach.status ? renderStatusTag(displayCoach.status) : '-'}</Descriptions.Item>
 
           <Descriptions.Item label="联系电话" span={1}>{displayCoach.phone || '-'}</Descriptions.Item>
-          <Descriptions.Item label="职位" span={1}>{displayCoach.jobTitle || '-'}</Descriptions.Item>
+          <Descriptions.Item label="职位" span={1}>
+            {displayCoach.jobTitle ? (
+              <Tag color={getJobTitleTagInfo(displayCoach.jobTitle).color}>
+                {displayCoach.jobTitle}
+              </Tag>
+            ) : '-'}
+          </Descriptions.Item>
 
           <Descriptions.Item label="入职日期" span={1}>{displayCoach.hireDate || '-'}</Descriptions.Item>
           <Descriptions.Item label="教龄" span={1}>{displayCoach.experience ? `${displayCoach.experience}年` : '-'}</Descriptions.Item>
