@@ -9,10 +9,8 @@ jobs:
   dev-front-deploy:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Setup Node.js
+        uses: actions/checkout@v4
         uses: actions/setup-node@v4
         with:
           node-version: 22
