@@ -181,6 +181,26 @@ const CoachManagement: React.FC = () => {
     };
   }, [currentPage, pageSize]);
 
+  // 监听校区切换事件
+  useEffect(() => {
+    // 定义事件处理函数
+    const handleCampusChanged = (event: CustomEvent) => {
+      console.log('教练管理页面收到校区切换事件:', event.detail);
+      // 重置到第一页
+      setCurrentPage(1);
+      // 重新加载数据
+      loadCoaches(1, pageSize);
+    };
+
+    // 添加事件监听器
+    window.addEventListener('campusChanged', handleCampusChanged as EventListener);
+
+    // 组件卸载时移除事件监听器
+    return () => {
+      window.removeEventListener('campusChanged', handleCampusChanged as EventListener);
+    };
+  }, [pageSize]);
+
   return (
     <div className="coach-management">
       <Card className="coach-management-card">

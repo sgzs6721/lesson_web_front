@@ -210,14 +210,37 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
 
   // 选择校区
   const selectCampus = (campus: Campus) => {
+    // 如果选择的是当前校区，不做任何操作
+    if (currentCampus?.id === campus.id) {
+      setShowCampusList(false);
+      return;
+    }
+
     setCurrentCampus(campus);
     setShowCampusList(false);
     // 将校区ID和名称存储到localStorage中，供其他组件使用
     localStorage.setItem('currentCampusId', String(campus.id));
     localStorage.setItem('currentCampusName', campus.name);
+
+    // 触发回调
     if (onCampusChangeRef.current) {
       onCampusChangeRef.current(campus);
     }
+
+    // 刷新当前页面
+    // 获取当前页面路径
+    const currentPath = window.location.pathname;
+    console.log('切换校区后刷新页面数据，当前路径:', currentPath);
+
+    // 触发一个自定义事件，通知当前页面校区已切换
+    const event = new CustomEvent('campusChanged', {
+      detail: {
+        campusId: campus.id,
+        campusName: campus.name,
+        previousCampusId: currentCampus?.id
+      }
+    });
+    window.dispatchEvent(event);
   };
 
   return (

@@ -127,3 +127,13 @@
 .ant-spin-nested-loading > div > .ant-spin {
   max-height: none !important;
 }
+
+/* 确保蒙板的 z-index 不会覆盖标题 */
+.ant-spin-nested-loading > div > .ant-spin .ant-spin-dot-spin {
+  z-index: 1000 !important;
+}
+
+.ant-spin-container.ant-spin-blur::after {
+  z-index: 999 !important;
+  opacity: 0.6 !important;
+}

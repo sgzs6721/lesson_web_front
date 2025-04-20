@@ -136,7 +136,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
               transform: 'translateX(-50%)',
               padding: '0 15px',
               background: '#fff',
-              zIndex: 1
+              zIndex: 1001
             }}>
               <h3 className="section-title" style={{ margin: 0 }}>基本信息</h3>
             </div>
@@ -342,7 +342,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
               transform: 'translateX(-50%)',
               padding: '0 15px',
               background: '#fff',
-              zIndex: 1
+              zIndex: 1001
             }}>
               <h3 className="section-title" style={{ margin: 0 }}>薪资信息</h3>
             </div>
