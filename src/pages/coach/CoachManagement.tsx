@@ -162,6 +162,25 @@ const CoachManagement: React.FC = () => {
     }
   }, []);
 
+  // 监听教练添加事件，当添加新教练时跳转到第一页
+  useEffect(() => {
+    const handleCoachAdded = () => {
+      // 如果当前不在第一页，则跳转到第一页
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+        loadCoaches(1, pageSize);
+      }
+    };
+
+    // 添加事件监听器
+    window.addEventListener('coachAdded', handleCoachAdded);
+
+    // 清理事件监听器
+    return () => {
+      window.removeEventListener('coachAdded', handleCoachAdded);
+    };
+  }, [currentPage, pageSize]);
+
   return (
     <div className="coach-management">
       <Card className="coach-management-card">

@@ -1,11 +1,9 @@
 import React, { useMemo } from 'react';
 import { Modal, Form, Input, Radio, Select, DatePicker, Row, Col, Divider, Avatar, Spin } from 'antd';
-import { UserOutlined, PhoneOutlined, LoadingOutlined } from '@ant-design/icons';
+import { UserOutlined, PhoneOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import { avatarOptions } from '../constants/avatarOptions';
-import { Gender } from '../types/coach';
 import './CoachEditModal.css';
-import dayjs from 'dayjs';
 
 const { TextArea } = Input;
 
@@ -86,8 +84,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
     };
   }, [selectedAvatar, gender]);
 
-  // 自定义加载图标，使其更大更明显
-  const antIcon = <LoadingOutlined style={{ fontSize: 32 }} spin />;
+  // 使用默认的 Spin 组件样式
 
   return (
     <Modal
@@ -97,26 +94,17 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
         </div>
       }
       open={visible}
-      onOk={loading ? undefined : onSubmit}
-      onCancel={loading ? undefined : onCancel}
+      onOk={(loading || detailLoading) ? undefined : onSubmit}
+      onCancel={(loading || detailLoading) ? undefined : onCancel}
       width={800}
-      confirmLoading={loading}
+      confirmLoading={loading || detailLoading}
       okText={editingCoach ? '保存' : '添加'}
       cancelText="取消"
-      maskClosable={!loading}
-      closable={!loading}
-      keyboard={!loading}
+      maskClosable={!(loading || detailLoading)}
+      closable={!(loading || detailLoading)}
+      keyboard={!(loading || detailLoading)}
     >
-      <div className="coach-modal-content-wrapper" style={{ position: 'relative' }}>
-        {loading && (
-          <div className="coach-modal-loading-mask" onClick={(e) => e.stopPropagation()}>
-            <Spin
-              indicator={antIcon}
-              tip={loading && !detailLoading ? "正在保存中...请稍候" : "正在加载数据...请稍候"}
-              size="large"
-            />
-          </div>
-        )}
+      <Spin spinning={loading || detailLoading}>
         <Form
           form={form}
           layout="vertical"
@@ -426,7 +414,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
             </Col>
           </Row>
         </Form>
-      </div>
+      </Spin>
     </Modal>
   );
 };

@@ -114,3 +114,16 @@
   pointer-events: none !important;
   opacity: 0.5 !important;
 }
+
+/* 自定义 Spin 组件样式，使其与详情模态框一致 */
+.ant-spin.ant-spin-spinning {
+  max-height: none !important;
+}
+
+.ant-spin.ant-spin-spinning .ant-spin-dot {
+  font-size: 24px !important;
+}
+
+.ant-spin-nested-loading > div > .ant-spin {
+  max-height: none !important;
+}

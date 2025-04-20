@@ -93,6 +93,23 @@ export const useCoachForm = (
     setDetailLoading(true);
     form.resetFields(); // 先重置表单，避免显示上一次的数据
 
+    // 预设默认值，以便在加载时显示表单结构
+    const currentCampusId = localStorage.getItem('currentCampusId') || '1';
+    form.setFieldsValue({
+      status: 'ACTIVE',
+      gender: 'MALE',
+      experience: 1,
+      age: 25,
+      campusId: currentCampusId,
+      baseSalary: 0,
+      socialInsurance: 0,
+      classFee: 0,
+      performanceBonus: 0,
+      commission: 0,
+      dividend: 0,
+      hireDate: dayjs(),
+    })
+
     try {
       // 获取教练ID
       const stringId = String(record.id);
@@ -346,6 +363,10 @@ export const useCoachForm = (
               if (newCoach && newCoach.id) {
                 coachDetailCache[newCoach.id] = newCoach;
                 console.log('新教练数据已添加到缓存:', newCoach.id);
+
+                // 触发一个自定义事件，通知父组件新教练已添加
+                const event = new CustomEvent('coachAdded', { detail: newCoach });
+                window.dispatchEvent(event);
               }
 
               // 延迟关闭加载状态，确保蒙板显示足够时间

@@ -95,8 +95,10 @@ export const useCoachData = () => {
         id: String(id)
       };
 
-      // 更新本地状态
-      setCoaches(prevCoaches => [...prevCoaches, newCoach]);
+      // 更新本地状态 - 将新教练添加到列表最前面
+      setCoaches(prevCoaches => [newCoach, ...prevCoaches]);
+      // 更新总数
+      setTotal(prev => prev + 1);
 
       message.success('教练已成功添加');
       return newCoach;

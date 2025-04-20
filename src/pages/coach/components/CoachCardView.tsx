@@ -278,12 +278,49 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                     <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>入职：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>{formatDate(coach.hireDate)}</span>
                   </div>
-                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
-                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>证书：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
-                      {Array.isArray(coach.certifications) && coach.certifications.length > 0
-                        ? coach.certifications[0]
-                        : <span className="no-cert">暂无证书</span>}
+                  <div className="coach-info-item" style={{display: 'flex', alignItems: 'flex-start'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0, marginTop: '2px'}}>证书：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1, whiteSpace: 'normal', maxHeight: '50px', overflow: 'auto', paddingBottom: '2px'}}>
+                      {(() => {
+                        // 将任何类型的数据转换为标准数组
+                        if (!coach.certifications) return <span className="no-cert">暂无证书</span>;
+
+                        let certArray: string[] = [];
+
+                        if (typeof coach.certifications === 'string') {
+                          certArray = coach.certifications.split(/[,，\n\r]/).map(c => c.trim()).filter(c => c);
+                        } else if (Array.isArray(coach.certifications)) {
+                          certArray = coach.certifications.filter(c => c.trim());
+                        }
+
+                        if (certArray.length === 0) {
+                          return <span className="no-cert">暂无证书</span>;
+                        }
+
+                        // 使用Tag组件显示每个证书
+                        return (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '2px', marginTop: '-2px', marginBottom: '-2px' }}>
+                            {certArray.map((cert, index) => (
+                              <Tag
+                                key={index}
+                                color="blue"
+                                style={{
+                                  margin: '1px 0',
+                                  padding: '0 4px',
+                                  borderRadius: '3px',
+                                  fontSize: '10px',
+                                  lineHeight: '1.2',
+                                  height: '16px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center'
+                                }}
+                              >
+                                {cert}
+                              </Tag>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -293,16 +330,16 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>基本工资：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
                       {typeof coach.baseSalary === 'number'
-                        ? `¥${coach.baseSalary.toLocaleString()}`
-                        : '¥0'}
+                        ? `¥ ${coach.baseSalary.toLocaleString()}`
+                        : '¥ 0'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>社保费：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
                       {typeof coach.socialInsurance === 'number'
-                        ? `¥${coach.socialInsurance.toLocaleString()}`
-                        : '¥0'}
+                        ? `¥ ${coach.socialInsurance.toLocaleString()}`
+                        : '¥ 0'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
@@ -312,9 +349,9 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                         const noBreakSpace = '\u200B'; // 零宽度空格
                         if (typeof coach.classFee === 'number') {
                           const fee = coach.classFee.toLocaleString();
-                          return `¥${fee}${noBreakSpace}/时`;
+                          return `¥ ${fee}${noBreakSpace}/时`;
                         }
-                        return `¥0${noBreakSpace}/时`;
+                        return `¥ 0${noBreakSpace}/时`;
                       })()}
                     </span>
                   </div>
@@ -322,8 +359,8 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>绩效奖：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
                       {typeof coach.performanceBonus === 'number'
-                        ? `¥${coach.performanceBonus.toLocaleString()}`
-                        : '¥0'}
+                        ? `¥ ${coach.performanceBonus.toLocaleString()}`
+                        : '¥ 0'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
@@ -338,8 +375,8 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>分红：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
                       {typeof coach.dividend === 'number'
-                        ? `¥${coach.dividend.toLocaleString()}`
-                        : '¥0'}
+                        ? `¥ ${coach.dividend.toLocaleString()}`
+                        : '¥ 0'}
                     </span>
                   </div>
                 </div>
