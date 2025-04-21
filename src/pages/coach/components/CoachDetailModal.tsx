@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Descriptions, Avatar, Tag, Space, Button, Spin } from 'antd';
+import { Modal, Descriptions, Avatar, Tag, Space, Button, Spin, Tooltip } from 'antd';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
 import { CoachGender, CoachStatus } from '../../../api/coach/types';
@@ -42,7 +42,25 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
   // 渲染状态标签
   const renderStatusTag = (status: string) => {
     const { color, text } = getStatusTagInfo(status);
-    return <Tag color={color}>{text}</Tag>;
+    return (
+      <div style={{
+        display: 'inline-block',
+        padding: '4px 12px',
+        fontSize: '13px',
+        fontWeight: 500,
+        lineHeight: '20px',
+        borderRadius: '4px',
+        backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+        border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
+        color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+        minWidth: '80px',
+        textAlign: 'center',
+        whiteSpace: 'nowrap'
+      }}>
+        {text}
+      </div>
+    );
   };
 
   // 格式化课时费
@@ -68,25 +86,101 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
       return '无';
     }
 
+    // 创建Tooltip内容，每个证书一行，美化样式
+    const tooltipContent = (
+      <div style={{
+        textAlign: 'left',
+        padding: '0',
+        minWidth: '220px',
+        maxWidth: '260px',
+        borderRadius: '6px',
+        overflow: 'hidden',
+        boxShadow: '0 3px 8px rgba(0, 0, 0, 0.1)',
+        border: '1px solid #e8e8e8',
+        backgroundColor: '#fff'
+      }}>
+        <div style={{
+          padding: '8px 12px',
+          backgroundColor: '#f5f5f5',
+          color: '#333',
+          fontSize: '13px',
+          fontWeight: 'bold',
+          letterSpacing: '0.5px',
+          borderBottom: '1px solid #e8e8e8'
+        }}>
+          证书列表
+        </div>
+        <div style={{
+          padding: '8px 12px',
+          backgroundColor: '#fff',
+          maxHeight: '180px',
+          overflowY: 'auto'
+        }}>
+          {certArray.length > 0 ? certArray.map((cert, idx) => (
+            <div
+              key={idx}
+              style={{
+                padding: '6px 10px',
+                margin: '4px 0',
+                backgroundColor: '#f6ffed',
+                border: '1px solid #b7eb8f',
+                borderRadius: '4px',
+                fontSize: '12px',
+                color: '#52c41a',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <div style={{
+                width: '5px',
+                height: '5px',
+                backgroundColor: '#52c41a',
+                borderRadius: '50%',
+                marginRight: '8px'
+              }}></div>
+              {cert}
+            </div>
+          )) : (
+            <div style={{
+              padding: '8px',
+              textAlign: 'center',
+              color: '#999',
+              fontStyle: 'italic',
+              fontSize: '12px'
+            }}>
+              暂无证书信息
+            </div>
+          )}
+        </div>
+      </div>
+    );
+
     return (
-      <Space size={[6, 4]} wrap style={{ marginTop: '-2px', marginBottom: '-2px' }}>
-        {certArray.map((cert, index) => (
-          <Tag
-            key={index}
-            color="green"
-            style={{
-              marginBottom: 4,
-              padding: '1px 5px',
-              borderRadius: '3px',
-              fontSize: '11px',
-              lineHeight: '1.3',
-              height: '18px'
-            }}
-          >
-            {cert}
-          </Tag>
-        ))}
-      </Space>
+      <Tooltip placement="top" title={tooltipContent} styles={{ body: { padding: 0, backgroundColor: 'transparent', boxShadow: 'none' } }}>
+        <Space size={[6, 4]} wrap style={{ marginTop: '-2px', marginBottom: '-2px' }}>
+          {certArray.map((cert, index) => (
+            <Tag
+              key={index}
+              color="green"
+              style={{
+                marginBottom: 4,
+                padding: '1px 5px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                lineHeight: '1.3',
+                height: '18px',
+                maxWidth: '150px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {cert}
+            </Tag>
+          ))}
+        </Space>
+      </Tooltip>
     );
   };
 

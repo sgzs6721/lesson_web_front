@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Space, Tooltip, Avatar, Dropdown, Menu, Tag, Spin } from 'antd';
+import { Table, Button, Space, Tooltip, Avatar, Dropdown, Tag, Spin } from 'antd';
 import { EditOutlined, DeleteOutlined, InfoCircleOutlined, UserOutlined, DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
@@ -37,9 +37,27 @@ const CoachTable: React.FC<CoachTableProps> = ({
   const renderStatusTag = (status: string, record: Coach) => {
     const { color, text } = getStatusTagInfo(status);
 
-    // 如果没有提供状态变更回调，则只显示文本
+    // 如果没有提供状态变更回调，则只显示样式化的文本
     if (!onStatusChange) {
-      return <span style={{ color: color }}>{text}</span>;
+      return (
+        <div style={{
+          display: 'inline-block',
+          padding: '4px 12px',
+          fontSize: '13px',
+          fontWeight: 500,
+          lineHeight: '20px',
+          borderRadius: '4px',
+          backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+          border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
+          color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          minWidth: '80px',
+          textAlign: 'center',
+          whiteSpace: 'nowrap'
+        }}>
+          {text}
+        </div>
+      );
     }
 
     // 状态选项
@@ -53,7 +71,7 @@ const CoachTable: React.FC<CoachTableProps> = ({
     const items = statusOptions.map(option => ({
       key: option.key,
       label: (
-        <span style={{ color: option.color }}>{option.label}</span>
+        <span style={{ color: option.color, fontWeight: 500 }}>{option.label}</span>
       ),
       disabled: option.key === status // 当前状态禁用
     }));
@@ -82,9 +100,26 @@ const CoachTable: React.FC<CoachTableProps> = ({
             placement="bottom"
             disabled={isStatusChanging}
           >
-            <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: color, marginRight: 4 }}>{text}</span>
-              <DownOutlined style={{ fontSize: '12px', color: '#999' }} />
+            <div style={{
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4px 12px',
+              fontSize: '13px',
+              fontWeight: 500,
+              lineHeight: '20px',
+              borderRadius: '4px',
+              backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+              border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
+              color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              minWidth: '80px',
+              gap: '5px',
+              whiteSpace: 'nowrap'
+            }}>
+              {text}
+              <DownOutlined style={{ fontSize: '11px' }} />
             </div>
           </Dropdown>
         )}
@@ -211,6 +246,76 @@ const CoachTable: React.FC<CoachTableProps> = ({
         const hasMore = certArray.length > maxShow;
         const visibleCerts = certArray.slice(0, maxShow);
 
+        // 创建Tooltip内容，每个证书一行，美化样式
+        const tooltipContent = (
+          <div style={{
+            textAlign: 'left',
+            padding: '0',
+            minWidth: '220px',
+            maxWidth: '260px',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            boxShadow: '0 3px 8px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e8e8e8',
+            backgroundColor: '#fff'
+          }}>
+            <div style={{
+              padding: '8px 12px',
+              backgroundColor: '#f5f5f5',
+              color: '#333',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              letterSpacing: '0.5px',
+              borderBottom: '1px solid #e8e8e8'
+            }}>
+              证书列表
+            </div>
+            <div style={{
+              padding: '8px 12px',
+              backgroundColor: '#fff',
+              maxHeight: '180px',
+              overflowY: 'auto'
+            }}>
+              {certArray.length > 0 ? certArray.map((cert, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: '6px 10px',
+                    margin: '4px 0',
+                    backgroundColor: '#f6ffed',
+                    border: '1px solid #b7eb8f',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    color: '#52c41a',
+                    display: 'flex',
+                    alignItems: 'center',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                  }}
+                >
+                  <div style={{
+                    width: '5px',
+                    height: '5px',
+                    backgroundColor: '#52c41a',
+                    borderRadius: '50%',
+                    marginRight: '8px'
+                  }}></div>
+                  {cert}
+                </div>
+              )) : (
+                <div style={{
+                  padding: '8px',
+                  textAlign: 'center',
+                  color: '#999',
+                  fontStyle: 'italic',
+                  fontSize: '12px'
+                }}>
+                  暂无证书信息
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
         return (
           <div style={{
             display: 'flex',
@@ -221,42 +326,46 @@ const CoachTable: React.FC<CoachTableProps> = ({
             overflow: 'hidden',
             gap: '4px'
           }}>
-            {visibleCerts.map((cert, index) => (
-              <Tag
-                key={index}
-                color="green"
-                style={{
-                  padding: '1px 5px',
-                  borderRadius: '3px',
-                  fontSize: '11px',
-                  lineHeight: '1.3',
-                  height: '18px',
-                  margin: '0 2px',
-                  whiteSpace: 'nowrap',
-                  maxWidth: '80px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {cert}
-              </Tag>
-            ))}
-            {hasMore && (
-              <Tag
-                color="default"
-                style={{
-                  padding: '1px 5px',
-                  borderRadius: '3px',
-                  fontSize: '11px',
-                  lineHeight: '1.3',
-                  height: '18px',
-                  margin: '0 2px',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                +{certArray.length - maxShow}
-              </Tag>
-            )}
+            <Tooltip title={tooltipContent} placement="top" styles={{ body: { padding: 0, backgroundColor: 'transparent', boxShadow: 'none' } }}>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {visibleCerts.map((cert, index) => (
+                  <Tag
+                    key={index}
+                    color="green"
+                    style={{
+                      padding: '1px 5px',
+                      borderRadius: '3px',
+                      fontSize: '11px',
+                      lineHeight: '1.3',
+                      height: '18px',
+                      margin: '0 2px',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '80px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    {cert}
+                  </Tag>
+                ))}
+                {hasMore && (
+                  <Tag
+                    color="default"
+                    style={{
+                      padding: '1px 5px',
+                      borderRadius: '3px',
+                      fontSize: '11px',
+                      lineHeight: '1.3',
+                      height: '18px',
+                      margin: '0 2px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    +{certArray.length - maxShow}
+                  </Tag>
+                )}
+              </div>
+            </Tooltip>
           </div>
         );
       }
