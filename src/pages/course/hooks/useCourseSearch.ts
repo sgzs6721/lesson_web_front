@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { CourseSearchParams } from '../types/course';
+import { CourseSearchParams, CourseType, CourseStatus } from '../types/course';
 
 export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promise<any>) => {
   const [searchText, setSearchText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
-  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
+  const [selectedType, setSelectedType] = useState<CourseType | undefined>(undefined);
+  const [selectedStatus, setSelectedStatus] = useState<CourseStatus | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
 
   // 执行搜索
   const handleSearch = async () => {
     const params: CourseSearchParams = {
       searchText,
-      selectedCategory,
+      selectedType,
       selectedStatus,
       sortOrder
     };
@@ -25,7 +25,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
   // 重置搜索条件
   const handleReset = async () => {
     setSearchText('');
-    setSelectedCategory(undefined);
+    setSelectedType(undefined);
     setSelectedStatus(undefined);
     setSortOrder(undefined);
 
@@ -33,7 +33,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
     try {
       await onSearch({
         searchText: '',
-        selectedCategory: undefined,
+        selectedType: undefined,
         selectedStatus: undefined,
         sortOrder: undefined
       });
@@ -45,12 +45,12 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
   return {
     searchParams: {
       searchText,
-      selectedCategory,
+      selectedType,
       selectedStatus,
       sortOrder
     },
     setSearchText,
-    setSelectedCategory,
+    setSelectedType,
     setSelectedStatus,
     setSortOrder,
     handleSearch,

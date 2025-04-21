@@ -2,7 +2,7 @@ import React from 'react';
 import { Space, Button, Tooltip, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { Course } from '../types/course';
+import { Course, CourseType } from '../types/course';
 import { categoryOptions, coachOptions } from './courseOptions';
 import { AlignType } from 'rc-table/lib/interface';
 
@@ -16,16 +16,16 @@ const getCoachNames = (coachIds: string[]) => {
 };
 
 // 获取课程分类名称
-const getCategoryName = (categoryId: string) => {
-  const category = categoryOptions.find(c => c.value === categoryId);
-  return category ? category.label : categoryId;
+const getTypeName = (type: CourseType) => {
+  const category = categoryOptions.find(c => c.value === Number(type));
+  return category ? category.label : type;
 };
 
 // 渲染状态标签
 export const renderStatusTag = (status: string) => {
   let color = '';
   let text = '';
-  
+
   switch (status) {
     case 'active':
       color = 'green';
@@ -43,7 +43,7 @@ export const renderStatusTag = (status: string) => {
       color = 'default';
       text = status;
   }
-  
+
   return <Tag color={color} style={{ display: 'inline-flex', alignItems: 'center', height: '22px', padding: '0 8px', fontSize: '12px', lineHeight: '22px' }}>{text}</Tag>;
 };
 
@@ -60,10 +60,10 @@ export const getTableColumns = (
   },
   {
     title: '课程类型',
-    dataIndex: 'category',
-    key: 'category',
+    dataIndex: 'type',
+    key: 'type',
     align: 'center' as AlignType,
-    render: (category: string) => getCategoryName(category),
+    render: (type: CourseType) => getTypeName(type),
   },
   {
     title: '总课时',
@@ -81,15 +81,15 @@ export const getTableColumns = (
   },
   {
     title: '上课教练',
-    dataIndex: 'coaches',
-    key: 'coaches',
+    dataIndex: 'coachNames',
+    key: 'coachNames',
     align: 'center' as AlignType,
-    render: (coaches: string[]) => getCoachNames(coaches),
+    render: (coachNames: string[]) => coachNames ? coachNames.join(', ') : '',
   },
   {
     title: '课筹单价',
-    dataIndex: 'unitPrice',
-    key: 'unitPrice',
+    dataIndex: 'price',
+    key: 'price',
     align: 'center' as AlignType,
     render: (price: number) => `¥${price}`,
   },
@@ -102,8 +102,8 @@ export const getTableColumns = (
   },
   {
     title: '更新时间',
-    dataIndex: 'updatedAt',
-    key: 'updatedAt',
+    dataIndex: 'updateTime',
+    key: 'updateTime',
     align: 'center' as AlignType,
     render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
   },
@@ -115,31 +115,31 @@ export const getTableColumns = (
     render: (_: any, record: Course) => (
       <Space size="middle">
         <Tooltip title="编辑">
-          <Button 
-            type="text" 
-            size="small" 
-            icon={<EditOutlined />} 
-            onClick={() => onEdit(record)} 
+          <Button
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
           />
         </Tooltip>
         <Tooltip title="详情">
-          <Button 
-            type="text" 
-            size="small" 
-            icon={<InfoCircleOutlined />} 
-            onClick={() => onShowDetail(record)} 
+          <Button
+            type="text"
+            size="small"
+            icon={<InfoCircleOutlined />}
+            onClick={() => onShowDetail(record)}
           />
         </Tooltip>
         <Tooltip title="删除">
-          <Button 
-            type="text" 
-            size="small" 
-            danger 
-            icon={<DeleteOutlined />} 
+          <Button
+            type="text"
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
             onClick={() => onDelete(record.id, record.name)}
           />
         </Tooltip>
       </Space>
     ),
   },
-]; 
+];

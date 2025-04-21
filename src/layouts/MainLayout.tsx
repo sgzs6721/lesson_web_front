@@ -6,6 +6,7 @@ import CampusSelector, { getCampusList } from '@/components/CampusSelector';
 import UserProfileModal from '@/components/UserProfileModal';
 import { Campus } from '@/api/campus/types';
 import { useCampusCheck } from '@/contexts/CampusCheckContext';
+import { API } from '@/api';
 import {
   HomeTwoTone,
   BankTwoTone,
@@ -46,9 +47,18 @@ const MainLayout: React.FC = () => {
     setActiveMenu(pathKey);
   }, [location.pathname]);
 
-  // 初始化加载校区信息
+  // 初始化加载校区信息 - 只在组件挂载时执行一次
   useEffect(() => {
+    // 使用引用来跟踪是否已经加载过校区信息
+    const hasLoadedRef = { current: false };
+
     const loadCampusInfo = async () => {
+      // 如果已经加载过，不重复加载
+      if (hasLoadedRef.current) {
+        console.log('校区信息已经加载过，不重复加载');
+        return;
+      }
+
       try {
         // 只有在用户已登录的情况下才加载校区信息
         if (auth.isAuthenticated) {
@@ -58,20 +68,34 @@ const MainLayout: React.FC = () => {
           if (campusList && campusList.length > 0) {
             // 尝试从localStorage中获取上次选择的校区ID
             const savedCampusId = localStorage.getItem('currentCampusId');
-            const selectedCampus = savedCampusId
+            let selectedCampus = savedCampusId
               ? campusList.find(c => String(c.id) === savedCampusId)
               : campusList[0];
 
             if (selectedCampus) {
               console.log('MainLayout: 设置当前校区:', selectedCampus.name);
+
+              try {
+                // 获取校区详细信息，包括负责人和联系电话
+                const campusDetail = await API.campus.getDetail(String(selectedCampus.id));
+                console.log('MainLayout: 获取到校区详细信息:', campusDetail);
+                selectedCampus = campusDetail;
+              } catch (detailError) {
+                console.error('获取校区详细信息失败:', detailError);
+              }
+
               setCurrentCampus(selectedCampus);
               // 将校区名称存储到localStorage中，供其他组件使用
+              localStorage.setItem('currentCampusId', String(selectedCampus.id));
               localStorage.setItem('currentCampusName', selectedCampus.name);
             }
           }
 
           // 更新校区检查状态
           refreshCampusCheck();
+
+          // 标记为已加载
+          hasLoadedRef.current = true;
         }
       } catch (error) {
         console.error('加载校区信息失败:', error);
@@ -79,7 +103,8 @@ const MainLayout: React.FC = () => {
     };
 
     loadCampusInfo();
-  }, [auth.isAuthenticated, refreshCampusCheck]);
+    // 不将 refreshCampusCheck 添加到依赖数组中，避免重复调用
+  }, [auth.isAuthenticated]);
 
   // 处理菜单点击
   const handleMenuClick = async (e: React.MouseEvent, path: string) => {
@@ -96,11 +121,15 @@ const MainLayout: React.FC = () => {
     // 如果canProceed为false，表示没有校区，此时已显示模态框，不进行导航
   };
 
-  // 处理校区切换
+  // 处理校区切换 - 不再调用 detail API
   const handleCampusChange = (campus: Campus) => {
     console.log('切换到校区:', campus.name);
+
+    // 直接使用从列表中获取的校区信息，不再调用 detail API
     setCurrentCampus(campus);
-    // 将校区名称存储到localStorage中，供其他组件使用
+
+    // 将校区信息存储到localStorage中，供其他组件使用
+    localStorage.setItem('currentCampusId', String(campus.id));
     localStorage.setItem('currentCampusName', campus.name);
   };
 

@@ -15,7 +15,7 @@ export enum CoachGender {
 
 // 教练简单信息类型
 export interface CoachSimple {
-  id: number;
+  id: number; // 修改为数字类型
   name: string;
 }
 

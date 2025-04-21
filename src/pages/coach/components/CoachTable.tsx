@@ -37,27 +37,9 @@ const CoachTable: React.FC<CoachTableProps> = ({
   const renderStatusTag = (status: string, record: Coach) => {
     const { color, text } = getStatusTagInfo(status);
 
-    // 如果没有提供状态变更回调，则只显示样式化的文本
+    // 如果没有提供状态变更回调，则只显示文本
     if (!onStatusChange) {
-      return (
-        <div style={{
-          display: 'inline-block',
-          padding: '4px 12px',
-          fontSize: '13px',
-          fontWeight: 500,
-          lineHeight: '20px',
-          borderRadius: '4px',
-          backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-          border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
-          color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-          minWidth: '80px',
-          textAlign: 'center',
-          whiteSpace: 'nowrap'
-        }}>
-          {text}
-        </div>
-      );
+      return <span style={{ color: color }}>{text}</span>;
     }
 
     // 状态选项
@@ -71,7 +53,7 @@ const CoachTable: React.FC<CoachTableProps> = ({
     const items = statusOptions.map(option => ({
       key: option.key,
       label: (
-        <span style={{ color: option.color, fontWeight: 500 }}>{option.label}</span>
+        <span style={{ color: option.color }}>{option.label}</span>
       ),
       disabled: option.key === status // 当前状态禁用
     }));
@@ -100,26 +82,9 @@ const CoachTable: React.FC<CoachTableProps> = ({
             placement="bottom"
             disabled={isStatusChanging}
           >
-            <div style={{
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '4px 12px',
-              fontSize: '13px',
-              fontWeight: 500,
-              lineHeight: '20px',
-              borderRadius: '4px',
-              backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-              border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
-              color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-              minWidth: '80px',
-              gap: '5px',
-              whiteSpace: 'nowrap'
-            }}>
-              {text}
-              <DownOutlined style={{ fontSize: '11px' }} />
+            <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: color, marginRight: 4 }}>{text}</span>
+              <DownOutlined style={{ fontSize: '12px', color: '#999' }} />
             </div>
           </Dropdown>
         )}

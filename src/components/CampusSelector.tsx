@@ -10,6 +10,8 @@ let campusListCallbacks: ((campusList: Campus[]) => void)[] = [];
 export const clearCampusListCache = (reason?: string) => {
   console.log(`清除校区选择器缓存${reason ? '，原因: ' + reason : ''}`);
   campusListCache = null;
+  // 重置时间戳，确保下次调用时会重新获取数据
+  lastFetchTimestamp = 0;
 };
 
 // 存储所有校区选择器组件的刷新函数
@@ -33,11 +35,18 @@ export const refreshAllCampusSelectors = () => {
   refreshCallbacks.forEach(callback => callback());
 };
 
+// 最后一次请求的时间戳
+let lastFetchTimestamp = 0;
+// 缓存过期时间设置为无限长，除非手动清除缓存
+const CACHE_EXPIRY_TIME = Number.MAX_SAFE_INTEGER;
+
 // 导出获取校区列表的工具函数，可以在其他组件中使用
 export const getCampusList = async (callerInfo?: string): Promise<Campus[]> => {
-  // 如果已经有缓存数据，直接返回
-  if (campusListCache !== null) {
-    console.log(`[getCampusList] 使用缓存的校区列表数据${callerInfo ? '，调用来源: ' + callerInfo : ''}`);
+  const currentTime = Date.now();
+
+  // 如果已经有缓存数据，并且缓存未过期，直接返回
+  if (campusListCache !== null && (currentTime - lastFetchTimestamp) < CACHE_EXPIRY_TIME) {
+    console.log(`[getCampusList] 使用缓存的校区列表数据${callerInfo ? '，调用来源: ' + callerInfo : ''}, 缓存时间: ${(currentTime - lastFetchTimestamp) / 1000}秒`);
     return campusListCache;
   }
 
@@ -92,8 +101,9 @@ export const getCampusList = async (callerInfo?: string): Promise<Campus[]> => {
 
     console.log('排序后的校区列表:', campusList);
 
-    // 更新缓存
+    // 更新缓存和时间戳
     campusListCache = campusList;
+    lastFetchTimestamp = Date.now();
 
     // 通知所有等待的回调
     campusListCallbacks.forEach(callback => callback(campusList));
@@ -208,7 +218,7 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
     setShowCampusList(!showCampusList);
   };
 
-  // 选择校区
+  // 选择校区 - 使用完整的校区对象
   const selectCampus = (campus: Campus) => {
     // 如果选择的是当前校区，不做任何操作
     if (currentCampus?.id === campus.id) {
@@ -216,27 +226,23 @@ const CampusSelector: React.FC<CampusSelectorProps> = ({
       return;
     }
 
+    // 更新当前校区状态
     setCurrentCampus(campus);
     setShowCampusList(false);
+
     // 将校区ID和名称存储到localStorage中，供其他组件使用
     localStorage.setItem('currentCampusId', String(campus.id));
     localStorage.setItem('currentCampusName', campus.name);
 
-    // 触发回调
+    // 触发回调，传递完整的校区对象
     if (onCampusChangeRef.current) {
       onCampusChangeRef.current(campus);
     }
 
-    // 刷新当前页面
-    // 获取当前页面路径
-    const currentPath = window.location.pathname;
-    console.log('切换校区后刷新页面数据，当前路径:', currentPath);
-
     // 触发一个自定义事件，通知当前页面校区已切换
     const event = new CustomEvent('campusChanged', {
       detail: {
-        campusId: campus.id,
-        campusName: campus.name,
+        campus: campus, // 传递完整的校区对象
         previousCampusId: currentCampus?.id
       }
     });

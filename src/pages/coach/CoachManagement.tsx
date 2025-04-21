@@ -186,6 +186,11 @@ const CoachManagement: React.FC = () => {
     // 定义事件处理函数
     const handleCampusChanged = (event: CustomEvent) => {
       console.log('教练管理页面收到校区切换事件:', event.detail);
+
+      // 使用事件中的完整校区对象
+      const campus = event.detail.campus;
+      console.log('切换到校区:', campus?.name || '未知校区');
+
       // 重置到第一页
       setCurrentPage(1);
       // 重新加载数据

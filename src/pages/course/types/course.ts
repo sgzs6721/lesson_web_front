@@ -1,30 +1,16 @@
 // Course type definitions
+import { Course as ApiCourse, CourseType, CourseStatus } from '@/api/course/types';
 
-export interface Course {
-  id: string;
-  name: string;
-  category: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  price: number;
-  capacity: number;
-  period: number;
-  periodUnit: 'day' | 'week' | 'month';
-  totalHours: number;
-  consumedHours: number;
-  hoursPerClass: number;
-  unitPrice: number;
-  status: 'active' | 'inactive' | 'pending';
-  description: string;
-  cover?: string;
-  createdAt: string;
-  updatedAt: string;
-  campuses: string[];
-  coaches: string[];
-}
+// 将API课程类型重新导出，便于页面使用
+export type Course = ApiCourse;
 
+// 导出课程类型和状态枚举
+export { CourseType, CourseStatus };
+
+// 课程搜索参数
 export type CourseSearchParams = {
   searchText: string;
-  selectedCategory: string | undefined;
-  selectedStatus: string | undefined;
+  selectedType: CourseType | undefined;
+  selectedStatus: CourseStatus | undefined;
   sortOrder: string | undefined;
 };

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { User, UserSearchParams } from '../types/user';
+import { User, UserSearchParams, UserRole } from '../types/user';
 import { message } from 'antd';
 import { API } from '@/api';
 import { UserStatus } from '@/api/user/types';
@@ -40,13 +40,40 @@ export const useUserData = () => {
     try {
       setLoading(true);
 
+      // 处理角色枚举
+      let roleValue: UserRole;
+      if (typeof values.role === 'object' && values.role !== null) {
+        // 如果是对象，尝试获取角色枚举值
+        if (values.role.id === 1 || values.role.id === '1') {
+          roleValue = UserRole.SUPER_ADMIN;
+        } else if (values.role.id === 2 || values.role.id === '2') {
+          roleValue = UserRole.COLLABORATOR;
+        } else if (values.role.id === 3 || values.role.id === '3') {
+          roleValue = UserRole.CAMPUS_ADMIN;
+        } else {
+          roleValue = UserRole.COLLABORATOR; // 默认值
+        }
+      } else {
+        // 如果是数字或字符串，转换为枚举
+        if (String(values.role) === '1' || String(values.role) === 'SUPER_ADMIN') {
+          roleValue = UserRole.SUPER_ADMIN;
+        } else if (String(values.role) === '2' || String(values.role) === 'COLLABORATOR') {
+          roleValue = UserRole.COLLABORATOR;
+        } else if (String(values.role) === '3' || String(values.role) === 'CAMPUS_ADMIN') {
+          roleValue = UserRole.CAMPUS_ADMIN;
+        } else {
+          roleValue = values.role as UserRole;
+        }
+      }
+      console.log('创建用户时使用的角色枚举:', roleValue);
+
       // 调用API创建用户
       const userId = await API.user.create({
         phone: values.phone,
-        password: values.phone.substring(values.phone.length - 6), // 默认密码为手机号后6位
+        password: values.phone.slice(-8), // 默认密码为手机号后8位
         realName: values.name || '',
-        roleId: typeof values.role === 'object' ? values.role.id : values.role, // 处理对象类型的角色
-        campusId: typeof values.campus === 'object' ? values.campus.id : values.campus, // 处理对象类型的校区
+        role: roleValue, // 使用角色枚举字符串
+        campusId: Number(typeof values.campus === 'object' ? values.campus.id : values.campus), // 处理对象类型的校区，确保是整数
         status: values.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED // 添加状态参数
       });
 
@@ -110,8 +137,8 @@ export const useUserData = () => {
       // 获取当前用户的完整信息
       const currentUser = users.find(user => user.id === id);
       const isSuperAdmin = currentUser && (
-        (typeof currentUser.role === 'object' && currentUser.role !== null && String(currentUser.role.id) === '1') ||
-        (typeof currentUser.role === 'string' && String(currentUser.role) === '1')
+        (typeof currentUser.role === 'object' && currentUser.role !== null && currentUser.role.id === UserRole.SUPER_ADMIN) ||
+        (typeof currentUser.role === 'string' && currentUser.role === UserRole.SUPER_ADMIN)
       );
 
       console.log('当前用户是否超级管理员:', isSuperAdmin);
@@ -136,16 +163,37 @@ export const useUserData = () => {
         status: status
       };
 
-      // 强制添加roleId字段，无论是否是超级管理员
+      // 强制添加role字段，无论是否是超级管理员
       if (currentUser && currentUser.role) {
         // 使用当前用户的角色ID
-        updateParams.roleId = typeof currentUser.role === 'object' ?
-          Number(currentUser.role.id) : Number(currentUser.role);
-        console.log('强制添加角色ID:', updateParams.roleId);
+        if (typeof currentUser.role === 'object' && currentUser.role !== null) {
+          // 如果是对象，尝试获取角色枚举值
+          if (currentUser.role.id === 1 || currentUser.role.id === '1') {
+            updateParams.role = UserRole.SUPER_ADMIN;
+          } else if (currentUser.role.id === 2 || currentUser.role.id === '2') {
+            updateParams.role = UserRole.COLLABORATOR;
+          } else if (currentUser.role.id === 3 || currentUser.role.id === '3') {
+            updateParams.role = UserRole.CAMPUS_ADMIN;
+          } else {
+            updateParams.role = UserRole.COLLABORATOR; // 默认值
+          }
+        } else {
+          // 如果是数字或字符串，转换为枚举
+          if (String(currentUser.role) === '1' || String(currentUser.role) === 'SUPER_ADMIN') {
+            updateParams.role = UserRole.SUPER_ADMIN;
+          } else if (String(currentUser.role) === '2' || String(currentUser.role) === 'COLLABORATOR') {
+            updateParams.role = UserRole.COLLABORATOR;
+          } else if (String(currentUser.role) === '3' || String(currentUser.role) === 'CAMPUS_ADMIN') {
+            updateParams.role = UserRole.CAMPUS_ADMIN;
+          } else {
+            updateParams.role = currentUser.role as UserRole;
+          }
+        }
+        console.log('强制添加角色枚举:', updateParams.role);
       } else {
-        // 如果无法获取当前用户的角色ID，使用默认值2（协同管理员）
-        updateParams.roleId = 2;
-        console.log('无法获取角色ID，使用默认值:', updateParams.roleId);
+        // 如果无法获取当前用户的角色ID，使用默认值（协同管理员）
+        updateParams.role = UserRole.COLLABORATOR;
+        console.log('无法获取角色ID，使用默认值:', updateParams.role);
       }
 
       // 只有当提供了校区信息时才添加campusId字段

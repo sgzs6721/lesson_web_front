@@ -1,10 +1,10 @@
-import { RoleOption, CampusOption } from '../types/user';
+import { RoleOption, CampusOption, UserRole } from '../types/user';
 
 // 角色选项配置
 export const roleOptions: RoleOption[] = [
-  { value: '1', label: '超级管理员' },
-  { value: '2', label: '协同管理员' },
-  { value: '3', label: '校区管理员' }
+  { value: UserRole.SUPER_ADMIN, label: '超级管理员', description: '系统超级管理员' },
+  { value: UserRole.COLLABORATOR, label: '协同管理员', description: '协同管理员，协助管理系统' },
+  { value: UserRole.CAMPUS_ADMIN, label: '校区管理员', description: '校区管理员，管理单个校区' }
 ];
 
 // 校区选项配置

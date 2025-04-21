@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Form } from 'antd';
-import { User } from '../types/user';
+import { User, UserRole } from '../types/user';
 import { DEFAULT_STATUS } from '../constants/userOptions';
 
 export const useUserForm = (
@@ -40,11 +40,29 @@ export const useUserForm = (
     console.log('编辑用户记录:', JSON.stringify(record, null, 2));
 
     // 处理角色数据
-    let roleValue: string;
+    let roleValue: UserRole;
     if (typeof record.role === 'object' && record.role !== null) {
-      roleValue = String(record.role.id);
+      // 如果是对象，尝试获取角色枚举值
+      if (record.role.id === 1 || record.role.id === '1') {
+        roleValue = UserRole.SUPER_ADMIN;
+      } else if (record.role.id === 2 || record.role.id === '2') {
+        roleValue = UserRole.COLLABORATOR;
+      } else if (record.role.id === 3 || record.role.id === '3') {
+        roleValue = UserRole.CAMPUS_ADMIN;
+      } else {
+        roleValue = UserRole.COLLABORATOR; // 默认值
+      }
     } else {
-      roleValue = String(record.role);
+      // 如果是数字或字符串，转换为枚举
+      if (String(record.role) === '1' || String(record.role) === 'SUPER_ADMIN') {
+        roleValue = UserRole.SUPER_ADMIN;
+      } else if (String(record.role) === '2' || String(record.role) === 'COLLABORATOR') {
+        roleValue = UserRole.COLLABORATOR;
+      } else if (String(record.role) === '3' || String(record.role) === 'CAMPUS_ADMIN') {
+        roleValue = UserRole.CAMPUS_ADMIN;
+      } else {
+        roleValue = record.role as UserRole;
+      }
     }
     console.log('处理后的角色值:', roleValue);
 
@@ -80,9 +98,10 @@ export const useUserForm = (
       } else {
         formValues.password = '';
       }
+      console.log('设置密码为手机号后8位:', formValues.password);
 
       // 如果有校区数据且角色是校区管理员，添加校区字段
-      if (roleValue === '3' || String(roleValue) === '3') {
+      if (roleValue === UserRole.CAMPUS_ADMIN) {
         formValues.campus = campusValue || '';
       }
 
@@ -124,14 +143,34 @@ export const useUserForm = (
         // 确保角色字段存在，无论是否是超级管理员
         if (!updateValues.role) {
           // 如果没有角色字段，使用原始用户的角色
-          updateValues.role = typeof editingUser.role === 'object'
-            ? String(editingUser.role.id)
-            : String(editingUser.role);
+          if (typeof editingUser.role === 'object' && editingUser.role !== null) {
+            // 如果是对象，尝试获取角色枚举值
+            if (editingUser.role.id === 1 || editingUser.role.id === '1') {
+              updateValues.role = UserRole.SUPER_ADMIN;
+            } else if (editingUser.role.id === 2 || editingUser.role.id === '2') {
+              updateValues.role = UserRole.COLLABORATOR;
+            } else if (editingUser.role.id === 3 || editingUser.role.id === '3') {
+              updateValues.role = UserRole.CAMPUS_ADMIN;
+            } else {
+              updateValues.role = UserRole.COLLABORATOR; // 默认值
+            }
+          } else {
+            // 如果是数字或字符串，转换为枚举
+            if (String(editingUser.role) === '1' || String(editingUser.role) === 'SUPER_ADMIN') {
+              updateValues.role = UserRole.SUPER_ADMIN;
+            } else if (String(editingUser.role) === '2' || String(editingUser.role) === 'COLLABORATOR') {
+              updateValues.role = UserRole.COLLABORATOR;
+            } else if (String(editingUser.role) === '3' || String(editingUser.role) === 'CAMPUS_ADMIN') {
+              updateValues.role = UserRole.CAMPUS_ADMIN;
+            } else {
+              updateValues.role = editingUser.role as UserRole;
+            }
+          }
           console.log('使用原始用户的角色:', updateValues.role);
         }
 
         // 如果角色不是校区管理员，删除校区字段
-        if (updateValues.role !== '3') {
+        if (updateValues.role !== UserRole.CAMPUS_ADMIN) {
           delete updateValues.campus;
         }
 
@@ -141,14 +180,13 @@ export const useUserForm = (
         // 添加新用户
         // 确保密码字段被设置为手机号的后8位
         const addValues = { ...values };
-        if (addValues.phone && (!addValues.password || addValues.password.trim() === '')) {
-          // 如果没有设置密码，使用手机号的后8位
-          if (addValues.phone.length >= 8) {
-            addValues.password = addValues.phone.slice(-8);
-          } else {
-            addValues.password = addValues.phone;
-          }
+        // 无论是否设置了密码，都使用手机号的后8位
+        if (addValues.phone && addValues.phone.length >= 8) {
+          addValues.password = addValues.phone.slice(-8);
+        } else if (addValues.phone) {
+          addValues.password = addValues.phone;
         }
+        console.log('添加用户时设置密码为手机号后8位:', addValues.password);
         console.log('添加用户的处理后的值:', addValues);
         onAddUser(addValues);
       }

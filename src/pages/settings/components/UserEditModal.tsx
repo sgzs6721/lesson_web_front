@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Row, Col, Divider, Button, Spin, Select } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
-import { User } from '../types/user';
+import { Modal, Form, Input, Row, Col, Divider, Button, Spin, Select, Tooltip } from 'antd';
+import { UserOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { User, UserRole } from '../types/user';
 import { roleOptions, statusOptions, DEFAULT_STATUS } from '../constants/userOptions';
+
 import { useRealCampusOptions } from '../hooks/useRealCampusOptions';
 import './UserEditModal.css';
+
+// 获取角色的中文名称
+const getRoleName = (role: UserRole | undefined): string => {
+  if (!role) return '';
+  const option = roleOptions.find(opt => opt.value === role);
+  return option ? option.label : String(role);
+};
 
 interface UserEditModalProps {
   visible: boolean;
@@ -69,13 +77,22 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   });
 
   // 使用角色值作为依赖项的状态变量，强制重新渲染
-  const [roleValue, setRoleValue] = useState<string | undefined>(() => {
+  const [roleValue, setRoleValue] = useState<UserRole | undefined>(() => {
     // 如果是编辑模式，使用用户的角色
     if (editingUser?.role) {
       if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-        return editingUser.role.id ? String(editingUser.role.id) : '';
+        // 将数字ID转换为对应的UserRole枚举值
+        const roleId = Number(editingUser.role.id);
+        if (roleId === 1) return UserRole.SUPER_ADMIN;
+        if (roleId === 2) return UserRole.COLLABORATOR;
+        if (roleId === 3) return UserRole.CAMPUS_ADMIN;
+        return undefined;
       }
-      return String(editingUser.role);
+      // 将数字角色转换为对应的UserRole枚举值
+      const roleId = Number(editingUser.role);
+      if (roleId === 1) return UserRole.SUPER_ADMIN;
+      if (roleId === 2) return UserRole.COLLABORATOR;
+      if (roleId === 3) return UserRole.CAMPUS_ADMIN;
     }
     // 如果是添加模式，不预选角色，显示占位符
     return undefined;
@@ -114,11 +131,19 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
 
       // 处理角色值
       if (editingUser.role) {
-        let newRoleValue;
+        let newRoleValue: UserRole | undefined;
         if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-          newRoleValue = String(editingUser.role.id);
+          const roleId = Number(editingUser.role.id);
+          if (roleId === 1) newRoleValue = UserRole.SUPER_ADMIN;
+          else if (roleId === 2) newRoleValue = UserRole.COLLABORATOR;
+          else if (roleId === 3) newRoleValue = UserRole.CAMPUS_ADMIN;
+          else newRoleValue = undefined;
         } else {
-          newRoleValue = String(editingUser.role);
+          const roleId = Number(editingUser.role);
+          if (roleId === 1) newRoleValue = UserRole.SUPER_ADMIN;
+          else if (roleId === 2) newRoleValue = UserRole.COLLABORATOR;
+          else if (roleId === 3) newRoleValue = UserRole.CAMPUS_ADMIN;
+          else newRoleValue = undefined;
         }
         setRoleValue(newRoleValue);
       }
@@ -164,7 +189,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         preserve={false}
         initialValues={{
           status: editingUser ? (typeof editingUser.status === 'string' ? editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED' : (editingUser.status === 1 ? 'ENABLED' : 'DISABLED')) : undefined,
-          role: editingUser?.role ? (typeof editingUser.role === 'object' ? String(editingUser.role.id) : String(editingUser.role)) : undefined,
+          role: editingUser?.role ? (
+            typeof editingUser.role === 'object' ?
+              Number(editingUser.role.id) :
+              Number(editingUser.role)
+          ) : undefined,
           campus: editingUser?.campus ? (
             typeof editingUser.campus === 'object' ?
               (editingUser.campus.id && String(editingUser.campus.id) !== '-1' && String(editingUser.campus.id) !== 'null' && editingUser.campus.id !== null ?
@@ -204,7 +233,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 allowClear
                 onChange={(e) => {
                   const phone = e.target.value;
-                  
+
                   // 当不在编辑模式时，设置默认密码为手机号的后8位
                   if (!editingUser && phone) {
                     if (phone.length >= 8) {
@@ -261,7 +290,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     }
                   }
                 }}
-                disabled={!!editingUser && roleValue === '1'}
+                disabled={!!editingUser && String(roleValue) === String(UserRole.SUPER_ADMIN)}
               />
             </Form.Item>
           </Col>
@@ -277,20 +306,53 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 style={{ width: '100%' }}
                 options={roleOptions
                   .filter(option => {
-                    if (!editingUser) return option.value !== '1';
-                    if (roleValue === '1') return true;
-                    return option.value !== '1';
+                    if (!editingUser) return option.value !== UserRole.SUPER_ADMIN;
+                    if (String(roleValue) === String(UserRole.SUPER_ADMIN)) return true;
+                    return option.value !== UserRole.SUPER_ADMIN;
                   })
-                  .map(option => ({ value: option.value, label: option.label }))}
+                  .map(option => ({
+                    // 将枚举值映射为数字值，以便与表单值匹配
+                    value: option.value === UserRole.SUPER_ADMIN ? 1 :
+                           option.value === UserRole.COLLABORATOR ? 2 :
+                           option.value === UserRole.CAMPUS_ADMIN ? 3 : undefined,
+                    label: (
+                      <div>
+                        {option.label}
+                        {option.description && (
+                          <Tooltip title={option.description}>
+                            <InfoCircleOutlined style={{ marginLeft: 8 }} />
+                          </Tooltip>
+                        )}
+                      </div>
+                    )
+                  }))}
                 popupMatchSelectWidth
                 className="role-select"
                 popupClassName="role-select-dropdown"
                 getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                value={roleValue}
+                value={roleValue === UserRole.SUPER_ADMIN ? 1 :
+                       roleValue === UserRole.COLLABORATOR ? 2 :
+                       roleValue === UserRole.CAMPUS_ADMIN ? 3 : undefined}
+                labelRender={(selectedOption) => {
+                  // 如果有选中的选项，显示选项的标签
+                  if (selectedOption && selectedOption.label) {
+                    return selectedOption.label;
+                  }
+                  // 否则，根据roleValue显示角色名称
+                  return getRoleName(roleValue);
+                }}
                 key={`role-select-${roleValue || 'default'}`}
-                disabled={!!editingUser && roleValue === '1'}
+                disabled={!!editingUser && String(roleValue) === String(UserRole.SUPER_ADMIN)}
                 onChange={(value) => {
-                  setRoleValue(value as string);
+                  // 将数字值转换为 UserRole 枚举值
+                  let roleEnum: UserRole | undefined;
+                  const numValue = Number(value);
+                  if (numValue === 1) roleEnum = UserRole.SUPER_ADMIN;
+                  else if (numValue === 2) roleEnum = UserRole.COLLABORATOR;
+                  else if (numValue === 3) roleEnum = UserRole.CAMPUS_ADMIN;
+                  else roleEnum = undefined;
+
+                  setRoleValue(roleEnum);
                   form.setFieldsValue({ role: value });
                   form.resetFields(['campus']);
                   form.setFields([{ name: 'campus', value: undefined }]);
@@ -299,25 +361,15 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                       form.setFields([{ name: 'campus', value: undefined }]);
                     }
                   }, 0);
-                  if (value === '3') {
+                  if (roleEnum === UserRole.CAMPUS_ADMIN) {
                     if (campusOptions.length === 0) {
                       refreshCampusOptions();
                     }
                   }
                 }}
                 onDropdownVisibleChange={(open) => {
-                  if (open && editingUser && editingUser.role) {
-                    let newRoleValue;
-                    if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-                      newRoleValue = String(editingUser.role.id);
-                    } else {
-                      newRoleValue = String(editingUser.role);
-                    }
-                    if (form.getFieldValue('role') !== newRoleValue) {
-                      form.setFieldsValue({ role: newRoleValue });
-                      setRoleValue(newRoleValue);
-                    }
-                  }
+                  // 仅在需要时加载数据，不进行不必要的状态更新
+                  // 移除了在下拉框打开时更新表单和状态的代码
                 }}
               />
             </Form.Item>
@@ -332,7 +384,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 const roleValue = getFieldValue('role');
                 // 检查当前角色值
                 // 当角色为校区管理员时显示校区选择框
-                return roleValue === '3' ? (
+                return roleValue === 3 || String(roleValue) === String(UserRole.CAMPUS_ADMIN) ? (
                   <Form.Item
                     name="campus"
                     label="所属校区"

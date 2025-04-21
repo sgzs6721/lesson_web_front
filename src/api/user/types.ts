@@ -1,4 +1,5 @@
 import { ApiResponse, PaginatedResponse } from '../types';
+import { UserRole } from '../../pages/settings/types/user';
 
 // 用户状态枚举
 export enum UserStatus {
@@ -59,7 +60,7 @@ export interface UserCreateParams {
   phone: string;
   password: string;
   realName: string;
-  roleId: number | string;
+  role: UserRole; // 使用角色枚举值
   institutionId?: number | string;
   campusId?: number | string;
   status: UserStatus; // 添加状态参数
@@ -71,7 +72,7 @@ export interface UserUpdateParams {
   phone: string;
   realName: string;
   password?: string;
-  roleId: number | string;
+  role: UserRole; // 使用角色枚举值
   institutionId?: number | string;
   campusId: number | string;
   status: UserStatus; // UserStatus.ENABLED 或 UserStatus.DISABLED

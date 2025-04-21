@@ -1,11 +1,10 @@
-// 课程分类选项
+import { CourseType, CourseStatus } from '../types/course';
+
+// 课程类型选项
 export const categoryOptions = [
-  { value: 'sports', label: '体育运动' },
-  { value: 'arts', label: '艺术创作' },
-  { value: 'music', label: '音乐培训' },
-  { value: 'education', label: '学科教育' },
-  { value: 'technology', label: '科技培训' },
-  { value: 'language', label: '语言学习' },
+  { value: 1, label: '私教课' },
+  { value: 2, label: '团体课' },
+  { value: 3, label: '线上课' },
 ];
 
 // 排序选项
@@ -21,9 +20,10 @@ export const sortOptions = [
 
 // 状态选项
 export const statusOptions = [
-  { value: 'active', label: '开课中' },
-  { value: 'inactive', label: '已停课' },
-  { value: 'pending', label: '待开课' },
+  { value: CourseStatus.DRAFT, label: '草稿' },
+  { value: CourseStatus.PUBLISHED, label: '已发布' },
+  { value: CourseStatus.SUSPENDED, label: '已暂停' },
+  { value: CourseStatus.TERMINATED, label: '已终止' },
 ];
 
 // 模拟校区和教练数据
@@ -43,4 +43,4 @@ export const coachOptions = [
   { value: 'coach_4', label: '刘教练' },
   { value: 'coach_5', label: '陈教练' },
   { value: 'coach_6', label: '林教练' },
-]; 
+];

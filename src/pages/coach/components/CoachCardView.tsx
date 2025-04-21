@@ -38,26 +38,26 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
   const renderStatusTag = (status: string, coach: Coach) => {
     const { color, text } = getStatusTagInfo(status);
 
-    // 如果没有提供状态变更回调，则只显示样式化的文本
+    // 如果没有提供状态变更回调，则只显示文本
     if (!onStatusChange) {
       return (
-        <div style={{
-          display: 'inline-block',
-          padding: '4px 12px',
-          fontSize: '13px',
-          fontWeight: 500,
-          lineHeight: '20px',
-          borderRadius: '4px',
-          backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-          border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
-          color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-          minWidth: '80px',
-          textAlign: 'center',
-          whiteSpace: 'nowrap'
-        }}>
+        <Tag
+          color={color}
+          style={{
+            borderRadius: '4px',
+            fontSize: '12px',
+            padding: '0 8px',
+            fontWeight: 600,
+            marginRight: 0,
+            border: 'none',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            height: '22px',
+            lineHeight: '22px',
+            display: 'inline-block'
+          }}
+        >
           {text}
-        </div>
+        </Tag>
       );
     }
 
@@ -137,26 +137,25 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                 e.preventDefault(); // 阻止默认行为
               }}
             >
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '4px 12px',
-                fontSize: '13px',
-                fontWeight: 500,
-                lineHeight: '20px',
-                borderRadius: '4px',
-                backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
-                color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                minWidth: '80px',
-                gap: '5px',
-                whiteSpace: 'nowrap'
-              }}>
+              <Tag
+                color={color}
+                style={{
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  padding: '0 8px',
+                  fontWeight: 600,
+                  marginRight: 0,
+                  border: 'none',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  height: '22px',
+                  lineHeight: '22px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                }}
+              >
                 {text}
-                <DownOutlined style={{ fontSize: '11px' }} />
-              </div>
+                <DownOutlined style={{ fontSize: '10px', color: '#999', marginLeft: '4px' }} />
+              </Tag>
             </div>
           </Dropdown>
         )}
@@ -172,11 +171,14 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
         color={color}
         style={{
           borderRadius: '4px',
-          fontSize: '11px',
+          fontSize: '12px',
           padding: '0 8px',
-          fontWeight: 600,
+          fontWeight: 500,
           border: 'none',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          height: '22px',
+          lineHeight: '22px',
+          display: 'inline-block'
         }}
       >
         {text}
@@ -251,19 +253,43 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                 </div>
               </div>
 
-              <div className="coach-job-title-wrapper">
-                <div className="coach-status-badge" style={{ gap: '20px', position: 'relative' }}>
-                  <div className="coach-age-wrapper" style={{ marginLeft: '-15px' }}>
-                    <span className="coach-age-premium">{coach.age}岁</span>
+              <div className="coach-job-title-wrapper" style={{
+                position: 'absolute',
+                top: '75px',
+                left: '0',
+                right: '0',
+                zIndex: 10,
+                transform: 'translateY(-50%)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  height: '24px'
+                }}>
+                  {/* 职位标签放在年龄左侧 */}
+                  <div style={{ marginRight: '20px' }}>
+                    {renderJobTitleTag(coach.jobTitle)}
                   </div>
-                  <div style={{ position: 'relative' }}>
+                  <div style={{ marginRight: '20px' }}>
+                    <span style={{
+                      backgroundColor: '#f5f5f5',
+                      padding: '0 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      color: '#333',
+                      height: '22px',
+                      lineHeight: '22px',
+                      display: 'inline-block',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                    }}>{coach.age}岁</span>
+                  </div>
+                  <div>
                     {renderStatusTag(coach.status, coach)}
                   </div>
                 </div>
-              </div>
-
-              <div className="coach-job-title-display">
-                {renderJobTitleTag(coach.jobTitle)}
               </div>
 
               <div style={{ display: 'flex', gap: '32px', width: '100%' }}>

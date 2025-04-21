@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { UserSearchParams } from '../types/user';
+import { UserSearchParams, UserRole } from '../types/user';
 
 export const useUserSearch = (onSearch: (params: UserSearchParams, page: number, pageSize: number) => void) => {
   const [searchText, setSearchText] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<UserRole[]>([]);
   const [selectedCampus, setSelectedCampus] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<'ENABLED' | 'DISABLED' | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);

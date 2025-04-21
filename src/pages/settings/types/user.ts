@@ -1,11 +1,16 @@
-export type UserRole = '1' | '2' | '3';
+// 角色枚举 - 使用字符串值
+export enum UserRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  COLLABORATOR = 'COLLABORATOR',
+  CAMPUS_ADMIN = 'CAMPUS_ADMIN'
+}
 
 export interface User {
   id: string;
   phone: string;
   name?: string;
   realName?: string; // API返回的字段名是realName
-  role: UserRole | {
+  role: UserRole | number | {
     id: number | string;
     name: string;
   };
@@ -30,11 +35,12 @@ export interface CampusOption {
 export interface RoleOption {
   value: UserRole;
   label: string;
+  description?: string;
 }
 
 export type UserSearchParams = {
   searchText: string;
-  selectedRole: string[];
+  selectedRole: UserRole[];
   selectedCampus: string[];
   selectedStatus: 'ENABLED' | 'DISABLED' | undefined;
 };

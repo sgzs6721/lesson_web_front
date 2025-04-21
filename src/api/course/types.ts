@@ -1,34 +1,87 @@
-// Remove imports for shared types
-// import { ApiResponse } from '../auth/types';
 import { ApiResponse, PaginatedResponse } from '../types';
+
+// 课程状态枚举
+export enum CourseStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  SUSPENDED = 'SUSPENDED',
+  TERMINATED = 'TERMINATED'
+}
+
+// 课程类型枚举
+export enum CourseType {
+  PRIVATE = 'PRIVATE',
+  GROUP = 'GROUP',
+  ONLINE = 'ONLINE'
+}
 
 // 课程类型
 export interface Course {
   id: string;
   name: string;
-  description?: string;
+  type: CourseType;
+  status: CourseStatus;
+  unitHours: number;
+  totalHours: number;
+  consumedHours: number;
   price: number;
-  duration: number;
-  institutionId: string;
+  coachIds: string[] | number[];
+  coachNames: string[];
+  campusId: number;
+  campusName: string;
+  institutionId: number;
   institutionName: string;
-  createdAt: string;
-  updatedAt: string;
-  category?: string;
-  level?: 'beginner' | 'intermediate' | 'advanced';
-  capacity?: number;
-  totalHours?: number;
-  hoursPerClass?: number;
-  unitPrice?: number;
-  status?: 'active' | 'inactive' | 'pending';
-  cover?: string;
-  campuses?: string[];
-  coaches?: string[];
+  description?: string;
+  createdTime?: string;
+  updateTime?: string;
+}
+
+// 课程创建请求
+export interface CourseCreateRequest {
+  name: string;
+  typeId: number; // 修改为 typeId
+  status: CourseStatus;
+  unitHours: number;
+  totalHours: number;
+  price: number;
+  coachIds: number[]; // 教练ID列表
+  campusId: number;
+  description?: string;
+}
+
+// 课程更新请求
+export interface CourseUpdateRequest {
+  id: string;
+  name: string;
+  typeId: number; // 修改为 typeId
+  status: CourseStatus;
+  unitHours: number;
+  totalHours: number;
+  price: number;
+  coachIds: number[]; // 教练ID列表
+  campusId: number;
+  description?: string;
 }
 
 // 课程搜索参数
 export interface CourseSearchParams {
   searchText: string;
-  selectedCategory?: string;
-  selectedStatus?: string;
+  selectedType?: CourseType;
+  selectedStatus?: CourseStatus;
   sortOrder?: string;
 }
+
+// 课程列表响应
+export interface CourseListResponse extends ApiResponse<PaginatedResponse<Course>> {}
+
+// 课程详情响应
+export interface CourseDetailResponse extends ApiResponse<Course> {}
+
+// 课程创建响应
+export interface CourseCreateResponse extends ApiResponse<string> {}
+
+// 课程更新响应
+export interface CourseUpdateResponse extends ApiResponse<null> {}
+
+// 课程删除响应
+export interface CourseDeleteResponse extends ApiResponse<null> {}

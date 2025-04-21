@@ -7,24 +7,32 @@ const mapRoleToUserRole = (role: string | { id: number | string; name: string })
   if (typeof role === 'object' && role) {
     // 将id转换为字符串并确保它是有效的UserRole
     const roleId = String(role.id);
-    if (roleId === '1' || roleId === '2' || roleId === '3') {
-      return roleId as UserRole;
+    if (roleId === '1') {
+      return UserRole.SUPER_ADMIN;
+    } else if (roleId === '2') {
+      return UserRole.COLLABORATOR;
+    } else if (roleId === '3') {
+      return UserRole.CAMPUS_ADMIN;
     }
   }
 
   // 如果是字符串并且是数字字符串
   if (typeof role === 'string') {
-    if (role === '1' || role === '2' || role === '3') {
-      return role as UserRole;
+    if (role === '1') {
+      return UserRole.SUPER_ADMIN;
+    } else if (role === '2') {
+      return UserRole.COLLABORATOR;
+    } else if (role === '3') {
+      return UserRole.CAMPUS_ADMIN;
     }
 
     // 如果是角色名称，映射到角色ID
     const roleNameMap: Record<string, UserRole> = {
-      '超级管理员': '1',
-      '系统管理员': '1', // 兼容旧的名称
-      '协同管理员': '2',
-      '机构管理员': '2',
-      '校区管理员': '3'
+      '超级管理员': UserRole.SUPER_ADMIN,
+      '系统管理员': UserRole.SUPER_ADMIN, // 兼容旧的名称
+      '协同管理员': UserRole.COLLABORATOR,
+      '机构管理员': UserRole.COLLABORATOR,
+      '校区管理员': UserRole.CAMPUS_ADMIN
     };
 
     if (roleNameMap[role]) {
@@ -33,7 +41,7 @@ const mapRoleToUserRole = (role: string | { id: number | string; name: string })
   }
 
   // 默认返回超级管理员
-  return '1';
+  return UserRole.SUPER_ADMIN;
 };
 
 // 将API用户状态映射到前端用户状态

@@ -32,8 +32,8 @@ export const clearCampusListCache = (reason?: string) => {
   clearSelectorCache(reason);
 };
 
-// 缓存过期时间（毫秒）
-const CACHE_EXPIRY = 60000; // 1分钟
+// 缓存过期时间设置为无限长，除非手动清除缓存
+const CACHE_EXPIRY = Number.MAX_SAFE_INTEGER;
 
 // 正在进行的请求标记
 let isFetchingCampusList = false;
@@ -54,7 +54,7 @@ export const useCampusData = () => {
     if (campusCheck && campusCheck.refreshCampusCheck) {
       setGlobalRefreshCampusCheck(campusCheck.refreshCampusCheck);
     }
-    
+
     return () => {
       // 组件卸载时清除全局引用
       if (globalRefreshCampusCheck === campusCheck?.refreshCampusCheck) {
@@ -248,7 +248,7 @@ export const useCampusData = () => {
 
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
-      
+
       // 刷新校区检查状态
       if (campusCheck?.refreshCampusCheck) {
         console.log('校区添加成功，刷新校区检查状态');
@@ -291,13 +291,13 @@ export const useCampusData = () => {
 
       // 清除校区列表缓存
       clearCampusListCache('校区数据变更');
-      
+
       // 重新获取校区列表
       await fetchCampuses(searchParamsRef.current);
-      
+
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
-      
+
       // 刷新校区检查状态
       if (campusCheck?.refreshCampusCheck) {
         console.log('校区更新成功，刷新校区检查状态');
@@ -335,7 +335,7 @@ export const useCampusData = () => {
 
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
-      
+
       // 刷新校区检查状态
       if (campusCheck?.refreshCampusCheck) {
         console.log('校区删除成功，刷新校区检查状态');
@@ -376,7 +376,7 @@ export const useCampusData = () => {
 
       // 触发所有校区选择器组件刷新
       refreshAllCampusSelectors();
-      
+
       // 刷新校区检查状态
       if (campusCheck?.refreshCampusCheck) {
         console.log('校区状态更新成功，刷新校区检查状态');

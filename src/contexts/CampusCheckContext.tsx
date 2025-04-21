@@ -36,7 +36,7 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
   const [hasCampus, setHasCampus] = useState<boolean>(true); // 默认为true避免闪烁，实际会通过检查更新
   const [checkingCampus, setCheckingCampus] = useState<boolean>(true);
   const [noCampusModalVisible, setNoCampusModalVisible] = useState<boolean>(false);
-  
+
   const auth = useAppSelector((state) => state.auth);
   const isAuthenticated = auth.isAuthenticated;
 
@@ -66,14 +66,14 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
   // 刷新校区检查
   const refreshCampusCheck = async (): Promise<void> => {
     setCheckingCampus(true);
-    
+
     // 如果用户已登录，确保清除缓存以获取最新数据
     if (isAuthenticated) {
       // 清除校区列表缓存
       clearCampusListCache();
       console.log('刷新校区检查前先清除校区列表缓存');
     }
-    
+
     const result = await checkCampus();
     setHasCampus(result);
     setCheckingCampus(false);
@@ -106,17 +106,12 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
       return true;
     }
 
-    // 如果正在检查校区，等待检查完成
+    // 如果正在检查校区，直接等待当前检查完成
     if (checkingCampus) {
-      await new Promise(resolve => {
-        const checkInterval = setInterval(() => {
-          if (!checkingCampus) {
-            clearInterval(checkInterval);
-            resolve(true);
-          }
-        }, 100);
-      });
-      
+      console.log('正在检查校区，等待当前检查完成');
+      // 等待当前正在进行的检查完成
+      await refreshCampusCheck();
+
       // 检查完成后，如果有校区，允许导航
       if (hasCampus) {
         return true;
@@ -135,7 +130,7 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
       clearCampusListCache();
       console.log('导航检查校区前先清除校区列表缓存');
     }
-    
+
     const hasAnyCampus = await checkCampus();
     setHasCampus(hasAnyCampus);
     setCheckingCampus(false);
@@ -177,9 +172,9 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
   return (
     <CampusCheckContext.Provider value={value}>
       {children}
-      <NoCampusModal 
-        visible={noCampusModalVisible} 
-        onClose={hideNoCampusModal} 
+      <NoCampusModal
+        visible={noCampusModalVisible}
+        onClose={hideNoCampusModal}
       />
       {isAuthenticated && <CampusCheckRouteHandler />}
     </CampusCheckContext.Provider>
@@ -191,7 +186,7 @@ export const CampusCheckProvider: React.FC<CampusCheckProviderProps> = ({ childr
 const CampusCheckRouteHandler: React.FC = () => {
   const location = useLocation();
   const { hasCampus, checkingCampus, showNoCampusModal, refreshCampusCheck, checkCampusBeforeNavigate } = useCampusCheck();
-  
+
   // 不需要检查校区的路径列表
   const exemptPaths = ['/campuses', '/login', '/register', '/home', '/unauthorized'];
 
@@ -199,7 +194,7 @@ const CampusCheckRouteHandler: React.FC = () => {
   // 这仅用于在页面刷新或直接输入URL访问时检查
   useEffect(() => {
     const currentPath = location.pathname;
-    
+
     // 只在初始加载和用户导航到需要校区的页面时检查
     if (!exemptPaths.some(path => currentPath.startsWith(path))) {
       checkCampusBeforeNavigate(currentPath);
@@ -209,4 +204,4 @@ const CampusCheckRouteHandler: React.FC = () => {
   return null; // 这个组件不渲染任何内容
 };
 
-export default CampusCheckProvider; 
+export default CampusCheckProvider;

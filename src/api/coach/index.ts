@@ -307,18 +307,49 @@ export const coach = {
   },
 
   // 获取教练简单列表
-  getSimpleList: async (): Promise<CoachSimple[]> => {
+  getSimpleList: async (campusId?: string | number): Promise<CoachSimple[]> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 300));
 
       // 返回模拟数据
       return mockCoaches.map(coach => ({
-        id: typeof coach.id === 'string' ? parseInt(coach.id) : coach.id,
+        id: Number(coach.id), // 确保 ID 是数字类型
         name: coach.name
       }));
     }
 
-    const response: CoachSimpleListResponse = await request(COACH_API_PATHS.SIMPLE_LIST);
-    return response.data;
+    try {
+      // 如果没有提供campusId，尝试从localStorage获取
+      const currentCampusId = localStorage.getItem('currentCampusId');
+      let finalCampusId = campusId;
+
+      if (!finalCampusId && currentCampusId) {
+        finalCampusId = currentCampusId;
+      }
+
+      if (!finalCampusId) {
+        console.warn('获取教练简单列表时没有提供campusId，将使用默认值');
+        finalCampusId = '1'; // 使用默认值
+      }
+
+      // 构建查询参数
+      const queryParams = new URLSearchParams();
+      queryParams.append('campusId', String(finalCampusId));
+
+      const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+      const response: CoachSimpleListResponse = await request(`${COACH_API_PATHS.SIMPLE_LIST}${queryString}`);
+
+      // 确保返回的教练ID是数字类型
+      const formattedCoaches = response.data.map(coach => ({
+        ...coach,
+        id: Number(coach.id) // 转换为数字类型
+      }));
+
+      console.log('获取教练简单列表成功:', formattedCoaches);
+      return formattedCoaches;
+    } catch (error) {
+      console.error('获取教练简单列表失败:', error);
+      return [];
+    }
   }
 };

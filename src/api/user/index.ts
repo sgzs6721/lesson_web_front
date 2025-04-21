@@ -139,7 +139,8 @@ export const user = {
       }
 
       // 获取角色名称
-      const role = mockRoles.find(role => role.id === data.roleId);
+      const roleId = typeof data.role === 'string' ? data.role : Number(data.role);
+      const role = mockRoles.find(role => role.id === roleId);
       if (!role) {
         throw new Error('角色不存在');
       }
@@ -150,7 +151,7 @@ export const user = {
         id: newId,
         phone: data.phone,
         realName: data.realName,
-        roleId: data.roleId,
+        roleId: roleId,
         roleName: role.name,
         institutionId: data.institutionId,
         campusId: data.campusId,
@@ -191,8 +192,9 @@ export const user = {
 
       // 获取角色名称
       let roleName = mockUsers[userIndex].roleName;
-      if (data.roleId && data.roleId !== mockUsers[userIndex].roleId) {
-        const role = mockRoles.find(role => role.id === data.roleId);
+      const roleId = typeof data.role === 'string' ? data.role : Number(data.role);
+      if (roleId && roleId !== mockUsers[userIndex].roleId) {
+        const role = mockRoles.find(role => role.id === roleId);
         if (!role) {
           throw new Error('角色不存在');
         }
@@ -204,7 +206,7 @@ export const user = {
         ...mockUsers[userIndex],
         phone: data.phone || mockUsers[userIndex].phone,
         realName: data.realName || mockUsers[userIndex].realName,
-        roleId: data.roleId || mockUsers[userIndex].roleId,
+        roleId: roleId || mockUsers[userIndex].roleId,
         roleName,
         campusId: data.campusId !== undefined ? data.campusId : mockUsers[userIndex].campusId,
         status: data.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED

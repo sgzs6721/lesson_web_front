@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Input, Select, Button, Space } from 'antd';
 import { SearchOutlined, ReloadOutlined, SortAscendingOutlined } from '@ant-design/icons';
-import { CourseSearchParams } from '../types/course';
+import { CourseSearchParams, CourseType, CourseStatus } from '../types/course';
 import { categoryOptions, statusOptions, sortOptions } from '../constants/courseOptions';
 
 const { Option } = Select;
@@ -11,8 +11,8 @@ interface CourseSearchBarProps {
   onSearch: () => void;
   onReset: () => void;
   onTextChange: (value: string) => void;
-  onCategoryChange: (value: string | undefined) => void;
-  onStatusChange: (value: string | undefined) => void;
+  onCategoryChange: (value: CourseType | undefined) => void;
+  onStatusChange: (value: CourseStatus | undefined) => void;
   onSortOrderChange: (value: string | undefined) => void;
 }
 
@@ -42,7 +42,7 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
           <Select
             placeholder="选择课程分类"
             style={{ width: '100%' }}
-            value={params.selectedCategory}
+            value={params.selectedType}
             onChange={value => onCategoryChange(value)}
             allowClear
             popupMatchSelectWidth={true}

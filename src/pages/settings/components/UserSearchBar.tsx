@@ -1,7 +1,7 @@
 import React from 'react';
-import { Row, Col, Input, Select, Button, Space, Spin } from 'antd';
-import { SearchOutlined, RedoOutlined } from '@ant-design/icons';
-import { UserSearchParams } from '../types/user';
+import { Row, Col, Input, Select, Button, Space, Spin, Tooltip } from 'antd';
+import { SearchOutlined, RedoOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { UserSearchParams, UserRole } from '../types/user';
 import { roleOptions, statusOptions } from '../constants/userOptions';
 import { useRealCampusOptions } from '../hooks/useRealCampusOptions';
 import './UserSearchBar.css';
@@ -13,7 +13,7 @@ interface UserSearchBarProps {
   onSearch: () => void;
   onReset: () => void;
   onTextChange: (value: string) => void;
-  onRoleChange: (value: string[]) => void;
+  onRoleChange: (value: UserRole[]) => void;
   onCampusChange: (value: string[]) => void;
   onStatusChange: (value: 'ENABLED' | 'DISABLED' | undefined) => void;
 }
@@ -55,7 +55,16 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
             getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
           >
             {roleOptions.map(option => (
-              <Option key={option.value} value={option.value}>{option.label}</Option>
+              <Option key={option.value} value={option.value}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>{option.label}</span>
+                  {option.description && (
+                    <Tooltip title={option.description}>
+                      <InfoCircleOutlined style={{ marginLeft: 8 }} />
+                    </Tooltip>
+                  )}
+                </div>
+              </Option>
             ))}
           </Select>
         </div>

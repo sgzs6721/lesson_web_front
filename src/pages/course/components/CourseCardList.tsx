@@ -1,7 +1,7 @@
 import React from 'react';
 import { List, Card, Tag, Typography } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Course } from '../types/course';
+import { Course, CourseType } from '../types/course';
 import dayjs from 'dayjs';
 import { categoryOptions, coachOptions } from '../constants/courseOptions';
 import { renderStatusTag } from '../constants/tableColumns';
@@ -29,17 +29,17 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
   onDelete,
   onPageChange
 }) => {
-  // 获取课程分类名称
-  const getCategoryName = (categoryId: string) => {
-    const category = categoryOptions.find(c => c.value === categoryId);
-    return category ? category.label : categoryId;
+  // 获取课程类型名称
+  const getTypeName = (type: CourseType) => {
+    const category = categoryOptions.find(c => c.value === Number(type));
+    return category ? category.label : type;
   };
 
   // 获取教练名称
-  const getCoachNames = (coachIds: string[]) => {
+  const getCoachNames = (coachIds: string[] | number[]) => {
     if (!coachIds || coachIds.length === 0) return '';
     // 只取第一个教练
-    const id = coachIds[0];
+    const id = String(coachIds[0]); // 转换为字符串
     const coach = coachOptions.find(c => c.value === id);
     return coach ? coach.label : id;
   };
@@ -98,8 +98,8 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                     <div>
                       <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                          <Tag color="blue" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getCategoryName(item.category)}</Tag>
-                          <Tag color="purple" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getCoachNames(item.coaches)}</Tag>
+                          <Tag color="blue" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getTypeName(item.type)}</Tag>
+                          <Tag color="purple" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getCoachNames(item.coachIds)}</Tag>
                         </div>
                         {renderStatusTag(item.status)}
                       </div>
@@ -112,12 +112,10 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                         <div style={{ fontWeight: 'bold', flex: 1 }}>已销课时：</div>
                         <div style={{ width: '70px', textAlign: 'right' }}>{item.consumedHours}小时</div>
                       </div>
-                      {item.unitPrice && (
-                        <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                          <div style={{ fontWeight: 'bold', flex: 1 }}>教练课筹单价：</div>
-                          <div style={{ width: '70px', textAlign: 'right' }}>¥{item.unitPrice}</div>
-                        </div>
-                      )}
+                      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ fontWeight: 'bold', flex: 1 }}>教练课筹单价：</div>
+                        <div style={{ width: '70px', textAlign: 'right' }}>¥{item.price}</div>
+                      </div>
                       {item.description && (
                         <div style={{ marginBottom: 8 }}>
                           <div style={{ fontWeight: 'bold', display: 'block' }}>课程描述：</div>
@@ -125,7 +123,7 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                         </div>
                       )}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', fontSize: '12px', borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8 }}><span style={{ fontWeight: 'bold' }}>更新时间:</span> {dayjs(item.updatedAt).format('YYYY-MM-DD')}</div>
+                    <div style={{ display: 'flex', justifyContent: 'center', fontSize: '12px', borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8 }}><span style={{ fontWeight: 'bold' }}>更新时间:</span> {dayjs(item.updateTime).format('YYYY-MM-DD')}</div>
                   </div>
                 }
               />

@@ -39,30 +39,6 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
   // 如果没有教练数据且不在加载中，不渲染组件
   if (!coach && !loading) return null;
 
-  // 渲染状态标签
-  const renderStatusTag = (status: string) => {
-    const { color, text } = getStatusTagInfo(status);
-    return (
-      <div style={{
-        display: 'inline-block',
-        padding: '4px 12px',
-        fontSize: '13px',
-        fontWeight: 500,
-        lineHeight: '20px',
-        borderRadius: '4px',
-        backgroundColor: color === 'green' ? 'rgba(82, 196, 26, 0.1)' : color === 'orange' ? 'rgba(250, 173, 20, 0.1)' : color === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-        border: `1px solid ${color === 'green' ? 'rgba(82, 196, 26, 0.5)' : color === 'orange' ? 'rgba(250, 173, 20, 0.5)' : color === 'red' ? 'rgba(255, 77, 79, 0.5)' : 'rgba(0, 0, 0, 0.15)'}`,
-        color: color === 'green' ? '#389e0d' : color === 'orange' ? '#d48806' : color === 'red' ? '#cf1322' : 'rgba(0, 0, 0, 0.65)',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-        minWidth: '80px',
-        textAlign: 'center',
-        whiteSpace: 'nowrap'
-      }}>
-        {text}
-      </div>
-    );
-  };
-
   // 格式化课时费
   const formatClassFee = (fee: number | undefined) => {
     const formattedFee = fee?.toLocaleString() || '0';
@@ -158,22 +134,24 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
 
     return (
       <Tooltip placement="top" title={tooltipContent} styles={{ body: { padding: 0, backgroundColor: 'transparent', boxShadow: 'none' } }}>
-        <Space size={[6, 4]} wrap style={{ marginTop: '-2px', marginBottom: '-2px' }}>
+        <Space size={[6, 4]} wrap style={{ margin: '0' }}>
           {certArray.map((cert, index) => (
             <Tag
               key={index}
               color="green"
               style={{
-                marginBottom: 4,
+                margin: '2px',
                 padding: '1px 5px',
                 borderRadius: '3px',
                 fontSize: '11px',
-                lineHeight: '1.3',
-                height: '18px',
+                lineHeight: '1.5',
+                height: '20px',
                 maxWidth: '150px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
             >
               {cert}
@@ -226,43 +204,67 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
       width={700}
     >
       <Spin spinning={loading}>
-        <Descriptions bordered column={2} size="small">
-          <Descriptions.Item label="教练ID" span={1}>{displayCoach.id || '-'}</Descriptions.Item>
-          <Descriptions.Item label="年龄" span={1}>{displayCoach.age || '-'}</Descriptions.Item>
-
-          <Descriptions.Item label="姓名" span={1}>
-            <Space>
-              <Avatar
-                size="small"
-                src={displayCoach.avatar}
-                style={{
-                  backgroundColor: !displayCoach.avatar ? (displayCoach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined
-                }}
-                icon={!displayCoach.avatar && <UserOutlined />}
-              />
+        {/* 添加头部区域，显示教练名称和职位标签 */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          background: 'linear-gradient(135deg, rgba(26, 41, 128, 0.7) 0%, #26d0ce 100%)',
+          padding: '12px 16px',
+          borderRadius: '8px 8px 0 0',
+          marginBottom: '16px',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            width: '100px',
+            height: '100px',
+            borderRadius: '50%',
+            right: '-40px',
+            top: '-50px',
+            background: 'rgba(255, 255, 255, 0.15)'
+          }}></div>
+          <Avatar
+            size={48}
+            src={displayCoach.avatar}
+            style={{
+              backgroundColor: !displayCoach.avatar ? (displayCoach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined,
+              marginRight: '12px'
+            }}
+            icon={!displayCoach.avatar && <UserOutlined />}
+          />
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '8px' }}>
               {displayCoach.name || '-'}
-              {displayCoach.gender === CoachGender.MALE ?
-                <span style={{ color: '#1890ff' }}>♂</span> :
-                <span style={{ color: '#eb2f96' }}>♀</span>
-              }
-            </Space>
-          </Descriptions.Item>
-          <Descriptions.Item label="状态" span={1}>{displayCoach.status ? renderStatusTag(displayCoach.status) : '-'}</Descriptions.Item>
-
-          <Descriptions.Item label="联系电话" span={1}>{displayCoach.phone || '-'}</Descriptions.Item>
-          <Descriptions.Item label="职位" span={1}>
-            {displayCoach.jobTitle ? (
-              <Tag color={getJobTitleTagInfo(displayCoach.jobTitle).color}>
+            </span>
+            {displayCoach.gender === CoachGender.MALE ?
+              <span style={{ color: '#1890ff', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♂</span> :
+              <span style={{ color: '#eb2f96', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♀</span>
+            }
+            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px', marginRight: '12px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>{displayCoach.age}岁</span>
+            {displayCoach.status && (
+              <Tag color={getStatusTagInfo(displayCoach.status).color} style={{ margin: 0, fontSize: '14px', padding: '2px 8px' }}>
+                {getStatusTagInfo(displayCoach.status).text}
+              </Tag>
+            )}
+          </div>
+          {/* 职位标签放在红框位置 */}
+          {displayCoach.jobTitle && (
+            <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)' }}>
+              <Tag color={getJobTitleTagInfo(displayCoach.jobTitle).color} style={{ fontSize: '14px', padding: '4px 8px' }}>
                 {displayCoach.jobTitle}
               </Tag>
-            ) : '-'}
-          </Descriptions.Item>
+            </div>
+          )}
+        </div>
+        <Descriptions bordered column={2} size="small">
+          <Descriptions.Item label="教练ID" span={1}>{displayCoach.id || '-'}</Descriptions.Item>
+          <Descriptions.Item label="联系电话" span={1}>{displayCoach.phone || '-'}</Descriptions.Item>
 
           <Descriptions.Item label="入职日期" span={1}>{displayCoach.hireDate || '-'}</Descriptions.Item>
           <Descriptions.Item label="教龄" span={1}>{displayCoach.experience ? `${displayCoach.experience}年` : '-'}</Descriptions.Item>
 
-          <Descriptions.Item label="所属校区" span={1}>{currentCampusName || displayCoach.campusName || '-'}</Descriptions.Item>
-          <Descriptions.Item label="所属机构" span={1}>{displayCoach.institutionName || '-'}</Descriptions.Item>
+          <Descriptions.Item label="所属校区" span={2}>{currentCampusName || displayCoach.campusName || '-'}</Descriptions.Item>
 
           <Descriptions.Item label="基本工资" span={1}>{`¥ ${displayCoach.baseSalary?.toLocaleString() || '0'}`}</Descriptions.Item>
           <Descriptions.Item label="社保费" span={1}>{`¥ ${displayCoach.socialInsurance?.toLocaleString() || '0'}`}</Descriptions.Item>
@@ -275,10 +277,12 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
 
           <Descriptions.Item label="证书" span={2}>
             <div className="certification-content" style={{
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
               width: '100%',
               padding: '0',
-              margin: '-4px 0',
+              margin: '0',
+              minHeight: '32px'
             }}>
               {renderCertifications(displayCoach.certifications)}
             </div>

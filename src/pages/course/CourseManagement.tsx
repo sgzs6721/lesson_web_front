@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Card } from 'antd';
 import CourseTable from './components/CourseTable';
 import CourseCardList from './components/CourseCardList';
@@ -11,11 +11,16 @@ import { useCourseData } from './hooks/useCourseData';
 import { useCourseSearch } from './hooks/useCourseSearch';
 import { useCourseForm } from './hooks/useCourseForm';
 import { Course } from './types/course';
+import { coach as coachAPI } from '@/api/coach';
+import { CoachSimple } from '@/api/coach/types';
 import './components/CourseManagement.css';
 
 const { Title } = Typography;
 
 const CourseManagement: React.FC = () => {
+  // 初始加载引用
+  const initialLoadRef = useRef(true);
+
   // 使用数据管理钩子
   const {
     courses,
@@ -36,7 +41,7 @@ const CourseManagement: React.FC = () => {
   const {
     searchParams,
     setSearchText,
-    setSelectedCategory,
+    setSelectedType,
     setSelectedStatus,
     setSortOrder,
     handleSearch,
@@ -44,7 +49,10 @@ const CourseManagement: React.FC = () => {
   } = useCourseSearch(async (params) => {
     setCurrentPage(1); // 重置到第一页
     return filterCourses(1, pageSize, params);
-  });
+  })
+
+  // 教练列表状态 - 不再在这里管理教练列表
+  const [coaches, setCoaches] = useState<CoachSimple[]>([]);
 
   // 使用表单管理钩子
   const {
@@ -52,11 +60,20 @@ const CourseManagement: React.FC = () => {
     visible,
     editingCourse,
     loading: formLoading,
-    handleAdd,
-    handleEdit,
+    handleAdd: originalHandleAdd,
+    handleEdit: originalHandleEdit,
     handleSubmit,
     handleCancel
-  } = useCourseForm(addCourse, updateCourse);
+  } = useCourseForm(addCourse, updateCourse, coaches);
+
+  // 包装添加和编辑函数
+  const handleAdd = () => {
+    originalHandleAdd();
+  };
+
+  const handleEdit = (record: Course) => {
+    originalHandleEdit(record);
+  };
 
   // 视图模式
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
@@ -69,28 +86,35 @@ const CourseManagement: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletingCourse, setDeletingCourse] = useState<{ id: string; name: string } | null>(null);
 
+  // 加载课程数据
+  const loadCourses = async (page = currentPage, size = pageSize) => {
+    try {
+      console.log('加载课程数据, 页码:', page, '页大小:', size);
+      await filterCourses(page, size, searchParams);
+    } catch (error) {
+      console.error('加载课程数据失败:', error);
+    }
+  };
+
   // 首次加载获取数据
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        await filterCourses(currentPage, pageSize, searchParams);
-      } catch (error) {
-        console.error('加载课程数据失败:', error);
+    // 使用setTimeout确保在组件挂载后再加载数据
+    const timer = setTimeout(() => {
+      if (initialLoadRef.current) {
+        console.log('首次加载课程数据');
+        loadCourses();
+        initialLoadRef.current = false;
       }
-    };
+    }, 100);
 
-    fetchInitialData();
+    return () => clearTimeout(timer);
   }, []);
 
   // 处理分页变化
   const handlePageChange = async (page: number, size: number) => {
     setCurrentPage(page);
     setPageSize(size);
-    try {
-      await filterCourses(page, size, searchParams);
-    } catch (error) {
-      console.error('加载分页数据失败:', error);
-    }
+    loadCourses(page, size);
   };
 
   // 处理查看详情
@@ -142,7 +166,7 @@ const CourseManagement: React.FC = () => {
           onSearch={handleSearch}
           onReset={handleReset}
           onTextChange={setSearchText}
-          onCategoryChange={setSelectedCategory}
+          onCategoryChange={setSelectedType}
           onStatusChange={setSelectedStatus}
           onSortOrderChange={setSortOrder}
         />
