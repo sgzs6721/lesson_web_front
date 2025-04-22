@@ -82,7 +82,13 @@ export const useUserData = () => {
         id: String(userId),
         phone: values.phone,
         name: values.name,
-        role: values.role,
+        // 正确格式化角色对象，确保它包含 id 和 name
+        role: {
+          id: typeof values.role === 'object' ? values.role.id : values.role,
+          name: getRoleName(roleValue)
+        },
+        // 添加 roleName 字段以便于表格渲染
+        roleName: getRoleName(roleValue),
         // 处理校区数据，确保它是一个包含 id 和 name 的对象
         campus: typeof values.campus === 'object'
           ? values.campus
@@ -93,6 +99,7 @@ export const useUserData = () => {
             }
           : undefined,
         status: DEFAULT_STATUS,
+        statusText: DEFAULT_STATUS === 'ENABLED' ? '启用' : '禁用',
         createdAt: new Date().toLocaleString('zh-CN', {
           year: 'numeric',
           month: '2-digit',
@@ -112,6 +119,20 @@ export const useUserData = () => {
           hour12: false
         }).replace(/\//g, '-'),
       };
+
+      // 辅助函数：根据角色枚举获取角色名称
+      function getRoleName(role: UserRole): string {
+        switch(role) {
+          case UserRole.SUPER_ADMIN:
+            return '超级管理员';
+          case UserRole.COLLABORATOR:
+            return '协同管理员';
+          case UserRole.CAMPUS_ADMIN:
+            return '校区管理员';
+          default:
+            return '未知角色';
+        }
+      }
 
       // 更新状态
       setUsers(prevUsers => [newUser, ...prevUsers]);

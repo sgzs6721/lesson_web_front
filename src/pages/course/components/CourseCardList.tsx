@@ -1,9 +1,8 @@
 import React from 'react';
 import { List, Card, Tag, Typography } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Course, CourseType } from '../types/course';
+import { Course } from '../types/course';
 import dayjs from 'dayjs';
-import { categoryOptions, coachOptions } from '../constants/courseOptions';
 import { renderStatusTag } from '../constants/tableColumns';
 
 const { Paragraph } = Typography;
@@ -30,18 +29,14 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
   onPageChange
 }) => {
   // 获取课程类型名称
-  const getTypeName = (type: CourseType) => {
-    const category = categoryOptions.find(c => c.value === Number(type));
-    return category ? category.label : type;
+  const getTypeName = (type: string) => {
+    return type || '未知类型';
   };
 
   // 获取教练名称
-  const getCoachNames = (coachIds: string[] | number[]) => {
-    if (!coachIds || coachIds.length === 0) return '';
-    // 只取第一个教练
-    const id = String(coachIds[0]); // 转换为字符串
-    const coach = coachOptions.find(c => c.value === id);
-    return coach ? coach.label : id;
+  const getCoachNames = (coaches?: { id: number; name: string }[]) => {
+    if (!coaches || coaches.length === 0) return '';
+    return coaches.map(coach => coach.name).join(', ');
   };
 
   return (
@@ -85,7 +80,11 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
               hoverable
               style={{ height: 280 }}
               actions={[
-                <EditOutlined key="edit" style={{ color: '#1890ff' }} onClick={() => onEdit(item)} />,
+                <EditOutlined key="edit" style={{ color: '#1890ff' }} onClick={() => {
+                  console.log('卡片编辑按钮点击，课程数据:', JSON.stringify(item, null, 2));
+                  // 直接传递原始数据，不做任何修改
+                  onEdit(item);
+                }} />,
                 <DeleteOutlined key="delete" style={{ color: '#ff4d4f' }} onClick={() => onDelete(item.id, item.name)} />
               ]}
             >
@@ -99,7 +98,7 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                       <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           <Tag color="blue" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getTypeName(item.type)}</Tag>
-                          <Tag color="purple" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getCoachNames(item.coachIds)}</Tag>
+                          <Tag color="purple" style={{ padding: '0 8px', fontSize: '12px', lineHeight: '20px', height: '20px' }}>{getCoachNames(item.coaches)}</Tag>
                         </div>
                         {renderStatusTag(item.status)}
                       </div>

@@ -19,8 +19,38 @@ export const useCourseData = () => {
       // 调用API添加课程
       const courseId = await courseAPI.add(values);
 
-      // 获取新添加的课程详情
-      const newCourse = await courseAPI.getDetail(courseId);
+      // 获取教练列表以获取教练名称
+      const currentCampusId = values.campusId || localStorage.getItem('currentCampusId') || '1';
+      const coachList = await import('@/api/coach').then(module => module.coach.getSimpleList(currentCampusId));
+
+      // 获取课程类型名称
+      const courseTypeList = await import('@/api/constants').then(module => module.constants.getList('COURSE_TYPE'));
+      const courseType = courseTypeList.find(type => type.id === Number(values.typeId));
+
+      // 构造新课程对象，而不是调用详情接口
+      const newCourse: Course = {
+        id: courseId,
+        name: values.name,
+        type: courseType?.constantValue || String(values.typeId), // 使用课程类型名称而不是ID
+        status: values.status,
+        unitHours: values.unitHours,
+        totalHours: values.totalHours,
+        consumedHours: 0, // 新课程消耗课时为0
+        price: values.price,
+        campusId: values.campusId,
+        institutionId: 1, // 默认机构ID
+        description: values.description || '',
+        createdTime: new Date().toISOString(),
+        updateTime: new Date().toISOString(),
+        coaches: values.coachIds ? values.coachIds.map((id: any) => {
+          // 从教练列表中查找对应的教练名称
+          const coach = coachList.find(coach => coach.id === Number(id));
+          return {
+            id: Number(id),
+            name: coach?.name || `教练${id}` // 如果找不到教练名称，显示默认名称
+          };
+        }) : []
+      };
 
       // 更新本地状态
       setCourses(prev => [newCourse, ...prev]);
@@ -50,8 +80,58 @@ export const useCourseData = () => {
       // 调用API更新课程
       await courseAPI.update(updateData);
 
-      // 获取更新后的课程详情
-      const updatedCourse = await courseAPI.getDetail(id);
+      // 根据更新的数据构造更新后的课程对象
+      // 先找到原课程对象
+      const originalCourse = filteredCourses.find(course => course.id === id);
+
+      if (!originalCourse) {
+        throw new Error('找不到要更新的课程');
+      }
+
+      // 获取课程类型名称
+      let typeName = originalCourse.type;
+      if (values.typeId && values.typeId !== Number(originalCourse.type)) {
+        const courseTypeList = await import('@/api/constants').then(module => module.constants.getList('COURSE_TYPE'));
+        const courseType = courseTypeList.find(type => type.id === Number(values.typeId));
+        if (courseType) {
+          typeName = courseType.constantValue;
+        }
+      }
+
+      // 获取教练名称
+      let coachesWithNames = originalCourse.coaches;
+      if (values.coachIds) {
+        const currentCampusId = values.campusId || originalCourse.campusId || localStorage.getItem('currentCampusId') || '1';
+        const coachList = await import('@/api/coach').then(module => module.coach.getSimpleList(currentCampusId));
+
+        coachesWithNames = values.coachIds.map((id: any) => {
+          // 尝试保留原教练名称
+          const originalCoach = originalCourse.coaches?.find(coach => coach.id === Number(id));
+          if (originalCoach?.name) {
+            return originalCoach;
+          }
+          // 从教练列表中查找对应的教练名称
+          const coach = coachList.find(coach => coach.id === Number(id));
+          return {
+            id: Number(id),
+            name: coach?.name || `教练${id}` // 如果找不到教练名称，显示默认名称
+          };
+        });
+      }
+
+      // 构造更新后的课程对象
+      const updatedCourse: Course = {
+        ...originalCourse,
+        name: values.name || originalCourse.name,
+        type: typeName, // 使用课程类型名称而不是ID
+        status: values.status || originalCourse.status,
+        unitHours: values.unitHours || originalCourse.unitHours,
+        totalHours: values.totalHours || originalCourse.totalHours,
+        price: values.price || originalCourse.price,
+        description: values.description !== undefined ? values.description : originalCourse.description,
+        updateTime: new Date().toISOString(),
+        coaches: coachesWithNames
+      };
 
       // 更新本地状态
       setCourses(prevCourses =>
@@ -135,10 +215,10 @@ export const useCourseData = () => {
       // 获取当前校区ID
       const currentCampusId = localStorage.getItem('currentCampusId');
       const campusId = currentCampusId ? Number(currentCampusId) : undefined;
-      
+
       // 调用API获取课程列表，只带校区ID筛选条件
-      const result = await courseAPI.getList({ 
-        page, 
+      const result = await courseAPI.getList({
+        page,
         pageSize,
         campusId
       });

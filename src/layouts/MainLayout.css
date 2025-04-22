@@ -1,0 +1,134 @@
+/* 全局容器 */
+.container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f0f2f5;
+}
+
+/* 侧边栏 */
+.sidebar {
+  width: 240px;
+  height: 100%;
+  background-color: #374263;
+  color: white;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar-header {
+  padding: 20px 0;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 5px;
+}
+
+.sidebar-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-menu a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.sidebar-menu a.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 500;
+}
+
+/* 主内容区 */
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 校区信息 */
+.campus-info {
+  height: 60px;
+  background-color: #374263;
+  color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.campus-info.dark-theme {
+  background-color: #1f2833;
+}
+
+/* 内容区域 */
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* 深色主题 */
+.dark-theme {
+  background-color: #1f2833;
+  color: #f0f0f0;
+}
+
+/* 用户下拉菜单动画 */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    z-index: 1000;
+  }
+  
+  .sidebar.collapsed {
+    transform: translateX(0);
+    width: 240px;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+} 

@@ -19,21 +19,21 @@ export enum CourseType {
 export interface Course {
   id: string;
   name: string;
-  type: CourseType;
+  type: string;
   status: CourseStatus;
   unitHours: number;
   totalHours: number;
   consumedHours: number;
   price: number;
-  coachIds: string[] | number[];
-  coachNames: string[];
   campusId: number;
-  campusName: string;
   institutionId: number;
-  institutionName: string;
   description?: string;
   createdTime?: string;
   updateTime?: string;
+  coaches?: {
+    id: number;
+    name: string;
+  }[];
 }
 
 // 课程创建请求

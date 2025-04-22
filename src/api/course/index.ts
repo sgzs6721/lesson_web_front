@@ -86,8 +86,13 @@ export const course = {
             filteredCourses.sort((a, b) => b.name.localeCompare(a.name));
             break;
           default:
+            // 默认按创建时间降序排列（最新的在前面）
+            filteredCourses.sort((a, b) => new Date(b.createdTime || 0).getTime() - new Date(a.createdTime || 0).getTime());
             break;
         }
+      } else {
+        // 如果没有指定排序，默认按创建时间降序排列
+        filteredCourses.sort((a, b) => new Date(b.createdTime || 0).getTime() - new Date(a.createdTime || 0).getTime());
       }
 
       // 应用分页
@@ -108,8 +113,16 @@ export const course = {
     if (params?.searchText) queryParams.append('keyword', params.searchText);
     if (params?.selectedType) queryParams.append('type', params.selectedType);
     if (params?.selectedStatus) queryParams.append('status', params.selectedStatus);
-    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
-    
+
+    // 添加排序参数，默认按创建时间降序排列（最新的在前面）
+    if (params?.sortOrder) {
+      queryParams.append('sortOrder', params.sortOrder);
+    } else {
+      // 默认按创建时间降序排列
+      queryParams.append('sortField', 'createdTime');
+      queryParams.append('sortOrder', 'desc');
+    }
+
     // 添加校区ID参数
     if (params?.campusId) queryParams.append('campusId', params.campusId.toString());
     // 如果未提供campusId，则尝试从localStorage获取当前校区ID
@@ -134,15 +147,29 @@ export const course = {
 
     // 如果没有缓存或缓存过期，发起请求
     console.log(`发起课程列表请求: ${cacheKey}`);
-    const response = await request(`${cacheKey}`) as PaginatedResponse<Course>;
+    const response = await request(`${cacheKey}`);
 
-    // 更新缓存
-    courseListCache[cacheKey] = {
-      data: response,
-      timestamp: currentTime
-    };
+    // 检查响应格式
+    if (response && response.code === 200 && response.data) {
+      // 将响应数据转换为我们需要的格式
+      const formattedResponse: PaginatedResponse<Course> = {
+        list: response.data.list || [],
+        total: response.data.total || 0,
+        pageSize: params?.pageSize || 10,
+        pageNum: params?.page || 1
+      };
 
-    return response;
+      // 更新缓存
+      courseListCache[cacheKey] = {
+        data: formattedResponse,
+        timestamp: currentTime
+      };
+
+      return formattedResponse;
+    } else {
+      console.error('课程列表响应格式错误:', response);
+      return { list: [], total: 0, pageSize: params?.pageSize || 10, pageNum: params?.page || 1 };
+    }
   },
 
   // 获取课程详情
@@ -178,15 +205,12 @@ export const course = {
       const newCourse: Course = {
         ...data,
         id: String(mockCourses.length + 1),
-        coachNames: ['模拟教练'],
-        type: CourseType.PRIVATE,
-        campusName: '模拟校区',
+        type: CourseType.PRIVATE.toString(),
         institutionId: 1,
-        institutionName: '模拟机构',
         consumedHours: 0,
         createdTime: now,
         updateTime: now,
-        coachIds: (data.coachIds || []).map(id => String(id))
+        coaches: data.coachIds ? data.coachIds.map(id => ({ id: Number(id), name: `教练${id}` })) : []
       };
 
       mockCourses.push(newCourse);
@@ -205,14 +229,19 @@ export const course = {
     // 确保课程描述为空字符串而不是undefined
     const description = data.description || '';
 
-    // 确保 typeId 是数字类型
-    const typeId = data.typeId ? Number(data.typeId) : undefined;
+    // 处理 typeId，可能是字符串或数字
+    let typeId = data.typeId;
+
+    // 如果 typeId 是字符串但可以转换为数字，则转换
+    if (typeof typeId === 'string' && !isNaN(Number(typeId))) {
+      typeId = Number(typeId);
+    }
 
     const requestData = {
       ...data,
       coachIds: coachIds,
       description: description,
-      typeId: typeId // 显式设置 typeId
+      typeId: typeId // 使用处理后的 typeId
     };
 
     console.log('发送课程创建请求数据:', requestData);
@@ -268,14 +297,19 @@ export const course = {
     // 确保课程描述为空字符串而不是undefined
     const description = data.description || '';
 
-    // 确保 typeId 是数字类型
-    const typeId = data.typeId ? Number(data.typeId) : undefined;
+    // 处理 typeId，可能是字符串或数字
+    let typeId = data.typeId;
+
+    // 如果 typeId 是字符串但可以转换为数字，则转换
+    if (typeof typeId === 'string' && !isNaN(Number(typeId))) {
+      typeId = Number(typeId);
+    }
 
     const requestData = {
       ...data,
       coachIds: coachIds,
       description: description,
-      typeId: typeId // 显式设置 typeId
+      typeId: typeId // 使用处理后的 typeId
     };
 
     console.log('更新课程时的 typeId:', requestData.typeId);

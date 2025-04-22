@@ -2,23 +2,19 @@ import React from 'react';
 import { Space, Button, Tooltip, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { Course, CourseType } from '../types/course';
-import { categoryOptions, coachOptions } from './courseOptions';
+import { Course } from '../types/course';
 import { AlignType } from 'rc-table/lib/interface';
 
 // 获取教练名称
-const getCoachNames = (coachIds: string[]) => {
-  if (!coachIds || coachIds.length === 0) return '';
-  // 只取第一个教练
-  const id = coachIds[0];
-  const coach = coachOptions.find(c => c.value === id);
-  return coach ? coach.label : id;
+const getCoachNames = (coaches?: { id: number; name: string }[]) => {
+  if (!coaches || coaches.length === 0) return '';
+  return coaches.map(coach => coach.name).join(', ');
 };
 
 // 获取课程分类名称
-const getTypeName = (type: CourseType) => {
-  const category = categoryOptions.find(c => c.value === Number(type));
-  return category ? category.label : type;
+const getTypeName = (type: string) => {
+  // 直接返回类型名称，因为API返回的已经是可读的名称
+  return type || '未知类型';
 };
 
 // 渲染状态标签
@@ -27,17 +23,21 @@ export const renderStatusTag = (status: string) => {
   let text = '';
 
   switch (status) {
-    case 'active':
+    case 'PUBLISHED':
       color = 'green';
-      text = '开课中';
+      text = '已发布';
       break;
-    case 'inactive':
-      color = 'red';
-      text = '已停课';
+    case 'DRAFT':
+      color = 'blue';
+      text = '草稿';
       break;
-    case 'pending':
+    case 'SUSPENDED':
       color = 'orange';
-      text = '待开课';
+      text = '已暂停';
+      break;
+    case 'TERMINATED':
+      color = 'red';
+      text = '已终止';
       break;
     default:
       color = 'default';
@@ -63,7 +63,7 @@ export const getTableColumns = (
     dataIndex: 'type',
     key: 'type',
     align: 'center' as AlignType,
-    render: (type: CourseType) => getTypeName(type),
+    render: (type: string) => getTypeName(type),
   },
   {
     title: '总课时',
@@ -81,10 +81,10 @@ export const getTableColumns = (
   },
   {
     title: '上课教练',
-    dataIndex: 'coachNames',
-    key: 'coachNames',
+    dataIndex: 'coaches',
+    key: 'coaches',
     align: 'center' as AlignType,
-    render: (coachNames: string[]) => coachNames ? coachNames.join(', ') : '',
+    render: (coaches: { id: number; name: string }[]) => getCoachNames(coaches),
   },
   {
     title: '课筹单价',
@@ -119,7 +119,11 @@ export const getTableColumns = (
             type="text"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
+            onClick={() => {
+              console.log('点击编辑按钮，课程数据:', JSON.stringify(record, null, 2));
+              // 直接传递原始数据，不做任何修改
+              onEdit(record);
+            }}
           />
         </Tooltip>
         <Tooltip title="详情">

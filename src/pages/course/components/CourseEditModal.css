@@ -24,4 +24,22 @@
 
 .course-edit-modal .ant-form-item-label > label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before {
   color: #ff4d4f;
-} 
+}
+
+/* Select包装器 */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* 确保下拉菜单宽度与输入框一致 */
+.ant-select-dropdown {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 覆盖Ant Design的默认样式 */
+.ant-select-dropdown-placement-bottomLeft {
+  left: 0 !important;
+}

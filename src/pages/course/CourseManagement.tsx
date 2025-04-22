@@ -95,11 +95,25 @@ const CourseManagement: React.FC = () => {
 
   // 包装添加和编辑函数
   const handleAdd = () => {
-    originalHandleAdd();
+    // 确保课程类型已加载
+    if (courseTypes.length === 0) {
+      loadCourseTypes().then(() => {
+        originalHandleAdd();
+      });
+    } else {
+      originalHandleAdd();
+    }
   };
 
   const handleEdit = (record: Course) => {
-    originalHandleEdit(record);
+    // 确保课程类型已加载
+    if (courseTypes.length === 0) {
+      loadCourseTypes().then(() => {
+        originalHandleEdit(record);
+      });
+    } else {
+      originalHandleEdit(record);
+    }
   };
 
   // 视图模式

@@ -6,7 +6,7 @@ import { CoachSimple } from '@/api/coach/types';
 export const useCourseForm = (
   onAddCourse: (values: any) => Promise<any>,
   onUpdateCourse: (id: string, values: any) => Promise<any>,
-  coaches: CoachSimple[] = []
+  _coaches: CoachSimple[] = [] // Renamed to _coaches to indicate it's not used
 ) => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(false);
@@ -27,28 +27,15 @@ export const useCourseForm = (
 
   // 显示编辑表单
   const handleEdit = (record: Course) => {
-    // 确保教练IDs是数组
-    let coachIds = record.coachIds || [];
-    if (!Array.isArray(coachIds)) {
-      coachIds = [coachIds].filter(Boolean);
-    }
-    // 确保所有元素都是字符串
-    coachIds = coachIds.map(id => String(id));
+    console.log('准备编辑课程:', JSON.stringify(record, null, 2));
 
-    console.log('编辑课程的教练IDs:', coachIds);
+    // 先重置表单，避免显示上一次的数据
+    form.resetFields();
 
-    // 将 Course 对象中的 type 字段映射到表单的 typeId 字段
-    const formValues = {
-      ...record,
-      coachIds: coachIds,
-      // 在Course接口中可能只有type而没有typeId，需要映射
-      typeId: typeof record.type === 'string' ? record.type : Number(record.type)
-    };
-
-    console.log('编辑课程时的 typeId:', formValues.typeId);
-
-    form.setFieldsValue(formValues);
+    // 仅设置编辑状态，表单数据会在CourseEditModal组件中完整设置
     setEditingCourse(record);
+    
+    // 显示模态框
     setVisible(true);
   };
 
