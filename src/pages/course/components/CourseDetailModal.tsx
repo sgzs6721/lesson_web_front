@@ -20,16 +20,23 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   onCancel
 }) => {
   // 获取课程类型名称
-  const getTypeName = (type: CourseType | undefined) => {
+  const getTypeName = (type: string | undefined) => {
     if (!type) return '';
-    const category = categoryOptions.find(c => c.value === Number(type));
-    return category ? category.label : type;
+    // 尝试将type转换为对应的枚举值
+    try {
+      // 根据categoryOptions的结构来比较
+      const category = categoryOptions.find(c => c.value.toString() === type || c.label === type);
+      return category ? category.label : type;
+    } catch (error) {
+      console.error('获取课程类型名称出错:', error);
+      return type;
+    }
   };
 
   // 获取教练名称
-  const getCoachNames = (coachNames: string[] | undefined) => {
-    if (!coachNames || coachNames.length === 0) return '';
-    return coachNames.join(', ');
+  const getCoachNames = (coaches: { id: number; name: string }[] | undefined) => {
+    if (!coaches || coaches.length === 0) return '';
+    return coaches.map(coach => coach.name).join(', ');
   };
 
   if (!course) return null;
@@ -79,7 +86,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             <Col span={12}>
               <div style={{ marginBottom: 12, padding: '8px 12px', backgroundColor: '#f9f9f9', borderRadius: 4 }}>
                 <div style={{ fontWeight: 'bold', marginBottom: 4, color: '#666' }}>上课教练</div>
-                <div style={{ fontSize: 14 }}>{getCoachNames(course.coachNames)}</div>
+                <div style={{ fontSize: 14 }}>{getCoachNames(course.coaches)}</div>
               </div>
             </Col>
           </Row>

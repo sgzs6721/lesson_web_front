@@ -29,9 +29,9 @@ export const useCourseForm = (
   const handleEdit = (record: Course) => {
     console.log('准备编辑课程:', JSON.stringify(record, null, 2));
 
-    // 先重置表单，避免显示上一次的数据
-    form.resetFields();
-
+    // 不在这里重置表单，会在CourseEditModal组件中处理
+    // form.resetFields() 可能会导致表单实例未连接
+    
     // 仅设置编辑状态，表单数据会在CourseEditModal组件中完整设置
     setEditingCourse(record);
     

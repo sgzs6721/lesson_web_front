@@ -110,17 +110,14 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           // 设置表单值 (在获取教练列表后设置表单值)
           form.setFieldsValue(formValues);
           
-          // 立即刷新表单以确保设置的值生效
-          setTimeout(() => {
-            // 获取并输出当前表单值，以确认设置是否成功
-            const currentValues = form.getFieldsValue();
-            console.log('设置后的表单实际值:', JSON.stringify(currentValues, null, 2));
-            console.log('表单中的coachIds实际值:', currentValues.coachIds);
-            console.log('表单中的typeId实际值:', currentValues.typeId);
-            // 教练列表和表单值都设置完成后，再将初始化状态设为完成
-            setFormInitialized(true);
-          }, 100);
-
+          // 获取并输出当前表单值，以确认设置是否成功
+          const currentValues = form.getFieldsValue();
+          console.log('设置后的表单实际值:', JSON.stringify(currentValues, null, 2));
+          console.log('表单中的coachIds实际值:', currentValues.coachIds);
+          console.log('表单中的typeId实际值:', currentValues.typeId);
+          
+          // 教练列表和表单值都设置完成后，再将初始化状态设为完成
+          setFormInitialized(true);
         } else {
           // 添加模式
           if (currentCachedTypes.length > 0) {
@@ -200,16 +197,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           layout="vertical"
           name="courseForm"
           preserve={false}
-          initialValues={editingCourse ? {
-            name: editingCourse.name,
-            status: editingCourse.status,
-            unitHours: editingCourse.unitHours,
-            totalHours: editingCourse.totalHours,
-            price: editingCourse.price,
-            description: editingCourse.description || '',
-            coachIds: editingCourse?.coaches?.map(coach => coach.id) || [],
-            campusId: editingCourse.campusId
-          } : undefined}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -246,7 +233,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                     disabled={loading}
                     showSearch
                     optionFilterProp="children"
-                    value={form.getFieldValue('typeId')}
                   >
                     {cachedTypes.map(type => (
                       <Option key={type.id} value={type.id}>
@@ -295,7 +281,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                       form.setFieldsValue({ coachIds: values });
                     }}
                     disabled={loading}
-                    value={form.getFieldValue('coachIds')}
                   >
                     {coaches.map(coach => (
                       <Option key={coach.id} value={coach.id}>
