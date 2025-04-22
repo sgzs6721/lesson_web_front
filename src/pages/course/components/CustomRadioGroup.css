@@ -114,3 +114,43 @@
 .custom-radio-group-container .ant-radio-wrapper {
   display: none;
 }
+
+/* 禁用状态样式 */
+.custom-radio-group-container.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.custom-radio-button.disabled {
+  cursor: not-allowed;
+  color: rgba(0, 0, 0, 0.25);
+  background-color: #f5f5f5;
+  border-color: #d9d9d9;
+}
+
+/* 禁用时不显示悬停效果 */
+.custom-radio-button.disabled:hover {
+  background-color: #f5f5f5;
+  color: rgba(0, 0, 0, 0.25);
+  border-color: #d9d9d9;
+}
+
+/* 禁用但选中的状态 */
+.custom-radio-button.disabled.active {
+  opacity: 0.65;
+}
+
+.custom-radio-button.active-status.disabled.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.custom-radio-button.inactive-status.disabled.active {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+.custom-radio-button.pending-status.disabled.active {
+  background-color: #faad14;
+  color: white;
+}

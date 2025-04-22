@@ -105,7 +105,8 @@ export const useCourseData = () => {
         searchText: params.searchText,
         selectedType: params.selectedType,
         selectedStatus: params.selectedStatus,
-        sortOrder: params.sortOrder
+        sortOrder: params.sortOrder,
+        campusId: params.campusId
       });
 
       // 更新本地状态
@@ -131,8 +132,16 @@ export const useCourseData = () => {
   const resetFilters = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
-      // 调用API获取课程列表，不带任何过滤条件
-      const result = await courseAPI.getList({ page, pageSize });
+      // 获取当前校区ID
+      const currentCampusId = localStorage.getItem('currentCampusId');
+      const campusId = currentCampusId ? Number(currentCampusId) : undefined;
+      
+      // 调用API获取课程列表，只带校区ID筛选条件
+      const result = await courseAPI.getList({ 
+        page, 
+        pageSize,
+        campusId
+      });
 
       // 更新本地状态
       setFilteredCourses(result.list as unknown as Course[]);

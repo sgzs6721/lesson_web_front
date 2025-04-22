@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Input, Select, Button, Space } from 'antd';
 import { SearchOutlined, ReloadOutlined, SortAscendingOutlined } from '@ant-design/icons';
 import { CourseSearchParams, CourseType, CourseStatus } from '../types/course';
-import { categoryOptions, statusOptions, sortOptions } from '../constants/courseOptions';
+import { statusOptions, sortOptions } from '../constants/courseOptions';
+import { Constant } from '@/api/constants/types';
 
 const { Option } = Select;
 
@@ -14,6 +15,8 @@ interface CourseSearchBarProps {
   onCategoryChange: (value: CourseType | undefined) => void;
   onStatusChange: (value: CourseStatus | undefined) => void;
   onSortOrderChange: (value: string | undefined) => void;
+  cachedTypes?: Constant[];
+  typesLoading?: boolean;
 }
 
 const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
@@ -23,8 +26,16 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
   onTextChange,
   onCategoryChange,
   onStatusChange,
-  onSortOrderChange
+  onSortOrderChange,
+  cachedTypes = [],
+  typesLoading = false
 }) => {
+  // 将选项转换为Select需要的格式
+  const typeOptions = cachedTypes.map(type => ({
+    value: type.id,
+    label: type.constantValue
+  }));
+
   return (
     <Row gutter={[16, 16]} align="middle" style={{ marginBottom: 24 }}>
       <Col xs={24} sm={12} md={6} lg={5}>
@@ -45,10 +56,11 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
             value={params.selectedType}
             onChange={value => onCategoryChange(value)}
             allowClear
+            loading={typesLoading}
             popupMatchSelectWidth={true}
             getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
           >
-            {categoryOptions.map(option => (
+            {typeOptions.map(option => (
               <Option key={option.value} value={option.value}>
                 {option.label}
               </Option>

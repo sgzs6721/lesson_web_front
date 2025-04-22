@@ -13,4 +13,5 @@ export type CourseSearchParams = {
   selectedType: CourseType | undefined;
   selectedStatus: CourseStatus | undefined;
   sortOrder: string | undefined;
+  campusId?: number | undefined;
 };

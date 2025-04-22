@@ -13,6 +13,8 @@ import { useCourseForm } from './hooks/useCourseForm';
 import { Course } from './types/course';
 import { coach as coachAPI } from '@/api/coach';
 import { CoachSimple } from '@/api/coach/types';
+import { fetchCategoryOptions } from './constants/courseOptions';
+import { Constant } from '@/api/constants/types';
 import './components/CourseManagement.css';
 
 const { Title } = Typography;
@@ -50,6 +52,31 @@ const CourseManagement: React.FC = () => {
     setCurrentPage(1); // 重置到第一页
     return filterCourses(1, pageSize, params);
   })
+
+  // 课程类型列表状态
+  const [courseTypes, setCourseTypes] = useState<Constant[]>([]);
+  const [typesLoading, setTypesLoading] = useState(false);
+
+  // 加载课程类型数据
+  const loadCourseTypes = async () => {
+    try {
+      setTypesLoading(true);
+      const options = await fetchCategoryOptions();
+      // 构建符合Constant接口的数据结构
+      const typesData = options.map(option => ({
+        id: option.value,
+        constantKey: '',  // 由于fetchCategoryOptions可能没返回这个字段，这里设置为空字符串
+        constantValue: option.label,
+        type: 'COURSE_TYPE',
+        status: 1
+      }));
+      setCourseTypes(typesData);
+    } catch (error) {
+      console.error('获取课程类型数据失败', error);
+    } finally {
+      setTypesLoading(false);
+    }
+  };
 
   // 教练列表状态 - 不再在这里管理教练列表
   const [coaches, setCoaches] = useState<CoachSimple[]>([]);
@@ -103,6 +130,7 @@ const CourseManagement: React.FC = () => {
       if (initialLoadRef.current) {
         console.log('首次加载课程数据');
         loadCourses();
+        loadCourseTypes();  // 加载课程类型数据
         initialLoadRef.current = false;
       }
     }, 100);
@@ -169,6 +197,8 @@ const CourseManagement: React.FC = () => {
           onCategoryChange={setSelectedType}
           onStatusChange={setSelectedStatus}
           onSortOrderChange={setSortOrder}
+          cachedTypes={courseTypes}
+          typesLoading={typesLoading}
         />
 
         {/* 数据展示 - 根据视图模式显示表格或卡片 */}
@@ -206,6 +236,8 @@ const CourseManagement: React.FC = () => {
         form={form}
         onCancel={handleCancel}
         onSubmit={handleSubmit}
+        cachedTypes={courseTypes}
+        typesLoading={typesLoading}
       />
 
       {/* 详情模态框 */}

@@ -51,11 +51,22 @@ export const course = {
         );
       }
 
-      // 删除不存在的selectedCategory字段的处理
+      if (params?.selectedType) {
+        filteredCourses = filteredCourses.filter(course =>
+          course.type === params.selectedType
+        );
+      }
 
       if (params?.selectedStatus) {
         filteredCourses = filteredCourses.filter(course =>
           course.status === params.selectedStatus
+        );
+      }
+
+      // 按校区ID筛选
+      if (params?.campusId) {
+        filteredCourses = filteredCourses.filter(course =>
+          course.campusId === params.campusId
         );
       }
 
@@ -98,6 +109,16 @@ export const course = {
     if (params?.selectedType) queryParams.append('type', params.selectedType);
     if (params?.selectedStatus) queryParams.append('status', params.selectedStatus);
     if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+    
+    // 添加校区ID参数
+    if (params?.campusId) queryParams.append('campusId', params.campusId.toString());
+    // 如果未提供campusId，则尝试从localStorage获取当前校区ID
+    else {
+      const currentCampusId = localStorage.getItem('currentCampusId');
+      if (currentCampusId) {
+        queryParams.append('campusId', currentCampusId);
+      }
+    }
 
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     const cacheKey = `${COURSE_API_PATHS.LIST}${queryString}`;

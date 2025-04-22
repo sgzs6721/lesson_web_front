@@ -69,6 +69,7 @@ export interface CourseSearchParams {
   selectedType?: CourseType;
   selectedStatus?: CourseStatus;
   sortOrder?: string;
+  campusId?: number;
 }
 
 // 课程列表响应

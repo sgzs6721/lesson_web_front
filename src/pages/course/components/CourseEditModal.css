@@ -1,0 +1,27 @@
+.course-edit-modal .ant-modal-content {
+  position: relative;
+}
+
+.course-edit-modal .ant-spin-nested-loading {
+  min-height: 300px; /* 确保加载状态下有足够的高度显示加载动画 */
+}
+
+.course-edit-modal .ant-spin-container {
+  transition: all 0.3s;
+}
+
+.course-edit-modal .ant-select-disabled .ant-select-selection-item {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.course-edit-modal .ant-input-number-disabled {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.course-edit-modal .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.course-edit-modal .ant-form-item-label > label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before {
+  color: #ff4d4f;
+} 

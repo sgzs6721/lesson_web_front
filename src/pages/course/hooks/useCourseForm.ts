@@ -41,8 +41,8 @@ export const useCourseForm = (
     const formValues = {
       ...record,
       coachIds: coachIds,
-      // 确保在编辑时使用正确的 typeId
-      typeId: record.typeId || record.type
+      // 在Course接口中可能只有type而没有typeId，需要映射
+      typeId: typeof record.type === 'string' ? record.type : Number(record.type)
     };
 
     console.log('编辑课程时的 typeId:', formValues.typeId);

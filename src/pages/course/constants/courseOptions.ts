@@ -1,11 +1,25 @@
 import { CourseType, CourseStatus } from '../types/course';
+import { constants } from '@/api/constants';
+import { Constant } from '@/api/constants/types';
 
-// 课程类型选项
-export const categoryOptions = [
-  { value: 1, label: '私教课' },
-  { value: 2, label: '团体课' },
-  { value: 3, label: '线上课' },
+// 课程类型选项 - 将由API动态获取
+export const categoryOptions: { value: number; label: string }[] = [
+  // 初始为空，将从API动态加载
 ];
+
+// 获取课程类型选项的函数
+export const fetchCategoryOptions = async (): Promise<{ value: number; label: string }[]> => {
+  try {
+    const courseTypes = await constants.getList('COURSE_TYPE');
+    return courseTypes.map(item => ({
+      value: item.id,
+      label: item.constantValue
+    }));
+  } catch (error) {
+    console.error('获取课程类型选项失败', error);
+    return [];
+  }
+};
 
 // 排序选项
 export const sortOptions = [
@@ -20,7 +34,6 @@ export const sortOptions = [
 
 // 状态选项
 export const statusOptions = [
-  { value: CourseStatus.DRAFT, label: '草稿' },
   { value: CourseStatus.PUBLISHED, label: '已发布' },
   { value: CourseStatus.SUSPENDED, label: '已暂停' },
   { value: CourseStatus.TERMINATED, label: '已终止' },
