@@ -4,6 +4,7 @@ import { Modal } from 'antd';
 interface CourseDeleteModalProps {
   visible: boolean;
   courseName: string;
+  confirmLoading: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -11,6 +12,7 @@ interface CourseDeleteModalProps {
 const CourseDeleteModal: React.FC<CourseDeleteModalProps> = ({
   visible,
   courseName,
+  confirmLoading,
   onConfirm,
   onCancel
 }) => {
@@ -23,6 +25,7 @@ const CourseDeleteModal: React.FC<CourseDeleteModalProps> = ({
       okText="确认删除"
       cancelText="取消"
       okButtonProps={{ danger: true }}
+      confirmLoading={confirmLoading}
     >
       <p>确定要删除课程 <strong>{courseName}</strong> 吗？</p>
       <p>此操作不可恢复，删除后数据将无法找回。</p>

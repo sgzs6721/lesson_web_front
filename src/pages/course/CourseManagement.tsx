@@ -143,6 +143,7 @@ const CourseManagement: React.FC = () => {
   // 删除确认模态框状态
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletingCourse, setDeletingCourse] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // 加载课程数据
   const loadCourses = async (page = currentPage, size = pageSize) => {
@@ -193,12 +194,15 @@ const CourseManagement: React.FC = () => {
   const handleDelete = async () => {
     if (deletingCourse) {
       try {
+        setDeleteLoading(true);
         await deleteCourse(deletingCourse.id);
         setDeleteModalVisible(false);
         setDeletingCourse(null);
       } catch (error) {
         // 错误已在 deleteCourse 中处理，这里不需要额外处理
         console.error('删除课程失败:', error);
+      } finally {
+        setDeleteLoading(false);
       }
     }
   };
@@ -288,6 +292,7 @@ const CourseManagement: React.FC = () => {
       <CourseDeleteModal
         visible={deleteModalVisible}
         courseName={deletingCourse?.name || ''}
+        confirmLoading={deleteLoading}
         onConfirm={handleDelete}
         onCancel={handleCancelDelete}
       />

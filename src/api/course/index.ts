@@ -29,7 +29,7 @@ const COURSE_API_PATHS = {
   DETAIL: (id: string) => `/lesson/api/courses/detail/${id}`,
   ADD: '/lesson/api/courses/create',
   UPDATE: '/lesson/api/courses/update',
-  DELETE: (id: string) => `/lesson/api/courses/delete/${id}`,
+  DELETE: (id: string) => `/lesson/api/courses/delete?id=${id}`,
 };
 
 // 课程相关接口

@@ -169,7 +169,11 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
 
   return (
     <Modal
-      title={editingCourse ? '编辑课程' : '添加课程'}
+      title={
+        <div style={{ fontSize: '20px', fontWeight: 500, lineHeight: '28px' }}>
+          {editingCourse ? '编辑课程' : '添加课程'}
+        </div>
+      }
       open={visible}
       onOk={onSubmit}
       onCancel={onCancel}
