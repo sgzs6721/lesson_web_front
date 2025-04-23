@@ -188,7 +188,7 @@ The application integrates with the Lesson Management System backend API. The AP
 
 ```typescript
 // API base URL
-export const API_HOST = 'http://lesson.devtesting.top';
+export const API_HOST = 'http://lesson.com';
 ```
 
 ## Authentication
