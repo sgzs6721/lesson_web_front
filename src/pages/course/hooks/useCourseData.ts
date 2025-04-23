@@ -19,19 +19,11 @@ export const useCourseData = () => {
       // 调用API添加课程
       const courseId = await courseAPI.add(values);
 
-      // 获取教练列表以获取教练名称
-      const currentCampusId = values.campusId || localStorage.getItem('currentCampusId') || '1';
-      const coachList = await import('@/api/coach').then(module => module.coach.getSimpleList(currentCampusId));
-
-      // 获取课程类型名称
-      const courseTypeList = await import('@/api/constants').then(module => module.constants.getList('COURSE_TYPE'));
-      const courseType = courseTypeList.find(type => type.id === Number(values.typeId));
-
-      // 构造新课程对象，而不是调用详情接口
+      // 构造新课程对象，直接使用提交的表单数据
       const newCourse: Course = {
         id: courseId,
         name: values.name,
-        type: courseType?.constantValue || String(values.typeId), // 使用课程类型名称而不是ID
+        type: String(values.typeId), // 前端会在表单中显示实际的课程类型名称
         status: values.status,
         unitHours: values.unitHours,
         totalHours: values.totalHours,
@@ -43,11 +35,9 @@ export const useCourseData = () => {
         createdTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
         coaches: values.coachIds ? values.coachIds.map((id: any) => {
-          // 从教练列表中查找对应的教练名称
-          const coach = coachList.find(coach => coach.id === Number(id));
           return {
             id: Number(id),
-            name: coach?.name || `教练${id}` // 如果找不到教练名称，显示默认名称
+            name: `教练${id}` // 使用简单名称，下次刷新列表时会自动获取完整信息
           };
         }) : []
       };

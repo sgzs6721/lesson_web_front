@@ -201,7 +201,7 @@ export const course = {
   },
 
   // 添加课程
-  add: async (data: CourseCreateRequest): Promise<string> => {
+  add: async (data: CourseCreateRequest): Promise<any> => {
     // 添加课程时清除课程列表缓存
     clearCourseListCache();
 
@@ -262,6 +262,7 @@ export const course = {
       body: JSON.stringify(requestData)
     });
 
+    // 直接返回响应中的数据（课程ID）
     return response.data;
   },
 

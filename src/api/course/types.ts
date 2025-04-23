@@ -51,7 +51,7 @@ export interface CourseCreateRequest {
 
 // 课程更新请求
 export interface CourseUpdateRequest {
-  id: string;
+  id: any;
   name: string;
   typeId: number; // 修改为 typeId
   status: CourseStatus;
