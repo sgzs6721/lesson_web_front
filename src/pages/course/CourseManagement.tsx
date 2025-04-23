@@ -45,6 +45,7 @@ const CourseManagement: React.FC = () => {
     setSearchText,
     setSelectedType,
     setSelectedStatus,
+    setSelectedCoach,
     setSortOrder,
     handleSearch,
     handleReset
@@ -56,6 +57,10 @@ const CourseManagement: React.FC = () => {
   // 课程类型列表状态
   const [courseTypes, setCourseTypes] = useState<Constant[]>([]);
   const [typesLoading, setTypesLoading] = useState(false);
+
+  // 教练列表状态
+  const [coaches, setCoaches] = useState<CoachSimple[]>([]);
+  const [coachesLoading, setCoachesLoading] = useState(false);
 
   // 加载课程类型数据
   const loadCourseTypes = async () => {
@@ -78,8 +83,20 @@ const CourseManagement: React.FC = () => {
     }
   };
 
-  // 教练列表状态 - 不再在这里管理教练列表
-  const [coaches, setCoaches] = useState<CoachSimple[]>([]);
+  // 加载教练列表数据
+  const loadCoaches = async () => {
+    try {
+      setCoachesLoading(true);
+      const campusId = localStorage.getItem('currentCampusId') || '1';
+      const coachList = await coachAPI.getSimpleList(campusId);
+      console.log('获取到教练列表:', coachList);
+      setCoaches(coachList);
+    } catch (error) {
+      console.error('获取教练列表失败', error);
+    } finally {
+      setCoachesLoading(false);
+    }
+  };
 
   // 使用表单管理钩子
   const {
@@ -145,6 +162,7 @@ const CourseManagement: React.FC = () => {
         console.log('首次加载课程数据');
         loadCourses();
         loadCourseTypes();  // 加载课程类型数据
+        loadCoaches();     // 加载教练列表数据
         initialLoadRef.current = false;
       }
     }, 100);
@@ -210,9 +228,12 @@ const CourseManagement: React.FC = () => {
           onTextChange={setSearchText}
           onCategoryChange={setSelectedType}
           onStatusChange={setSelectedStatus}
+          onCoachChange={setSelectedCoach}
           onSortOrderChange={setSortOrder}
           cachedTypes={courseTypes}
+          cachedCoaches={coaches}
           typesLoading={typesLoading}
+          coachesLoading={coachesLoading}
         />
 
         {/* 数据展示 - 根据视图模式显示表格或卡片 */}
@@ -251,7 +272,9 @@ const CourseManagement: React.FC = () => {
         onCancel={handleCancel}
         onSubmit={handleSubmit}
         cachedTypes={courseTypes}
+        cachedCoaches={coaches}
         typesLoading={typesLoading}
+        coachesLoading={coachesLoading}
       />
 
       {/* 详情模态框 */}

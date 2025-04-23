@@ -68,6 +68,7 @@ export interface CourseSearchParams {
   searchText: string;
   selectedType?: CourseType;
   selectedStatus?: CourseStatus;
+  selectedCoach?: number;
   sortOrder?: string;
   campusId?: number;
 }

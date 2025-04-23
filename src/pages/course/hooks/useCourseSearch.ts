@@ -5,6 +5,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<CourseType | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<CourseStatus | undefined>(undefined);
+  const [selectedCoach, setSelectedCoach] = useState<number | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
   const [campusId, setCampusId] = useState<number | undefined>(undefined);
 
@@ -22,6 +23,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
       searchText,
       selectedType,
       selectedStatus,
+      selectedCoach,
       sortOrder,
       campusId
     };
@@ -37,6 +39,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
     setSearchText('');
     setSelectedType(undefined);
     setSelectedStatus(undefined);
+    setSelectedCoach(undefined);
     setSortOrder(undefined);
     // 不重置campusId，保持校区筛选
 
@@ -46,6 +49,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
         searchText: '',
         selectedType: undefined,
         selectedStatus: undefined,
+        selectedCoach: undefined,
         sortOrder: undefined,
         campusId // 保留校区ID
       });
@@ -59,12 +63,14 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
       searchText,
       selectedType,
       selectedStatus,
+      selectedCoach,
       sortOrder,
       campusId
     },
     setSearchText,
     setSelectedType,
     setSelectedStatus,
+    setSelectedCoach,
     setSortOrder,
     setCampusId,
     handleSearch,

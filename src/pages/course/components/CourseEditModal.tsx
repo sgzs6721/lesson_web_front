@@ -19,7 +19,9 @@ interface CourseEditModalProps {
   onCancel: () => void;
   onSubmit: () => void;
   cachedTypes?: Constant[];
+  cachedCoaches?: CoachSimple[];
   typesLoading?: boolean;
+  coachesLoading?: boolean;
 }
 
 const CourseEditModal: React.FC<CourseEditModalProps> = ({
@@ -30,12 +32,10 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
   onCancel,
   onSubmit,
   cachedTypes = [],
-  typesLoading = false
+  cachedCoaches = [],
+  typesLoading = false,
+  coachesLoading = false
 }) => {
-  // 教练列表状态
-  const [coaches, setCoaches] = useState<CoachSimple[]>([]);
-  const [loadingCoaches, setLoadingCoaches] = useState(false);
-
   // 表单是否已初始化
   const [formInitialized, setFormInitialized] = useState(false);
 
@@ -46,6 +46,15 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
 
     // 设置加载状态
     setFormInitialized(false);
+    
+    // 先清空表单，避免显示上一次的数据
+    form.resetFields();
+
+    // 强制清空选择器（防止之前的值残留）
+    form.setFieldsValue({
+      coachIds: [],
+      typeId: undefined
+    });
 
     // 保存当前的编辑课程和类型列表，避免循环引用
     const currentEditingCourse = editingCourse;
@@ -54,40 +63,44 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
     // 定义异步函数来加载数据
     const loadData = async () => {
       try {
-        // 1. 加载教练列表
-        setLoadingCoaches(true);
-        const campusId = currentEditingCourse?.campusId || localStorage.getItem('currentCampusId') || '1';
-        const coachList = await coachAPI.getSimpleList(campusId);
-        console.log('获取到教练列表:', coachList);
-        setCoaches(coachList);
-
-        // 2. 准备表单数据
+        // 准备表单数据
         if (currentEditingCourse) {
           // 编辑模式
           console.log('编辑课程数据:', JSON.stringify(currentEditingCourse, null, 2));
 
-          // 从 coaches 数组提取教练 ID (确保在获取教练列表后再提取ID)
-          const coachIds = currentEditingCourse.coaches?.map(coach => coach.id) || [];
+          // 从 coaches 数组提取教练 ID
+          const coachIds = currentEditingCourse.coaches?.map(coach => Number(coach.id)) || [];
           console.log('解析后的教练ID列表:', coachIds);
 
           // 查找匹配的课程类型 ID
           let typeId = null;
           if (currentCachedTypes.length > 0) {
+            console.log('当前课程类型:', currentEditingCourse.type);
+            console.log('可用的课程类型列表:', JSON.stringify(currentCachedTypes.map(t => ({ id: t.id, value: t.constantValue })), null, 2));
+            
             // 在缓存的课程类型中查找匹配的类型
-            const matchedType = currentCachedTypes.find(type =>
-              type.constantValue === currentEditingCourse.type
-            );
+            const matchedType = currentCachedTypes.find(type => {
+              // 尝试多种匹配方式
+              return (
+                type.constantValue === currentEditingCourse.type || 
+                type.constantKey === currentEditingCourse.type ||
+                String(type.id) === String(currentEditingCourse.type)
+              );
+            });
 
             if (matchedType) {
-              typeId = matchedType.id;
+              typeId = Number(matchedType.id);
               console.log('找到匹配的课程类型:', matchedType.constantValue, '对应ID:', typeId);
             } else {
               console.log('未找到匹配的课程类型:', currentEditingCourse.type);
               // 如果没有找到匹配的类型，则使用第一个类型
               if (currentCachedTypes.length > 0) {
-                typeId = currentCachedTypes[0].id;
+                typeId = Number(currentCachedTypes[0].id);
+                console.log('使用默认类型:', currentCachedTypes[0].constantValue, '对应ID:', typeId);
               }
             }
+          } else {
+            console.log('没有可用的课程类型列表');
           }
 
           // 准备表单数据
@@ -107,7 +120,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           console.log('coachIds值:', formValues.coachIds);
           console.log('typeId值:', formValues.typeId);
 
-          // 设置表单值 (在获取教练列表后设置表单值)
+          // 设置表单值
           form.setFieldsValue(formValues);
           
           // 获取并输出当前表单值，以确认设置是否成功
@@ -116,13 +129,13 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           console.log('表单中的coachIds实际值:', currentValues.coachIds);
           console.log('表单中的typeId实际值:', currentValues.typeId);
           
-          // 教练列表和表单值都设置完成后，再将初始化状态设为完成
+          // 表单值设置完成后，设置初始化状态为完成
           setFormInitialized(true);
         } else {
           // 添加模式
           if (currentCachedTypes.length > 0) {
             form.setFieldsValue({
-              typeId: currentCachedTypes[0].id,
+              typeId: Number(currentCachedTypes[0].id),
               status: CourseStatus.PUBLISHED,
               unitHours: 1,
               totalHours: 10,
@@ -135,14 +148,10 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
             setFormInitialized(true);
           }
         }
-
-        // 不再需要额外的确认过程，已在上面设置初始化状态
       } catch (error) {
         console.error('加载数据出错:', error);
         message.error('加载课程数据失败');
         setFormInitialized(true); // 即使出错也要设置为已初始化，避免一直显示加载中
-      } finally {
-        setLoadingCoaches(false);
       }
     };
 
@@ -218,29 +227,28 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                 label="课程类型"
                 rules={[{ required: true, message: '请选择课程类型' }]}
               >
-                <div className="select-wrapper">
-                  <Select
-                    placeholder="请选择课程类型"
-                    popupMatchSelectWidth={true}
-                    getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                    loading={typesLoading}
-                    notFoundContent={typesLoading ? <Spin size="small" /> : null}
-                    onChange={(value) => {
-                      console.log('选中的课程类型 ID:', value);
-                      // 将选中的 ID 设置到表单的 typeId 字段
-                      form.setFieldsValue({ typeId: value });
-                    }}
-                    disabled={loading}
-                    showSearch
-                    optionFilterProp="children"
-                  >
-                    {cachedTypes.map(type => (
-                      <Option key={type.id} value={type.id}>
-                        {type.constantValue}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
+                <Select
+                  placeholder="请选择课程类型"
+                  popupMatchSelectWidth={true}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  loading={typesLoading}
+                  notFoundContent={typesLoading ? <Spin size="small" /> : null}
+                  onChange={(value) => {
+                    console.log('选中的课程类型 ID:', value);
+                    // 将选中的 ID 设置到表单的 typeId 字段
+                    form.setFieldsValue({ typeId: value });
+                  }}
+                  disabled={loading}
+                  showSearch
+                  optionFilterProp="children"
+                  value={form.getFieldValue('typeId')}
+                >
+                  {cachedTypes.map(type => (
+                    <Option key={type.id} value={type.id}>
+                      {type.constantValue}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>
@@ -261,34 +269,33 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                 label="上课教练"
                 rules={[{ required: true, message: '请选择上课教练', type: 'array' }]}
               >
-                <div className="select-wrapper">
-                  <Select
-                    placeholder="请选择上课教练"
-                    style={{ width: '100%' }}
-                    popupMatchSelectWidth={true}
-                    getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                    loading={loadingCoaches}
-                    notFoundContent={loadingCoaches ? <Spin size="small" /> : null}
-                    maxTagCount={3}
-                    maxTagTextLength={4}
-                    allowClear
-                    optionFilterProp="children"
-                    mode="multiple"
-                    showSearch
-                    onChange={(values) => {
-                      console.log('选中教练IDs:', values);
-                      // 将选中的教练ID设置到表单中
-                      form.setFieldsValue({ coachIds: values });
-                    }}
-                    disabled={loading}
-                  >
-                    {coaches.map(coach => (
-                      <Option key={coach.id} value={coach.id}>
-                        {coach.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
+                <Select
+                  placeholder="请选择上课教练"
+                  style={{ width: '100%' }}
+                  popupMatchSelectWidth={true}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  loading={coachesLoading}
+                  notFoundContent={coachesLoading ? <Spin size="small" /> : null}
+                  maxTagCount={3}
+                  maxTagTextLength={4}
+                  allowClear
+                  optionFilterProp="children"
+                  mode="multiple"
+                  showSearch
+                  onChange={(values) => {
+                    console.log('选中教练IDs:', values);
+                    // 将选中的教练ID设置到表单中
+                    form.setFieldsValue({ coachIds: values });
+                  }}
+                  disabled={loading}
+                  value={form.getFieldValue('coachIds')}
+                >
+                  {cachedCoaches.map(coach => (
+                    <Option key={coach.id} value={coach.id}>
+                      {coach.name}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>

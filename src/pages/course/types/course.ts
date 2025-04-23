@@ -12,6 +12,7 @@ export type CourseSearchParams = {
   searchText: string;
   selectedType: CourseType | undefined;
   selectedStatus: CourseStatus | undefined;
+  selectedCoach?: number | undefined;
   sortOrder: string | undefined;
   campusId?: number | undefined;
 };

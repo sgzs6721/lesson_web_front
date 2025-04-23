@@ -63,6 +63,13 @@ export const course = {
         );
       }
 
+      // 按教练ID筛选
+      if (params?.selectedCoach) {
+        filteredCourses = filteredCourses.filter(course => 
+          course.coaches?.some(coach => coach.id === params.selectedCoach)
+        );
+      }
+
       // 按校区ID筛选
       if (params?.campusId) {
         filteredCourses = filteredCourses.filter(course =>
@@ -113,6 +120,7 @@ export const course = {
     if (params?.searchText) queryParams.append('keyword', params.searchText);
     if (params?.selectedType) queryParams.append('type', params.selectedType);
     if (params?.selectedStatus) queryParams.append('status', params.selectedStatus);
+    if (params?.selectedCoach) queryParams.append('coachId', params.selectedCoach.toString());
 
     // 添加排序参数，默认按创建时间降序排列（最新的在前面）
     if (params?.sortOrder) {

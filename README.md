@@ -1,113 +1,250 @@
-# 培训机构管理系统前端
+# Lesson Management System Frontend
 
-基于 React、Ant Design、TypeScript 的培训机构管理系统前端部分。
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Ant Design](https://img.shields.io/badge/Ant%20Design-5.13-blue.svg)](https://ant.design/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.0-purple.svg)](https://redux-toolkit.js.org/)
+[![Vite](https://img.shields.io/badge/Vite-Latest-yellow.svg)](https://vitejs.dev/)
+[![React Router](https://img.shields.io/badge/React%20Router-6.21-red.svg)](https://reactrouter.com/)
 
-## 功能特性
+A comprehensive frontend application for educational institutions to manage courses, students, coaches, campuses, and financial operations.
 
-- 📊 数据看板 - 直观展示核心业务指标
-- 👥 学员管理 - 学员档案、课程记录、考勤、缴费管理
-- 📚 课程管理 - 课程设置、排课、班级管理
-- 👨‍🏫 教练管理 - 教练档案、排班、考核
-- 🏢 校区管理 - 多校区数据管理
-- 📅 排课管理 - 灵活的课表安排
-- 📋 考勤管理 - 学员和教练的考勤记录
-- 💰 收支管理 - 费用收取与支出管理
-- 📊 数据统计 - 业务数据多维度分析
-- ⚙️ 系统设置 - 权限、学期、角色等系统配置
+## System Overview
 
-## 技术栈
+This frontend application provides a complete user interface for educational institutions to manage their operations, including:
 
-- 框架：React 18
-- UI 组件库：Ant Design 5
-- 状态管理：Redux Toolkit
-- 路由：React Router 6
-- 类型系统：TypeScript
-- 构建工具：Vite
-- HTTP 请求：Axios
-- 代码规范：ESLint + Prettier
+- Multi-campus management
+- Student enrollment and course tracking
+- Coach management with certification tracking
+- Course creation and scheduling
+- Financial operations including payments and expenses
+- Role-based access control
+- Comprehensive reporting and analytics
 
-## 开发指南
+## Key Features
 
-### 环境要求
+### Dashboard
+- Real-time overview of key metrics
+- Today's class schedule
+- Coach performance statistics
+- Financial summaries
+- Student attendance tracking
 
+### Campus Management
+- Create and manage multiple campuses
+- Track campus status (Operating/Closed)
+- Manage campus financial metrics
+- Assign campus managers and contact information
+- Campus comparison analytics
+
+### Student Management
+- Student enrollment and profile management
+- Course assignment and tracking
+- Payment processing and financial record keeping
+- Attendance tracking and reporting
+
+### Coach Management
+- Comprehensive coach profiles
+- Certificate and qualification tracking
+- Financial details (salary, commission, performance bonuses)
+- Coach availability and status tracking
+- Performance metrics
+
+### Course Management
+- Course creation and management
+- Course type categorization (Private, Group, Online)
+- Course status tracking (Draft, Published, Suspended, Terminated)
+- Coach assignment to courses
+- Course pricing and hours tracking
+
+### Schedule Management
+- Visual calendar interface
+- Class scheduling and management
+- Coach assignment
+- Conflict detection and resolution
+
+### Financial Management
+- Income and expense tracking
+- Financial reporting and analytics
+- Transaction history
+- Payment processing
+
+### User Management
+- Role-based access control
+- User status management
+- Secure authentication
+- Permission management
+
+## Technology Stack
+
+- **React 18**: Core UI library
+- **TypeScript 5.3**: Type-safe JavaScript
+- **Ant Design 5.13**: UI component library
+- **Redux Toolkit 2.0**: State management
+- **React Router 6.21**: Routing
+- **Vite**: Build tool and development server
+- **Axios**: HTTP client
+- **ECharts**: Data visualization
+- **Day.js**: Date manipulation
+
+## Project Structure
+
+```
+lesson_web_front/
+├── public/                # Static assets
+├── src/
+│   ├── api/               # API integration
+│   │   ├── auth/          # Authentication API
+│   │   ├── campus/        # Campus management API
+│   │   ├── coach/         # Coach management API
+│   │   ├── course/        # Course management API
+│   │   ├── student/       # Student management API
+│   │   └── ...
+│   ├── assets/            # Static resources
+│   │   ├── images/        # Image resources
+│   │   ├── styles/        # Global styles
+│   │   └── js/            # JavaScript utilities
+│   ├── components/        # Reusable components
+│   │   ├── Header.tsx     # Application header
+│   │   ├── Sidebar.tsx    # Navigation sidebar
+│   │   ├── MainContent.tsx # Main content container
+│   │   └── ...
+│   ├── contexts/          # React contexts
+│   ├── hooks/             # Custom React hooks
+│   ├── layouts/           # Layout components
+│   ├── pages/             # Page components
+│   │   ├── dashboard/     # Dashboard page
+│   │   ├── campus/        # Campus management
+│   │   ├── coach/         # Coach management
+│   │   ├── course/        # Course management
+│   │   ├── student/       # Student management
+│   │   ├── schedule/      # Schedule management
+│   │   ├── statistics/    # Statistics and reports
+│   │   ├── settings/      # System settings
+│   │   └── ...
+│   ├── redux/             # Redux state management
+│   │   ├── slices/        # Redux slices
+│   │   └── store.ts       # Redux store configuration
+│   ├── router/            # Routing configuration
+│   ├── types/             # TypeScript type definitions
+│   ├── utils/             # Utility functions
+│   ├── App.tsx            # Root component
+│   └── main.tsx           # Application entry point
+├── .eslintrc.js           # ESLint configuration
+├── .prettierrc            # Prettier configuration
+├── index.html             # HTML entry point
+├── package.json           # Project dependencies
+├── tsconfig.json          # TypeScript configuration
+└── vite.config.ts         # Vite configuration
+```
+
+## Getting Started
+
+### Prerequisites
 - Node.js 16+
-- npm 8+ 或 yarn 1.22+
+- npm 8+ or yarn 1.22+
 
-### 安装依赖
-
+### Installation
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/lesson_web_front.git
+
+# Navigate to the project directory
+cd lesson_web_front
+
+# Install dependencies
 npm install
-# 或
+# or
 yarn
 ```
 
-### 开发环境启动
-
+### Development
 ```bash
+# Start the development server
 npm run dev
-# 或
+# or
 yarn dev
 ```
 
-### 构建生产版本
-
+### Building for Production
 ```bash
+# Build the application
 npm run build
-# 或
+# or
 yarn build
 ```
 
-### 代码规范检查
-
+### Linting
 ```bash
+# Run ESLint
 npm run lint
-# 或
+# or
 yarn lint
 ```
 
-## 项目结构
+## API Integration
 
-```
-src/
-├── api/              # API接口
-├── assets/           # 静态资源
-│   ├── images/       # 图片资源
-│   └── styles/       # 样式文件
-├── components/       # 通用组件
-├── config/           # 配置文件
-├── hooks/            # 自定义Hooks
-├── layouts/          # 布局组件
-├── pages/            # 页面组件
-├── redux/            # Redux状态管理
-│   ├── slices/       # Redux切片
-│   └── store.ts      # Redux存储配置
-├── router/           # 路由配置
-├── types/            # 类型定义
-├── utils/            # 工具函数
-├── App.tsx           # 应用入口组件
-└── main.tsx          # 应用入口文件
+The application integrates with the Lesson Management System backend API. The API base URL can be configured in `src/api/config.ts`.
+
+```typescript
+// API base URL
+export const API_HOST = 'http://lesson.devtesting.top';
 ```
 
-## 开发规范
+## Authentication
 
-本项目遵循阿里巴巴前端编码规约，主要规范点：
+The application uses JWT-based authentication. Tokens are stored in cookies and local storage for persistence.
 
-1. 组件文件使用 PascalCase 命名（如 UserList.tsx）
-2. 工具函数等非组件文件使用 camelCase 命名（如 formatDate.ts）
-3. 样式文件使用连字符命名（如 user-profile.scss）
-4. 组件属性按字母顺序排序
-5. 使用 ESLint + Prettier 确保代码风格一致
-6. 使用 TypeScript 类型系统，避免使用 any 类型
-7. 按功能模块组织代码，而非技术角色
+## Deployment
 
-## 贡献指南
+The application can be deployed to any static hosting service. A GitHub Actions workflow is included for automated deployment.
 
-1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交你的变更 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建一个 Pull Request
+```yaml
+# .github/workflows/deploy_master.yml
+name: deploy_master_web_front
 
-## 许可协议
+on:
+  push:
+    branches:
+      - master
 
-本项目采用 MIT 许可协议。详见 [LICENSE](LICENSE) 文件。
+jobs:
+  dev-front-deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Scp dist To HW Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HW_TEST_SERVER }}
+          username: ${{ secrets.HW_SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ${{ github.workspace }}/dist/*
+          target: /root/lesson/lesson_web_front
+          strip_components: 3
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
