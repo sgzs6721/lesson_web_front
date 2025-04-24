@@ -1,18 +1,18 @@
-import { ApiResponse, PaginatedResponse } from '../types';
+import { ApiResponse, PaginatedResponse, PaginationParams } from '../types';
 
 // 课程状态枚举
 export enum CourseStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
+  DRAFT = '0',
+  PUBLISHED = '1',
   SUSPENDED = 'SUSPENDED',
   TERMINATED = 'TERMINATED'
 }
 
 // 课程类型枚举
 export enum CourseType {
-  PRIVATE = 'PRIVATE',
-  GROUP = 'GROUP',
-  ONLINE = 'ONLINE'
+  PRIVATE = '2',
+  GROUP = '1',
+  PACKAGE = '3'
 }
 
 // 课程类型
@@ -64,14 +64,20 @@ export interface CourseUpdateRequest {
 }
 
 // 课程搜索参数
-export interface CourseSearchParams {
+export type CourseSearchParams = {
   searchText: string;
-  selectedType?: CourseType;
-  selectedStatus?: CourseStatus;
-  selectedCoach?: number;
-  sortOrder?: string;
-  campusId?: number;
-}
+  selectedType: CourseType[] | undefined;
+  selectedStatus: CourseStatus | undefined;
+  selectedCoach?: number[] | undefined;
+  sortOrder: string | undefined;
+  campusId?: number | undefined;
+};
+
+// 扩展的分页参数类型，包含 API 所需的所有可能参数
+export type CourseListParams = PaginationParams & Partial<CourseSearchParams> & {
+  typeIds?: CourseType[] | undefined;
+  coachIds?: number[] | undefined;
+};
 
 // 课程列表响应
 export interface CourseListResponse extends ApiResponse<PaginatedResponse<Course>> {}

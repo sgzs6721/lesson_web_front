@@ -10,9 +10,9 @@ export { CourseType, CourseStatus };
 // 课程搜索参数
 export type CourseSearchParams = {
   searchText: string;
-  selectedType: CourseType | undefined;
+  selectedType: CourseType[] | undefined;
   selectedStatus: CourseStatus | undefined;
-  selectedCoach?: number | undefined;
+  selectedCoach?: number[] | undefined;
   sortOrder: string | undefined;
   campusId?: number | undefined;
 };

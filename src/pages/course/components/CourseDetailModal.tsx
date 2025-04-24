@@ -92,12 +92,8 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
       }
       open={visible}
       onCancel={onCancel}
-      footer={[
-        <Button key="close" onClick={onCancel}>
-          关闭
-        </Button>
-      ]}
-      width={580}
+      footer={null}
+      width={700}
       centered
       bodyStyle={{ padding: '14px', maxHeight: '75vh', overflowY: 'auto' }}
     >

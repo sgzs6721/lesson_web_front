@@ -23,13 +23,9 @@ export const renderStatusTag = (status: string) => {
   let text = '';
 
   switch (status) {
-    case 'PUBLISHED':
+    case '1':  // PUBLISHED
       color = 'green';
       text = '已发布';
-      break;
-    case 'DRAFT':
-      color = 'blue';
-      text = '草稿';
       break;
     case 'SUSPENDED':
       color = 'orange';
@@ -38,6 +34,10 @@ export const renderStatusTag = (status: string) => {
     case 'TERMINATED':
       color = 'red';
       text = '已终止';
+      break;
+    case 'PUBLISHED':  // 添加对英文枚举值的处理
+      color = 'green';
+      text = '已发布';
       break;
     default:
       color = 'default';

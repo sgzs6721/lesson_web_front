@@ -13,9 +13,9 @@ interface CourseSearchBarProps {
   onSearch: () => void;
   onReset: () => void;
   onTextChange: (value: string) => void;
-  onCategoryChange: (value: CourseType | undefined) => void;
+  onCategoryChange: (value: CourseType[] | undefined) => void;
   onStatusChange: (value: CourseStatus | undefined) => void;
-  onCoachChange?: (value: number | undefined) => void;
+  onCoachChange?: (value: number[] | undefined) => void;
   onSortOrderChange: (value: string | undefined) => void;
   cachedTypes?: Constant[];
   cachedCoaches?: CoachSimple[];
@@ -65,6 +65,8 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
           loading={typesLoading}
           popupMatchSelectWidth={true}
           getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          mode="multiple"
+          maxTagCount={2}
         >
           {typeOptions.map(option => (
             <Option key={option.value} value={option.value}>
@@ -83,6 +85,8 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
           loading={coachesLoading}
           popupMatchSelectWidth={true}
           getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          mode="multiple"
+          maxTagCount={2}
         >
           {cachedCoaches.map(coach => (
             <Option key={coach.id} value={coach.id}>

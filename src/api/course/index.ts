@@ -1,4 +1,4 @@
-import { Course, CourseSearchParams, CourseCreateRequest, CourseUpdateRequest, CourseType, CourseStatus } from './types';
+import { Course, CourseSearchParams, CourseCreateRequest, CourseUpdateRequest, CourseType, CourseStatus, CourseListParams } from './types';
 import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
 import { mockApiResponse, mockCourses, mockPaginatedResponse } from './mock';
 
@@ -35,7 +35,7 @@ const COURSE_API_PATHS = {
 // 课程相关接口
 export const course = {
   // 获取课程列表
-  getList: async (params?: PaginationParams & Partial<CourseSearchParams>): Promise<PaginatedResponse<Course>> => {
+  getList: async (params?: CourseListParams): Promise<PaginatedResponse<Course>> => {
     if (USE_MOCK) {
       // 模拟获取课程列表
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -51,25 +51,34 @@ export const course = {
         );
       }
 
-      if (params?.selectedType) {
+      // 处理课程类型过滤（支持多选）
+      if (params?.typeIds && params.typeIds.length > 0) {
         filteredCourses = filteredCourses.filter(course =>
-          course.type === params.selectedType
+          params.typeIds?.includes(course.type as CourseType)
+        );
+      } else if (params?.selectedType && params.selectedType.length > 0) {
+        filteredCourses = filteredCourses.filter(course =>
+          params.selectedType?.includes(course.type as CourseType)
         );
       }
 
-      if (params?.selectedStatus) {
+      if (params?.selectedStatus !== undefined) {
         filteredCourses = filteredCourses.filter(course =>
           course.status === params.selectedStatus
         );
       }
 
-      // 按教练ID筛选
-      if (params?.selectedCoach) {
+      // 按教练ID筛选（支持多选）
+      if (params?.coachIds && params.coachIds.length > 0) {
         filteredCourses = filteredCourses.filter(course => 
-          course.coaches?.some(coach => coach.id === params.selectedCoach)
+          course.coaches?.some(coach => params.coachIds?.includes(coach.id))
+        );
+      } else if (params?.selectedCoach && params.selectedCoach.length > 0) {
+        filteredCourses = filteredCourses.filter(course => 
+          course.coaches?.some(coach => params.selectedCoach?.includes(coach.id))
         );
       }
-
+      
       // 按校区ID筛选
       if (params?.campusId) {
         filteredCourses = filteredCourses.filter(course =>
@@ -118,9 +127,30 @@ export const course = {
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
     if (params?.searchText) queryParams.append('keyword', params.searchText);
-    if (params?.selectedType) queryParams.append('type', params.selectedType);
+    
+    // 处理课程类型多选
+    if (params?.typeIds && Array.isArray(params.typeIds) && params.typeIds.length > 0) {
+      params.typeIds.forEach(typeId => {
+        queryParams.append('typeIds', typeId.toString());
+      });
+    } else if (params?.selectedType && Array.isArray(params.selectedType) && params.selectedType.length > 0) {
+      params.selectedType.forEach(typeId => {
+        queryParams.append('typeIds', typeId.toString());
+      });
+    }
+    
     if (params?.selectedStatus) queryParams.append('status', params.selectedStatus);
-    if (params?.selectedCoach) queryParams.append('coachId', params.selectedCoach.toString());
+    
+    // 处理教练多选
+    if (params?.coachIds && Array.isArray(params.coachIds) && params.coachIds.length > 0) {
+      params.coachIds.forEach(coachId => {
+        queryParams.append('coachIds', coachId.toString());
+      });
+    } else if (params?.selectedCoach && Array.isArray(params.selectedCoach) && params.selectedCoach.length > 0) {
+      params.selectedCoach.forEach(coachId => {
+        queryParams.append('coachIds', coachId.toString());
+      });
+    }
 
     // 添加排序参数，默认按创建时间降序排列（最新的在前面）
     if (params?.sortOrder) {

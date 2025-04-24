@@ -3,9 +3,9 @@ import { CourseSearchParams, CourseType, CourseStatus } from '../types/course';
 
 export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promise<any>) => {
   const [searchText, setSearchText] = useState('');
-  const [selectedType, setSelectedType] = useState<CourseType | undefined>(undefined);
+  const [selectedType, setSelectedType] = useState<CourseType[] | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<CourseStatus | undefined>(undefined);
-  const [selectedCoach, setSelectedCoach] = useState<number | undefined>(undefined);
+  const [selectedCoach, setSelectedCoach] = useState<number[] | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
   const [campusId, setCampusId] = useState<number | undefined>(undefined);
 

@@ -168,23 +168,37 @@ export const useCourseData = () => {
     setLoading(true);
 
     try {
-      // 调用API获取课程列表
-      const result = await courseAPI.getList({
+      // 构建 API 请求参数
+      const apiParams: any = {
         page,
         pageSize,
         searchText: params.searchText,
-        selectedType: params.selectedType,
         selectedStatus: params.selectedStatus,
         sortOrder: params.sortOrder,
         campusId: params.campusId
-      });
+      };
+
+      // 添加课程类型过滤（支持多选）
+      if (params.selectedType && params.selectedType.length > 0) {
+        apiParams.typeIds = params.selectedType;
+      }
+
+      // 添加教练过滤（支持多选）
+      if (params.selectedCoach && params.selectedCoach.length > 0) {
+        apiParams.coachIds = params.selectedCoach;
+      }
+
+      // 调用API获取课程列表
+      const result = await courseAPI.getList(apiParams);
 
       // 更新本地状态
       setFilteredCourses(result.list as unknown as Course[]);
       setTotal(result.total);
 
       // 如果是第一次加载，也更新全局课程列表
-      if (page === 1 && !params.searchText && !params.selectedType && !params.selectedStatus) {
+      if (page === 1 && !params.searchText && 
+          (!params.selectedType || params.selectedType.length === 0) && 
+          !params.selectedStatus) {
         setCourses(result.list as unknown as Course[]);
       }
 
