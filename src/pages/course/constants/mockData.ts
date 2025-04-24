@@ -7,7 +7,7 @@ export const generateMockCourses = (): Course[] => {
     .fill(null)
     .map((_, index) => {
       const typeId = categoryOptions[index % categoryOptions.length].value;
-      const typeValue = index % 3 === 0 ? CourseType.PRIVATE : index % 3 === 1 ? CourseType.GROUP : CourseType.ONLINE;
+      const typeValue = index % 3 === 0 ? CourseType.PRIVATE : index % 3 === 1 ? CourseType.GROUP : CourseType.PACKAGE;
       const totalHours = 10 + (index % 10) * 4;
       const campusId = index % 3 + 1;
       const institutionId = 1;

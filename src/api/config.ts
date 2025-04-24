@@ -68,6 +68,30 @@ export const responseInterceptor = async (response: Response) => {
       // 如果解析失败，至少保留状态文本
       errorData.message = response.statusText || 'HTTP Error';
     }
+
+    // 检查是否是401未授权错误（token过期或无效）
+    if (response.status === 401) {
+      console.error('Token已过期或无效，需要重新登录');
+      
+      // 导入清除cookie的方法
+      import('@/utils/cookies').then(({ clearAuthCookies }) => {
+        // 清除cookie
+        clearAuthCookies();
+        
+        // 清除本地存储的token和用户信息
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // 使用window.location进行跳转，完全刷新页面
+        window.location.href = '/login';
+        
+        // 可选：显示一个通知
+        if (typeof window !== 'undefined') {
+          window.alert('登录已过期，请重新登录');
+        }
+      });
+    }
+    
     // 抛出自定义 ApiError，包含 HTTP 状态码和后端返回的错误信息（如果有）
     throw new ApiError(
       errorData.message || `请求失败: ${response.status}`,
