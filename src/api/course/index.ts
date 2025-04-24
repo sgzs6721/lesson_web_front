@@ -139,7 +139,21 @@ export const course = {
       });
     }
     
-    if (params?.selectedStatus) queryParams.append('status', params.selectedStatus);
+    // 修复状态过滤参数，确保传递字符串枚举名称而不是值
+    if (params?.selectedStatus) {
+      // 找出枚举名称（PUBLISHED, SUSPENDED, TERMINATED）而不是枚举值
+      // CourseStatus是字符串枚举，我们需要获取枚举名称
+      const statusKey = Object.keys(CourseStatus).find(
+        key => CourseStatus[key as keyof typeof CourseStatus] === params.selectedStatus
+      );
+      if (statusKey) {
+        queryParams.append('status', statusKey); // 传递枚举名称如"PUBLISHED"
+        console.log('使用状态枚举名称作为查询参数:', statusKey);
+      } else {
+        queryParams.append('status', params.selectedStatus);
+        console.log('未找到匹配的枚举名称，使用原始状态值:', params.selectedStatus);
+      }
+    }
     
     // 处理教练多选
     if (params?.coachIds && Array.isArray(params.coachIds) && params.coachIds.length > 0) {

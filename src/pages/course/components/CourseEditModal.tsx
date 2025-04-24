@@ -135,7 +135,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           // 添加模式
           if (currentCachedTypes.length > 0) {
             form.setFieldsValue({
-              typeId: Number(currentCachedTypes[0].id),
               status: CourseStatus.PUBLISHED,
               unitHours: 1,
               totalHours: 10,
@@ -246,6 +245,8 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                   showSearch
                   optionFilterProp="children"
                   value={form.getFieldValue('typeId')}
+                  defaultValue={undefined}
+                  defaultActiveFirstOption={false}
                 >
                   {cachedTypes.map(type => (
                     <Option key={type.id} value={type.id}>
