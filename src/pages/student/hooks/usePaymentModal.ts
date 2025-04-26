@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Form, message } from 'antd';
-import { Student, PaymentRecord } from '@/pages/student/types/student';
+import { Student, PaymentRecord } from '@/api/student/types';
 import { getStudentAllCourses } from '@/pages/student/utils/student';
+import { API } from '@/api';
 import dayjs from 'dayjs';
 
 /**
@@ -10,6 +11,7 @@ import dayjs from 'dayjs';
  */
 export const usePaymentModal = () => {
   const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [paymentForm] = Form.useForm();
   const [selectedPaymentCourse, setSelectedPaymentCourse] = useState<string>('');
@@ -23,17 +25,17 @@ export const usePaymentModal = () => {
   const showModal = (student: Student) => {
     setCurrentStudent(student);
     paymentForm.resetFields();
-    
+
     // 获取学生所有课程
     const courses = getStudentAllCourses(student);
-    
+
     // 如果有课程，默认选择第一个
     if (courses.length > 0) {
       const defaultCourse = courses[0];
       setSelectedPaymentCourse(defaultCourse.id || '');
       setSelectedPaymentCourseName(defaultCourse.name);
     }
-    
+
     // 设置初始值
     paymentForm.setFieldsValue({
       courseType: student.courseType,
@@ -44,17 +46,17 @@ export const usePaymentModal = () => {
       regularClasses: 0,
       bonusClasses: 0,
     });
-    
+
     // 设置课时预览初始值
     const remainingHours = parseInt(student.remainingClasses.split('/')[0]) || 0;
     setCurrentClassHours(remainingHours);
     setNewClassHours(0);
     setTotalClassHours(remainingHours);
     setNewValidUntil(dayjs().add(180, 'day').format('YYYY-MM-DD'));
-    
+
     setVisible(true);
   };
-  
+
   // 处理课时变化
   const handleClassHoursChange = () => {
     const regularClasses = paymentForm.getFieldValue('regularClasses') || 0;
@@ -62,7 +64,7 @@ export const usePaymentModal = () => {
     setNewClassHours(regularClasses + bonusClasses);
     setTotalClassHours(currentClassHours + regularClasses + bonusClasses);
   };
-  
+
   // 处理有效期变化
   const handleValidUntilChange = (date: dayjs.Dayjs | null) => {
     if (date) {
@@ -71,7 +73,7 @@ export const usePaymentModal = () => {
       setNewValidUntil('—');
     }
   };
-  
+
   // 处理课程改变
   const handlePaymentCourseChange = (courseId: string) => {
     setSelectedPaymentCourse(courseId);
@@ -81,61 +83,72 @@ export const usePaymentModal = () => {
     if (course) {
       setSelectedPaymentCourseName(course.name);
     }
-    
+
     // 获取对应课程类型
     paymentForm.setFieldsValue({
       courseType: course?.type || '',
     });
   };
-  
+
   // 处理缴费提交
-  const handlePaymentOk = () => {
-    paymentForm.validateFields()
-      .then(values => {
-        const paymentRecord: PaymentRecord = {
-          id: `PAY${Date.now()}`,
-          studentId: currentStudent?.id || '',
-          paymentType: values.paymentType,
-          amount: values.amount,
-          paymentMethod: values.paymentMethod,
-          transactionDate: values.transactionDate.format('YYYY-MM-DD'),
-          regularClasses: values.regularClasses || 0,
-          bonusClasses: values.bonusClasses || 0,
-          validUntil: values.validUntil.format('YYYY-MM-DD'),
-          gift: values.gift || '',
-          remarks: values.remarks || '',
-          courseId: values.courseId,
-          courseName: selectedPaymentCourseName,
+  const handlePaymentOk = async () => {
+    try {
+      setLoading(true);
+      const values = await paymentForm.validateFields();
+
+      const paymentRecord: PaymentRecord = {
+        id: `PAY${Date.now()}`,
+        studentId: currentStudent?.id || '',
+        paymentType: values.paymentType,
+        amount: values.amount,
+        paymentMethod: values.paymentMethod,
+        transactionDate: values.transactionDate.format('YYYY-MM-DD'),
+        regularClasses: values.regularClasses || 0,
+        bonusClasses: values.bonusClasses || 0,
+        validUntil: values.validUntil.format('YYYY-MM-DD'),
+        gift: values.gift || '',
+        remarks: values.remarks || '',
+        courseId: values.courseId,
+        courseName: selectedPaymentCourseName,
+      };
+
+      if (currentStudent) {
+        // 计算新的课时数
+        const originalRemaining = parseInt(currentStudent.remainingClasses) || 0;
+        const newRemaining = originalRemaining + values.regularClasses + values.bonusClasses;
+
+        // 准备更新学生的数据
+        const updateData = {
+          remainingClasses: newRemaining,
+          expireDate: values.validUntil.format('YYYY-MM-DD')
         };
 
-        if (currentStudent) {
-          // 在实际应用中，这里会调用API更新学生信息
-          // 以下是模拟更新学生记录的代码
-          const originalRemaining = parseInt(currentStudent.remainingClasses.split('/')[0]) || 0;
-          const originalTotal = parseInt(currentStudent.remainingClasses.split('/')[1]) || 0;
-          const newRemaining = originalRemaining + values.regularClasses + values.bonusClasses;
-          const newTotal = originalTotal + values.regularClasses + values.bonusClasses;
-          
-          // 更新学生的剩余课时和有效期
-          currentStudent.remainingClasses = `${newRemaining}/${newTotal}`;
-          currentStudent.expireDate = values.validUntil.format('YYYY-MM-DD');
-          
-          // 添加支付记录
-          currentStudent.payments = [...(currentStudent.payments || []), paymentRecord];
-        }
+        // 调用API更新学生信息
+        await API.student.update(currentStudent.id, updateData);
+
+        // TODO: 调用添加支付记录的API
+        // 当前暂时没有支付记录的API，实际应用中需要添加
+        // await API.payment.add(paymentRecord);
 
         message.success('缴费信息已保存');
         setVisible(false);
-        
+
         // 重置表单和状态
         setCurrentStudent(null);
         paymentForm.resetFields();
-      })
-      .catch(error => {
-        console.error('表单验证失败:', error);
-      });
+      }
+    } catch (error) {
+      console.error('缴费失败:', error);
+      if (error instanceof Error) {
+        message.error(`缴费失败: ${error.message}`);
+      } else {
+        message.error('缴费失败');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
   // 关闭缴费模态框
   const handlePaymentCancel = () => {
     setVisible(false);
@@ -145,6 +158,7 @@ export const usePaymentModal = () => {
 
   return {
     paymentModalVisible: visible,
+    paymentLoading: loading,
     currentStudent,
     paymentForm,
     selectedPaymentCourse,
@@ -160,4 +174,4 @@ export const usePaymentModal = () => {
     handleClassHoursChange,
     handleValidUntilChange
   };
-}; 
+};

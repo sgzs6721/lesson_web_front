@@ -4,9 +4,7 @@
 
 .student-search-bar {
   margin-bottom: 16px;
-  padding: 16px;
-  background-color: #f8f8f8;
-  border-radius: 4px;
+  padding: 16px 0;
 }
 
 .student-search-bar .ant-form-item {
@@ -109,4 +107,14 @@
 
 .student-table-container .ant-btn-link:hover {
   color: #40a9ff;
-} 
+}
+
+/* 居中表格样式 */
+.centered-table .ant-table-thead > tr > th {
+  text-align: center !important;
+  background-color: #fafafa;
+}
+
+.centered-table .ant-table-tbody > tr > td {
+  text-align: center !important;
+}

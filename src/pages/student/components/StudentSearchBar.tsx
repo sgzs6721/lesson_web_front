@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Select, Button, Space, Row, Col, DatePicker } from 'antd';
 import {
   SearchOutlined,
@@ -8,7 +8,8 @@ import {
   SortDescendingOutlined
 } from '@ant-design/icons';
 import { StudentSearchParams } from '@/pages/student/types/student';
-import { courseOptions } from '@/pages/student/constants/options';
+import { studentStatusOptions } from '@/pages/student/constants/options';
+import { SimpleCourse } from '@/api/course/types';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import dayjs from 'dayjs';
 
@@ -25,6 +26,8 @@ interface StudentSearchBarProps {
   onCourseChange: (value: string | undefined) => void;
   onMonthChange: (value: any) => void;
   onSortOrderChange: (value: StudentSearchParams['sortOrder']) => void;
+  courseList: SimpleCourse[];
+  loadingCourses: boolean;
 }
 
 const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
@@ -36,7 +39,9 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
   onStatusChange,
   onCourseChange,
   onMonthChange,
-  onSortOrderChange
+  onSortOrderChange,
+  courseList,
+  loadingCourses
 }) => {
   return (
     <Form layout="inline" className="student-search-bar">
@@ -64,9 +69,11 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
                 popupMatchSelectWidth={true}
                 getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
               >
-                <Option value="active">在学</Option>
-                <Option value="inactive">停课</Option>
-                <Option value="pending">待处理</Option>
+                {studentStatusOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
               </Select>
             </div>
           </Form.Item>
@@ -82,10 +89,16 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
                 allowClear
                 popupMatchSelectWidth={true}
                 getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                loading={loadingCourses}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+                }
               >
-                {courseOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
+                {courseList.map(course => (
+                  <Option key={course.id} value={course.id}>
+                    {course.name}
                   </Option>
                 ))}
               </Select>

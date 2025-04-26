@@ -1,0 +1,419 @@
+/* 全局模态框样式修复 */
+
+/* 确保所有Select组件在模态框中有正确的宽度 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-select,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-select-selector,
+body .ant-modal .ant-select,
+body .ant-modal .ant-select-selector,
+.ant-modal .ant-select,
+.ant-modal .ant-select-selector {
+  width: 100% !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+/* 修复下拉选项宽度和位置 - 关键修复 */
+.ant-select-dropdown,
+body .ant-select-dropdown,
+.ant-modal ~ .ant-select-dropdown {
+  position: absolute !important;
+  top: auto !important;
+  left: auto !important;
+  min-width: 200px !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  z-index: 1055 !important;
+}
+
+/* 修复表单项在模态框中的宽度 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-form-item,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-form-item-control,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-form-item-control-input,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-form-item-control-input-content,
+body .ant-modal .ant-form-item,
+body .ant-modal .ant-form-item-control,
+body .ant-modal .ant-form-item-control-input,
+body .ant-modal .ant-form-item-control-input-content,
+.ant-modal .ant-form-item,
+.ant-modal .ant-form-item-control,
+.ant-modal .ant-form-item-control-input,
+.ant-modal .ant-form-item-control-input-content {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 确保输入框在模态框中占满宽度 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-input,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-input-number,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-input-number-input,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-picker,
+body .ant-modal .ant-input,
+body .ant-modal .ant-input-number,
+body .ant-modal .ant-input-number-input,
+body .ant-modal .ant-picker,
+.ant-modal .ant-input,
+.ant-modal .ant-input-number,
+.ant-modal .ant-input-number-input,
+.ant-modal .ant-picker {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 修复Radio组件和Checkbox组件样式 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-radio-group,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-checkbox-group,
+body .ant-modal .ant-radio-group,
+body .ant-modal .ant-checkbox-group,
+.ant-modal .ant-radio-group,
+.ant-modal .ant-checkbox-group {
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  box-sizing: border-box !important;
+}
+
+/* 性别选择下拉框特殊处理 */
+.ant-modal .ant-form-item-label:has(> label:contains("性别")) + .ant-form-item-control .ant-select,
+.ant-modal .ant-form-item-label:has(> label:contains("性别")) + .ant-form-item-control .ant-select-selector,
+.ant-modal .ant-form-item-label:has(> label:contains("性别")) + .ant-form-item-control .ant-select + .ant-select-dropdown,
+.ant-form-item[name="gender"] .ant-select,
+.ant-form-item[name="gender"] .ant-select-selector,
+.ant-form-item[name="gender"] .ant-select-dropdown,
+.ant-gender-select,
+.ant-gender-select .ant-select-selector,
+.ant-gender-select-dropdown {
+  width: 100% !important;
+  min-width: 100px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 1055 !important;
+}
+
+.ant-gender-select-dropdown {
+  position: absolute !important;
+  top: auto !important;
+  left: auto !important;
+  width: auto !important;
+  z-index: 1055 !important;
+}
+
+/* 修复分隔线样式并移除多余分隔线 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-content .ant-divider,
+body .ant-modal .ant-modal-content .ant-divider,
+.ant-modal .ant-modal-content .ant-divider {
+  margin: 0 0 24px 0 !important;
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-content .ant-divider + .ant-divider,
+body .ant-modal .ant-modal-content .ant-divider + .ant-divider,
+.ant-modal .ant-modal-content .ant-divider + .ant-divider {
+  display: none !important;
+}
+
+/* 修复下拉菜单位置和宽度，确保与选择框对齐 */
+body .ant-select-dropdown.ant-select-dropdown-placement-bottomLeft,
+body .ant-select-dropdown.ant-select-dropdown-placement-topLeft,
+.ant-select-dropdown.ant-select-dropdown-placement-bottomLeft,
+.ant-select-dropdown.ant-select-dropdown-placement-topLeft,
+div[class^="ant-select-dropdown"],
+div[class*=" ant-select-dropdown"] {
+  min-width: 200px !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  left: auto !important;
+  position: absolute !important;
+  z-index: 1055 !important;
+}
+
+/* 确保模态框内容区域布局正确 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-content,
+body .ant-modal .ant-modal-content,
+.ant-modal .ant-modal-content {
+  box-sizing: border-box !important;
+  padding: 24px !important;
+}
+
+/* 修复表单布局 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-form,
+body .ant-modal .ant-form,
+.ant-modal .ant-form {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 确保所有输入框宽度正确 */
+.ant-modal .ant-input,
+.ant-modal .ant-input-number,
+.ant-modal .ant-picker,
+.ant-modal .ant-radio-group {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 针对性别字段的特殊处理 */
+.ant-modal .ant-form-item-label:has(> label:contains("性别")) + .ant-form-item-control .ant-select,
+.ant-modal .ant-form-item-label:has(> label:contains("性别")) + .ant-form-item-control .ant-select .ant-select-selector {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 确保下拉选项与选择框对齐 */
+.ant-select-dropdown .ant-select-item,
+.ant-select-dropdown .ant-select-item-option {
+  white-space: nowrap !important;
+  padding: 5px 12px !important;
+}
+
+/* 强制性修复所有下拉菜单的宽度问题和定位问题 */
+body [class^="ant-select-dropdown"],
+body [class*=" ant-select-dropdown"],
+[class^="ant-select-dropdown"],
+[class*=" ant-select-dropdown"] {
+  min-width: 200px !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  position: absolute !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 1055 !important;
+}
+
+/* 修复级联选择器样式 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-cascader,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-cascader-picker,
+body .ant-modal .ant-cascader,
+body .ant-modal .ant-cascader-picker,
+.ant-modal .ant-cascader,
+.ant-modal .ant-cascader-picker {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 确保级联选择下拉框位置正确 */
+.ant-cascader-menus,
+.ant-cascader-dropdown,
+body .ant-cascader-menus,
+body .ant-cascader-dropdown {
+  position: absolute !important;
+  left: auto !important;
+  top: auto !important;
+  min-width: 200px !important;
+  box-sizing: border-box !important;
+  z-index: 1055 !important;
+}
+
+/* 禁用状态下的表单项样式 */
+.ant-modal .ant-form-item-control .ant-form-item-control-input-content > [disabled],
+.ant-modal .ant-form-item-control .ant-form-item-control-input-content > .ant-input[disabled],
+.ant-modal .ant-form-item-control .ant-form-item-control-input-content > .ant-select-disabled .ant-select-selector,
+.ant-modal .ant-form-item-control .ant-form-item-control-input-content > .ant-picker-disabled {
+  background-color: #f5f5f5 !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 确保表单布局在不同屏幕尺寸下保持一致 */
+@media (max-width: 768px) {
+  .ant-modal {
+    max-width: 100% !important;
+    margin: 0 10px !important;
+  }
+  
+  .ant-modal-root .ant-modal-wrap .ant-modal .ant-form-item,
+  body .ant-modal .ant-form-item,
+  .ant-modal .ant-form-item {
+    flex-direction: column !important;
+  }
+}
+
+/* 通用模态框样式修复 */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-content,
+.ant-modal .ant-modal-content {
+  padding: 20px !important;
+}
+
+/* 确保模态框中的表单项正确显示 */
+.ant-modal-content .ant-form-item {
+  margin-bottom: 15px !important;
+}
+
+/* 修复模态框中所有选择器和输入框的宽度 */
+.ant-modal-content .ant-select,
+.ant-modal-content .ant-select-selector,
+.ant-modal-content .ant-input,
+.ant-modal-content .ant-input-number,
+.ant-modal-content .ant-cascader-picker,
+.ant-modal-content .ant-picker {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 修复级联选择器的宽度和位置 */
+.ant-modal-content .ant-cascader-picker {
+  display: inline-flex !important;
+  width: 100% !important;
+}
+
+/* 确保级联选择器的下拉菜单正确显示 */
+.ant-cascader-dropdown,
+.ant-cascader-menus,
+.ant-select-dropdown {
+  min-width: 200px !important;
+  width: auto !important;
+  position: absolute !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 9999 !important;
+}
+
+/* 级联选择器菜单列宽度修复 */
+.ant-cascader-menu {
+  min-width: 120px !important;
+  height: auto !important;
+  max-height: 300px !important;
+}
+
+/* 修复单选框和复选框的样式 */
+.ant-modal-content .ant-radio-group,
+.ant-modal-content .ant-checkbox-group {
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+/* 禁用状态的表单项样式 */
+.ant-modal-content .ant-form-item-control-input-content .ant-input[disabled],
+.ant-modal-content .ant-form-item-control-input-content .ant-select-disabled .ant-select-selector,
+.ant-modal-content .ant-form-item-control-input-content .ant-cascader-picker-disabled,
+.ant-modal-content .ant-form-item-control-input-content .ant-input-number-disabled,
+.ant-modal-content .ant-form-item-control-input-content .ant-picker-disabled {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 响应式布局调整 */
+@media (max-width: 768px) {
+  .ant-modal {
+    max-width: 95vw !important;
+    margin: 0 auto !important;
+  }
+  
+  .ant-modal-content .ant-form-item {
+    flex-direction: column !important;
+  }
+  
+  .ant-modal-content .ant-form-item-label {
+    text-align: left !important;
+    padding-bottom: 4px !important;
+  }
+}
+
+/* 确保级联选择器的各级菜单正确对齐 */
+.ant-cascader-menus {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+}
+
+/* 修复下拉菜单在模态框中的定位问题 */
+.ant-select-dropdown,
+.ant-cascader-dropdown {
+  position: absolute !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 9999 !important;
+}
+
+/* 修复特定情况下按钮组的布局 */
+.ant-modal-content .ant-btn-group {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+/* 修复表单标签和控件之间的对齐问题 */
+.ant-modal-content .ant-form-item-label > label {
+  min-width: 80px !important;
+  display: inline-flex !important;
+}
+
+/* 修复搜索框在级联选择器中的样式 */
+.ant-cascader-dropdown .ant-cascader-menu-search-input {
+  width: 100% !important;
+}
+
+/* 修复学员表单模态框中的特定问题 */
+.ant-modal[style*="width: 800px"] .ant-select,
+.ant-modal[style*="width: 800px"] .ant-select-selector,
+body .ant-modal[style*="width: 800px"] .ant-select,
+body .ant-modal[style*="width: 800px"] .ant-select-selector {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.ant-modal[style*="width: 800px"] ~ .ant-select-dropdown,
+body .ant-modal[style*="width: 800px"] ~ .ant-select-dropdown {
+  min-width: 200px !important;
+  width: auto !important;
+  position: absolute !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 9999 !important;
+}
+
+/* 特别强调的学员表单中的固定排课时间选择器 */
+.ant-modal .ant-select[value*="weekday"],
+.ant-modal .ant-select[value*="一"],
+.ant-modal .ant-select[value*="二"],
+.ant-modal .ant-select[value*="三"],
+.ant-modal .ant-select[value*="四"],
+.ant-modal .ant-select[value*="五"],
+.ant-modal .ant-select[value*="六"],
+.ant-modal .ant-select[value*="日"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 强制修复特定页面的下拉框问题 */
+body[data-page="student"] .ant-select-dropdown,
+html body .ant-modal ~ .ant-select-dropdown {
+  position: absolute !important;
+  left: auto !important;
+  top: auto !important;
+  min-width: 200px !important;
+  width: auto !important;
+  z-index: 9999 !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 
+              0 6px 16px 0 rgba(0, 0, 0, 0.08), 
+              0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 修复TimePicker组件的特殊问题 */
+.ant-modal .ant-picker-dropdown,
+.ant-modal ~ .ant-picker-dropdown,
+body .ant-picker-dropdown {
+  position: absolute !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 9999 !important;
+}
+
+/* 修复行内时间选择器的样式 */
+.ant-modal .ant-picker-time-panel-column {
+  min-width: 50px !important;
+  width: auto !important;
+}
+
+/* 修复学员模态框中的周几选择 */
+.ant-modal .full-width-dropdown {
+  min-width: 100% !important;
+  width: auto !important;
+  position: absolute !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 9999 !important;
+} 

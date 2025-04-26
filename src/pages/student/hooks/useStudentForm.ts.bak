@@ -66,66 +66,39 @@ const mapApiGenderToFrontend = (gender: string | undefined): string => {
   }
 };
 
-// 辅助函数：安全地处理课程ID，保留字符串类型的ID
-const safeProcessCourseId = (id: string | number): string | number => {
-  if (typeof id === 'string' && id.trim() !== '') {
-    // 如果是非空字符串，尝试转换为数字，但如果不是有效数字则保留原始字符串
-    const num = Number(id);
-    return isNaN(num) ? id : num;
-  } else if (typeof id === 'number' && !isNaN(id)) {
-    // 如果已经是有效数字，直接返回
-    return id;
-  }
-  // 默认返回空字符串
-  return '';
-};
-
 // 辅助函数：灵活匹配课程ID
 const findCourseById = (courseList: SimpleCourse[], courseId: string | number): SimpleCourse | undefined => {
   console.log('查找课程ID:', courseId, '类型:', typeof courseId);
-
+  
   if (!courseId || !courseList || courseList.length === 0) {
     console.log('课程ID或课程列表为空');
     return undefined;
   }
-
+  
   // 尝试多种匹配方式
   const course = courseList.find(c => {
     const courseIdStr = String(courseId).trim();
     const listIdStr = String(c.id).trim();
-
+    
     // 尝试多种匹配方式
     const exactMatch = courseIdStr === listIdStr;
     const numericMatch = !isNaN(Number(courseIdStr)) && !isNaN(Number(listIdStr)) &&
                          Number(courseIdStr) === Number(listIdStr);
     const includesMatch = courseIdStr.includes(listIdStr) || listIdStr.includes(courseIdStr);
-
+    
     if (exactMatch) console.log('找到精确匹配:', c.name, '(ID:', c.id, ')');
     else if (numericMatch) console.log('找到数值匹配:', c.name, '(ID:', c.id, ')');
     else if (includesMatch) console.log('找到包含匹配:', c.name, '(ID:', c.id, ')');
-
+    
     return exactMatch || numericMatch || includesMatch;
   });
-
-  // 如果没有找到匹配，尝试通过名称匹配
-  if (!course && typeof courseId === 'string') {
-    const courseByName = courseList.find(c =>
-      c.name && typeof c.name === 'string' &&
-      c.name.includes(courseId) || courseId.includes(c.name)
-    );
-
-    if (courseByName) {
-      console.log('通过名称找到匹配课程:', courseByName.name, '(ID:', courseByName.id, ')');
-      return courseByName;
-    }
-  }
-
+  
   if (course) {
     console.log('成功匹配到课程:', course.name, '(ID:', course.id, ')');
   } else {
     console.log('未找到匹配的课程');
   }
-
+  
   return course;
 };
 
@@ -251,10 +224,10 @@ export const useStudentForm = (
           if (courseList.length > 0) {
             console.log('课程列表中的第一个ID类型:', typeof courseList[0].id, '值:', courseList[0].id);
           }
-
+          
           // 使用辅助函数进行灵活匹配
           let selectedCourse = findCourseById(courseList, selectedCourseId);
-
+          
           // 如果找不到课程，尝试使用模拟数据
           if (!selectedCourse && mockSimpleCourses) {
             console.log('在正常课程列表中找不到课程，尝试使用模拟数据');
@@ -313,7 +286,7 @@ export const useStudentForm = (
 
           // 准备课程信息
           const courseInfo: any = {
-            courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
+            courseId: Number(selectedCourse.id), // 使用找到的课程ID
             startDate: primaryGroup.enrollDate,
             endDate: primaryGroup.expireDate,
             coachId: coachId || 1, // 确保有教练ID
@@ -331,7 +304,7 @@ export const useStudentForm = (
           // 构建更新请求的payload
           const updatePayload = {
             studentId: editingStudent.studentId || Number(editingStudent.id),
-            courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
+            courseId: Number(selectedCourse.id), // 使用找到的课程ID
             studentInfo,
             courseInfo
           };
@@ -346,7 +319,7 @@ export const useStudentForm = (
           }
 
           // 检查courseId是否有效
-          if (updatePayload.courseId === undefined || updatePayload.courseId === null || updatePayload.courseId === '') {
+          if (!updatePayload.courseId) {
             message.error('无法获取课程ID，请重新选择课程');
             setLoading(false);
             return false;
@@ -375,10 +348,10 @@ export const useStudentForm = (
           if (courseList.length > 0) {
             console.log('课程列表中的第一个ID类型:', typeof courseList[0].id, '值:', courseList[0].id);
           }
-
+          
           // 使用辅助函数进行灵活匹配
           let selectedCourse = findCourseById(courseList, selectedCourseId);
-
+          
           // 如果找不到课程，尝试使用模拟数据
           if (!selectedCourse && mockSimpleCourses) {
             console.log('在正常课程列表中找不到课程，尝试使用模拟数据');
@@ -437,7 +410,7 @@ export const useStudentForm = (
 
           // 准备课程信息 - 确保包含courseId
           const courseInfo: any = {
-            courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
+            courseId: Number(selectedCourse.id), // 使用找到的课程ID
             startDate: primaryGroup.enrollDate,
             endDate: primaryGroup.expireDate,
             coachId: coachId || 1, // 确保有教练ID
@@ -453,7 +426,7 @@ export const useStudentForm = (
           }
 
           // 确保courseId存在且有效
-          if (courseInfo.courseId === undefined || courseInfo.courseId === null || courseInfo.courseId === '') {
+          if (!courseInfo.courseId) {
             message.error('无法获取课程ID，请重新选择课程');
             setLoading(false);
             return false;

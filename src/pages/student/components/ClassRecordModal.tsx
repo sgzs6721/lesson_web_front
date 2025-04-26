@@ -1,6 +1,6 @@
 import React from 'react';
-import { Modal, Table, Typography, Tag, Divider, Button } from 'antd';
-import { Student, ClassRecord } from '../types/student';
+import { Modal, Table, Typography, Tag, Divider, Button, Spin } from 'antd';
+import { Student, ClassRecord } from '@/api/student/types';
 import { FileTextOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -10,6 +10,7 @@ interface ClassRecordModalProps {
   visible: boolean;
   student: Student | null;
   records: ClassRecord[];
+  loading?: boolean;
   onCancel: () => void;
 }
 
@@ -17,6 +18,7 @@ const ClassRecordModal: React.FC<ClassRecordModalProps> = ({
   visible,
   student,
   records,
+  loading = false,
   onCancel
 }) => {
   // 表格列定义 (参照 StudentManagement.tsx)
@@ -59,7 +61,7 @@ const ClassRecordModal: React.FC<ClassRecordModalProps> = ({
     <Modal
       title={
         <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-          <FileTextOutlined style={{ marginRight: 8 }} /> 
+          <FileTextOutlined style={{ marginRight: 8 }} />
           {student?.name} 的课程记录
         </span>
       }
@@ -79,9 +81,10 @@ const ClassRecordModal: React.FC<ClassRecordModalProps> = ({
         columns={columns}
         rowKey="id"
         pagination={{ pageSize: 5 }}
+        loading={loading}
       />
     </Modal>
   );
 };
 
-export default ClassRecordModal; 
+export default ClassRecordModal;

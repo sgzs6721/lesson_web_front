@@ -1,144 +1,373 @@
-import { useState } from 'react';
-import { Student, StudentSearchParams } from '@/pages/student/types/student';
-import { mockStudents } from '@/pages/student/constants/mockData';
-import dayjs from 'dayjs';
+import { useState, useEffect } from 'react';
+import { Student, StudentSearchParams, StudentUISearchParams } from '@/api/student/types';
+import { API } from '@/api';
 import { message } from 'antd';
 
 export const useStudentData = () => {
-  const [students, setStudents] = useState<Student[]>(mockStudents);
-  const [filteredStudents, setFilteredStudents] = useState<Student[]>(mockStudents);
-  const [total, setTotal] = useState(mockStudents.length);
-  
+  const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
+  const [total, setTotal] = useState(0);
+  // 使用简单的loading状态，与教练管理页面保持一致
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // 获取学员列表
+  const fetchStudents = async (params?: StudentSearchParams) => {
+    try {
+      // 设置加载状态为true
+      setLoading(true);
+
+      // 确保有校区ID
+      const currentCampusId = localStorage.getItem('currentCampusId');
+      if (!currentCampusId) {
+        console.warn('未选择校区，无法获取学员列表');
+        message.warning('请先选择校区');
+        setLoading(false);
+        return [];
+      }
+
+      // 添加默认的倒序排序参数
+      const defaultParams: StudentSearchParams = {
+        ...params,
+        // 强制按ID倒序排序，确保新增学员总是显示在最前面
+        sortField: 'id',
+        sortOrder: 'desc',
+        // 添加校区ID
+        campusId: Number(currentCampusId)
+      };
+
+      // 调用API获取学员列表
+      const response = await API.student.getList(defaultParams);
+
+      if (response && response.list) {
+        // 更新状态
+        setStudents(response.list);
+        setFilteredStudents(response.list);
+        setTotal(response.total);
+      } else {
+        console.error('学员列表响应格式不正确:', response);
+        setStudents([]);
+        setFilteredStudents([]);
+        setTotal(0);
+      }
+
+      return response?.list || [];
+    } catch (error) {
+      console.error('获取学员列表失败:', error);
+      message.error('获取学员列表失败');
+
+      // 重置状态
+      setStudents([]);
+      setFilteredStudents([]);
+      setTotal(0);
+
+      return [];
+    } finally {
+      // 无论成功还是失败，都关闭加载状态
+      setLoading(false);
+    }
+  };
+
+  // 不在这里自动获取学员列表，而是由组件调用
+
   // 添加学员
-  const addStudent = (student: Omit<Student, 'id'>) => {
-    const newStudent: Student = {
-      ...student,
-      id: `ST${100000 + Math.floor(Math.random() * 900000)}`,
-    };
-    
-    const newStudents = [newStudent, ...students];
-    setStudents(newStudents);
-    setFilteredStudents(newStudents);
-    setTotal(prev => prev + 1);
-    message.success('学员添加成功');
-    
-    return newStudent;
+  const addStudent = async (student: Omit<Student, 'id'>) => {
+    try {
+      setLoading(true);
+      const newStudent = await API.student.add(student);
+
+      // 重新获取学员列表，确保数据最新
+      await fetchStudents({
+        page: currentPage,
+        pageSize: pageSize
+      });
+
+      message.success('学员添加成功');
+      return newStudent;
+    } catch (error) {
+      console.error('添加学员失败:', error);
+      message.error('添加学员失败');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
   // 更新学员
-  const updateStudent = (id: string, updatedData: Partial<Student>) => {
-    const newStudents = students.map(student => 
-      student.id === id ? { ...student, ...updatedData } : student
-    );
-    
-    setStudents(newStudents);
-    setFilteredStudents(newStudents);
-    message.success('学员信息已更新');
-  };
-  
-  // 删除学员
-  const deleteStudent = (id: string) => {
-    const newStudents = students.filter(student => student.id !== id);
-    setStudents(newStudents);
-    setFilteredStudents(newStudents);
-    setTotal(prev => prev - 1);
-    message.success('学员已删除');
-  };
-  
-  // 过滤学员数据
-  const filterStudents = (params: StudentSearchParams) => {
-    const { searchText, selectedStatus, selectedCourse, enrollMonth, sortOrder } = params;
-    
-    let filtered = students;
-    
-    // 按文本搜索
-    if (searchText) {
-      filtered = filtered.filter(
-        student => 
-          student.name.includes(searchText) || 
-          student.id.includes(searchText) ||
-          student.phone.includes(searchText)
-      );
-    }
-    
-    // 按状态过滤
-    if (selectedStatus) {
-      filtered = filtered.filter(student => student.status === selectedStatus);
-    }
-    
-    // 按课程过滤
-    if (selectedCourse) {
-      filtered = filtered.filter(student => student.course === selectedCourse);
-    }
-    
-    // 按报名月份过滤
-    if (enrollMonth) {
-      const year = enrollMonth.year();
-      const month = enrollMonth.month() + 1;
-      filtered = filtered.filter(student => {
-        const studentDate = dayjs(student.enrollDate);
-        return studentDate.year() === year && studentDate.month() + 1 === month;
-      });
-    }
-    
-    // 排序
-    if (sortOrder) {
-      filtered = [...filtered].sort((a, b) => {
-        // 根据选择的排序类型进行排序
-        switch(sortOrder) {
-          case 'enrollDateAsc':
-            return dayjs(a.enrollDate).unix() - dayjs(b.enrollDate).unix();
-          case 'enrollDateDesc':
-            return dayjs(b.enrollDate).unix() - dayjs(a.enrollDate).unix();
-          case 'ageAsc':
-            return a.age - b.age;
-          case 'ageDesc':
-            return b.age - a.age;
-          case 'remainingClassesAsc': {
-            const remainingA = parseInt(a.remainingClasses.split('/')[0], 10);
-            const remainingB = parseInt(b.remainingClasses.split('/')[0], 10);
-            return remainingA - remainingB;
+  const updateStudent = async (id: string, updatedData: Partial<Student> | any) => {
+    try {
+      setLoading(true);
+      console.log('更新学员参数:', id, updatedData);
+
+      // 检查是否是学员及课程更新请求（来自嵌套结构的表单）
+      if (updatedData && updatedData.studentId !== undefined && updatedData.courseId !== undefined && updatedData.studentInfo && updatedData.courseInfo) {
+        // 使用 updateWithCourse 方法
+        console.log('使用 updateWithCourse 方法更新学员及课程:', updatedData);
+        await API.student.updateWithCourse(updatedData);
+      } else {
+        // 使用原来的 update 方法
+        console.log('使用原来的 update 方法更新学员:', updatedData);
+        // 确保ID不为空
+        if (!id) {
+          id = String(updatedData.id || updatedData.studentId);
+          if (!id) {
+            console.error('更新学员失败: 无法获取学员ID', updatedData);
+            message.error('更新学员失败: 无法获取学员ID');
+            setLoading(false);
+            return;
           }
-          case 'remainingClassesDesc': {
-            const remainingA = parseInt(a.remainingClasses.split('/')[0], 10);
-            const remainingB = parseInt(b.remainingClasses.split('/')[0], 10);
-            return remainingB - remainingA;
-         }
-          case 'lastClassDateAsc': {
-            if (!a.lastClassDate) return 1;
-            if (!b.lastClassDate) return -1;
-            return dayjs(a.lastClassDate).unix() - dayjs(b.lastClassDate).unix();
-          }
-          case 'lastClassDateDesc': {
-            if (!a.lastClassDate) return 1;
-            if (!b.lastClassDate) return -1;
-            return dayjs(b.lastClassDate).unix() - dayjs(a.lastClassDate).unix();
-          }
-          default:
-            return 0;
         }
+        await API.student.update(id, updatedData);
+      }
+
+      // 重新获取学员列表，确保数据最新
+      await fetchStudents({
+        page: currentPage,
+        pageSize: pageSize
       });
+
+      message.success('学员信息已更新');
+    } catch (error) {
+      console.error('更新学员失败:', error);
+      message.error('更新学员失败');
+      throw error;
+    } finally {
+      setLoading(false);
     }
-    
-    setFilteredStudents(filtered);
-    setTotal(filtered.length);
-    
-    return filtered;
   };
-  
+
+  // 删除学员
+  const deleteStudent = async (id: string) => {
+    try {
+      setLoading(true);
+      await API.student.delete(id);
+
+      // 重新获取学员列表，确保数据最新
+      await fetchStudents({
+        page: currentPage,
+        pageSize: pageSize
+      });
+
+      message.success('学员已删除');
+    } catch (error) {
+      console.error('删除学员失败:', error);
+      message.error('删除学员失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 将前端搜索参数转换为API搜索参数
+  const convertToApiSearchParams = (uiParams: StudentUISearchParams): StudentSearchParams => {
+    const apiParams: StudentSearchParams = {
+      page: currentPage,
+      pageSize: pageSize,
+      // 默认按创建时间倒序排序
+      sortField: 'createdTime',
+      sortOrder: 'desc'
+    };
+
+    // 处理搜索文本
+    if (uiParams.searchText) {
+      apiParams.keyword = uiParams.searchText;
+    }
+
+    // 处理状态
+    if (uiParams.selectedStatus) {
+      // 根据状态值进行映射
+      const statusMap: Record<string, 'normal' | 'expired' | 'graduated' | 'STUDYING'> = {
+        'active': 'normal',
+        'ACTIVE': 'normal',
+        'inactive': 'expired',
+        'INACTIVE': 'expired',
+        'pending': 'graduated',
+        'PENDING': 'graduated',
+        'STUDYING': 'STUDYING',
+        'normal': 'normal',
+        'expired': 'expired',
+        'graduated': 'graduated'
+      };
+
+      apiParams.status = statusMap[uiParams.selectedStatus] || 'normal';
+    }
+
+    // 处理课程
+    if (uiParams.selectedCourse) {
+      apiParams.courseId = uiParams.selectedCourse;
+    }
+
+    // 处理报名月份
+    if (uiParams.enrollMonth) {
+      const year = uiParams.enrollMonth.year();
+      const month = uiParams.enrollMonth.month() + 1;
+      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+      const endDate = uiParams.enrollMonth.endOf('month').format('YYYY-MM-DD');
+
+      apiParams.enrollDateStart = startDate;
+      apiParams.enrollDateEnd = endDate;
+    }
+
+    // 处理排序
+    if (uiParams.sortOrder) {
+      switch(uiParams.sortOrder) {
+        case 'enrollDateAsc':
+          apiParams.sortField = 'enrollDate';
+          apiParams.sortOrder = 'asc';
+          break;
+        case 'enrollDateDesc':
+          apiParams.sortField = 'enrollDate';
+          apiParams.sortOrder = 'desc';
+          break;
+        case 'ageAsc':
+          apiParams.sortField = 'age';
+          apiParams.sortOrder = 'asc';
+          break;
+        case 'ageDesc':
+          apiParams.sortField = 'age';
+          apiParams.sortOrder = 'desc';
+          break;
+        case 'remainingClassesAsc':
+          apiParams.sortField = 'remainingClasses';
+          apiParams.sortOrder = 'asc';
+          break;
+        case 'remainingClassesDesc':
+          apiParams.sortField = 'remainingClasses';
+          apiParams.sortOrder = 'desc';
+          break;
+        case 'lastClassDateAsc':
+          apiParams.sortField = 'lastClassDate';
+          apiParams.sortOrder = 'asc';
+          break;
+        case 'lastClassDateDesc':
+          apiParams.sortField = 'lastClassDate';
+          apiParams.sortOrder = 'desc';
+          break;
+      }
+    }
+
+    return apiParams;
+  };
+
+  // 过滤学员数据
+  const filterStudents = async (uiParams: StudentUISearchParams) => {
+    try {
+      // 设置加载状态为true
+      setLoading(true);
+
+      // 确保有校区ID
+      const currentCampusId = localStorage.getItem('currentCampusId');
+      if (!currentCampusId) {
+        console.warn('未选择校区，无法过滤学员数据');
+        message.warning('请先选择校区');
+        setLoading(false);
+        return [];
+      }
+
+      // 将UI搜索参数转换为API搜索参数
+      const apiParams = convertToApiSearchParams(uiParams);
+      // 添加校区ID
+      apiParams.campusId = Number(currentCampusId);
+
+      // 调用API获取过滤后的学员列表
+      const response = await API.student.getList(apiParams);
+
+      if (response && response.list) {
+        // 更新状态
+        setFilteredStudents(response.list);
+        setTotal(response.total);
+      } else {
+        console.error('过滤学员数据响应格式不正确:', response);
+        setFilteredStudents([]);
+        setTotal(0);
+      }
+
+      return response?.list || [];
+    } catch (error) {
+      console.error('过滤学员数据失败:', error);
+      message.error('过滤学员数据失败');
+
+      // 重置状态
+      setFilteredStudents([]);
+      setTotal(0);
+
+      return [];
+    } finally {
+      // 无论成功还是失败，都关闭加载状态
+      setLoading(false);
+    }
+  };
+
   // 重置数据
-  const resetData = () => {
-    setFilteredStudents(students);
-    setTotal(students.length);
+  const resetData = async () => {
+    setCurrentPage(1);
+
+    try {
+      await fetchStudents({
+        page: 1,
+        pageSize: pageSize
+      });
+    } catch (error) {
+      console.error('重置数据失败:', error);
+      message.error('重置数据失败');
+    }
   };
-  
+
+  // 处理分页变化
+  const handlePageChange = async (page: number, size?: number) => {
+    setCurrentPage(page);
+    if (size) setPageSize(size);
+
+    try {
+      await fetchStudents({
+        page,
+        pageSize: size || pageSize
+      });
+    } catch (error) {
+      console.error('分页变化失败:', error);
+      message.error('分页变化失败');
+    }
+  };
+
+  // 直接将新创建的学员添加到列表开头
+  const addNewStudentToList = (newStudent: Student) => {
+    try {
+      console.log('添加新学员到列表:', newStudent);
+
+      // 确保教练信息存在
+      if (!newStudent.coach) {
+        console.warn('新学员缺少教练信息，尝试从课程中获取');
+      }
+
+      // 无论当前在哪一页，都将新学员添加到列表开头
+      setStudents(prevStudents => [newStudent, ...prevStudents]);
+      setFilteredStudents(prevStudents => [newStudent, ...prevStudents]);
+      // 更新总数
+      setTotal(prevTotal => prevTotal + 1);
+
+      // 如果当前不在第一页，则自动跳转到第一页
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+      }
+    } catch (error) {
+      console.error('添加学员到列表失败:', error);
+      message.error('添加学员到列表失败');
+    }
+  };
+
   return {
     students: filteredStudents,
     totalStudents: total,
+    loading,
+    currentPage,
+    pageSize,
     addStudent,
     updateStudent,
     deleteStudent,
     filterStudents,
-    resetData
+    resetData,
+    handlePageChange,
+    fetchStudents,
+    addNewStudentToList // 新增方法
   };
-}; 
+};

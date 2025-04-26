@@ -93,3 +93,17 @@ export interface CourseUpdateResponse extends ApiResponse<null> {}
 
 // 课程删除响应
 export interface CourseDeleteResponse extends ApiResponse<null> {}
+
+/**
+ * 简化的课程信息接口，用于下拉列表
+ */
+export interface SimpleCourse {
+  id: string | number; // ID 可能是数字或字符串，使用联合类型
+  name: string;      // 课程名称
+  typeName: string;  // 课程类型名称 (e.g., "一对一", "大课")
+  status: string;    // 课程状态 (e.g., "PUBLISHED")
+  coaches: {         // 教练列表
+    id: number;
+    name: string;
+  }[];
+}

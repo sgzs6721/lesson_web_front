@@ -1,24 +1,25 @@
 import React from 'react';
-import { 
-  Modal, 
-  Form, 
-  Input, 
-  Select, 
-  DatePicker, 
-  Row, 
-  Col, 
-  Typography, 
-  InputNumber, 
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Row,
+  Col,
+  Typography,
+  InputNumber,
   Tag,
-  Divider
+  Divider,
+  Spin
 } from 'antd';
 import { FormInstance } from 'antd/lib/form';
-import { Student, CourseSummary } from '../types/student';
-import { 
-  courseTypeOptions, 
-  paymentTypeOptions, 
-  paymentMethodOptions, 
-  giftOptions 
+import { Student, CourseSummary } from '@/api/student/types';
+import {
+  courseTypeOptions,
+  paymentTypeOptions,
+  paymentMethodOptions,
+  giftOptions
 } from '../constants/options';
 import dayjs from 'dayjs';
 
@@ -37,6 +38,7 @@ interface PaymentModalProps {
   newClassHours: number;
   totalClassHours: number;
   newValidUntil: string;
+  loading?: boolean;
   onCancel: () => void;
   onOk: () => void;
   onCourseChange: (courseId: string) => void;
@@ -55,6 +57,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   newClassHours,
   totalClassHours,
   newValidUntil,
+  loading = false,
   onCancel,
   onOk,
   onCourseChange,
@@ -86,9 +89,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       width={900}
       okText="确认提交"
       cancelText="取消"
+      confirmLoading={loading}
     >
       <Divider style={{ margin: '0 0 24px 0' }} />
-      
+
       <Row gutter={32}>
         <Col span={15}>
           <Form
@@ -102,7 +106,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             }}
           >
             <Title level={5} style={{ marginBottom: 16 }}>基本信息</Title>
-            
+
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
@@ -110,8 +114,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   label="缴费课程"
                   rules={[{ required: true, message: '请选择缴费课程' }]}
                 >
-                  <Select 
-                    placeholder="请选择缴费课程" 
+                  <Select
+                    placeholder="请选择缴费课程"
                     onChange={onCourseChange}
                   >
                     {coursesList.map(course => (
@@ -139,7 +143,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
             <Divider style={{ margin: '16px 0' }} />
             <Title level={5} style={{ marginBottom: 16 }}>缴费信息</Title>
-            
+
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
@@ -191,8 +195,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   label="交易日期"
                   rules={[{ required: true, message: '请选择交易日期' }]}
                 >
-                  <DatePicker 
-                    style={{ width: '100%' }} 
+                  <DatePicker
+                    style={{ width: '100%' }}
                     format="YYYY-MM-DD"
                     placeholder="年/月/日"
                   />
@@ -202,7 +206,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
             <Divider style={{ margin: '16px 0' }} />
             <Title level={5} style={{ marginBottom: 16 }}>课时信息</Title>
-            
+
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
@@ -240,8 +244,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   label="有效期至"
                   rules={[{ required: true, message: '请选择有效期' }]}
                 >
-                  <DatePicker 
-                    style={{ width: '100%' }} 
+                  <DatePicker
+                    style={{ width: '100%' }}
                     format="YYYY年MM月DD日"
                     onChange={onValidUntilChange}
                   />
@@ -252,9 +256,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   name="gift"
                   label="赠品"
                 >
-                  <Select 
+                  <Select
                     mode="multiple"
-                    placeholder="请选择赠品" 
+                    placeholder="请选择赠品"
                     style={{ width: '100%' }}
                     optionLabelProp="label"
                     allowClear
@@ -271,7 +275,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
             <Divider style={{ margin: '16px 0' }} />
             <Title level={5} style={{ marginBottom: 16 }}>备注信息</Title>
-            
+
             <Form.Item
               name="remarks"
             >
@@ -279,19 +283,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             </Form.Item>
           </Form>
         </Col>
-        
+
         <Col span={9}>
           <div style={{ textAlign: 'center', marginBottom: '12px' }}>
             <div style={{ fontSize: '16px', fontWeight: 'bold' }}>缴费预览</div>
           </div>
           <div style={{ background: '#f5f5f5', padding: '20px', height: 'calc(100% - 44px)', borderRadius: '4px', overflowY: 'auto' }}>
             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>报名课程信息</Typography.Title>
-            
+
             {coursesList.map((course: CourseSummary, index: number) => (
-              <div key={index} style={{ 
-                border: '1px solid #d9d9d9', 
-                borderRadius: '4px', 
-                padding: '12px', 
+              <div key={index} style={{
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                padding: '12px',
                 marginBottom: '12px',
                 background: course.id === selectedCourse ? '#e6f7ff' : '#fff',
                 borderColor: course.id === selectedCourse ? '#1890ff' : '#d9d9d9'
@@ -299,102 +303,102 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
                   <Typography.Text strong>{course.name}</Typography.Text>
                   <Tag color={
-                    course.status === '在学' ? 'green' : 
+                    course.status === '在学' ? 'green' :
                     course.status === '停课' ? 'red' : 'orange'
                   }>{course.status}</Tag>
                 </div>
-                
+
                 <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                   <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>课程类型：</span>
                   <span>{course.type}</span>
                 </div>
-                
+
                 <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                   <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>教练：</span>
                   <span>{course.coach}</span>
                 </div>
-                
+
                 <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                   <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>报名日期：</span>
                   <span>{course.enrollDate}</span>
                 </div>
-                
+
                 <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                   <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>有效期至：</span>
                   <span>{course.expireDate}</span>
                 </div>
-                
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                   <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>剩余课时：</span>
                   <span>{course.remainingClasses}</span>
                 </div>
               </div>
             ))}
-            
+
             <Divider style={{ margin: '16px 0' }} />
-            
+
             <Typography.Title level={5} style={{ marginBottom: 8 }}>缴费详情</Typography.Title>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>缴费课程：</div>
               <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                 {selectedCourseName}
               </div>
             </div>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次缴费金额：</div>
               <div style={{ color: '#f5222d', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                 ¥{form.getFieldValue('amount') || '0.00'}
               </div>
             </div>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>缴费日期：</div>
               <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>
                 {form.getFieldValue('transactionDate')?.format('YYYY-MM-DD') || dayjs().format('YYYY-MM-DD')}
               </div>
             </div>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次正课课时：</div>
               <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>
                 {form.getFieldValue('regularClasses') || 0} 课时
               </div>
             </div>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次赠送课时：</div>
               <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>
                 {form.getFieldValue('bonusClasses') || 0} 课时
               </div>
             </div>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次新增课时：</div>
               <div style={{ color: '#52c41a', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                 {newClassHours} 课时
               </div>
             </div>
-            
+
             <Divider style={{ margin: '16px 0' }} />
-            
+
             <Typography.Title level={5} style={{ marginBottom: 8 }}>缴费后状态</Typography.Title>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>变更后总课时：</div>
               <div style={{ color: '#1890ff', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                 {totalClassHours} 课时
               </div>
             </div>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>新有效期至：</div>
               <div style={{ color: '#1890ff', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                 {newValidUntil}
               </div>
             </div>
-            
+
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>赠品：</div>
               <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right', wordBreak: 'break-all' }}>
@@ -408,4 +412,4 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   );
 };
 
-export default PaymentModal; 
+export default PaymentModal;

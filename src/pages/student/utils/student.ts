@@ -1,4 +1,4 @@
-import { Student, CourseSummary, ClassSchedule, ClassRecord } from '../types/student';
+import { Student, CourseSummary, ClassSchedule, ClassRecord } from '@/api/student/types';
 import { courseOptions } from '../constants/options';
 import dayjs from 'dayjs';
 
@@ -17,17 +17,17 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
   if (student.courseGroups && student.courseGroups.length > 0) {
     student.courseGroups.forEach((group) => {
       const courseId = group.courses && group.courses.length > 0 ? group.courses[0] : '';
-      const courseName = courseId 
+      const courseName = courseId
         ? courseOptions.find(c => c.value === courseId)?.label || courseId
         : '未知课程';
-      
+
       allCourses.push({
         id: courseId,
         name: courseName,
         type: courseOptions.find(c => c.value === courseId)?.type || group.courseType,
         coach: group.coach,
-        status: group.status === 'active' ? '在学' : 
-               group.status === 'inactive' ? '停课' : '待处理',
+        status: group.status === 'ACTIVE' ? '在学' :
+               group.status === 'INACTIVE' ? '停课' : '待处理',
         enrollDate: group.enrollDate,
         expireDate: group.expireDate,
         remainingClasses: student.remainingClasses
@@ -37,16 +37,29 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
     // 如果只有一个主课程，添加到课程列表
     const courseId = Array.isArray(student.course) ? student.course[0] : student.course;
     const courseName = courseOptions.find(c => c.value === courseId)?.label || courseId;
-    
+
     allCourses.push({
       id: courseId,
       name: courseName,
-      type: courseOptions.find(c => c.value === courseId)?.type || student.courseType,
+      type: courseOptions.find(c => c.value === courseId)?.type || student.courseType || '',
       coach: student.coach,
-      status: student.status === 'active' ? '在学' : 
-              student.status === 'inactive' ? '停课' : '待处理',
+      status: student.status === 'ACTIVE' ? '在学' :
+              student.status === 'INACTIVE' ? '停课' : '待处理',
       enrollDate: student.enrollDate,
-      expireDate: student.expireDate,
+      expireDate: student.expireDate || '',
+      remainingClasses: student.remainingClasses
+    });
+  } else if (student.courseId && student.courseName) {
+    // 如果有courseId和courseName字段，使用这些字段
+    allCourses.push({
+      id: student.courseId,
+      name: student.courseName,
+      type: student.courseType || '',
+      coach: student.coachName || '',
+      status: student.status === 'ACTIVE' ? '在学' :
+              student.status === 'INACTIVE' ? '停课' : '待处理',
+      enrollDate: student.enrollDate,
+      expireDate: student.expireDate || '',
       remainingClasses: student.remainingClasses
     });
   }
@@ -63,9 +76,9 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
  */
 export const searchStudentsByKeyword = (students: Student[], keyword: string, excludeId?: string): Student[] => {
   if (!keyword.trim()) return [];
-  
-  return students.filter(student => 
-    (excludeId ? student.id !== excludeId : true) && 
+
+  return students.filter(student =>
+    (excludeId ? student.id !== excludeId : true) &&
     (
       student.name.toLowerCase().includes(keyword.toLowerCase()) ||
       student.id.toLowerCase().includes(keyword.toLowerCase()) ||
@@ -90,15 +103,15 @@ export const generateStudentSchedules = (student: Student): ClassSchedule[] => {
     'Sat': '六',
     'Sun': '日'
   };
-  
+
   // 获取主课程（如果是数组则取第一个）
   const mainCourse = Array.isArray(student.course) ? student.course[0] : student.course;
-  
+
   // 生成过去的已完成课程
   for (let i = 1; i <= 3; i++) {
     const date = dayjs().subtract(i * 7, 'day');
     const weekdayEn = date.format('ddd');
-    
+
     mockSchedules.push({
       date: date.format('YYYY-MM-DD'),
       weekday: weekdayMap[weekdayEn] || weekdayEn,
@@ -106,15 +119,15 @@ export const generateStudentSchedules = (student: Student): ClassSchedule[] => {
       endTime: '16:30',
       courseName: courseOptions.find(c => c.value === mainCourse)?.label || mainCourse,
       coach: student.coach,
-      status: 'completed'
+      status: 'COMPLETED'
     });
   }
-  
+
   // 生成未来的即将到来的课程
   for (let i = 1; i <= 4; i++) {
     const date = dayjs().add(i * 7, 'day');
     const weekdayEn = date.format('ddd');
-    
+
     mockSchedules.push({
       date: date.format('YYYY-MM-DD'),
       weekday: weekdayMap[weekdayEn] || weekdayEn,
@@ -122,14 +135,14 @@ export const generateStudentSchedules = (student: Student): ClassSchedule[] => {
       endTime: '16:30',
       courseName: courseOptions.find(c => c.value === mainCourse)?.label || mainCourse,
       coach: student.coach,
-      status: 'upcoming'
+      status: 'UPCOMING'
     });
   }
-  
+
   // 添加一个取消的课程
   const cancelDate = dayjs().add(2, 'day');
   const cancelWeekdayEn = cancelDate.format('ddd');
-  
+
   mockSchedules.push({
     date: cancelDate.format('YYYY-MM-DD'),
     weekday: weekdayMap[cancelWeekdayEn] || cancelWeekdayEn,
@@ -137,11 +150,11 @@ export const generateStudentSchedules = (student: Student): ClassSchedule[] => {
     endTime: '16:30',
     courseName: courseOptions.find(c => c.value === mainCourse)?.label || mainCourse,
     coach: student.coach,
-    status: 'canceled'
+    status: 'CANCELED'
   });
-  
+
   // 按日期排序
-  return mockSchedules.sort((a, b) => 
+  return mockSchedules.sort((a, b) =>
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 };
@@ -153,16 +166,16 @@ export const generateStudentSchedules = (student: Student): ClassSchedule[] => {
  */
 export const generateClassRecords = (student: Student): ClassRecord[] => {
   const mockRecords: ClassRecord[] = [];
-  
+
   // 获取主课程（如果是数组则取第一个）
   const mainCourse = Array.isArray(student.course) ? student.course[0] : student.course;
-  
+
   // 生成过去10节课的记录
   const today = dayjs();
-  
+
   for (let i = 0; i < 10; i++) {
     const date = today.subtract(i * 7, 'day').format('YYYY-MM-DD');
-    
+
     mockRecords.push({
       id: i.toString(),
       date,
@@ -174,9 +187,9 @@ export const generateClassRecords = (student: Student): ClassRecord[] => {
       feedback: `学生表现${['优秀', '良好', '一般', '需要加强'][i % 4]}，${['积极参与课堂活动', '注意力有所提高', '技能有所进步', '需要更多练习'][i % 4]}`
     });
   }
-  
+
   // 按日期排序，最新的排在前面
-  return mockRecords.sort((a, b) => 
+  return mockRecords.sort((a, b) =>
     dayjs(b.date).unix() - dayjs(a.date).unix()
   );
-}; 
+};

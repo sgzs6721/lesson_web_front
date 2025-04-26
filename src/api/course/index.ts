@@ -3,7 +3,8 @@ import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
 import { mockApiResponse, mockCourses, mockPaginatedResponse } from './mock';
 
 // Import shared config
-import { request, USE_MOCK } from '../config';
+import { request, USE_MOCK, API_HOST } from '../config';
+import { SimpleCourse } from './types';
 
 // 课程列表缓存机制
 // 缓存对象，键为查询参数字符串，值为缓存的响应和时间戳
@@ -30,6 +31,7 @@ const COURSE_API_PATHS = {
   ADD: '/lesson/api/courses/create',
   UPDATE: '/lesson/api/courses/update',
   DELETE: (id: string) => `/lesson/api/courses/delete?id=${id}`,
+  SIMPLE_LIST: '/lesson/api/courses/simple'
 };
 
 // 课程相关接口
@@ -70,15 +72,15 @@ export const course = {
 
       // 按教练ID筛选（支持多选）
       if (params?.coachIds && params.coachIds.length > 0) {
-        filteredCourses = filteredCourses.filter(course => 
+        filteredCourses = filteredCourses.filter(course =>
           course.coaches?.some(coach => params.coachIds?.includes(coach.id))
         );
       } else if (params?.selectedCoach && params.selectedCoach.length > 0) {
-        filteredCourses = filteredCourses.filter(course => 
+        filteredCourses = filteredCourses.filter(course =>
           course.coaches?.some(coach => params.selectedCoach?.includes(coach.id))
         );
       }
-      
+
       // 按校区ID筛选
       if (params?.campusId) {
         filteredCourses = filteredCourses.filter(course =>
@@ -127,7 +129,7 @@ export const course = {
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
     if (params?.searchText) queryParams.append('keyword', params.searchText);
-    
+
     // 处理课程类型多选
     if (params?.typeIds && Array.isArray(params.typeIds) && params.typeIds.length > 0) {
       params.typeIds.forEach(typeId => {
@@ -138,7 +140,7 @@ export const course = {
         queryParams.append('typeIds', typeId.toString());
       });
     }
-    
+
     // 修复状态过滤参数，确保传递字符串枚举名称而不是值
     if (params?.selectedStatus) {
       // 找出枚举名称（PUBLISHED, SUSPENDED, TERMINATED）而不是枚举值
@@ -154,7 +156,7 @@ export const course = {
         console.log('未找到匹配的枚举名称，使用原始状态值:', params.selectedStatus);
       }
     }
-    
+
     // 处理教练多选
     if (params?.coachIds && Array.isArray(params.coachIds) && params.coachIds.length > 0) {
       params.coachIds.forEach(coachId => {
@@ -406,5 +408,76 @@ export const course = {
     });
 
     return;
+  }
+};
+
+// 更新 Mock 数据以匹配新的 SimpleCourse 接口
+const mockSimpleCourses: SimpleCourse[] = [
+  { id: 'basketball', name: '篮球训练', typeName: '体育大类', status: 'PUBLISHED', coaches: [{ id: 1001, name: '王教练' }, { id: 1002, name: '李教练' }] },
+  { id: 'swimming', name: '游泳课程', typeName: '体育小班', status: 'PUBLISHED', coaches: [{ id: 1003, name: '张教练' }] },
+  { id: 'tennis', name: '网球培训', typeName: '体育一对一', status: 'PUBLISHED', coaches: [{ id: 1004, name: '赵教练' }] },
+  { id: 'painting', name: '绘画班', typeName: '艺术启蒙', status: 'PUBLISHED', coaches: [{ id: 1005, name: '孙教练' }] },
+  { id: 'piano', name: '钢琴培训', typeName: '艺术一对一', status: 'PUBLISHED', coaches: [{ id: 1006, name: '吴教练' }] },
+  { id: 'dance', name: '舞蹈课程', typeName: '艺术形体', status: 'PUBLISHED', coaches: [{ id: 1007, name: '冯教练' }] },
+  { id: 'math', name: '数学辅导', typeName: '学科培优', status: 'PUBLISHED', coaches: [{ id: 1008, name: '杨教练' }] },
+  { id: 'english', name: '英语班', typeName: '语言提升', status: 'PUBLISHED', coaches: [{ id: 1009, name: '秦教练' }] },
+];
+
+/**
+ * 获取简化的课程列表 (用于下拉框)
+ * @param campusId 可选的校区 ID
+ */
+export const getCourseSimpleList = async (campusId?: string | number): Promise<SimpleCourse[]> => {
+  if (USE_MOCK) {
+    console.log("Using mock course simple list for campus:", campusId);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    // 如果需要，可以根据 campusId 过滤 mock 数据
+    return mockSimpleCourses;
+  }
+
+  try {
+    // 参照 coach.getSimpleList 处理 campusId
+    const currentCampusId = localStorage.getItem('currentCampusId');
+    let finalCampusId = campusId;
+
+    if (finalCampusId === undefined && currentCampusId) {
+      finalCampusId = currentCampusId;
+    }
+
+    // 如果仍然没有 campusId，使用默认值 1
+    if (finalCampusId === undefined) {
+      console.warn('获取课程简单列表时 campusId 未定义，使用默认值 1');
+      finalCampusId = '1'; // 设置默认值为 1
+    }
+
+    let apiUrl = COURSE_API_PATHS.SIMPLE_LIST;
+    // 始终添加 campusId 参数
+    apiUrl += `?campusId=${finalCampusId}`;
+
+    console.log(`Fetching simple course list from: ${apiUrl}`);
+    const response = await request(apiUrl);
+
+    // 添加更详细的日志
+    console.log('Course simple list response:', response);
+
+    if (response.code === 200 && response.data) {
+      // 检查响应数据是否为空数组
+      if (Array.isArray(response.data) && response.data.length === 0) {
+        console.warn('课程列表为空，返回默认模拟数据');
+        // 如果服务器返回空数组，使用模拟数据
+        return mockSimpleCourses;
+      }
+      return response.data;
+    } else {
+      console.error("Failed to fetch course simple list or unexpected code:", response.code, response.message);
+      // 如果响应不成功，返回模拟数据而不是抛出异常
+      console.warn('返回默认模拟数据');
+      return mockSimpleCourses;
+    }
+  } catch (error) {
+    console.error("Error fetching course simple list:", error);
+    // 异常情况下返回模拟数据而不是空数组
+    console.warn('发生异常，返回默认模拟数据');
+    return mockSimpleCourses;
   }
 };

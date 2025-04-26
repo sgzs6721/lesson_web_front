@@ -9,7 +9,7 @@ export interface ClassSchedule {
   endTime: string;
   courseName: string;
   coach: string;
-  status: 'completed' | 'upcoming' | 'canceled';
+  status: 'COMPLETED' | 'UPCOMING' | 'CANCELED';
 }
 
 // 定义上课记录接口
@@ -28,6 +28,7 @@ export interface ClassRecord {
 export interface ScheduleTime {
   weekday: string;
   time: string;
+  endTime?: string;
 }
 
 // 缴费记录接口
@@ -59,24 +60,129 @@ export interface CourseSummary {
   remainingClasses?: string;
 }
 
-// 学员接口
+// API 学员接口
+export interface StudentDTO {
+  // 原有字段
+  id?: string;
+  name?: string;
+  gender?: 'MALE' | 'FEMALE';
+  age?: number;
+  phone?: string;
+  email?: string;
+  address?: string;
+  parentName?: string;
+  parentPhone?: string;
+  courseId?: string | number;
+  courseName?: string;
+  coachId?: string | number;
+  coachName?: string;
+  lastClassDate?: string;
+  enrollDate?: string;
+  expireDate?: string;
+  remainingClasses?: number;
+  status?: 'normal' | 'expired' | 'graduated' | 'STUDYING';
+  campusId?: number;
+  campusName?: string;
+  createdTime?: string;
+  updatedTime?: string;
+
+  // 新API响应字段
+  studentId?: number;
+  studentDisplayId?: string;
+  studentName?: string;
+  studentGender?: 'MALE' | 'FEMALE';
+  studentAge?: number;
+  studentPhone?: string;
+  courseTypeName?: string;
+  totalHours?: number;
+  consumedHours?: number;
+  remainingHours?: number;
+  lastClassTime?: string;
+  enrollmentDate?: string;
+  endDate?: string;
+  studentCourseId?: number;
+  courseType?: string;
+  institutionId?: number;
+  institutionName?: string;
+
+  // 固定排课时间
+  fixedSchedule?: string;
+}
+
+// 前端使用的学员接口
 export interface Student {
   id: string;
   name: string;
-  gender: 'male' | 'female';
+  gender: 'MALE' | 'FEMALE';
   age: number;
   phone: string;
-  courseType: string;
+  email?: string;
+  address?: string;
+  parentName?: string;
+  parentPhone?: string;
+  courseType?: string;
   course: string | string[];
   coach: string;
-  lastClassDate: string;
+  lastClassDate?: string;
   enrollDate: string;
-  expireDate: string;
+  expireDate?: string;
   remainingClasses: string; // 剩余课时
-  status: 'active' | 'inactive' | 'pending';
+  status: 'normal' | 'expired' | 'graduated' | 'STUDYING';
+  campusId: number;
+  campusName?: string;
   scheduleTimes?: ScheduleTime[]; // 排课时间
   payments?: PaymentRecord[]; // 缴费记录
   courseGroups?: CourseGroup[]; // 课程组信息
+  createdTime?: string;
+  updatedTime?: string;
+
+  // 新增字段
+  studentId?: number;
+  studentDisplayId?: string;
+  totalHours?: number;
+  consumedHours?: number;
+  courseId?: number;
+  coachId?: number;
+  institutionId?: number;
+  institutionName?: string;
+}
+
+// 学员创建请求
+export interface CreateStudentRequest {
+  name: string;
+  gender: 'MALE' | 'FEMALE';
+  age: number;
+  phone: string;
+  email?: string;
+  address?: string;
+  parentName?: string;
+  parentPhone?: string;
+  courseId?: string;
+  coachId?: string;
+  enrollDate: string;
+  expireDate?: string;
+  remainingClasses?: number;
+  status: 'normal' | 'expired' | 'graduated' | 'STUDYING';
+  campusId: number;
+}
+
+// 学员更新请求
+export interface UpdateStudentRequest {
+  name?: string;
+  gender?: 'MALE' | 'FEMALE';
+  age?: number;
+  phone?: string;
+  email?: string;
+  address?: string;
+  parentName?: string;
+  parentPhone?: string;
+  courseId?: string;
+  coachId?: string;
+  enrollDate?: string;
+  expireDate?: string;
+  remainingClasses?: number;
+  status?: 'normal' | 'expired' | 'graduated' | 'STUDYING';
+  campusId?: number;
 }
 
 // 课程组接口
@@ -85,7 +191,7 @@ export interface CourseGroup {
   courses: string[];
   courseType: string;
   coach: string;
-  status: 'active' | 'inactive' | 'pending';
+  status: 'normal' | 'expired' | 'graduated' | 'STUDYING';
   enrollDate: string;
   expireDate: string;
   scheduleTimes: ScheduleTime[];
@@ -93,6 +199,21 @@ export interface CourseGroup {
 
 // 学员查询参数
 export interface StudentSearchParams {
+  keyword?: string;
+  status?: 'normal' | 'expired' | 'graduated' | 'STUDYING';
+  courseId?: string;
+  coachId?: string;
+  campusId?: number;
+  enrollDateStart?: string;
+  enrollDateEnd?: string;
+  page?: number;
+  pageSize?: number;
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+// 前端使用的学员查询参数
+export interface StudentUISearchParams {
   searchText: string;
   selectedStatus?: string;
   selectedCourse?: string;

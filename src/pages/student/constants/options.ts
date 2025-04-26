@@ -46,8 +46,8 @@ export const weekdayOptions = [
   { value: '三', label: '周三' },
   { value: '四', label: '周四' },
   { value: '五', label: '周五' },
-  { value: '六', label: '周六' },
-  { value: '日', label: '周日' },
+  { value: '6', label: '周六' },
+  { value: '7', label: '周日' },
 ];
 
 // 缴费类型选项
@@ -73,4 +73,10 @@ export const giftOptions = [
   { value: 'notebook', label: '笔记本' },
   { value: 'tshirt', label: 'T恤' },
   { value: 'cap', label: '帽子' },
+];
+
+export const studentStatusOptions = [
+  { value: 'normal', label: '正常' },
+  { value: 'expired', label: '过期' },
+  { value: 'graduated', label: '结业' },
 ]; 

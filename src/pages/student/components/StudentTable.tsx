@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table } from 'antd';
+import { Table, Empty } from 'antd';
 import { Student } from '@/pages/student/types/student';
 import { getStudentColumns } from '@/pages/student/constants/tableColumns';
 import '../student.css';
@@ -47,13 +47,16 @@ const StudentTable: React.FC<StudentTableProps> = ({
     onAttendance,
   );
 
+  // 不再需要自定义加载图标
+
   return (
     <div className="student-table-container">
+      {/* 使用默认的Table加载效果 */}
       <Table
         columns={columns}
         dataSource={data}
-        rowKey="id"
-        loading={loading}
+        rowKey="studentId" // Changed from "id" to "studentId" to match the API response
+        loading={loading} // 与教练管理页面保持一致，使用简单的loading属性
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -63,9 +66,12 @@ const StudentTable: React.FC<StudentTableProps> = ({
           showTotal: total => `共 ${total} 条记录`,
           onChange: pagination.onChange
         }}
+        locale={{
+          emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" />
+        }}
       />
     </div>
   );
 };
 
-export default StudentTable; 
+export default StudentTable;

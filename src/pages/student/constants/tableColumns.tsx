@@ -1,15 +1,15 @@
 import React from 'react';
 import { Tag, Button, Dropdown } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { 
-  EditOutlined, 
-  FileTextOutlined, 
-  DollarOutlined, 
-  RollbackOutlined, 
-  TransactionOutlined, 
-  SyncOutlined, 
-  DeleteOutlined, 
-  DownOutlined 
+import {
+  EditOutlined,
+  FileTextOutlined,
+  DollarOutlined,
+  RollbackOutlined,
+  TransactionOutlined,
+  SyncOutlined,
+  DeleteOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import { Student } from '@/pages/student/types/student';
 import dayjs from 'dayjs';
@@ -21,15 +21,18 @@ const columnStyle: React.CSSProperties = {
 };
 
 // 课程类型渲染函数
-const renderCourseType = (text: string, record: Student) => {
+const renderCourseType = (text: string | undefined) => {
+  if (!text) return <Tag color="default">未设置</Tag>;
+
   const typeInfo = courseTypeOptions.find(t => t.value === text);
-  
+
   return (
     <Tag
       color={
         text === 'sports' ? 'green' :
         text === 'art' ? 'purple' :
-        text === 'academic' ? 'orange' : 'blue'
+        text === 'academic' ? 'orange' :
+        text === '大课' ? 'blue' : 'default'
       }
     >
       {typeInfo?.label || text}
@@ -54,8 +57,8 @@ export const getStudentColumns = (
     align: 'center',
     width: 80,
     render: (_: any, record: Student) => (
-      <Button 
-        type="link" 
+      <Button
+        type="link"
         onClick={() => onAttendance(record)}
         style={{ padding: '4px 8px' }}
       >
@@ -88,8 +91,8 @@ export const getStudentColumns = (
     }),
     render: (text, record) => (
       <span>
-        {record.gender === 'male' ? 
-          <span style={{ color: '#1890ff', marginRight: 5 }}>♂</span> : 
+        {record.gender === 'MALE' ?
+          <span style={{ color: '#1890ff', marginRight: 5 }}>♂</span> :
           <span style={{ color: '#eb2f96', marginRight: 5 }}>♀</span>
         }
         {text}
@@ -126,7 +129,7 @@ export const getStudentColumns = (
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
     render: renderCourseType,
-    sorter: (a, b) => a.courseType.localeCompare(b.courseType)
+    sorter: (a, b) => (a.courseType || '').localeCompare(b.courseType || '')
   },
   {
     title: '教练',
@@ -136,7 +139,25 @@ export const getStudentColumns = (
     onHeaderCell: () => ({
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
-    sorter: (a, b) => a.coach.localeCompare(b.coach)
+    render: (text, record) => {
+      // 如果有教练信息，直接显示
+      if (text) {
+        return text;
+      }
+
+      // 如果没有教练信息，但有课程组信息，尝试从课程组获取
+      if (record.courseGroups && record.courseGroups.length > 0 && record.courseGroups[0].coach) {
+        return record.courseGroups[0].coach;
+      }
+
+      // 如果都没有，显示默认值
+      return '-';
+    },
+    sorter: (a, b) => {
+      const coachA = a.coach || (a.courseGroups && a.courseGroups.length > 0 ? a.courseGroups[0].coach : '') || '';
+      const coachB = b.coach || (b.courseGroups && b.courseGroups.length > 0 ? b.courseGroups[0].coach : '') || '';
+      return coachA.localeCompare(coachB);
+    }
   },
   {
     title: '剩余课时',
@@ -189,13 +210,20 @@ export const getStudentColumns = (
     render: status => {
       let color = '';
       let text = '';
-      
+
       switch (status) {
         case 'active':
+        case 'normal':
+        case 'NORMAL':
+          color = 'green';
+          text = '在学';
+          break;
+        case 'STUDYING':
           color = 'green';
           text = '在学';
           break;
         case 'inactive':
+        case 'SUSPENDED':
           color = 'red';
           text = '停课';
           break;
@@ -203,16 +231,38 @@ export const getStudentColumns = (
           color = 'orange';
           text = '待处理';
           break;
+        case 'graduated':
+        case 'GRADUATED':
+          color = 'blue';
+          text = '结业';
+          break;
+        case 'expired':
+          color = 'gray';
+          text = '过期';
+          break;
         default:
           color = 'default';
           text = status;
       }
-      
+
       return <Tag color={color}>{text}</Tag>;
     },
     sorter: (a, b) => {
-      const statusOrder = { active: 0, pending: 1, inactive: 2 };
-      return statusOrder[a.status as keyof typeof statusOrder] - statusOrder[b.status as keyof typeof statusOrder];
+      const statusOrder = {
+        active: 0,
+        normal: 0,
+        NORMAL: 0,
+        STUDYING: 0,
+        pending: 1,
+        inactive: 2,
+        SUSPENDED: 2,
+        graduated: 3,
+        GRADUATED: 3,
+        expired: 4
+      };
+      const aOrder = statusOrder[a.status as keyof typeof statusOrder] ?? 99;
+      const bOrder = statusOrder[b.status as keyof typeof statusOrder] ?? 99;
+      return aOrder - bOrder;
     }
   },
   {
@@ -279,4 +329,4 @@ export const getStudentColumns = (
       </Dropdown>
     ),
   },
-]; 
+];

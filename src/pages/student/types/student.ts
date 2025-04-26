@@ -27,6 +27,7 @@ export interface ClassRecord {
 export interface ScheduleTime {
   weekday: string;
   time: string;
+  endTime?: string;
 }
 
 // 缴费记录接口
@@ -58,33 +59,44 @@ export interface CourseSummary {
   remainingClasses?: string;
 }
 
-// 学员接口
+// 学员接口 (UI 层使用)
 export interface Student {
   id: string;
   name: string;
-  gender: 'male' | 'female';
+  gender: 'MALE' | 'FEMALE'; // 与 API 保持一致
   age: number;
   phone: string;
-  courseType: string;
-  course: string | string[];
-  coach: string;
-  lastClassDate: string;
-  enrollDate: string;
-  expireDate: string;
-  remainingClasses: string; // 剩余课时
-  status: 'active' | 'inactive' | 'pending';
-  scheduleTimes?: ScheduleTime[]; // 排课时间
-  payments?: PaymentRecord[]; // 缴费记录
-  courseGroups?: CourseGroup[]; // 课程组信息
+  email?: string;         // 与 API 保持一致
+  address?: string;        // 与 API 保持一致
+  parentName?: string;     // 与 API 保持一致
+  parentPhone?: string;    // 与 API 保持一致
+  // --- 以下字段 UI 可能需要，但 API DTO 中可能没有或名称不同，需要确认 ---
+  courseType?: string;     // 课程类型名称 (改为可选?)
+  course: string | string[]; // 课程 ID 列表 (可能来自 CourseGroup)
+  coach: string;           // 教练名称 (可能来自 CourseGroup)
+  lastClassDate?: string;  // API 中有 lastClassDate (改为可选?)
+  enrollDate: string;      // API 中有 enrollDate
+  expireDate?: string;     // API 中有 expireDate (改为可选?)
+  remainingClasses: string; // 改为必需的 string
+  status: 'normal' | 'expired' | 'graduated' | 'STUDYING'; // 使用更新后的状态
+  // --- 以下字段 API DTO 中有，UI 层也需要 ---
+  campusId: number;        // 与 API 保持一致
+  campusName?: string;     // 与 API 保持一致
+  createdTime?: string;    // 与 API 保持一致
+  updatedTime?: string;    // 与 API 保持一致
+  // --- 以下为 UI 层特有或关联数据 ---
+  scheduleTimes?: ScheduleTime[];
+  payments?: PaymentRecord[];
+  courseGroups?: CourseGroup[];
 }
 
-// 课程组接口
+// 课程组接口 (UI 层使用，确认字段来源)
 export interface CourseGroup {
   key: string;
-  courses: string[];
-  courseType: string;
-  coach: string;
-  status: 'active' | 'inactive' | 'pending';
+  courses: string[]; // 课程 ID 列表
+  courseType: string; // 课程类型名称 (来自 SimpleCourse.typeName)
+  coach: string;      // 教练名称 (来自 SimpleCourse.coaches[0].name)
+  status: 'normal' | 'expired' | 'graduated' | 'STUDYING'; // 课程组状态 (需要确认是否需要，还是使用学生主状态)
   enrollDate: string;
   expireDate: string;
   scheduleTimes: ScheduleTime[];
@@ -97,4 +109,4 @@ export interface StudentSearchParams {
   selectedCourse?: string;
   enrollMonth: Dayjs | null;
   sortOrder?: 'enrollDateAsc' | 'enrollDateDesc' | 'ageAsc' | 'ageDesc' | 'remainingClassesAsc' | 'remainingClassesDesc' | 'lastClassDateAsc' | 'lastClassDateDesc';
-} 
+}
