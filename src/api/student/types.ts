@@ -141,7 +141,7 @@ export interface Student {
   studentDisplayId?: string;
   totalHours?: number;
   consumedHours?: number;
-  courseId?: number;
+  courseId?: string | number;
   coachId?: number;
   institutionId?: number;
   institutionName?: string;

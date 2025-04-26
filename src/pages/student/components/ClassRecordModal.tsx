@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Table, Typography, Tag, Divider, Button, Spin } from 'antd';
-import { Student, ClassRecord } from '@/api/student/types';
+import { Student, ClassRecord } from '@/pages/student/types/student';
 import { FileTextOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 

@@ -6,7 +6,7 @@ export const mockStudents: Student[] = [
   {
     id: '1',
     name: '张小明',
-    gender: 'male',
+    gender: 'MALE',
     age: 10,
     phone: '13800138001',
     courseType: '数学',
@@ -16,12 +16,13 @@ export const mockStudents: Student[] = [
     enrollDate: '2023-01-10',
     expireDate: '2023-12-31',
     remainingClasses: '15',
-    status: 'active'
+    status: 'normal',
+    campusId: 1
   },
   {
     id: '2',
     name: '李小红',
-    gender: 'female',
+    gender: 'FEMALE',
     age: 9,
     phone: '13800138002',
     courseType: '英语',
@@ -31,12 +32,13 @@ export const mockStudents: Student[] = [
     enrollDate: '2023-02-15',
     expireDate: '2023-11-30',
     remainingClasses: '10',
-    status: 'active'
+    status: 'normal',
+    campusId: 1
   },
   {
     id: '3',
     name: '王小刚',
-    gender: 'male',
+    gender: 'MALE',
     age: 11,
     phone: '13800138003',
     courseType: '物理',
@@ -46,7 +48,8 @@ export const mockStudents: Student[] = [
     enrollDate: '2023-03-01',
     expireDate: '2023-10-31',
     remainingClasses: '5',
-    status: 'inactive'
+    status: 'expired',
+    campusId: 1
   }
 ];
 

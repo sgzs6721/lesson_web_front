@@ -14,7 +14,7 @@ import {
   Spin
 } from 'antd';
 import { FormInstance } from 'antd/lib/form';
-import { Student, CourseSummary } from '@/api/student/types';
+import { Student, CourseSummary } from '@/pages/student/types/student';
 import {
   courseTypeOptions,
   paymentTypeOptions,

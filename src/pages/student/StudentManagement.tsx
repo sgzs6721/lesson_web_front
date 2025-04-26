@@ -84,8 +84,8 @@ const StudentManagement: React.FC = () => {
   // but relies on df.form.handleSubmit for the actual API call.
   const dummyAddStudentForUI = (
     // Match the expected signature more closely, note the return type is Student, not Promise<Student>
-    studentData: Omit<ApiStudent, 'id'> & { remainingClasses?: string; lastClassDate?: string }
-  ): ApiStudent => {
+    studentData: Omit<UiStudent, 'id'> & { remainingClasses?: string; lastClassDate?: string }
+  ): UiStudent => {
       console.warn("dummyAddStudentForUI called, but actual add logic is in handleSubmit. This shouldn't happen if UI buttons trigger df.form.showAddModal.");
       // Return a placeholder/dummy ApiStudent to satisfy the type
       // Ensure all required ApiStudent fields have default/dummy values
@@ -96,7 +96,7 @@ const StudentManagement: React.FC = () => {
       }
 
       return {
-          ...(studentData as Omit<ApiStudent, 'id'>), // Spread assuming input matches ApiStudent structure now
+          ...(studentData as Omit<UiStudent, 'id'>), // Spread assuming input matches UiStudent structure now
           id: 'temp-' + Date.now().toString(), // Temporary ID as string
           // Provide defaults for fields potentially missing in Omit<...> & {...}
           courseType: studentData.courseType ?? '',
@@ -106,7 +106,7 @@ const StudentManagement: React.FC = () => {
           expireDate: studentData.expireDate ?? '',
           // Correct remainingClasses type to string
           remainingClasses: String(studentData.remainingClasses || '0'), // Ensure it's a string
-          status: studentData.status ?? 'NORMAL',
+          status: studentData.status ?? 'normal',
           campusId: studentData.campusId ?? 1, // Assuming campusId is needed
           campusName: studentData.campusName ?? '',
           createdTime: studentData.createdTime ?? '',
@@ -114,8 +114,8 @@ const StudentManagement: React.FC = () => {
           scheduleTimes: studentData.scheduleTimes ?? [],
           payments: studentData.payments ?? [],
           courseGroups: studentData.courseGroups ?? []
-          // Ensure all required fields from ApiStudent are present
-       } as ApiStudent; // Cast to ApiStudent
+          // Ensure all required fields from UiStudent are present
+       } as UiStudent; // Cast to UiStudent
   };
 
   // Pass df.data.deleteStudent and the dummy add function

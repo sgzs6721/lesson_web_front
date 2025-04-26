@@ -131,7 +131,7 @@ const findCourseById = (courseList: SimpleCourse[], courseId: string | number): 
 
 export const useStudentForm = (
   onAddStudent: (payload: { studentInfo: any; courseInfo: any }) => Promise<Student>,
-  onUpdateStudent: (id: string, student: Partial<Student>) => Promise<void>,
+  onUpdateStudent: (id: string, student: any) => Promise<void>,
   courseList: SimpleCourse[]
 ) => {
   const [form] = Form.useForm();

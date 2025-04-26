@@ -1,4 +1,4 @@
-import { Student, CourseSummary, ClassSchedule, ClassRecord } from '@/api/student/types';
+import { Student, CourseSummary, ClassRecord, ClassSchedule } from '@/pages/student/types/student';
 import { courseOptions } from '../constants/options';
 import dayjs from 'dayjs';
 
@@ -26,8 +26,10 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
         name: courseName,
         type: courseOptions.find(c => c.value === courseId)?.type || group.courseType,
         coach: group.coach,
-        status: group.status === 'ACTIVE' ? '在学' :
-               group.status === 'INACTIVE' ? '停课' : '待处理',
+        status: group.status === 'normal' ? '在学' :
+               group.status === 'expired' ? '停课' :
+               group.status === 'graduated' ? '已毕业' :
+               group.status === 'STUDYING' ? '在学' : '待处理',
         enrollDate: group.enrollDate,
         expireDate: group.expireDate,
         remainingClasses: student.remainingClasses
@@ -43,21 +45,36 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
       name: courseName,
       type: courseOptions.find(c => c.value === courseId)?.type || student.courseType || '',
       coach: student.coach,
-      status: student.status === 'ACTIVE' ? '在学' :
-              student.status === 'INACTIVE' ? '停课' : '待处理',
+      status: student.status === 'normal' ? '在学' :
+              student.status === 'expired' ? '停课' :
+              student.status === 'graduated' ? '已毕业' :
+              student.status === 'STUDYING' ? '在学' : '待处理',
       enrollDate: student.enrollDate,
       expireDate: student.expireDate || '',
       remainingClasses: student.remainingClasses
     });
-  } else if (student.courseId && student.courseName) {
-    // 如果有courseId和courseName字段，使用这些字段
+  } else if (student.courseId) {
+    // 如果有courseId字段，使用这些字段
+    // 安全地处理 course 字段，可能是字符串、数组或未定义
+    let courseName = `课程${student.courseId}`;
+    if (typeof student.course === 'string') {
+      courseName = student.course;
+    } else if (Array.isArray(student.course)) {
+      // 确保 course 是数组且不为空
+      const courseArray = student.course as string[];
+      if (courseArray.length > 0) {
+        courseName = courseArray[0];
+      }
+    }
     allCourses.push({
-      id: student.courseId,
-      name: student.courseName,
+      id: String(student.courseId),
+      name: courseName,
       type: student.courseType || '',
-      coach: student.coachName || '',
-      status: student.status === 'ACTIVE' ? '在学' :
-              student.status === 'INACTIVE' ? '停课' : '待处理',
+      coach: student.coach || '',
+      status: student.status === 'normal' ? '在学' :
+              student.status === 'expired' ? '停课' :
+              student.status === 'graduated' ? '已毕业' :
+              student.status === 'STUDYING' ? '在学' : '待处理',
       enrollDate: student.enrollDate,
       expireDate: student.expireDate || '',
       remainingClasses: student.remainingClasses

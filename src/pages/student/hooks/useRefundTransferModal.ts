@@ -14,7 +14,7 @@ import dayjs from 'dayjs'; // 引入 dayjs
 export const useRefundTransferModal = (
   students: Student[],
   // 新增：接收外部添加学生的回调
-  onAddStudent?: (student: Omit<Student, 'id'> & { remainingClasses?: string; lastClassDate?: string }) => Student 
+  onAddStudent?: (student: Omit<Student, 'id'> & { remainingClasses?: string; lastClassDate?: string }) => Student
 ) => {
   const [visible, setVisible] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
@@ -32,13 +32,13 @@ export const useRefundTransferModal = (
   const handleRefund = (student: Student) => {
     setCurrentStudent(student);
     refundTransferForm.resetFields();
-    
+
     // 获取学生所有课程
     const courses = getStudentAllCourses(student).filter(
       // 只显示已报名的课程
       course => course.status !== '未报名'
     );
-    
+
     // 设置初始值
     refundTransferForm.setFieldsValue({
       fromCourseId: courses.length > 0 ? courses[0].id : '',
@@ -50,7 +50,7 @@ export const useRefundTransferModal = (
       otherFee: 0,
       actualRefund: 0,
     });
-    
+
     setVisible(true);
   };
 
@@ -61,13 +61,13 @@ export const useRefundTransferModal = (
     setSelectedTransferStudent(null);
     setTransferStudentSearchResults([]);
     setTransferStudentSearchText('');
-    
+
     // 获取学生所有课程
     const courses = getStudentAllCourses(student).filter(
       // 只显示已报名的课程
       course => course.status !== '未报名'
     );
-    
+
     // 设置初始值
     refundTransferForm.setFieldsValue({
       fromCourseId: courses.length > 0 ? courses[0].id : '',
@@ -77,7 +77,7 @@ export const useRefundTransferModal = (
       transferClassHours: 1, // 默认转课课时为1
       priceDifference: 0,
     });
-    
+
     setVisible(true);
   };
 
@@ -85,13 +85,13 @@ export const useRefundTransferModal = (
   const handleTransferClass = (student: Student) => {
     setCurrentStudent(student);
     refundTransferForm.resetFields();
-    
+
     // 获取学生所有课程
     const courses = getStudentAllCourses(student).filter(
       // 只显示已报名的课程
       course => course.status !== '未报名'
     );
-    
+
     // 设置初始值
     refundTransferForm.setFieldsValue({
       fromCourseId: courses.length > 0 ? courses[0].id : '',
@@ -101,10 +101,10 @@ export const useRefundTransferModal = (
       transferClassHours: 1, // 默认转班课时为1
       priceDifference: 0,
     });
-    
+
     setVisible(true);
   };
-  
+
   // 处理退费转课提交
   const handleRefundTransferOk = () => {
     refundTransferForm.validateFields()
@@ -113,10 +113,10 @@ export const useRefundTransferModal = (
         if (values.operationType === 'refund') {
           // 退费逻辑
           message.success(`退费处理成功，实际退款金额: ¥${values.actualRefund}`);
-          
+
           // 在实际应用中这里应该调用API更新数据库
           // 这里只是示例代码 - 可以更新currentStudent的状态等
-          
+
           setVisible(false);
           setCurrentStudent(null);
           refundTransferForm.resetFields();
@@ -126,11 +126,11 @@ export const useRefundTransferModal = (
             message.error('请选择要转课给哪个学员');
             return;
           }
-          
+
           // 获取目标学员信息
           const targetStudentId = values.targetStudentId || selectedTransferStudent?.id;
           const targetStudent = students.find(s => s.id === targetStudentId);
-          
+
           if (!targetStudent) {
             message.error('未找到目标学员信息');
             return;
@@ -139,18 +139,18 @@ export const useRefundTransferModal = (
           // 获取课程信息
           const toCourse = courseOptions.find(c => c.value === values.toCourseId);
           const courseName = toCourse ? toCourse.label : '未知课程';
-          
-          const priceDifferenceInfo = values.priceDifference > 0 ? 
-            `，需补差价: ¥${values.priceDifference}` : 
-            (values.priceDifference < 0 ? 
-              `，退还差价: ¥${Math.abs(values.priceDifference)}` : 
+
+          const priceDifferenceInfo = values.priceDifference > 0 ?
+            `，需补差价: ¥${values.priceDifference}` :
+            (values.priceDifference < 0 ?
+              `，退还差价: ¥${Math.abs(values.priceDifference)}` :
               '');
-              
+
           message.success(`转课处理成功，课程转给: ${targetStudent.name}(${targetStudent.id})，课程: ${courseName}，课时: ${values.transferClassHours}${priceDifferenceInfo}`);
-          
+
           // 在实际应用中这里应该调用API更新数据库
           // 这里只是示例代码
-          
+
           setVisible(false);
           setCurrentStudent(null);
           setSelectedTransferStudent(null);
@@ -161,25 +161,25 @@ export const useRefundTransferModal = (
             message.error('未找到学员信息');
             return;
           }
-          
+
           // 获取课程信息
           const toCourse = courseOptions.find(c => c.value === values.toCourseId);
           const courseName = toCourse ? toCourse.label : '未知课程';
-          
+
           const fromCourse = courseOptions.find(c => c.value === values.fromCourseId);
           const fromCourseName = fromCourse ? fromCourse.label : '未知课程';
-          
-          const priceDifferenceInfo = values.priceDifference > 0 ? 
-            `，需补差价: ¥${values.priceDifference}` : 
-            (values.priceDifference < 0 ? 
-              `，退还差价: ¥${Math.abs(values.priceDifference)}` : 
+
+          const priceDifferenceInfo = values.priceDifference > 0 ?
+            `，需补差价: ¥${values.priceDifference}` :
+            (values.priceDifference < 0 ?
+              `，退还差价: ¥${Math.abs(values.priceDifference)}` :
               '');
-              
+
           message.success(`转班处理成功，从 ${fromCourseName} 转到 ${courseName}${priceDifferenceInfo}`);
-          
+
           // 在实际应用中这里应该调用API更新数据库
           // 这里只是示例代码
-          
+
           setVisible(false);
           setCurrentStudent(null);
           refundTransferForm.resetFields();
@@ -206,19 +206,19 @@ export const useRefundTransferModal = (
     setTransferStudentSearchResults([]);
     setTransferStudentSearchText('');
   };
-  
+
   // 搜索学员
   const handleSearchTransferStudent = (value: string) => {
     setTransferStudentSearchText(value);
-    
+
     if (value.trim() === '') {
       setTransferStudentSearchResults([]);
       setIsSearchingTransferStudent(false);
       return;
     }
-    
+
     setIsSearchingTransferStudent(true);
-    
+
     // 模拟异步搜索
     setTimeout(() => {
       const results = searchStudentsByKeyword(students, value, currentStudent?.id);
@@ -226,12 +226,12 @@ export const useRefundTransferModal = (
       setIsSearchingTransferStudent(false);
     }, 300);
   };
-  
+
   // 选择学员 (只更新状态，不设置表单值)
   const handleSelectTransferStudent = (record: Student) => {
     setSelectedTransferStudent(record);
     // 清空搜索，以便下拉列表关闭
-    setTransferStudentSearchText(''); 
+    setTransferStudentSearchText('');
     setTransferStudentSearchResults([]);
     // 表单值的设置应在组件中完成，例如在 Select 的 onChange 中
   };
@@ -250,7 +250,7 @@ export const useRefundTransferModal = (
           message.error('添加学员功能未配置');
           return;
         }
-        
+
         // 创建新学员对象
         const newStudentData: Omit<Student, 'id'> = {
           name: values.name,
@@ -259,15 +259,16 @@ export const useRefundTransferModal = (
           phone: values.phone,
           // 设置默认值或空值
           courseType: '',
-          course: [], 
+          course: [],
           coach: '',
           lastClassDate: '',
           enrollDate: dayjs().format('YYYY-MM-DD'),
           expireDate: dayjs().add(1, 'year').format('YYYY-MM-DD'),
-          remainingClasses: '0/0', 
-          status: 'active', 
+          remainingClasses: '0/0',
+          status: 'normal',
           payments: [],
           courseGroups: [],
+          campusId: 1,
         };
 
         // 调用外部传入的 addStudent 函数添加学员
@@ -318,4 +319,4 @@ export const useRefundTransferModal = (
     handleQuickAddStudentOk,
     handleQuickAddStudentCancel
   };
-}; 
+};

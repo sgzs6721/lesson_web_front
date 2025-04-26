@@ -5,7 +5,8 @@ import {
   PaymentRecord,
   StudentSearchParams,
   CreateStudentRequest,
-  UpdateStudentRequest
+  UpdateStudentRequest,
+  ScheduleTime
 } from './types';
 import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
 import { mockApiResponse, mockStudents, mockClassRecords, mockPaymentRecords, mockPaginatedResponse } from './mock';

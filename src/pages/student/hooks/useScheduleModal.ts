@@ -20,7 +20,7 @@ export const useScheduleModal = () => {
   const showModal = (student: Student) => {
     // 使用工具函数生成模拟课表数据
     const mockSchedules = generateStudentSchedules(student);
-    
+
     setData({
       student,
       schedules: mockSchedules
@@ -40,4 +40,4 @@ export const useScheduleModal = () => {
     showScheduleModal: showModal,
     handleScheduleModalCancel: hideModal
   };
-}; 
+};

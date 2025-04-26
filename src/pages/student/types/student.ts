@@ -8,7 +8,7 @@ export interface ClassSchedule {
   endTime: string;
   courseName: string;
   coach: string;
-  status: 'completed' | 'upcoming' | 'canceled';
+  status: 'COMPLETED' | 'UPCOMING' | 'CANCELED';
 }
 
 // 定义上课记录接口
@@ -73,6 +73,7 @@ export interface Student {
   // --- 以下字段 UI 可能需要，但 API DTO 中可能没有或名称不同，需要确认 ---
   courseType?: string;     // 课程类型名称 (改为可选?)
   course: string | string[]; // 课程 ID 列表 (可能来自 CourseGroup)
+  courseId?: number | string; // 课程 ID (与 API 保持一致)
   coach: string;           // 教练名称 (可能来自 CourseGroup)
   lastClassDate?: string;  // API 中有 lastClassDate (改为可选?)
   enrollDate: string;      // API 中有 enrollDate

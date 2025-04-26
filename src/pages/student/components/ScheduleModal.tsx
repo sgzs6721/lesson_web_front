@@ -22,13 +22,13 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   onCancel
 }) => {
   // 获取状态对应的标签
-  const renderStatusTag = (status: 'completed' | 'upcoming' | 'canceled') => {
+  const renderStatusTag = (status: 'COMPLETED' | 'UPCOMING' | 'CANCELED') => {
     switch(status) {
-      case 'completed':
+      case 'COMPLETED':
         return <Tag color="green">已完成</Tag>;
-      case 'upcoming':
+      case 'UPCOMING':
         return <Tag color="blue">待上课</Tag>;
-      case 'canceled':
+      case 'CANCELED':
         return <Tag color="red">已取消</Tag>;
       default:
         return null;
@@ -78,7 +78,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
     <Modal
       title={
         <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-          <ScheduleOutlined style={{ marginRight: 8 }} /> 
+          <ScheduleOutlined style={{ marginRight: 8 }} />
           {student?.name} 的课程表
         </span>
       }
@@ -127,7 +127,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
           </Row>
         </div>
       )}
-      
+
       <Table
         dataSource={schedules}
         columns={columns}
@@ -138,4 +138,4 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   );
 };
 
-export default ScheduleModal; 
+export default ScheduleModal;
