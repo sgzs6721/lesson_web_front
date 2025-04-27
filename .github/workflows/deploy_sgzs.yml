@@ -40,4 +40,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: ${{ github.workspace }}/dist/*
           target: /root/lesson/lesson_web_front
-          strip_components: 3
+          strip_components: 5
