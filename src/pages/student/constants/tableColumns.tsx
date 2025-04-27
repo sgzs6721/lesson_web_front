@@ -14,6 +14,7 @@ import {
 import { Student } from '@/pages/student/types/student';
 import dayjs from 'dayjs';
 import { courseTypeOptions } from './options';
+import FixedWidthTag from '../components/FixedWidthTag';
 
 // 表头居中样式
 const columnStyle: React.CSSProperties = {
@@ -22,21 +23,34 @@ const columnStyle: React.CSSProperties = {
 
 // 课程类型渲染函数
 const renderCourseType = (text: string | undefined) => {
-  if (!text) return <Tag color="default">未设置</Tag>;
+  if (!text) return (
+    <FixedWidthTag color="default" width={70} variant="outlined">
+      未设置
+    </FixedWidthTag>
+  );
 
   const typeInfo = courseTypeOptions.find(t => t.value === text);
 
+  // 使用更加高级的颜色映射
+  const colorMapping = {
+    'sports': 'teal',
+    'art': 'indigo',
+    'academic': 'cyan',
+    '大课': 'amber',
+    '一对一': 'blue',
+    '小班': 'green'
+  };
+
+  const color = colorMapping[text as keyof typeof colorMapping] || 'default';
+
   return (
-    <Tag
-      color={
-        text === 'sports' ? 'green' :
-        text === 'art' ? 'purple' :
-        text === 'academic' ? 'orange' :
-        text === '大课' ? 'blue' : 'default'
-      }
+    <FixedWidthTag
+      color={color}
+      width={70}
+      variant="filled"
     >
       {typeInfo?.label || text}
-    </Tag>
+    </FixedWidthTag>
   );
 };
 
@@ -56,15 +70,31 @@ export const getStudentColumns = (
     key: 'attendance',
     align: 'center',
     width: 80,
-    render: (_: any, record: Student) => (
-      <Button
-        type="link"
-        onClick={() => onAttendance(record)}
-        style={{ padding: '4px 8px' }}
-      >
-        打卡
-      </Button>
-    ),
+    render: (_: any, record: Student) => {
+      // 解析剩余课时，获取数值部分
+      const remainingClassesStr = record.remainingClasses || '0/0';
+      const remainingClasses = parseInt(remainingClassesStr.split('/')[0] || '0', 10);
+
+      // 判断剩余课时是否为0
+      const isDisabled = remainingClasses <= 0;
+
+      return (
+        <Button
+          type="link"
+          onClick={() => onAttendance(record)}
+          style={{
+            padding: '4px 8px',
+            // 禁用状态下的样式
+            color: isDisabled ? '#d9d9d9' : undefined,
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
+          }}
+          disabled={isDisabled}
+          title={isDisabled ? '剩余课时为0，无法打卡' : '打卡'}
+        >
+          打卡
+        </Button>
+      );
+    },
   },
   {
     title: '学员ID',
@@ -76,8 +106,14 @@ export const getStudentColumns = (
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
     sorter: (a, b) => {
-      const numA = parseInt(a.id.replace(/[^\d]/g, ''), 10);
-      const numB = parseInt(b.id.replace(/[^\d]/g, ''), 10);
+      // 确保 id 是字符串类型，如果不是则转换为字符串
+      const idA = typeof a.id === 'string' ? a.id : String(a.id);
+      const idB = typeof b.id === 'string' ? b.id : String(b.id);
+
+      // 提取数字部分并转换为整数
+      const numA = parseInt(idA.replace(/[^\d]/g, '') || '0', 10);
+      const numB = parseInt(idB.replace(/[^\d]/g, '') || '0', 10);
+
       return numA - numB;
     }
   },
@@ -85,17 +121,21 @@ export const getStudentColumns = (
     title: '姓名',
     dataIndex: 'name',
     key: 'name',
-    align: 'center',
+    align: 'left', // 修改为左对齐
     onHeaderCell: () => ({
-      style: { ...columnStyle, whiteSpace: 'nowrap' },
+      style: { ...columnStyle, whiteSpace: 'nowrap' }, // 表头仍然居中
+    }),
+    onCell: () => ({
+      style: { textAlign: 'left', paddingLeft: '16px' }, // 单元格内容左对齐
     }),
     render: (text, record) => (
       <span>
-        {record.gender === 'MALE' ?
-          <span style={{ color: '#1890ff', marginRight: 5 }}>♂</span> :
-          <span style={{ color: '#eb2f96', marginRight: 5 }}>♀</span>
-        }
-        {text}
+        {record.gender === 'MALE' ? (
+          <span key="gender-icon" style={{ color: '#1890ff', marginRight: 5 }}>♂</span>
+        ) : (
+          <span key="gender-icon" style={{ color: '#eb2f96', marginRight: 5 }}>♀</span>
+        )}
+        <span key="name-text">{text}</span>
       </span>
     ),
   },
@@ -168,8 +208,14 @@ export const getStudentColumns = (
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
     sorter: (a, b) => {
-      const remainingA = parseInt(a.remainingClasses.split('/')[0], 10);
-      const remainingB = parseInt(b.remainingClasses.split('/')[0], 10);
+      // 确保 remainingClasses 是字符串类型
+      const classesA = typeof a.remainingClasses === 'string' ? a.remainingClasses : String(a.remainingClasses || '0');
+      const classesB = typeof b.remainingClasses === 'string' ? b.remainingClasses : String(b.remainingClasses || '0');
+
+      // 安全地提取数字部分
+      const remainingA = parseInt((classesA.split('/')[0] || '0').trim(), 10) || 0;
+      const remainingB = parseInt((classesB.split('/')[0] || '0').trim(), 10) || 0;
+
       return remainingA - remainingB;
     }
   },
@@ -181,7 +227,7 @@ export const getStudentColumns = (
     onHeaderCell: () => ({
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
-    render: text => text ? dayjs(text).format('YYYY-MM-DD') : '未上课',
+    render: text => text ? dayjs(text).format('YYYY-MM-DD') : '-',
     sorter: (a, b) => {
       if (!a.lastClassDate) return 1;
       if (!b.lastClassDate) return -1;
@@ -210,42 +256,60 @@ export const getStudentColumns = (
     render: status => {
       let color = '';
       let text = '';
+      let variant: 'filled' | 'outlined' = 'filled';
 
+      // 使用更加稳重的颜色映射
       switch (status) {
         case 'active':
         case 'normal':
         case 'NORMAL':
           color = 'green';
           text = '在学';
+          variant = 'filled';
           break;
         case 'STUDYING':
           color = 'green';
           text = '在学';
+          variant = 'filled';
           break;
         case 'inactive':
         case 'SUSPENDED':
           color = 'red';
           text = '停课';
+          variant = 'outlined';
           break;
         case 'pending':
           color = 'orange';
           text = '待处理';
+          variant = 'outlined';
           break;
         case 'graduated':
         case 'GRADUATED':
           color = 'blue';
           text = '结业';
+          variant = 'filled';
           break;
         case 'expired':
           color = 'gray';
           text = '过期';
+          variant = 'outlined';
           break;
         default:
           color = 'default';
           text = status;
+          variant = 'outlined';
       }
 
-      return <Tag color={color}>{text}</Tag>;
+      // 使用更加稳重的样式
+      return (
+        <FixedWidthTag
+          color={color}
+          width={70}
+          variant={variant}
+        >
+          {text}
+        </FixedWidthTag>
+      );
     },
     sorter: (a, b) => {
       const statusOrder = {

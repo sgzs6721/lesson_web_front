@@ -1,0 +1,281 @@
+/* 增强版学员打卡模态框样式 */
+
+/* 模态框整体样式 */
+.attendance-modal {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  margin: 0;
+}
+
+/* 模态框标题样式 */
+.attendance-modal .ant-modal-header {
+  background: linear-gradient(90deg, #1890ff, #52c41a);
+  border-bottom: none;
+  padding: 0;
+  border-radius: 12px 12px 0 0;
+  margin: 0;
+  height: 50px;
+}
+
+.attendance-modal .ant-modal-title {
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 0 16px;
+  margin: 0;
+  line-height: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 模态框关闭按钮样式 */
+.attendance-modal .ant-modal-close {
+  color: white;
+  top: 0;
+  right: 0;
+  height: 50px;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attendance-modal .ant-modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 模态框内容区域样式 */
+.attendance-modal .ant-modal-body {
+  padding: 24px;
+  background: #fff;
+  margin-top: 0;
+}
+
+/* 模态框底部按钮区域样式 */
+.attendance-modal .ant-modal-footer {
+  border-top: none;
+  padding: 16px 24px 20px;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+}
+
+/* 确认按钮样式 */
+.attendance-modal .ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  border: none;
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 20px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.attendance-modal .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff, #73d13d);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 取消按钮样式 */
+.attendance-modal .ant-btn-default {
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 20px;
+  font-weight: 500;
+  border: 1px solid #d9d9d9;
+  background: white;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.attendance-modal .ant-btn-default:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+/* 表单样式 */
+.attendance-form {
+  margin-top: 8px;
+}
+
+/* 表单项标签样式 */
+.attendance-form .ant-form-item-label > label {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+/* 必填项标记样式 */
+.attendance-form .ant-form-item-required::before {
+  color: #ff4d4f !important;
+}
+
+/* 输入框和选择器样式 */
+.attendance-form .ant-input,
+.attendance-form .ant-picker,
+.attendance-form .ant-select .ant-select-selector {
+  border-radius: 8px !important;
+  border: 1px solid #d9d9d9 !important;
+  transition: all 0.3s !important;
+  height: 38px !important;
+  box-shadow: none !important;
+}
+
+/* 输入框和选择器悬停样式 */
+.attendance-form .ant-input:hover,
+.attendance-form .ant-picker:hover,
+.attendance-form .ant-select:hover .ant-select-selector {
+  border-color: #40a9ff !important;
+}
+
+/* 输入框和选择器聚焦样式 */
+.attendance-form .ant-input:focus,
+.attendance-form .ant-picker-focused,
+.attendance-form .ant-select-focused .ant-select-selector {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* 文本区域样式 */
+.attendance-form .ant-input-textarea textarea {
+  border-radius: 8px !important;
+  border: 1px solid #d9d9d9 !important;
+  transition: all 0.3s !important;
+  min-height: 80px !important;
+  padding: 12px !important;
+  font-size: 14px !important;
+}
+
+/* 文本区域悬停和聚焦样式 */
+.attendance-form .ant-input-textarea textarea:hover {
+  border-color: #40a9ff !important;
+}
+
+.attendance-form .ant-input-textarea textarea:focus {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* 下拉菜单样式 */
+.attendance-form .ant-select-dropdown {
+  border-radius: 8px !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+              0 6px 16px 0 rgba(0, 0, 0, 0.08),
+              0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+  padding: 4px !important;
+}
+
+/* 下拉选项样式 */
+.attendance-form .ant-select-item {
+  border-radius: 4px !important;
+  margin: 2px 0 !important;
+  padding: 8px 12px !important;
+  transition: all 0.2s !important;
+}
+
+/* 下拉选项悬停样式 */
+.attendance-form .ant-select-item-option-active {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+}
+
+/* 下拉选项选中样式 */
+.attendance-form .ant-select-item-option-selected {
+  background-color: rgba(24, 144, 255, 0.2) !important;
+  font-weight: 500 !important;
+}
+
+/* 日期选择器和时间选择器样式 */
+.attendance-form .ant-picker {
+  width: 100% !important;
+  padding: 4px 11px !important;
+}
+
+.attendance-form .ant-picker-input > input {
+  font-size: 14px !important;
+}
+
+/* 日期选择器和时间选择器图标样式 */
+.attendance-form .ant-picker-suffix {
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+/* 课时输入框容器样式 */
+.duration-input-container {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 课时输入框样式 */
+.duration-input-container .ant-input {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  text-align: center;
+  font-weight: 500;
+  color: #1890ff;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+}
+
+/* 课时单位样式 */
+.duration-unit {
+  background: #f0f5ff;
+  border: 1px solid #d9d9d9;
+  border-left: none;
+  height: 38px;
+  line-height: 38px;
+  padding: 0;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  color: #1890ff;
+  font-weight: 500;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  flex: none;
+}
+
+/* 行布局样式 */
+.course-date-row,
+.time-duration-row {
+  display: flex;
+  flex-wrap: nowrap;
+  margin: 0 -8px;
+  align-items: flex-start;
+}
+
+/* 行中的项目样式 */
+.course-date-row .course-item,
+.course-date-row .date-item,
+.time-duration-row .time-item,
+.time-duration-row .duration-item {
+  flex: 1;
+  padding: 0 8px;
+  margin-bottom: 16px;
+}
+
+/* 确保表单项之间的间距一致 */
+.attendance-form .ant-form-item {
+  margin-bottom: 20px;
+}
+
+/* 最后一个表单项底部间距 */
+.attendance-form .ant-form-item:last-child {
+  margin-bottom: 0;
+}

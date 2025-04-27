@@ -202,14 +202,46 @@ const StudentManagement: React.FC = () => {
   }, []);
 
   const handleAttendance = (student: UiStudent) => {
-    setSelectedStudent(student);
+    // 解析剩余课时，获取数值部分
+    const remainingClassesStr = student.remainingClasses || '0/0';
+    const remainingClasses = parseInt(remainingClassesStr.split('/')[0] || '0', 10);
+
+    // 检查剩余课时是否为0
+    if (remainingClasses <= 0) {
+      message.warning('该学员剩余课时为0，无法进行打卡操作');
+      return;
+    }
+
+    // 确保学生对象包含courseId
+    console.log('打卡学员信息:', student);
+    console.log('学员courseId:', student.courseId);
+
+    // 如果学员没有courseId但有API返回的原始数据中的courseId
+    const studentWithCourseId = {
+      ...student,
+      // 确保courseId存在
+      courseId: student.courseId || (df.data.students.find(s => s.id === student.id)?.courseId)
+    };
+
+    console.log('传递给打卡模态框的学员信息:', studentWithCourseId);
+
+    setSelectedStudent(studentWithCourseId);
     setAttendanceModalVisible(true);
   };
 
   const handleAttendanceOk = (values: any) => {
     console.log('打卡信息:', values);
-    // TODO: 调用打卡 API
+    // 打卡成功后关闭模态框
     setAttendanceModalVisible(false);
+
+    // 更新学员剩余课时（实际项目中应该重新获取学员列表或更新特定学员）
+    message.success(`${selectedStudent?.name} 打卡成功，课时已扣除`);
+
+    // 在实际项目中，这里应该调用刷新学员列表的函数
+    // df.data.fetchStudents({
+    //   page: ui.pagination.currentPage,
+    //   pageSize: ui.pagination.pageSize
+    // });
   };
 
   return (
@@ -346,7 +378,7 @@ const StudentManagement: React.FC = () => {
         <RefundTransferModal
           visible={ui.refundTransfer.isRefundTransferModalVisible}
           form={ui.refundTransfer.refundTransferForm}
-          operationType={ui.refundTransfer.refundTransferForm.getFieldValue('operationType') || 'refund'}
+          operationType={ui.refundTransfer.isRefundTransferModalVisible ? (ui.refundTransfer.refundTransferForm.getFieldValue('operationType') || 'refund') : 'refund'}
           student={ui.refundTransfer.currentStudent ? convertApiStudentToUiStudent(ui.refundTransfer.currentStudent) : null}
           studentCourses={ui.refundTransfer.currentStudent ? getStudentAllCourses(ui.refundTransfer.currentStudent).filter(
             course => course.status !== '未报名'

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Form, message } from 'antd';
 import { Student } from '@/pages/student/types/student';
 import { getStudentAllCourses, searchStudentsByKeyword } from '@/pages/student/utils/student';
@@ -18,7 +18,16 @@ export const useRefundTransferModal = (
 ) => {
   const [visible, setVisible] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
+  // 使用 Form.useForm() 创建表单实例，并确保在组件挂载后才使用
   const [refundTransferForm] = Form.useForm();
+
+  // 确保表单在组件挂载后初始化
+  React.useEffect(() => {
+    if (visible) {
+      // 如果模态框可见，确保表单已初始化
+      refundTransferForm.resetFields();
+    }
+  }, [visible]);
   const [transferStudentSearchResults, setTransferStudentSearchResults] = useState<Student[]>([]);
   const [isSearchingTransferStudent, setIsSearchingTransferStudent] = useState<boolean>(false);
   const [selectedTransferStudent, setSelectedTransferStudent] = useState<Student | null>(null);

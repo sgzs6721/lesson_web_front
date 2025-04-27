@@ -18,7 +18,7 @@ export const exportToCSV = (students: Student[]) => {
     课程类型: courseTypeOptions.find(t => t.value === student.courseType)?.label || student.courseType,
     教练: student.coach,
     剩余课时: student.remainingClasses,
-    最近上课时间: student.lastClassDate ? dayjs(student.lastClassDate).format('YYYY-MM-DD') : '未上课',
+    最近上课时间: student.lastClassDate ? dayjs(student.lastClassDate).format('YYYY-MM-DD') : '-',
     报名日期: dayjs(student.enrollDate).format('YYYY-MM-DD'),
     有效期至: dayjs(student.expireDate).format('YYYY-MM-DD'),
     状态: student.status === 'normal' ? '在学' :

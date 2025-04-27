@@ -118,3 +118,34 @@
 .centered-table .ant-table-tbody > tr > td {
   text-align: center !important;
 }
+
+/* 固定宽度标签样式 */
+.fixed-width-tag {
+  width: 60px !important;
+  text-align: center !important;
+  display: inline-block !important;
+}
+
+/* 课程类型标签容器 */
+.course-type-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 全局标签样式覆盖 */
+.student-table-container .ant-tag {
+  min-width: 70px;
+  text-align: center;
+  font-weight: 500;
+  padding: 4px 0;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+/* 标签悬停效果 */
+.student-table-container .ant-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}

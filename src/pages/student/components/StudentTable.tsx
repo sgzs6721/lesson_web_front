@@ -55,7 +55,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
       <Table
         columns={columns}
         dataSource={data}
-        rowKey="studentId" // Changed from "id" to "studentId" to match the API response
+        rowKey="id" // 使用 Student 类型中的 id 字段作为唯一标识符
         loading={loading} // 与教练管理页面保持一致，使用简单的loading属性
         pagination={{
           current: pagination.current,

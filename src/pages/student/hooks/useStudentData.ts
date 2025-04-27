@@ -126,8 +126,6 @@ export const useStudentData = () => {
         page: currentPage,
         pageSize: pageSize
       });
-
-      message.success('学员信息已更新');
     } catch (error) {
       console.error('更新学员失败:', error);
       message.error('更新学员失败');
