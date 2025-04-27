@@ -7,6 +7,7 @@ import '@/assets/styles/index.css';
 import '@/assets/styles/darkTheme.css';
 import '@/assets/styles/sidebar-fix.css'; // 修复侧边栏样式
 import '@/assets/styles/dropdown.css'; // 下拉菜单样式
+import '@/assets/styles/globalModal.css'; // 全局模态框样式
 
 // 配置dayjs
 import dayjs from 'dayjs';

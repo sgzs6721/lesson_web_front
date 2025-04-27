@@ -1,0 +1,151 @@
+/* 全局模态框样式 - 应用于所有模态框 */
+
+/* 模态框整体样式 */
+.ant-modal {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.ant-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  margin: 0;
+}
+
+/* 模态框标题样式 */
+.ant-modal .ant-modal-header {
+  background: linear-gradient(90deg, #1890ff, #52c41a);
+  border-bottom: none;
+  padding: 0;
+  border-radius: 12px 12px 0 0;
+  margin: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.ant-modal .ant-modal-title {
+  color: white !important;
+  font-weight: 600;
+  font-size: 18px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 0 16px;
+  margin: 0;
+  line-height: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 确保标题内的所有元素垂直居中 */
+.ant-modal .ant-modal-title > * {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* 模态框关闭按钮样式 */
+.ant-modal .ant-modal-close {
+  color: white;
+  top: 0;
+  right: 0;
+  height: 50px;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ant-modal .ant-modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 模态框内容区域样式 */
+.ant-modal .ant-modal-body {
+  padding: 24px;
+  background: #fff;
+  margin-top: 0;
+}
+
+/* 模态框底部按钮区域样式 */
+.ant-modal .ant-modal-footer {
+  border-top: none;
+  padding: 16px 24px 20px;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+}
+
+/* 确认按钮样式 */
+.ant-modal .ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff, #52c41a);
+  border: none;
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 20px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ant-modal .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff, #73d13d);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 取消按钮样式 */
+.ant-modal .ant-btn-default {
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 20px;
+  font-weight: 500;
+  border: 1px solid #d9d9d9;
+  background: white;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.ant-modal .ant-btn-default:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+/* 确保模态框标题区域与模态框上边距、左右边距为0 */
+.ant-modal .ant-modal-header {
+  margin: 0;
+  padding: 0;
+}
+
+/* 确保自定义标题内容垂直居中 */
+.ant-modal .ant-modal-header div,
+.ant-modal .ant-modal-header span {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  line-height: 50px;
+}
+
+/* 确保模态框内容区域与模态框左右边距为0 */
+.ant-modal .ant-modal-content {
+  padding: 0;
+}
+
+/* 保持模态框内部表单和其他元素的原有样式 */
+.ant-modal .ant-form-item,
+.ant-modal .ant-input,
+.ant-modal .ant-select,
+.ant-modal .ant-picker,
+.ant-modal .ant-input-number {
+  /* 不修改这些元素的样式，保持原有布局 */
+}
+
+/* 确保模态框在不同屏幕尺寸下的响应式表现 */
+@media (max-width: 768px) {
+  .ant-modal {
+    max-width: 95%;
+    margin: 0 auto;
+  }
+}
