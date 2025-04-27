@@ -14,7 +14,7 @@ export const usePaymentModal = () => {
   const [loading, setLoading] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [paymentForm] = Form.useForm();
-  const [selectedPaymentCourse, setSelectedPaymentCourse] = useState<string>('');
+  const [selectedPaymentCourse, setSelectedPaymentCourse] = useState<string | number>('');
   const [selectedPaymentCourseName, setSelectedPaymentCourseName] = useState<string>('');
   const [currentClassHours, setCurrentClassHours] = useState<number>(0);
   const [newClassHours, setNewClassHours] = useState<number>(0);
@@ -133,7 +133,7 @@ export const usePaymentModal = () => {
       // 准备缴费数据
       const paymentData = {
         studentId: Number(currentStudent.id),
-        courseId: currentStudent.courseId, // 直接使用学生对象中的courseId，不添加备选值
+        courseId: Number(values.courseId || 1), // 确保courseId是数字类型
         paymentType: paymentType,
         amount: values.amount,
         paymentMethod: paymentMethod,

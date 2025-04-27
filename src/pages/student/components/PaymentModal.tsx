@@ -33,7 +33,7 @@ interface PaymentModalProps {
   form: FormInstance;
   student: Student | null;
   coursesList: CourseSummary[];
-  selectedCourse: string;
+  selectedCourse: string | number;
   selectedCourseName: string;
   currentClassHours: number;
   newClassHours: number;
@@ -42,7 +42,7 @@ interface PaymentModalProps {
   loading?: boolean;
   onCancel: () => void;
   onOk: () => void;
-  onCourseChange: (courseId: string) => void;
+  onCourseChange: (courseId: string | number) => void;
   onClassHoursChange: () => void;
   onValidUntilChange: (date: dayjs.Dayjs | null) => void;
 }
