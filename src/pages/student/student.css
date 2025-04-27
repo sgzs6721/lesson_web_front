@@ -84,12 +84,7 @@
   color: rgba(0, 0, 0, 0.65);
 }
 
-/* 打卡模态框标题分隔线 */
-.ant-modal-content .ant-modal-header {
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-}
+/* 打卡模态框标题分隔线 - 使用全局样式，不再单独定义 */
 
 /* 表格样式 */
 .student-table-container .ant-table-thead > tr > th {

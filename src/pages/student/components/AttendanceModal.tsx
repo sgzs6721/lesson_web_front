@@ -497,9 +497,14 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
               <Input
                 value={duration}
                 onChange={(e) => handleDurationChange(e.target.value)}
-                style={{ textAlign: 'center' }}
+                style={{
+                  textAlign: 'center',
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
+                  width: '50%'
+                }}
               />
-              <div className="duration-unit">课时</div>
+              <div className="duration-unit" style={{ width: '50%' }}>课时</div>
             </div>
           </Form.Item>
         </div>

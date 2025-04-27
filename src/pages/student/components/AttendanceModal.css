@@ -137,21 +137,25 @@
 /* 课时输入框容器样式 */
 .duration-input-container {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* 时间和课时行中的课时输入框容器样式 */
 .time-duration-row .duration-input-container {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   width: 100%;
   margin-top: 0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* 课时单位样式 */
 .duration-unit {
-  margin-left: 5px;
+  margin-left: 0;
   font-size: 14px;
   color: rgba(0, 0, 0, 0.85);
   line-height: 32px;
@@ -160,7 +164,7 @@
 
 /* 时间和课时行中的课时单位样式 */
 .time-duration-row .duration-unit {
-  margin-left: 5px;
+  margin-left: 0;
   font-size: 14px;
   color: rgba(0, 0, 0, 0.85);
   line-height: 32px;
@@ -190,13 +194,23 @@
 /* 课时项中的输入框样式 */
 .time-duration-row .duration-item .ant-input {
   text-align: center;
-  padding-right: 0;
-  width: 60% !important;
+  padding: 0;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  flex: 1;
+  width: 50% !important; /* 平分宽度 */
 }
 
 /* 确保课时输入框和单位在一行中居中显示 */
 .time-duration-row .duration-item .duration-input-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+/* 课时单位在时间和课时行中的样式 */
+.time-duration-row .duration-item .duration-unit {
+  width: 50% !important; /* 平分宽度 */
+  flex: 1;
 }

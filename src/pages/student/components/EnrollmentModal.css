@@ -1,0 +1,36 @@
+/* 报名课程模态框样式 */
+
+/* 确定按钮样式 */
+.enrollment-confirm-btn {
+  background: linear-gradient(135deg, #1890ff, #52c41a) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  height: 38px !important;
+  padding: 0 20px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+  color: white !important;
+}
+
+.enrollment-confirm-btn:hover {
+  background: linear-gradient(135deg, #40a9ff, #73d13d) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 取消按钮样式 */
+.enrollment-cancel-btn {
+  border-radius: 8px !important;
+  height: 38px !important;
+  padding: 0 20px !important;
+  font-weight: 500 !important;
+  border: 1px solid #d9d9d9 !important;
+  background: white !important;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+
+.enrollment-cancel-btn:hover {
+  border-color: #1890ff !important;
+  color: #1890ff !important;
+}

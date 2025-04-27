@@ -30,17 +30,65 @@ import { Student, CourseGroup, ScheduleTime } from '@/pages/student/types/studen
 import { courseTypeOptions, weekdayOptions, studentStatusOptions } from '@/pages/student/constants/options';
 import { SimpleCourse } from '@/api/course/types';
 import dayjs from 'dayjs';
+import './EnrollmentModal.css';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
 
-// 辅助函数：检查是否有重复的排课时间
-const hasDuplicateScheduleTime = (scheduleTimes: ScheduleTime[], newTime: ScheduleTime): boolean => {
-  return scheduleTimes.some(time =>
+// 辅助函数：检查是否有重复的排课时间，返回冲突的时间段或null
+const hasDuplicateScheduleTime = (scheduleTimes: ScheduleTime[], newTime: ScheduleTime): ScheduleTime | null => {
+  const conflictTime = scheduleTimes.find(time =>
     time.weekday === newTime.weekday &&
     time.time === newTime.time &&
     time.endTime === newTime.endTime
   );
+  return conflictTime || null;
+};
+
+// 辅助函数：生成不冲突的时间段，将开始时间推后1小时
+const generateNonConflictingTime = (scheduleTimes: ScheduleTime[], baseTime: ScheduleTime): ScheduleTime => {
+  let newTime = { ...baseTime };
+  let isConflict = true;
+  let attempts = 0;
+  const maxAttempts = 24; // 最多尝试24次，避免无限循环
+
+  while (isConflict && attempts < maxAttempts) {
+    // 解析当前时间
+    const [hours, minutes] = newTime.time.split(':').map(Number);
+
+    // 计算新的开始时间（推后1小时）
+    let newHours = hours + 1;
+    if (newHours >= 24) {
+      newHours = newHours % 24;
+    }
+
+    // 格式化新的开始时间
+    const newStartTime = `${String(newHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+    // 如果有结束时间，也相应调整
+    let newEndTime = undefined;
+    if (newTime.endTime) {
+      const [endHours, endMinutes] = newTime.endTime.split(':').map(Number);
+      let newEndHours = endHours + 1;
+      if (newEndHours >= 24) {
+        newEndHours = newEndHours % 24;
+      }
+      newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+    }
+
+    // 更新时间
+    newTime = {
+      ...newTime,
+      time: newStartTime,
+      endTime: newEndTime
+    };
+
+    // 检查新时间是否冲突
+    isConflict = !!hasDuplicateScheduleTime(scheduleTimes, newTime);
+    attempts++;
+  }
+
+  return newTime;
 };
 
 interface StudentFormModalProps {
@@ -364,17 +412,22 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
             <Button
               type="link"
               onClick={() => {
-                const newTime = { weekday: '一', time: '15:00', endTime: '16:00' };
+                const baseTime = { weekday: '一', time: '15:00', endTime: '16:00' };
                 const currentScheduleTimes = group.scheduleTimes || [];
 
                 // 检查是否有重复的排课时间
-                if (hasDuplicateScheduleTime(currentScheduleTimes, newTime)) {
-                  message.warning('已存在相同的排课时间，请勿重复添加');
-                  return;
-                }
+                const conflictTime = hasDuplicateScheduleTime(currentScheduleTimes, baseTime);
 
-                const newScheduleTimes = [...currentScheduleTimes, newTime];
-                updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
+                if (conflictTime) {
+                  // 生成不冲突的时间段
+                  const nonConflictingTime = generateNonConflictingTime(currentScheduleTimes, baseTime);
+                  const newScheduleTimes = [...currentScheduleTimes, nonConflictingTime];
+                  updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
+                } else {
+                  // 没有冲突，直接添加
+                  const newScheduleTimes = [...currentScheduleTimes, baseTime];
+                  updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
+                }
               }}
               icon={<PlusOutlined />}
             >
@@ -421,12 +474,19 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
                     // 检查修改后是否会与其他时间段重复
                     const otherTimes = newScheduleTimes.filter((_, idx) => idx !== timeIndex);
-                    if (hasDuplicateScheduleTime(otherTimes, newTime)) {
-                      message.warning('修改后的排课时间与已有时间重复');
-                      return;
+                    const conflictTime = hasDuplicateScheduleTime(otherTimes, newTime);
+
+                    if (conflictTime) {
+                      // 生成不冲突的时间段
+                      const nonConflictingTime = generateNonConflictingTime(otherTimes, newTime);
+
+                      // 更新时间
+                      newScheduleTimes[timeIndex] = nonConflictingTime;
+                    } else {
+                      // 没有冲突，直接更新
+                      newScheduleTimes[timeIndex].time = time ? time.format('HH:mm') : '00:00';
                     }
 
-                    newScheduleTimes[timeIndex].time = time ? time.format('HH:mm') : '00:00';
                     updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
                   }}
                 />
@@ -446,12 +506,19 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
                     // 检查修改后是否会与其他时间段重复
                     const otherTimes = newScheduleTimes.filter((_, idx) => idx !== timeIndex);
-                    if (hasDuplicateScheduleTime(otherTimes, newTime)) {
-                      message.warning('修改后的排课时间与已有时间重复');
-                      return;
+                    const conflictTime = hasDuplicateScheduleTime(otherTimes, newTime);
+
+                    if (conflictTime) {
+                      // 生成不冲突的时间段
+                      const nonConflictingTime = generateNonConflictingTime(otherTimes, newTime);
+
+                      // 更新时间
+                      newScheduleTimes[timeIndex] = nonConflictingTime;
+                    } else {
+                      // 没有冲突，直接更新
+                      newScheduleTimes[timeIndex].endTime = time ? time.format('HH:mm') : undefined;
                     }
 
-                    newScheduleTimes[timeIndex].endTime = time ? time.format('HH:mm') : undefined;
                     updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
                   }}
                 />
@@ -477,10 +544,18 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
           <Space>
-            <Button onClick={() => cancelAddCourseGroup()} size="small">
+            <Button
+              onClick={() => cancelAddCourseGroup()}
+              size="small"
+              className="enrollment-cancel-btn"
+            >
               取消
             </Button>
-            <Button type="primary" ghost onClick={() => confirmAddCourseGroup()} size="small">
+            <Button
+              onClick={() => confirmAddCourseGroup()}
+              size="small"
+              className="enrollment-confirm-btn"
+            >
               确定
             </Button>
           </Space>
@@ -626,17 +701,22 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
             <Button
               type="link"
               onClick={() => {
-                const newTime = { weekday: '一', time: '15:00', endTime: '16:00' };
+                const baseTime = { weekday: '一', time: '15:00', endTime: '16:00' };
                 const currentScheduleTimes = tempCourseGroup.scheduleTimes || [];
 
                 // 检查是否有重复的排课时间
-                if (hasDuplicateScheduleTime(currentScheduleTimes, newTime)) {
-                  message.warning('已存在相同的排课时间，请勿重复添加');
-                  return;
-                }
+                const conflictTime = hasDuplicateScheduleTime(currentScheduleTimes, baseTime);
 
-                const newScheduleTimes = [...currentScheduleTimes, newTime];
-                updateTempCourseGroup('scheduleTimes', newScheduleTimes);
+                if (conflictTime) {
+                  // 生成不冲突的时间段
+                  const nonConflictingTime = generateNonConflictingTime(currentScheduleTimes, baseTime);
+                  const newScheduleTimes = [...currentScheduleTimes, nonConflictingTime];
+                  updateTempCourseGroup('scheduleTimes', newScheduleTimes);
+                } else {
+                  // 没有冲突，直接添加
+                  const newScheduleTimes = [...currentScheduleTimes, baseTime];
+                  updateTempCourseGroup('scheduleTimes', newScheduleTimes);
+                }
               }}
               icon={<PlusOutlined />}
             >
@@ -683,12 +763,19 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
                     // 检查修改后是否会与其他时间段重复
                     const otherTimes = newScheduleTimes.filter((_, idx) => idx !== timeIndex);
-                    if (hasDuplicateScheduleTime(otherTimes, newTime)) {
-                      message.warning('修改后的排课时间与已有时间重复');
-                      return;
+                    const conflictTime = hasDuplicateScheduleTime(otherTimes, newTime);
+
+                    if (conflictTime) {
+                      // 生成不冲突的时间段
+                      const nonConflictingTime = generateNonConflictingTime(otherTimes, newTime);
+
+                      // 更新时间
+                      newScheduleTimes[timeIndex] = nonConflictingTime;
+                    } else {
+                      // 没有冲突，直接更新
+                      newScheduleTimes[timeIndex].time = time ? time.format('HH:mm') : '00:00';
                     }
 
-                    newScheduleTimes[timeIndex].time = time ? time.format('HH:mm') : '00:00';
                     updateTempCourseGroup('scheduleTimes', newScheduleTimes);
                   }}
                 />
@@ -708,12 +795,19 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
                     // 检查修改后是否会与其他时间段重复
                     const otherTimes = newScheduleTimes.filter((_, idx) => idx !== timeIndex);
-                    if (hasDuplicateScheduleTime(otherTimes, newTime)) {
-                      message.warning('修改后的排课时间与已有时间重复');
-                      return;
+                    const conflictTime = hasDuplicateScheduleTime(otherTimes, newTime);
+
+                    if (conflictTime) {
+                      // 生成不冲突的时间段
+                      const nonConflictingTime = generateNonConflictingTime(otherTimes, newTime);
+
+                      // 更新时间
+                      newScheduleTimes[timeIndex] = nonConflictingTime;
+                    } else {
+                      // 没有冲突，直接更新
+                      newScheduleTimes[timeIndex].endTime = time ? time.format('HH:mm') : undefined;
                     }
 
-                    newScheduleTimes[timeIndex].endTime = time ? time.format('HH:mm') : undefined;
                     updateTempCourseGroup('scheduleTimes', newScheduleTimes);
                   }}
                 />
@@ -739,10 +833,18 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
           <Space>
-            <Button onClick={() => cancelAddCourseGroup()} size="small">
+            <Button
+              onClick={() => cancelAddCourseGroup()}
+              size="small"
+              className="enrollment-cancel-btn"
+            >
               取消
             </Button>
-            <Button type="primary" ghost onClick={() => confirmAddCourseGroup()} size="small">
+            <Button
+              onClick={() => confirmAddCourseGroup()}
+              size="small"
+              className="enrollment-confirm-btn"
+            >
               确定
             </Button>
           </Space>

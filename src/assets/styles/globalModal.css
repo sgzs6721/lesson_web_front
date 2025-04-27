@@ -25,6 +25,7 @@
   height: 50px;
   display: flex;
   align-items: center;
+  justify-content: flex-start; /* 确保标题从左侧开始 */
 }
 
 .ant-modal .ant-modal-title {
@@ -34,11 +35,12 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   padding: 0 16px;
   margin: 0;
-  line-height: 50px;
   height: 50px;
+  line-height: 50px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  width: 100%; /* 确保标题占据整个宽度 */
 }
 
 /* 确保标题内的所有元素垂直居中 */
