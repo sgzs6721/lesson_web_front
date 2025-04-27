@@ -52,18 +52,18 @@ export const weekdayOptions = [
 
 // 缴费类型选项
 export const paymentTypeOptions = [
-  { value: 'new_enrollment', label: '新报名' },
-  { value: 'renewal', label: '续费' },
-  { value: 'supplementary', label: '补费' },
+  { value: 'NEW', label: '新报名' },
+  { value: 'RENEWAL', label: '续费' },
+  { value: 'TRANSFER', label: '转课' },
 ];
 
 // 支付方式选项
 export const paymentMethodOptions = [
-  { value: 'wechat', label: '微信支付' },
-  { value: 'alipay', label: '支付宝' },
-  { value: 'cash', label: '现金' },
-  { value: 'card', label: '刷卡' },
-  { value: 'transfer', label: '转账' },
+  { value: 'WECHAT', label: '微信支付' },
+  { value: 'ALIPAY', label: '支付宝' },
+  { value: 'CASH', label: '现金' },
+  { value: 'CARD', label: '刷卡' },
+  { value: 'TRANSFER', label: '转账' },
 ];
 
 // 赠品选项列表
@@ -79,4 +79,4 @@ export const studentStatusOptions = [
   { value: 'normal', label: '正常' },
   { value: 'expired', label: '过期' },
   { value: 'graduated', label: '结业' },
-]; 
+];

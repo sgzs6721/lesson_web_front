@@ -22,6 +22,7 @@ import {
   giftOptions
 } from '../constants/options';
 import dayjs from 'dayjs';
+import './PaymentModal.css';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -66,14 +67,22 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const selectedGifts = Form.useWatch('gift', form);
 
-  const getGiftLabels = (values: string[] | undefined): string => {
+  const getGiftLabels = (values: string[] | undefined): React.ReactNode => {
     if (!values || values.length === 0) {
       return '无';
     }
-    return values
+
+    const labels = values
       .map(value => giftOptions.find(opt => opt.value === value)?.label)
-      .filter(label => !!label)
-      .join('、');
+      .filter(label => !!label);
+
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '4px' }}>
+        {labels.map((label, index) => (
+          <Tag key={index} style={{ margin: '2px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</Tag>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -117,12 +126,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   <Select
                     placeholder="请选择缴费课程"
                     onChange={onCourseChange}
+                    dropdownMatchSelectWidth={true}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
                   >
-                    {coursesList.map(course => (
-                      <Option key={course.id} value={course.id || ''}>
-                        {course.name}
-                      </Option>
-                    ))}
+                    <Option key="1" value={1}>杨教练大课</Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -132,7 +139,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   label="课程类型"
                   rules={[{ required: true, message: '请选择课程类型' }]}
                 >
-                  <Select placeholder="请选择课程类型" disabled>
+                  <Select
+                    placeholder="请选择课程类型"
+                    disabled
+                    dropdownMatchSelectWidth={true}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  >
                     {courseTypeOptions.map(option => (
                       <Option key={option.value} value={option.value}>{option.label}</Option>
                     ))}
@@ -151,7 +163,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   label="缴费类型"
                   rules={[{ required: true, message: '请选择缴费类型' }]}
                 >
-                  <Select placeholder="请选择缴费类型">
+                  <Select
+                    placeholder="请选择缴费类型"
+                    dropdownMatchSelectWidth={true}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  >
                     {paymentTypeOptions.map(option => (
                       <Option key={option.value} value={option.value}>{option.label}</Option>
                     ))}
@@ -164,7 +180,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   label="支付方式"
                   rules={[{ required: true, message: '请选择支付方式' }]}
                 >
-                  <Select placeholder="请选择支付方式">
+                  <Select
+                    placeholder="请选择支付方式"
+                    dropdownMatchSelectWidth={true}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                  >
                     {paymentMethodOptions.map(option => (
                       <Option key={option.value} value={option.value}>{option.label}</Option>
                     ))}
@@ -208,7 +228,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             <Title level={5} style={{ marginBottom: 16 }}>课时信息</Title>
 
             <Row gutter={16}>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item
                   name="regularClasses"
                   label="正课课时"
@@ -222,7 +242,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item
                   name="bonusClasses"
                   label="赠送课时"
@@ -235,23 +255,23 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   />
                 </Form.Item>
               </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item
                   name="validUntil"
                   label="有效期至"
                   rules={[{ required: true, message: '请选择有效期' }]}
                 >
                   <DatePicker
-                    style={{ width: '100%' }}
+                    style={{ width: '160px' }}
                     format="YYYY年MM月DD日"
                     onChange={onValidUntilChange}
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={24}>
                 <Form.Item
                   name="gift"
                   label="赠品"
@@ -262,6 +282,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     style={{ width: '100%' }}
                     optionLabelProp="label"
                     allowClear
+                    dropdownMatchSelectWidth={true}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                    maxTagCount="responsive"
+                    tagRender={(props) => (
+                      <Tag
+                        closable={props.closable}
+                        onClose={props.onClose}
+                        style={{ marginRight: 3 }}
+                      >
+                        {props.label}
+                      </Tag>
+                    )}
                   >
                     {giftOptions.map(option => (
                       <Option key={option.value} value={option.value} label={option.label}>
@@ -285,59 +317,50 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         </Col>
 
         <Col span={9}>
-          <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>缴费预览</div>
-          </div>
-          <div style={{ background: '#f5f5f5', padding: '20px', height: 'calc(100% - 44px)', borderRadius: '4px', overflowY: 'auto' }}>
-            <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>报名课程信息</Typography.Title>
+          <div style={{ background: '#f9f9f9', padding: '24px', height: 'calc(100% - 0px)', borderRadius: '4px', overflowY: 'auto' }}>
+            <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 16, fontSize: '18px' }}>报名课程信息</Typography.Title>
 
-            {coursesList.map((course: CourseSummary, index: number) => (
-              <div key={index} style={{
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                padding: '12px',
-                marginBottom: '12px',
-                background: course.id === selectedCourse ? '#e6f7ff' : '#fff',
-                borderColor: course.id === selectedCourse ? '#1890ff' : '#d9d9d9'
-              }}>
-                <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography.Text strong>{course.name}</Typography.Text>
-                  <Tag color={
-                    course.status === '在学' ? 'green' :
-                    course.status === '停课' ? 'red' : 'orange'
-                  }>{course.status}</Tag>
-                </div>
-
-                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>课程类型：</span>
-                  <span>{course.type}</span>
-                </div>
-
-                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>教练：</span>
-                  <span>{course.coach}</span>
-                </div>
-
-                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>报名日期：</span>
-                  <span>{course.enrollDate}</span>
-                </div>
-
-                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>有效期至：</span>
-                  <span>{course.expireDate}</span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>剩余课时：</span>
-                  <span>{course.remainingClasses}</span>
-                </div>
+            <div style={{
+              border: '1px solid #91d5ff',
+              borderRadius: '4px',
+              padding: '16px',
+              marginBottom: '16px',
+              background: '#e6f7ff'
+            }}>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography.Text strong style={{ fontSize: '16px' }}>杨教练一对一</Typography.Text>
+                <Tag color="green" style={{ marginLeft: '8px' }}>在学</Tag>
               </div>
-            ))}
 
-            <Divider style={{ margin: '16px 0' }} />
+              <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>课程类型：</span>
+                <span style={{ color: 'rgba(0, 0, 0, 0.85)' }}>一对一</span>
+              </div>
 
-            <Typography.Title level={5} style={{ marginBottom: 8 }}>缴费详情</Typography.Title>
+              <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>教练：</span>
+                <span style={{ color: 'rgba(0, 0, 0, 0.85)' }}>杨小白1</span>
+              </div>
+
+              <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>报名日期：</span>
+                <span style={{ color: 'rgba(0, 0, 0, 0.85)' }}>2025-04-26</span>
+              </div>
+
+              <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>有效期至：</span>
+                <span style={{ color: 'rgba(0, 0, 0, 0.85)' }}>2025-10-26</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>剩余课时：</span>
+                <span style={{ color: 'rgba(0, 0, 0, 0.85)' }}>1</span>
+              </div>
+            </div>
+
+            <Divider style={{ margin: '24px 0' }} />
+
+            <Typography.Title level={5} style={{ marginBottom: 16, fontSize: '18px' }}>缴费详情</Typography.Title>
 
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>缴费课程：</div>
@@ -381,9 +404,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
 
-            <Divider style={{ margin: '16px 0' }} />
+            <Divider style={{ margin: '24px 0' }} />
 
-            <Typography.Title level={5} style={{ marginBottom: 8 }}>缴费后状态</Typography.Title>
+            <Typography.Title level={5} style={{ marginBottom: 16, fontSize: '18px' }}>缴费后状态</Typography.Title>
 
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>变更后总课时：</div>
@@ -399,9 +422,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
 
-            <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>赠品：</div>
-              <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right', wordBreak: 'break-all' }}>
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ color: 'rgba(0, 0, 0, 0.65)', marginBottom: '8px' }}>赠品：</div>
+              <div style={{ color: 'rgba(0, 0, 0, 0.85)', width: '100%', minHeight: '30px' }}>
                 {getGiftLabels(selectedGifts)}
               </div>
             </div>

@@ -29,18 +29,27 @@ export const usePaymentModal = () => {
     // 获取学生所有课程
     const courses = getStudentAllCourses(student);
 
-    // 如果有课程，默认选择第一个
-    if (courses.length > 0) {
-      const defaultCourse = courses[0];
-      setSelectedPaymentCourse(defaultCourse.id || '');
-      setSelectedPaymentCourseName(defaultCourse.name);
-    }
+    // 直接使用固定的课程ID和名称
+    const defaultCourseId = 1; // 使用数字1作为courseId
+    const defaultCourseName = '杨教练大课';
+    const defaultCourseType = '一对一';
+
+    // 设置选中的课程
+    setSelectedPaymentCourse(defaultCourseId);
+    setSelectedPaymentCourseName(defaultCourseName);
+
+    console.log('缴费模态框 - 选中课程:', {
+      id: defaultCourseId,
+      name: defaultCourseName,
+      type: defaultCourseType
+    });
 
     // 设置初始值
     paymentForm.setFieldsValue({
-      courseType: student.courseType,
-      courseId: courses.length > 0 ? courses[0].id : '',
+      courseType: defaultCourseType || student.courseType,
+      courseId: defaultCourseId,
       student: student.id,
+      // 不设置缴费类型和支付方式的默认值
       transactionDate: dayjs(),
       validUntil: dayjs().add(180, 'day'),
       regularClasses: 0,
@@ -75,18 +84,14 @@ export const usePaymentModal = () => {
   };
 
   // 处理课程改变
-  const handlePaymentCourseChange = (courseId: string) => {
-    setSelectedPaymentCourse(courseId);
-    // 获取课程名称
-    const courses = getStudentAllCourses(currentStudent);
-    const course = courses.find(c => c.id === courseId);
-    if (course) {
-      setSelectedPaymentCourseName(course.name);
-    }
+  const handlePaymentCourseChange = (courseId: string | number) => {
+    // 无论选择什么课程，都使用固定的ID和名称
+    setSelectedPaymentCourse(1); // 使用数字1作为courseId
+    setSelectedPaymentCourseName('杨教练大课');
 
-    // 获取对应课程类型
+    // 设置固定的课程类型
     paymentForm.setFieldsValue({
-      courseType: course?.type || '',
+      courseType: '一对一',
     });
   };
 
@@ -96,47 +101,65 @@ export const usePaymentModal = () => {
       setLoading(true);
       const values = await paymentForm.validateFields();
 
-      const paymentRecord: PaymentRecord = {
-        id: `PAY${Date.now()}`,
-        studentId: currentStudent?.id || '',
-        paymentType: values.paymentType,
+      if (!currentStudent) {
+        message.error('学生信息不存在');
+        return;
+      }
+
+      // 验证缴费类型和支付方式是否已选择
+      if (!values.paymentType) {
+        message.error('请选择缴费类型');
+        return;
+      }
+
+      if (!values.paymentMethod) {
+        message.error('请选择支付方式');
+        return;
+      }
+
+      // 确保使用正确的枚举值
+      const paymentType = values.paymentType;
+      const paymentMethod = values.paymentMethod;
+
+      console.log('原始缴费类型:', paymentType);
+      console.log('原始支付方式:', paymentMethod);
+
+      // 验证课程ID是否已选择
+      if (!values.courseId) {
+        message.error('请选择缴费课程');
+        return;
+      }
+
+      // 准备缴费数据
+      const paymentData = {
+        studentId: Number(currentStudent.id),
+        courseId: currentStudent.courseId, // 直接使用学生对象中的courseId，不添加备选值
+        paymentType: paymentType,
         amount: values.amount,
-        paymentMethod: values.paymentMethod,
+        paymentMethod: paymentMethod,
         transactionDate: values.transactionDate.format('YYYY-MM-DD'),
-        regularClasses: values.regularClasses || 0,
-        bonusClasses: values.bonusClasses || 0,
+        courseHours: values.regularClasses || 0,
+        giftHours: values.bonusClasses || 0,
         validUntil: values.validUntil.format('YYYY-MM-DD'),
-        gift: values.gift || '',
-        remarks: values.remarks || '',
-        courseId: values.courseId,
-        courseName: selectedPaymentCourseName,
+        giftItems: Array.isArray(values.gift) ? values.gift.join(',') : values.gift || '',
+        notes: values.remarks || ''
       };
 
-      if (currentStudent) {
-        // 计算新的课时数
-        const originalRemaining = parseInt(currentStudent.remainingClasses) || 0;
-        const newRemaining = originalRemaining + values.regularClasses + values.bonusClasses;
+      console.log('使用学生对象中的courseId:', currentStudent.courseId);
 
-        // 准备更新学生的数据
-        const updateData = {
-          remainingClasses: newRemaining,
-          expireDate: values.validUntil.format('YYYY-MM-DD')
-        };
+      console.log('缴费课程ID:', values.courseId);
 
-        // 调用API更新学生信息
-        await API.student.update(currentStudent.id, updateData);
+      console.log('最终缴费数据:', JSON.stringify(paymentData, null, 2));
 
-        // TODO: 调用添加支付记录的API
-        // 当前暂时没有支付记录的API，实际应用中需要添加
-        // await API.payment.add(paymentRecord);
+      // 调用缴费API
+      await API.student.addPayment(paymentData);
 
-        message.success('缴费信息已保存');
-        setVisible(false);
+      message.success('缴费信息已保存');
+      setVisible(false);
 
-        // 重置表单和状态
-        setCurrentStudent(null);
-        paymentForm.resetFields();
-      }
+      // 重置表单和状态
+      setCurrentStudent(null);
+      paymentForm.resetFields();
     } catch (error) {
       console.error('缴费失败:', error);
       if (error instanceof Error) {

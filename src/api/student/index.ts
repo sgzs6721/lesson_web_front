@@ -23,6 +23,7 @@ const STUDENT_API_PATHS = {
   DELETE: (id: string) => `/lesson/api/student/delete/${id}`,
   CLASS_RECORDS: (studentId: string) => `/lesson/api/student/${studentId}/class-records`,
   PAYMENT_RECORDS: (studentId: string) => `/lesson/api/student/${studentId}/payment-records`,
+  PAYMENT: '/lesson/api/student/payment',
 };
 
 // 修正 API 路径
@@ -400,6 +401,31 @@ export const student = {
     }
 
     const response = await request(`${STUDENT_API_PATHS.PAYMENT_RECORDS(studentId)}`);
+    return response.data;
+  },
+
+  // 添加学生缴费记录
+  addPayment: async (paymentData: {
+    studentId: number;
+    courseId: number;
+    paymentType: string;
+    amount: number;
+    paymentMethod: string;
+    transactionDate: string;
+    courseHours: number;
+    giftHours: number;
+    validUntil: string;
+    giftItems?: string;
+    notes?: string;
+  }): Promise<any> => {
+    console.log('添加缴费记录，请求数据:', JSON.stringify(paymentData, null, 2));
+
+    const response = await request(STUDENT_API_PATHS.PAYMENT, {
+      method: 'POST',
+      body: JSON.stringify(paymentData)
+    });
+
+    console.log('缴费API响应:', response);
     return response.data;
   }
 };

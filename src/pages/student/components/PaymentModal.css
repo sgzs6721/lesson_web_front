@@ -1,0 +1,67 @@
+/* 缴费模态框样式 */
+
+/* 确保下拉框宽度正确 */
+.ant-modal .ant-select {
+  width: 100% !important;
+}
+
+/* 确保下拉框选择器宽度正确 */
+.ant-modal .ant-select-selector {
+  width: 100% !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+/* 关键修复：确保下拉列表宽度与选框一致 */
+.ant-modal .ant-select-dropdown {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 修复下拉列表位置 */
+.ant-select-dropdown-placement-bottomLeft,
+.ant-select-dropdown-placement-topLeft {
+  left: 0 !important;
+}
+
+/* 确保下拉选项文本不换行 */
+.ant-select-dropdown .ant-select-item-option-content {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* 确保占位符文本可见 */
+.ant-select-selection-placeholder {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.25) !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* 确保多选框中的标签在单行显示 */
+.ant-select-multiple .ant-select-selection-overflow {
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* 隐藏滚动条 */
+.ant-select-multiple .ant-select-selection-overflow::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+}
+
+/* 确保标签之间有适当的间距 */
+.ant-select-multiple .ant-select-selection-item {
+  margin-right: 4px !important;
+}
+
+/* 确保输入框高度适当 */
+.ant-select-multiple .ant-select-selector {
+  height: auto !important;
+  min-height: 32px !important;
+  padding: 2px 4px !important;
+}

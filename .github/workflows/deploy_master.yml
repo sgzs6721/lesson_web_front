@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  dev-front-deploy:
+  master-front-deploy:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ secrets.NODE_VERSION }}
 
       - name: Install Dependencies
         run: npm install
@@ -26,7 +26,7 @@ jobs:
       - name: clean Server Old Files
         uses: fifsky/ssh-action@master
         with:
-          command: rm -rf /root/lesson/lesson_web_front/assets/*
+          command: rm -rf ${{ secrets.TARGET_PATH }}/*
           host: ${{ secrets.HW_TEST_SERVER }}
           user: ${{ secrets.HW_SERVER_USERNAME }}
           pass: ${{ secrets.HW_SERVER_PWD }}
@@ -39,5 +39,5 @@ jobs:
           username: ${{ secrets.HW_SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: ${{ github.workspace }}/dist/*
-          target: /root/lesson/lesson_web_front
-          strip_components: 3
+          target: ${{ secrets.TARGET_PATH }}
+          strip_components: ${{ secrets.STRIP_COMPONENTS }}
