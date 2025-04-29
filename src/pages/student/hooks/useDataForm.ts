@@ -34,7 +34,8 @@ export const useDataForm = (
       deleteStudent: dataProps.deleteStudent,
       updateStudent: dataProps.updateStudent,
       fetchStudents: dataProps.fetchStudents,
-      addNewStudentToList: dataProps.addNewStudentToList
+      addNewStudentToList: dataProps.addNewStudentToList,
+      updateStudentAttendanceLocally: dataProps.updateStudentAttendanceLocally
     },
     search: {
       params: searchProps.searchParams,

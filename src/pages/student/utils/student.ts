@@ -10,21 +10,30 @@ import dayjs from 'dayjs';
 export const getStudentAllCourses = (student: Student | null): CourseSummary[] => {
   if (!student) return [];
 
-  // 创建一个包含所有课程的数组
+  console.log('获取学员课程，学员数据:', JSON.stringify(student, null, 2));
+  
+  // 确保返回的课程对象中id和name正确区分
   const allCourses: CourseSummary[] = [];
 
-  // 如果学员有多个课程组，将其添加到课程列表中
   if (student.courseGroups && student.courseGroups.length > 0) {
     student.courseGroups.forEach((group) => {
       const courseId = group.courses && group.courses.length > 0 ? group.courses[0] : '';
-      const courseName = courseId
-        ? courseOptions.find(c => c.value === courseId)?.label || courseId
-        : '未知课程';
-
+      
+      // 查找对应的课程名称，如果不存在则使用"课程+ID"的形式
+      let courseName = '';
+      if (courseOptions && courseOptions.length > 0) {
+        const courseOption = courseOptions.find(opt => String(opt.value) === String(courseId));
+        courseName = courseOption ? courseOption.label : `${courseId}`;
+      } else {
+        courseName = `${courseId}`;
+      }
+      
+      console.log('从课程组获取课程:', {courseId, courseName});
+      
       allCourses.push({
-        id: courseId,
-        name: courseName,
-        type: courseOptions.find(c => c.value === courseId)?.type || group.courseType,
+        id: courseId, // 确保这里是课程ID
+        name: courseName, // 确保这里是课程名称
+        type: group.courseType,
         coach: group.coach,
         status: group.status === 'normal' ? '在学' :
                group.status === 'expired' ? '停课' :
@@ -35,15 +44,27 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
         remainingClasses: student.remainingClasses
       });
     });
-  } else if (student.course) {
-    // 如果只有一个主课程，添加到课程列表
+  }
+  
+  // 主课程
+  if (student.course) {
     const courseId = Array.isArray(student.course) ? student.course[0] : student.course;
-    const courseName = courseOptions.find(c => c.value === courseId)?.label || courseId;
-
+    
+    // 查找对应的课程名称，如果不存在则使用"课程+ID"的形式
+    let courseName = '';
+    if (courseOptions && courseOptions.length > 0) {
+      const courseOption = courseOptions.find(opt => String(opt.value) === String(courseId));
+      courseName = courseOption ? courseOption.label : `${courseId}`;
+    } else {
+      courseName = `${courseId}`;
+    }
+    
+    console.log('从主课程获取课程:', {courseId, courseName});
+    
     allCourses.push({
-      id: courseId,
-      name: courseName,
-      type: courseOptions.find(c => c.value === courseId)?.type || student.courseType || '',
+      id: courseId, // 确保这是课程ID
+      name: courseName, // 确保这是课程名称
+      type: student.courseType || '',
       coach: student.coach,
       status: student.status === 'normal' ? '在学' :
               student.status === 'expired' ? '停课' :
@@ -53,34 +74,37 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
       expireDate: student.expireDate || '',
       remainingClasses: student.remainingClasses
     });
-  } else if (student.courseId) {
-    // 如果有courseId字段，使用这些字段
-    // 安全地处理 course 字段，可能是字符串、数组或未定义
-    let courseName = `课程${student.courseId}`;
-    if (typeof student.course === 'string') {
-      courseName = student.course;
-    } else if (Array.isArray(student.course)) {
-      // 确保 course 是数组且不为空
-      const courseArray = student.course as string[];
-      if (courseArray.length > 0) {
-        courseName = courseArray[0];
-      }
+  }
+  
+  // 如果学员有courseId但没有关联课程，添加一个默认课程
+  if (student.courseId && allCourses.length === 0) {
+    console.log('学员有courseId但没有课程记录，添加默认课程:', student.courseId);
+    
+    // 确保courseId是字符串类型
+    const courseId = String(student.courseId);
+    
+    // 查找对应的课程名称，如果不存在则使用"课程+ID"的形式
+    let courseName = '';
+    if (courseOptions && courseOptions.length > 0) {
+      const courseOption = courseOptions.find(opt => String(opt.value) === courseId);
+      courseName = courseOption ? courseOption.label : `${courseId}`;
+    } else {
+      courseName = `${courseId}`;
     }
+    
     allCourses.push({
-      id: String(student.courseId),
-      name: courseName,
+      id: courseId, // 确保这是课程ID
+      name: courseName, // 确保这是课程名称
       type: student.courseType || '',
       coach: student.coach || '',
-      status: student.status === 'normal' ? '在学' :
-              student.status === 'expired' ? '停课' :
-              student.status === 'graduated' ? '已毕业' :
-              student.status === 'STUDYING' ? '在学' : '待处理',
-      enrollDate: student.enrollDate,
+      status: student.status === 'normal' ? '在学' : '在学',
+      enrollDate: student.enrollDate || '',
       expireDate: student.expireDate || '',
       remainingClasses: student.remainingClasses
     });
   }
-
+  
+  console.log('最终返回课程列表:', allCourses);
   return allCourses;
 };
 

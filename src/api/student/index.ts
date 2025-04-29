@@ -1,18 +1,25 @@
 import {
-  Student,
   StudentDTO,
   ClassRecord,
   PaymentRecord,
   StudentSearchParams,
   CreateStudentRequest,
   UpdateStudentRequest,
-  ScheduleTime
+  ScheduleTime,
+  // Import Attendance types
+  AttendanceListParams,
+  AttendanceRecordDTO,
+  AttendanceListResponseData,
+  AttendanceListApiResponse
 } from './types';
+// 导入前端 UI 使用的 Student 类型
+import { Student } from '@/pages/student/types/student';
 import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
 import { mockApiResponse, mockStudents, mockClassRecords, mockPaymentRecords, mockPaginatedResponse } from './mock';
 
 // Import shared config
 import { request, USE_MOCK, API_HOST } from '../config';
+import { SimpleCourse } from '../course/types';
 
 // API Path Constants
 const STUDENT_API_PATHS = {
@@ -83,7 +90,13 @@ const convertDtoToStudent = (dto: StudentDTO): Student => {
     institutionId: dto.institutionId,
     institutionName: dto.institutionName,
     // 添加固定排课时间
-    scheduleTimes: scheduleTimes
+    scheduleTimes: scheduleTimes,
+    // 新增：映射 courses 字段
+    courses: dto.courses ? dto.courses.map(courseDto => ({
+      ...courseDto, // 直接复制 DTO 的所有字段
+      // 如果 CourseInfo 和 CourseInfoDTO 结构完全一致，这里不需要额外转换
+      // 如果有差异，需要在这里进行字段映射
+    })) : [] // 如果 dto.courses 不存在，则返回空数组
   };
 };
 
@@ -251,30 +264,13 @@ export const student = {
         // 创建基本学员对象
         const studentId = typeof response.data === 'string' ? parseInt(response.data) : response.data;
 
-        // 尝试获取课程和教练信息
-        const getCourseSimpleList = await import('../course').then(module => module.getCourseSimpleList);
+        // 直接使用请求中的课程信息，不再调用课程接口
         let courseName = '';
         let courseTypeName = '大课'; // 默认值
         let coachName = '';
 
-        try {
-          const courseList = await getCourseSimpleList();
-          const course = courseList.find(c => String(c.id) === String(payload.courseInfo.courseId));
-          if (course) {
-            courseName = course.name || '';
-            courseTypeName = course.typeName || '大课';
-            // 获取教练信息
-            if (course.coaches && course.coaches.length > 0) {
-              coachName = course.coaches[0].name || '';
-              console.log('从课程中获取到教练信息:', coachName);
-              console.log('课程的所有教练:', course.coaches);
-            } else {
-              console.warn('课程没有教练信息:', course);
-            }
-          }
-        } catch (error) {
-          console.warn('获取课程信息失败:', error);
-        }
+        // 从请求中获取教练信息
+        const coachNameFromRequest = payload.courseInfo.coachName || '';
 
         return {
           id: studentId.toString(),
@@ -285,7 +281,7 @@ export const student = {
           phone: payload.studentInfo.phone,
           course: courseName || payload.courseInfo.courseId?.toString() || '',
           courseType: courseTypeName,
-          coach: coachName || '',
+          coach: coachNameFromRequest || coachName || '', // 优先使用请求中的教练名称
           enrollDate: payload.courseInfo.startDate || '',
           expireDate: payload.courseInfo.endDate || '',
           remainingClasses: '0', // 默认为0
@@ -427,5 +423,44 @@ export const student = {
 
     console.log('缴费API响应:', response);
     return response.data;
+  },
+
+  // 新增：获取学员打卡记录列表
+  getAttendanceList: async (params: AttendanceListParams): Promise<AttendanceListResponseData> => {
+    const ATTENDANCE_LIST_PATH = '/lesson/api/student/attendance-list';
+    // MOCK data can be added here if needed
+    if (USE_MOCK) {
+        console.warn('Mock data for getAttendanceList not implemented yet.');
+        return { list: [], total: 0, pageNum: 1, pageSize: 10, pages: 0 }; 
+    }
+    
+    // 从 localStorage 获取 campusId，如果 params 中没有提供
+    const campusId = params.campusId || Number(localStorage.getItem('currentCampusId'));
+    if (!campusId) {
+      console.error('获取打卡记录失败: 缺少校区 ID');
+      throw new Error('缺少校区 ID');
+    }
+    
+    const requestBody = {
+      ...params,
+      campusId: campusId
+    };
+
+    console.log('请求打卡记录列表，参数:', JSON.stringify(requestBody, null, 2));
+
+    const response: AttendanceListApiResponse = await request(ATTENDANCE_LIST_PATH, {
+      method: 'POST',
+      body: JSON.stringify(requestBody)
+    });
+
+    console.log('打卡记录列表 API 响应:', response);
+
+    if (response.code === 200 && response.data) {
+      // API 返回的数据结构已经是 PaginatedResponse<AttendanceRecordDTO>
+      return response.data; 
+    } else {
+      console.error('获取打卡记录列表失败:', response.message);
+      throw new Error(response.message || '获取打卡记录列表失败');
+    }
   }
 };

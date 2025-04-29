@@ -60,9 +60,13 @@ export const useStudentUI = (
     // 课程记录相关
     classRecord: {
       classRecordModalVisible: classRecordProps.classRecordModalVisible,
-      studentClassRecords: classRecordProps.studentClassRecords,
+      currentStudent: classRecordProps.currentStudent,
+      classRecords: classRecordProps.classRecords,
+      classRecordLoading: classRecordProps.classRecordLoading,
+      classRecordPagination: classRecordProps.classRecordPagination,
       showClassRecordModal: classRecordProps.showClassRecordModal,
-      handleClassRecordModalCancel: classRecordProps.handleClassRecordModalCancel
+      handleClassRecordModalCancel: classRecordProps.handleClassRecordModalCancel,
+      handleClassRecordTableChange: classRecordProps.handleClassRecordTableChange
     },
     
     // 课表相关

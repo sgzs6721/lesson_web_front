@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tag, Button, Dropdown } from 'antd';
+import { Tag, Button, Dropdown, Popconfirm, Space, Divider } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   EditOutlined,
@@ -9,9 +9,12 @@ import {
   TransactionOutlined,
   SyncOutlined,
   DeleteOutlined,
-  DownOutlined
+  DownOutlined,
+  CheckCircleOutlined,
+  InfoCircleOutlined,
+  MoreOutlined
 } from '@ant-design/icons';
-import { Student } from '@/pages/student/types/student';
+import { Student, CourseInfo } from '@/pages/student/types/student';
 import dayjs from 'dayjs';
 import { courseTypeOptions } from './options';
 import FixedWidthTag from '../components/FixedWidthTag';
@@ -29,19 +32,16 @@ const renderCourseType = (text: string | undefined) => {
     </FixedWidthTag>
   );
 
-  const typeInfo = courseTypeOptions.find(t => t.value === text);
-
-  // 使用更加高级的颜色映射
-  const colorMapping = {
-    'sports': 'teal',
-    'art': 'indigo',
-    'academic': 'cyan',
+  const colorMapping: Record<string, string> = {
     '大课': 'amber',
     '一对一': 'blue',
-    '小班': 'green'
+    '小班': 'green',
+    '体育类': 'teal',
+    '艺术类': 'indigo',
+    '学术类': 'cyan',
   };
 
-  const color = colorMapping[text as keyof typeof colorMapping] || 'default';
+  const color = colorMapping[text] || 'default';
 
   return (
     <FixedWidthTag
@@ -49,7 +49,7 @@ const renderCourseType = (text: string | undefined) => {
       width={70}
       variant="filled"
     >
-      {typeInfo?.label || text}
+      {text}
     </FixedWidthTag>
   );
 };
@@ -63,39 +63,8 @@ export const getStudentColumns = (
   onTransfer: (student: Student) => void,
   onTransferClass: (student: Student) => void,
   onDelete: (id: string) => void,
-  onAttendance: (student: Student) => void,
+  onAttendance: (student: Student & { attendanceCourse?: { id: number | string; name: string } }) => void,
 ): ColumnsType<Student> => [
-  {
-    title: '打卡',
-    key: 'attendance',
-    align: 'center',
-    width: 80,
-    render: (_: any, record: Student) => {
-      // 解析剩余课时，获取数值部分
-      const remainingClassesStr = record.remainingClasses || '0/0';
-      const remainingClasses = parseInt(remainingClassesStr.split('/')[0] || '0', 10);
-
-      // 判断剩余课时是否为0
-      const isDisabled = remainingClasses <= 0;
-
-      return (
-        <Button
-          type="link"
-          onClick={() => onAttendance(record)}
-          style={{
-            padding: '4px 8px',
-            // 禁用状态下的样式
-            color: isDisabled ? '#d9d9d9' : undefined,
-            cursor: isDisabled ? 'not-allowed' : 'pointer',
-          }}
-          disabled={isDisabled}
-          title={isDisabled ? '剩余课时为0，无法打卡' : '打卡'}
-        >
-          打卡
-        </Button>
-      );
-    },
-  },
   {
     title: '学员ID',
     dataIndex: 'id',
@@ -121,21 +90,23 @@ export const getStudentColumns = (
     title: '姓名',
     dataIndex: 'name',
     key: 'name',
-    align: 'left', // 修改为左对齐
+    align: 'left',
     onHeaderCell: () => ({
-      style: { ...columnStyle, whiteSpace: 'nowrap' }, // 表头仍然居中
+      style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
     onCell: () => ({
-      style: { textAlign: 'left', paddingLeft: '16px' }, // 单元格内容左对齐
+      style: { textAlign: 'left', paddingLeft: '16px' },
     }),
     render: (text, record) => (
-      <span>
+      <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
         {record.gender === 'MALE' ? (
           <span key="gender-icon" style={{ color: '#1890ff', marginRight: 5 }}>♂</span>
         ) : (
           <span key="gender-icon" style={{ color: '#eb2f96', marginRight: 5 }}>♀</span>
         )}
-        <span key="name-text">{text}</span>
+        <span key="name-text" /* style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} */ >
+          {text}
+        </span>
       </span>
     ),
   },
@@ -160,237 +131,197 @@ export const getStudentColumns = (
     }),
   },
   {
-    title: '课程类型',
-    dataIndex: 'courseType',
-    key: 'courseType',
-    align: 'center',
-    width: 120,
+    title: '课程信息',
+    key: 'courseInfo',
+    align: 'left',
+    width: 800, // Keep width
     onHeaderCell: () => ({
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
-    render: renderCourseType,
-    sorter: (a, b) => (a.courseType || '').localeCompare(b.courseType || '')
-  },
-  {
-    title: '教练',
-    dataIndex: 'coach',
-    key: 'coach',
-    align: 'center',
-    onHeaderCell: () => ({
-      style: { ...columnStyle, whiteSpace: 'nowrap' },
-    }),
-    render: (text, record) => {
-      // 如果有教练信息，直接显示
-      if (text) {
-        return text;
+    render: (_, record) => {
+      if (!record.courses || record.courses.length === 0) {
+        return '-';
       }
 
-      // 如果没有教练信息，但有课程组信息，尝试从课程组获取
-      if (record.courseGroups && record.courseGroups.length > 0 && record.courseGroups[0].coach) {
-        return record.courseGroups[0].coach;
-      }
-
-      // 如果都没有，显示默认值
-      return '-';
-    },
-    sorter: (a, b) => {
-      const coachA = a.coach || (a.courseGroups && a.courseGroups.length > 0 ? a.courseGroups[0].coach : '') || '';
-      const coachB = b.coach || (b.courseGroups && b.courseGroups.length > 0 ? b.courseGroups[0].coach : '') || '';
-      return coachA.localeCompare(coachB);
-    }
-  },
-  {
-    title: '剩余课时',
-    dataIndex: 'remainingClasses',
-    key: 'remainingClasses',
-    align: 'center',
-    onHeaderCell: () => ({
-      style: { ...columnStyle, whiteSpace: 'nowrap' },
-    }),
-    sorter: (a, b) => {
-      // 确保 remainingClasses 是字符串类型
-      const classesA = typeof a.remainingClasses === 'string' ? a.remainingClasses : String(a.remainingClasses || '0');
-      const classesB = typeof b.remainingClasses === 'string' ? b.remainingClasses : String(b.remainingClasses || '0');
-
-      // 安全地提取数字部分
-      const remainingA = parseInt((classesA.split('/')[0] || '0').trim(), 10) || 0;
-      const remainingB = parseInt((classesB.split('/')[0] || '0').trim(), 10) || 0;
-
-      return remainingA - remainingB;
-    }
-  },
-  {
-    title: '最近上课时间',
-    dataIndex: 'lastClassDate',
-    key: 'lastClassDate',
-    align: 'center',
-    onHeaderCell: () => ({
-      style: { ...columnStyle, whiteSpace: 'nowrap' },
-    }),
-    render: text => text ? dayjs(text).format('YYYY-MM-DD') : '-',
-    sorter: (a, b) => {
-      if (!a.lastClassDate) return 1;
-      if (!b.lastClassDate) return -1;
-      return dayjs(a.lastClassDate).unix() - dayjs(b.lastClassDate).unix();
-    }
-  },
-  {
-    title: '报名日期',
-    dataIndex: 'enrollDate',
-    key: 'enrollDate',
-    align: 'center',
-    onHeaderCell: () => ({
-      style: { ...columnStyle, whiteSpace: 'nowrap' },
-    }),
-    render: text => dayjs(text).format('YYYY-MM-DD'),
-    sorter: (a, b) => dayjs(a.enrollDate).unix() - dayjs(b.enrollDate).unix(),
-  },
-  {
-    title: '状态',
-    dataIndex: 'status',
-    key: 'status',
-    align: 'center',
-    onHeaderCell: () => ({
-      style: { ...columnStyle, whiteSpace: 'nowrap' },
-    }),
-    render: status => {
-      let color = '';
-      let text = '';
-      let variant: 'filled' | 'outlined' = 'filled';
-
-      // 使用更加稳重的颜色映射
-      switch (status) {
-        case 'active':
-        case 'normal':
-        case 'NORMAL':
-          color = 'green';
-          text = '在学';
-          variant = 'filled';
-          break;
-        case 'STUDYING':
-          color = 'green';
-          text = '在学';
-          variant = 'filled';
-          break;
-        case 'inactive':
-        case 'SUSPENDED':
-          color = 'red';
-          text = '停课';
-          variant = 'outlined';
-          break;
-        case 'pending':
-          color = 'orange';
-          text = '待处理';
-          variant = 'outlined';
-          break;
-        case 'graduated':
-        case 'GRADUATED':
-          color = 'blue';
-          text = '结业';
-          variant = 'filled';
-          break;
-        case 'expired':
-          color = 'gray';
-          text = '过期';
-          variant = 'outlined';
-          break;
-        default:
-          color = 'default';
-          text = status;
-          variant = 'outlined';
-      }
-
-      // 使用更加稳重的样式
       return (
-        <FixedWidthTag
-          color={color}
-          width={70}
-          variant={variant}
-        >
-          {text}
-        </FixedWidthTag>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {record.courses.map((course: CourseInfo & { courseTypeName?: string }, index: number) => {
+            // 获取课时
+            const remainingHours = course.remainingHours ?? 0;
+            
+            // 获取状态
+            let statusColor = '';
+            let statusText = '';
+            
+            // ★ Use colors defined in FixedWidthTag's colorMap
+            switch (course.status) {
+              case 'PUBLISHED':
+              case 'STUDYING':
+                statusColor = 'green'; // Use 'green' from colorMap
+                statusText = '在学';
+                break;
+              case 'EXPIRED':
+                statusColor = 'red'; // Use 'red' from colorMap
+                statusText = '已过期';
+                break;
+              case 'GRADUATED':
+                statusColor = 'blue'; // Use 'blue' from colorMap
+                statusText = '已结业';
+                break;
+              case 'PENDING':
+                statusColor = 'orange'; // Use 'orange' or 'amber' from colorMap
+                statusText = '待开课';
+                break;
+               case 'INACTIVE':
+                 statusColor = 'gray'; // Use 'gray' or another suitable color from colorMap
+                 statusText = '停课';
+                 break;
+              // Add more cases based on actual backend status values
+              default:
+                statusColor = 'default';
+                statusText = course.status || '未知';
+            }
+
+            // 判断当前课程是否可打卡
+            const isDisabled = remainingHours <= 0;
+
+            // ★ Define menu items for remaining actions
+            const remainingMenuItems = [
+              { key: 'refund', label: '退费', icon: <RollbackOutlined style={{ color: '#f5222d' }} />, onClick: () => onRefund(record) },
+              { key: 'transfer', label: '转课', icon: <TransactionOutlined />, onClick: () => onTransfer(record) },
+              { key: 'transferClass', label: '转班', icon: <SyncOutlined />, onClick: () => onTransferClass(record) },
+            ];
+
+            return (
+              <div key={`${record.id}-course-${course.courseId || index}`} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: isDisabled ? '#fdfdfd' : '#fafafa',
+                  padding: '6px 10px',
+                  borderRadius: '4px',
+                  width: '100%',
+                  opacity: isDisabled ? 0.7 : 1,
+                  border: '1px solid #f0f0f0'
+              }}>
+                  {/* Course Name - Center Align */}
+                  <span style={{
+                      fontWeight: 'bold', minWidth: '120px', marginRight: '8px',
+                      flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', 
+                      textAlign: 'center' 
+                  }} title={course.courseName}>
+                    {course.courseName || '-'}
+                  </span>
+                  {/* Course Type - Center Align */}
+                  <span style={{ minWidth: '75px', marginRight: '8px', flexShrink: 0, textAlign: 'center' }}>
+                    {renderCourseType(course.courseTypeName)} 
+                  </span>
+                  {/* Coach - Center Align */}
+                  <span style={{
+                      minWidth: '75px', marginRight: '8px',
+                      color: 'rgba(0, 0, 0, 0.65)', flexShrink: 0, 
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', 
+                      textAlign: 'center'
+                  }}>
+                    {course.coachName || '-'}
+                  </span>
+                  {/* Remaining Hours - Right Align */}
+                  <span style={{
+                      color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'), 
+                      minWidth: '80px', marginRight: '8px',
+                      textDecoration: isDisabled ? 'line-through' : 'none', 
+                      fontWeight: remainingHours <= 5 ? 'bold' : 'normal', 
+                      flexShrink: 0, 
+                      textAlign: 'right'
+                  }}>
+                    {`${remainingHours ?? 0}/${course.totalHours ?? 0}`}课时
+                  </span>
+                  {/* Expiry Date - Center Align */}
+                  <span style={{
+                      color: isDisabled ? '#aaa' : '#888', fontSize: '12px', minWidth: '100px', marginRight: '8px',
+                      flexShrink: 0, textAlign: 'center'
+                  }}>
+                    有效期至: {course.endDate ? dayjs(course.endDate).format('YY-MM-DD') : '-'}
+                  </span>
+                  {/* Status Tag - Center Align */}
+                  <span style={{ minWidth: '65px', marginRight: '8px', flexShrink: 0, textAlign: 'center' }}>
+                    <FixedWidthTag color={isDisabled ? 'default' : statusColor} width={60} style={{ opacity: isDisabled ? 0.7 : 1 }}> {statusText}</FixedWidthTag>
+                  </span>
+                  
+                  {/* Grouped Buttons - Fixed size */}
+                  <Space size="small" style={{ flexShrink: 0, marginRight: '8px' }}>
+                    {/* Attendance Button */}
+                    <Button type="link" icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />} size="small" onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })} disabled={isDisabled} style={{ padding: '0' }} title={isDisabled ? '剩余课时不足' : '打卡'} />
+                    {/* Record Button */}
+                    <Button type="link" icon={<FileTextOutlined style={{ color: '#1890ff' }} />} size="small" onClick={() => onClassRecord(record)} style={{ padding: '0' }} title="课程记录" />
+                    {/* Payment Button */}
+                    <Button type="link" icon={<DollarOutlined style={{ color: '#fa8c16' }} />} size="small" onClick={() => onPayment(record)} style={{ padding: '0' }} title="缴费" />
+                  </Space>
+
+                  {/* Actions Dropdown - Push right */}
+                  {remainingMenuItems.length > 0 && (
+                    <Dropdown menu={{ items: remainingMenuItems }} trigger={['hover']} placement="bottomRight">
+                      <Button type="text" size="small" icon={<MoreOutlined />} style={{ marginLeft: 'auto', padding: '0 4px', flexShrink: 0 }} /> 
+                    </Dropdown>
+                  )}
+              </div>
+            );
+          })}
+        </div>
       );
-    },
-    sorter: (a, b) => {
-      const statusOrder = {
-        active: 0,
-        normal: 0,
-        NORMAL: 0,
-        STUDYING: 0,
-        pending: 1,
-        inactive: 2,
-        SUSPENDED: 2,
-        graduated: 3,
-        GRADUATED: 3,
-        expired: 4
-      };
-      const aOrder = statusOrder[a.status as keyof typeof statusOrder] ?? 99;
-      const bOrder = statusOrder[b.status as keyof typeof statusOrder] ?? 99;
-      return aOrder - bOrder;
     }
   },
   {
     title: '操作',
     key: 'action',
-    width: 120,
+    width: 100,
+    align: 'center',
     onHeaderCell: () => ({
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
     render: (_, record) => (
-      <Dropdown
-        menu={{
-          items: [
-            {
-              key: 'edit',
-              label: '编辑',
-              icon: <EditOutlined />,
-              onClick: () => onEdit(record)
-            },
-            {
-              key: 'record',
-              label: '课程记录',
-              icon: <FileTextOutlined />,
-              onClick: () => onClassRecord(record)
-            },
-            {
-              key: 'payment',
-              label: '缴费',
-              icon: <DollarOutlined />,
-              onClick: () => onPayment(record)
-            },
-            {
-              key: 'refund',
-              label: '退费',
-              icon: <RollbackOutlined />,
-              onClick: () => onRefund(record)
-            },
-            {
-              key: 'transfer',
-              label: '转课',
-              icon: <TransactionOutlined />,
-              onClick: () => onTransfer(record)
-            },
-            {
-              key: 'transferClass',
-              label: '转班',
-              icon: <SyncOutlined />,
-              onClick: () => onTransferClass(record)
-            },
-            {
-              key: 'delete',
-              label: '删除',
-              icon: <DeleteOutlined />,
-              danger: true,
-              onClick: () => onDelete(record.id)
-            },
-          ]
-        }}
-        trigger={['click']}
-      >
-        <Button type="link">
-          操作 <DownOutlined />
-        </Button>
-      </Dropdown>
+      <Space size="middle">
+        <Button 
+          type="link" 
+          icon={<EditOutlined style={{ color: '#faad14' }} />} 
+          onClick={() => onEdit(record)} 
+          title="编辑"
+          style={{ padding: '0' }}
+        />
+        <Button 
+          type="link" 
+          icon={<InfoCircleOutlined style={{ color: '#1890ff' }} />} 
+          title="详情"
+          style={{ padding: '0' }}
+        />
+        <Popconfirm
+          title="确定删除该学员吗？"
+          onConfirm={() => onDelete(record.id)}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button 
+            type="link" 
+            danger 
+            icon={<DeleteOutlined style={{ color: '#f5222d' }} />}
+            title="删除"
+            style={{ padding: '0' }}
+          />
+        </Popconfirm>
+      </Space>
     ),
   },
 ];
+
+// 添加一个映射函数将课程类型转换为颜色
+const courseTypeToColor = (type: string) => {
+  const colorMapping: Record<string, string> = {
+    'sports': 'teal',
+    'art': 'indigo',
+    'academic': 'cyan',
+    '大课': 'amber',
+    '一对一': 'blue',
+    '小班': 'green'
+  };
+  
+  return colorMapping[type] || 'default';
+};

@@ -14,19 +14,10 @@ export const checkInStudent = async (data: {
   studentId: number;
   courseId: number;
   courseDate: string;
-  startTime: {
-    hour: number;
-    minute: number;
-    second: number;
-    nano: number;
-  };
-  endTime: {
-    hour: number;
-    minute: number;
-    second: number;
-    nano: number;
-  };
+  startTime: string;
+  endTime: string;
   notes?: string;
+  duration?: number | string;
 }) => {
   return request(STUDENT_ATTENDANCE_API_PATHS.CHECK_IN, {
     method: 'POST',

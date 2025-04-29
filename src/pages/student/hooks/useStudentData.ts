@@ -353,6 +353,80 @@ export const useStudentData = () => {
     }
   };
 
+  // 新增：本地更新学员打卡后的课时信息
+  const updateStudentAttendanceLocally = (studentId: number, courseId: number, consumedDuration: number) => {
+    console.log(`[updateLocally]尝试更新：学员ID=${studentId}, 课程ID=${courseId}, 消耗时长=${consumedDuration}`);
+
+    const updateState = (prevState: Student[]) => {
+      let stateChanged = false;
+      const newState = prevState.map(student => {
+        // ★ 修改 ID 比较逻辑：优先用 studentId (number)，否则用 id (string 转 number)
+        const studentMatches = (student.studentId !== undefined && student.studentId === studentId) || 
+                             (student.studentId === undefined && student.id !== undefined && Number(student.id) === studentId);
+
+        if (studentMatches) { 
+          let studentCoursesChanged = false;
+          const originalCourses = student.courses ?? [];
+          const updatedCourses = originalCourses.map(course => {
+            // ★ 转换为数字进行比较
+            if (Number(course.courseId) === courseId) { 
+              const currentRemaining = course.remainingHours ?? 0;
+              const newRemaining = Math.max(0, currentRemaining - consumedDuration);
+              if (newRemaining !== currentRemaining) { 
+                console.log(`[updateLocally] 找到课程并更新: ${course.courseName} (ID: ${course.courseId}), 原剩余: ${currentRemaining}, 新剩余: ${newRemaining}`);
+                studentCoursesChanged = true; 
+                return {
+                  ...course,
+                  remainingHours: newRemaining,
+                };
+              } else {
+                 console.log(`[updateLocally] 找到课程但课时未变: ${course.courseName}`);
+              }
+            }
+            return course; 
+          });
+
+          if (studentCoursesChanged) {
+            console.log(`[updateLocally] 找到学员并更新其 courses: ${student.name} (ID: ${student.studentId})`);
+            stateChanged = true;
+            return {
+              ...student, 
+              courses: updatedCourses, 
+            };
+          } else {
+             console.log(`[updateLocally] 找到学员但其课程未更新: ${student.name}`);
+          }
+        }
+        return student; 
+      });
+
+      // ★ 修改这里的逻辑：即使 stateChanged 为 false (因为ID不匹配或课时未变)，
+      // 但既然 API 调用成功且 duration > 0，我们仍然应该返回 newState 以强制更新引用。
+      // 只有在 consumedDuration 为 0 时，才考虑返回 prevState。
+      if (consumedDuration !== 0) {
+          if (!stateChanged) {
+              console.warn(`[updateLocally] ID匹配失败或课时未变，但强制更新引用，因为 duration=${consumedDuration}`);
+          }
+          console.log(`[updateLocally] 返回新数组引用 (强制或因改变)`);
+          return newState; // 强制返回新数组
+      } else {
+          // 如果消耗课时为0，则按原来的逻辑判断是否返回新引用
+          if (stateChanged) {
+            console.log(`[updateLocally] 状态已改变 (duration=0)，返回新数组引用`);
+            return newState;
+          }
+          console.log(`[updateLocally] 状态未改变 (duration=0)，返回原数组引用`);
+          return prevState; 
+      }
+    };
+
+    // 更新状态，React 会比较新旧状态引用，如果不同则触发重渲染
+    setStudents(updateState);
+    setFilteredStudents(updateState);
+
+    console.log(`[updateLocally] 更新调用完成`);
+  };
+
   return {
     students: filteredStudents,
     totalStudents: total,
@@ -366,6 +440,7 @@ export const useStudentData = () => {
     resetData,
     handlePageChange,
     fetchStudents,
-    addNewStudentToList // 新增方法
+    addNewStudentToList, // 新增方法
+    updateStudentAttendanceLocally // 新增方法
   };
 };

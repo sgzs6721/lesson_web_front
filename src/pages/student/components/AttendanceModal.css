@@ -2,7 +2,7 @@
 
 /* 确保所有表单项宽度一致 */
 .attendance-form .ant-form-item {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 /* 确保所有输入框宽度一致 */
@@ -188,7 +188,7 @@
 .time-duration-row .duration-item {
   flex: 1;
   padding: 0 8px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 /* 课时项中的输入框样式 */
@@ -213,4 +213,243 @@
 .time-duration-row .duration-item .duration-unit {
   width: 50% !important; /* 平分宽度 */
   flex: 1;
+}
+
+/* 自定义时间选择器样式，确保小时和分钟列宽度一致 */
+.time-picker-popup .ant-picker-footer {
+  display: none !important;
+}
+
+/* 强制设置面板容器宽度 */
+.time-picker-popup .ant-picker-panel-container,
+.time-picker-popup .ant-picker-panel,
+.time-picker-popup .ant-picker-time-panel {
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+}
+
+/* 保证面板中的两列布局 */
+.time-picker-popup .ant-picker-time-panel {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+}
+
+/* 强制每个列等宽 */
+.time-picker-popup .ant-picker-time-panel-column {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+  flex: 0 0 70px !important;
+  text-align: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* 子元素保持在容器中居中 */
+.time-picker-popup .ant-picker-time-panel-column > li,
+.time-picker-popup .ant-picker-time-panel-cell {
+  width: 100% !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
+/* 改进所有时间单元格样式 */
+.time-picker-popup .ant-picker-time-panel-cell-inner {
+  font-size: 14px !important;
+  border-radius: 4px !important;
+  margin: 1px 2px !important;
+  width: calc(100% - 4px) !important;
+  transition: all 0.1s !important;
+  height: 26px !important;
+  line-height: 26px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #333333 !important;
+}
+
+/* 选中项样式 */
+.time-picker-popup .ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+  background-color: #1890ff !important;
+  color: white !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  transition: background-color 0.2s !important;
+}
+
+/* 鼠标悬停样式 */
+.time-picker-popup .ant-picker-time-panel-cell-inner:hover {
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+/* 确保选中项的悬停效果不变 */
+.time-picker-popup .ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner:hover {
+  background-color: #1890ff !important;
+  color: white !important;
+}
+
+/* 确保列高度足够显示所有内容 */
+.time-picker-popup .ant-picker-time-panel-column {
+  height: 250px !important;
+}
+
+/* 移除可能影响布局的边框 */
+.time-picker-popup .ant-picker-time-panel-column {
+  border: none !important;
+}
+
+/* 自定义滚动条样式，确保不会占用太多空间 */
+.time-picker-popup .ant-picker-time-panel-column::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+.time-picker-popup .ant-picker-time-panel-column::-webkit-scrollbar-track {
+  background: #f0f0f0 !important;
+}
+
+.time-picker-popup .ant-picker-time-panel-column::-webkit-scrollbar-thumb {
+  background: #ccc !important;
+  border-radius: 2px !important;
+}
+
+/* 强制点击样式，点击选项后自动确认 */
+.time-picker-popup .ant-picker-time-panel-column .ant-picker-time-panel-cell {
+  cursor: pointer !important;
+}
+
+.time-picker-popup .ant-picker-time-panel-column .ant-picker-time-panel-cell:active::after {
+  content: "";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* 隐藏确认按钮 */
+.time-picker-popup .ant-picker-ok {
+  display: none !important;
+}
+
+/* 时间选择器样式优化 */
+.ant-time-picker-panel-select-option-selected {
+  background-color: #40a9ff !important;
+  color: white !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+}
+
+.ant-picker-time-panel-column > li {
+  font-size: 14px !important;
+  border-radius: 4px !important;
+  margin: 2px 4px !important;
+  width: calc(100% - 8px) !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  padding: 0 !important;
+  text-align: center !important;
+  transition: all 0.2s !important;
+}
+
+.ant-picker-time-panel-column > li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+  background-color: #40a9ff !important;
+  color: white !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s !important;
+}
+
+.ant-picker-time-panel-column > li .ant-picker-time-panel-cell-inner:hover {
+  background-color: #e6f7ff !important;
+}
+
+/* 时间选择器样式 */
+.ant-picker-dropdown .ant-picker-time-panel-column {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ant-picker-dropdown .ant-picker-time-panel-column::-webkit-scrollbar {
+  display: none;
+}
+
+.ant-picker-dropdown .ant-picker-time-panel-column > li.ant-picker-time-panel-cell {
+  font-size: 14px;
+  border-radius: 4px;
+  margin: 2px 0;
+  width: 100%;
+  height: 34px;
+  line-height: 34px;
+  padding: 0 16px;
+  transition: all 0.2s;
+}
+
+.ant-picker-dropdown .ant-picker-time-panel-column > li.ant-picker-time-panel-cell:hover {
+  background-color: #e6f7ff;
+}
+
+.ant-picker-dropdown .ant-picker-time-panel-column > li.ant-picker-time-panel-cell .ant-picker-time-panel-cell-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.ant-picker-dropdown .ant-picker-time-panel-column > li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+  background-color: #40a9ff;
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+/* 隐藏滚动条 */
+.time-picker-popup .ant-picker-time-panel-column {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.time-picker-popup .ant-picker-time-panel-column::-webkit-scrollbar {
+  display: none;
+}
+
+/* 时间选择器选项样式 */
+.time-picker-popup .ant-picker-time-panel-column > li {
+  font-size: 14px;
+  border-radius: 4px;
+  margin: 4px 0;
+  width: 80%;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 8px;
+  transition: all 0.2s;
+}
+
+/* 选中的时间选项样式 */
+.time-picker-popup .ant-picker-time-panel-column > li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+  background-color: #40a9ff;
+  color: white;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+}
+
+/* 鼠标悬停时间选项样式 */
+.time-picker-popup .ant-picker-time-panel-column > li:hover {
+  background-color: #e6f7ff;
 }

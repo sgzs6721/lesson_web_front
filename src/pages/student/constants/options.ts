@@ -76,7 +76,7 @@ export const giftOptions = [
 ];
 
 export const studentStatusOptions = [
-  { value: 'normal', label: '正常' },
-  { value: 'expired', label: '过期' },
-  { value: 'graduated', label: '结业' },
+  { value: 'NORMAL', label: '正常' },
+  { value: 'EXPIRED', label: '过期' },
+  { value: 'GRADUATED', label: '结业' },
 ];

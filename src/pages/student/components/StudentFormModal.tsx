@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Modal,
   Form,
@@ -10,7 +10,7 @@ import {
   Typography,
   Button,
   Space,
-  Divider,
+
   TimePicker,
   Tag,
   Table,
@@ -23,7 +23,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  TeamOutlined
+
 } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import { Student, CourseGroup, ScheduleTime } from '@/pages/student/types/student';
@@ -134,6 +134,13 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
   loadingCourses,
   loading
 }) => {
+  // 获取已选择的课程ID列表，用于禁用已选课程
+  const getSelectedCourseIds = (excludeIndex?: number): string[] => {
+    return courseGroups
+      .filter((_, index) => index !== excludeIndex) // 排除当前正在编辑的课程组
+      .map(group => group.courses && group.courses.length > 0 ? String(group.courses[0]) : '')
+      .filter(id => id); // 过滤掉空值
+  };
   // 渲染课程组表格
   const renderCourseGroupTable = () => {
     // 如果没有有效数据（至少有一条记录且有课程信息），则不渲染表格
@@ -159,7 +166,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               dataIndex: 'courses',
               align: 'center',
               render: (courses) => {
-                const courseId = courses && courses.length > 0 ? courses[0] : '';
+                const courseId = courses && courses.length > 0 ? String(courses[0]) : '';
+                console.log('表格中的课程ID:', courseId);
                 // 先尝试从课程列表中查找
                 const foundCourse = courseList.find(c => String(c.id) === courseId);
                 if (foundCourse) {
@@ -195,20 +203,36 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 // 处理后端枚举值
                 let normalizedStatus = status;
                 if (status === 'STUDYING') {
-                  normalizedStatus = 'normal';
+                  normalizedStatus = 'NORMAL';
                 } else if (status === 'MALE' || status === 'FEMALE') {
-                  normalizedStatus = status.toLowerCase();
+                  normalizedStatus = status;
+                } else if (status === 'normal') {
+                  normalizedStatus = 'NORMAL';
+                } else if (status === 'expired') {
+                  normalizedStatus = 'EXPIRED';
+                } else if (status === 'graduated') {
+                  normalizedStatus = 'GRADUATED';
                 }
 
                 // Find the corresponding option in studentStatusOptions
                 const statusOption = studentStatusOptions.find(opt => opt.value === normalizedStatus);
-                const text = statusOption ? statusOption.label : (status === 'STUDYING' ? '在学' : status); // Use found label or fallback to raw status
+                const text = statusOption ? statusOption.label : (status === 'STUDYING' ? '正常' : status); // Use found label or fallback to raw status
 
                 // Determine tag color based on status value
                 let color = 'default'; // Default color for unknown statuses
                 switch (normalizedStatus) {
+                  case 'NORMAL':
+                    color = 'green';
+                    break;
+                  case 'EXPIRED':
+                    color = 'orange';
+                    break;
+                  case 'GRADUATED':
+                    color = 'blue';
+                    break;
+                  // 兼容旧的状态值
                   case 'active':
-                  case 'normal': // Assuming 'normal' means active or similar positive status
+                  case 'normal':
                     color = 'green';
                     break;
                   case 'inactive':
@@ -217,7 +241,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                   case 'pending':
                     color = 'orange';
                     break;
-                  // Add cases for other potential statuses if needed
                 }
 
                 return <Tag color={color}>{text}</Tag>;
@@ -304,12 +327,20 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 placeholder="请选择课程"
                 value={group.courses && group.courses.length > 0 ? group.courses[0] : undefined}
                 onChange={(value) => {
+                  console.log('选择课程，原始值:', value, '类型:', typeof value);
+
                   // Ensure value is treated as string for comparison
                   const selectedCourseId = value ? String(value) : null;
+                  console.log('转换后的课程ID:', selectedCourseId);
+
+                  // 查找匹配的课程
                   const selectedCourse = courseList.find(c => String(c.id) === selectedCourseId);
+                  console.log('找到的课程:', selectedCourse);
 
                   if (selectedCourse) {
-                    const courseId = selectedCourse.id.toString();
+                    const courseId = String(selectedCourse.id);
+                    console.log('使用课程ID:', courseId);
+
                     // Provide default empty string if typeName is missing
                     const courseType = selectedCourse.typeName || '';
                     // Provide default or handle missing coaches gracefully
@@ -320,6 +351,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateCourseGroup(index, 'courses', [courseId]);
                     updateCourseGroup(index, 'courseType', courseType);
                     updateCourseGroup(index, 'coach', coachName);
+
+
                   } else {
                     // Clear fields if no course is selected or found
                     updateCourseGroup(index, 'courses', selectedCourseId ? [selectedCourseId] : []);
@@ -334,20 +367,45 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 loading={loadingCourses}
               >
                 {courseList && courseList.length > 0 ? (
-                  courseList.map(course => (
-                    <Option key={course.id} value={course.id.toString()}>
-                      {course.name}
-                    </Option>
-                  ))
+                  courseList.map(course => {
+                    // 获取已选课程ID列表，排除当前正在编辑的课程组
+                    const selectedCourseIds = getSelectedCourseIds(currentEditingGroupIndex !== null ? currentEditingGroupIndex : undefined);
+                    // 检查当前课程是否已被选择
+                    const isDisabled = selectedCourseIds.includes(String(course.id));
+
+                    return (
+                      <Option
+                        key={course.id}
+                        value={course.id.toString()}
+                        disabled={isDisabled}
+                      >
+                        {course.name}
+                      </Option>
+                    );
+                  })
                 ) : (
                   // 如果课程列表为空，显示模拟数据
-                  [
-                    <Option key="basketball" value="basketball">篮球训练</Option>,
-                    <Option key="swimming" value="swimming">游泳课程</Option>,
-                    <Option key="tennis" value="tennis">网球培训</Option>,
-                    <Option key="painting" value="painting">绘画班</Option>,
-                    <Option key="piano" value="piano">钢琴培训</Option>
-                  ]
+                  (() => {
+                    const mockCourses = [
+                      { id: "basketball", name: "篮球训练" },
+                      { id: "swimming", name: "游泳课程" },
+                      { id: "tennis", name: "网球培训" },
+                      { id: "painting", name: "绘画班" },
+                      { id: "piano", name: "钢琴培训" }
+                    ];
+                    // 获取已选课程ID列表
+                    const selectedCourseIds = getSelectedCourseIds();
+
+                    return mockCourses.map(course => (
+                      <Option
+                        key={course.id}
+                        value={course.id}
+                        disabled={selectedCourseIds.includes(String(course.id))}
+                      >
+                        {course.name}
+                      </Option>
+                    ));
+                  })()
                 )}
               </Select>
             </Form.Item>
@@ -593,12 +651,20 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 placeholder="请选择课程"
                 value={tempCourseGroup.courses && tempCourseGroup.courses.length > 0 ? tempCourseGroup.courses[0] : undefined}
                 onChange={(value) => {
+                  console.log('选择临时课程，原始值:', value, '类型:', typeof value);
+
                   // Ensure value is treated as string for comparison
                   const selectedCourseId = value ? String(value) : null;
+                  console.log('转换后的课程ID:', selectedCourseId);
+
+                  // 查找匹配的课程
                   const selectedCourse = courseList.find(c => String(c.id) === selectedCourseId);
+                  console.log('找到的课程:', selectedCourse);
 
                   if (selectedCourse) {
-                    const courseId = selectedCourse.id.toString();
+                    const courseId = String(selectedCourse.id);
+                    console.log('使用课程ID:', courseId);
+
                     // Provide default empty string if typeName is missing
                     const courseType = selectedCourse.typeName || '';
                     // Provide default or handle missing coaches gracefully
@@ -609,6 +675,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateTempCourseGroup('courses', [courseId]);
                     updateTempCourseGroup('courseType', courseType);
                     updateTempCourseGroup('coach', coachName);
+
+
                   } else {
                      // Clear fields if no course is selected or found
                     updateTempCourseGroup('courses', selectedCourseId ? [selectedCourseId] : []);
@@ -623,20 +691,45 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 loading={loadingCourses}
               >
                 {courseList && courseList.length > 0 ? (
-                  courseList.map(course => (
-                    <Option key={course.id} value={course.id.toString()}>
-                      {course.name}
-                    </Option>
-                  ))
+                  courseList.map(course => {
+                    // 获取已选课程ID列表
+                    const selectedCourseIds = getSelectedCourseIds();
+                    // 检查当前课程是否已被选择
+                    const isDisabled = selectedCourseIds.includes(String(course.id));
+
+                    return (
+                      <Option
+                        key={course.id}
+                        value={course.id.toString()}
+                        disabled={isDisabled}
+                      >
+                        {course.name}
+                      </Option>
+                    );
+                  })
                 ) : (
                   // 如果课程列表为空，显示模拟数据
-                  [
-                    <Option key="basketball" value="basketball">篮球训练</Option>,
-                    <Option key="swimming" value="swimming">游泳课程</Option>,
-                    <Option key="tennis" value="tennis">网球培训</Option>,
-                    <Option key="painting" value="painting">绘画班</Option>,
-                    <Option key="piano" value="piano">钢琴培训</Option>
-                  ]
+                  (() => {
+                    const mockCourses = [
+                      { id: "basketball", name: "篮球训练" },
+                      { id: "swimming", name: "游泳课程" },
+                      { id: "tennis", name: "网球培训" },
+                      { id: "painting", name: "绘画班" },
+                      { id: "piano", name: "钢琴培训" }
+                    ];
+                    // 获取已选课程ID列表
+                    const selectedCourseIds = getSelectedCourseIds();
+
+                    return mockCourses.map(course => (
+                      <Option
+                        key={course.id}
+                        value={course.id}
+                        disabled={selectedCourseIds.includes(String(course.id))}
+                      >
+                        {course.name}
+                      </Option>
+                    ));
+                  })()
                 )}
               </Select>
             </Form.Item>

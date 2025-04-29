@@ -144,3 +144,10 @@
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
+/* 课程记录模态框中，用于分隔不同课程组的样式 (★ 删除) */
+/*
+.course-group-separator td {
+  border-top: 2px dashed #e8e8e8; 
+}
+*/

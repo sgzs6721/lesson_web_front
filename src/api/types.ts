@@ -11,7 +11,7 @@ export interface ApiResponse<T = any> {
  * 分页请求参数
  */
 export interface PaginationParams {
-  page: number; // 页码 (通常从 1 开始)
+  pageNum: number; // 修正：页码字段为 pageNum (通常从 1 开始)
   pageSize: number; // 每页数量
 }
 

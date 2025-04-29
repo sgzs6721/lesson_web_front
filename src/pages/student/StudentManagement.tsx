@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message } from 'antd';
-import { PlusOutlined, ExportOutlined } from '@ant-design/icons';
+import { PlusOutlined, ExportOutlined, UserOutlined, ReadOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import StudentSearchBar from './components/StudentSearchBar';
 import StudentTable from './components/StudentTable';
@@ -75,8 +75,6 @@ const StudentManagement: React.FC = () => {
   const df = useDataForm(courseList, student.createWithCourse);
   // -------------------------------------------------------
 
-  const uiStudents: UiStudent[] = df.data.students.map(convertApiStudentToUiStudent);
-
   // 状态类型使用 UiStudent
   const [selectedStudent, setSelectedStudent] = useState<UiStudent | null>(null);
 
@@ -119,7 +117,7 @@ const StudentManagement: React.FC = () => {
   };
 
   // Pass df.data.deleteStudent and the dummy add function
-  const ui = useStudentUI(uiStudents, df.data.deleteStudent, dummyAddStudentForUI);
+  const ui = useStudentUI(df.data.students as UiStudent[], df.data.deleteStudent, dummyAddStudentForUI);
 
   // 添加打卡相关状态
   const [attendanceModalVisible, setAttendanceModalVisible] = useState(false);
@@ -201,47 +199,144 @@ const StudentManagement: React.FC = () => {
     }
   }, []);
 
-  const handleAttendance = (student: UiStudent) => {
-    // 解析剩余课时，获取数值部分
-    const remainingClassesStr = student.remainingClasses || '0/0';
-    const remainingClasses = parseInt(remainingClassesStr.split('/')[0] || '0', 10);
+  const handleAttendance = (student: UiStudent & { attendanceCourse?: { id: number | string; name: string } }) => {
+    // 获取传递过来的课程信息
+    const attendanceCourse = student.attendanceCourse;
 
-    // 检查剩余课时是否为0
-    if (remainingClasses <= 0) {
-      message.warning('该学员剩余课时为0，无法进行打卡操作');
-      return;
+    // 确保课程信息存在
+    if (!attendanceCourse || attendanceCourse.id === undefined || attendanceCourse.id === null) {
+        message.error('无法确定要为哪个课程打卡');
+        console.error('handleAttendance 缺少 attendanceCourse 信息', student);
+        return;
     }
 
-    // 确保学生对象包含courseId
-    console.log('打卡学员信息:', student);
-    console.log('学员courseId:', student.courseId);
-
-    // 如果学员没有courseId但有API返回的原始数据中的courseId
-    const studentWithCourseId = {
+    // 准备传递给模态框的数据
+    const studentForModal = {
       ...student,
-      // 确保courseId存在
-      courseId: student.courseId || (df.data.students.find(s => s.id === student.id)?.courseId)
+      // 直接使用传递过来的课程ID和名称
+      courseId: String(attendanceCourse.id), 
+      courseName: attendanceCourse.name 
     };
 
-    console.log('传递给打卡模态框的学员信息:', studentWithCourseId);
+    // 移除 studentForModal 中的临时属性，避免传递给 Modal
+    delete studentForModal.attendanceCourse;
 
-    setSelectedStudent(studentWithCourseId);
+    console.log('传递给打卡模态框的学员信息:', studentForModal);
+
+    setSelectedStudent(studentForModal);
     setAttendanceModalVisible(true);
   };
 
-  const handleAttendanceOk = (values: any) => {
-    console.log('打卡信息:', values);
+  const handleAttendanceOk = (checkInData: { studentId: number; courseId: number; duration: number }) => {
+    // ★ 增加详细日志，检查传入的数据
+    console.log('[handleAttendanceOk] 接收到打卡数据:', checkInData);
+    if (typeof checkInData.studentId !== 'number' || typeof checkInData.courseId !== 'number' || typeof checkInData.duration !== 'number') {
+        console.error('[handleAttendanceOk] 传入的 checkInData 类型不正确!', checkInData);
+        message.error('打卡处理失败，数据类型错误');
+        setAttendanceModalVisible(false);
+        return;
+    }
+    if (checkInData.duration <= 0) {
+      console.warn('[handleAttendanceOk] 消耗课时 duration 为 0 或负数，将不更新本地状态。打卡数据:', checkInData);
+      // 可能仍然需要关闭模态框和显示通用成功消息，但不调用本地更新
+       setAttendanceModalVisible(false);
+       message.success(`${selectedStudent?.name || '学员'} 打卡记录成功（课时未扣除）`);
+       // 不调用本地更新
+       return; 
+    }
+
+    console.log(`[handleAttendanceOk] 准备调用本地更新: studentId=${checkInData.studentId}, courseId=${checkInData.courseId}, duration=${checkInData.duration}`);
+    
     // 打卡成功后关闭模态框
     setAttendanceModalVisible(false);
 
-    // 更新学员剩余课时（实际项目中应该重新获取学员列表或更新特定学员）
-    message.success(`${selectedStudent?.name} 打卡成功，课时已扣除`);
+    // 获取打卡学员信息 (用于显示提示)
+    if (!selectedStudent) {
+      console.warn('[handleAttendanceOk] 无法获取所选学员信息用于提示');
+    }
 
-    // 在实际项目中，这里应该调用刷新学员列表的函数
-    // df.data.fetchStudents({
-    //   page: ui.pagination.currentPage,
-    //   pageSize: ui.pagination.pageSize
-    // });
+    // 显示成功提示
+    message.success(`${selectedStudent?.name || '学员'} 打卡成功，课时已扣除`);
+
+    // 调用本地更新函数
+    try {
+      df.data.updateStudentAttendanceLocally(
+        checkInData.studentId,
+        checkInData.courseId,
+        checkInData.duration
+      );
+      console.log('[handleAttendanceOk] 本地课时更新调用成功'); // 日志移到调用后
+    } catch (error) {
+      console.error('[handleAttendanceOk] 本地更新课时调用失败:', error);
+      message.error('更新课时信息失败，请尝试刷新页面');
+    }
+  };
+
+  // 添加更多本地样式
+  const statCardsStyle = {
+    display: 'flex',
+    gap: '16px',
+    marginLeft: '24px',
+  };
+
+  const statCardStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '12px 16px',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)',
+  };
+
+  const studentCountStyle = {
+    ...statCardStyle,
+    borderLeft: '4px solid #1890ff',
+  };
+
+  const courseCountStyle = {
+    ...statCardStyle,
+    borderLeft: '4px solid #52c41a',
+  };
+
+  const statIconStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    fontSize: '20px',
+    marginRight: '12px',
+  };
+
+  const studentIconStyle = {
+    ...statIconStyle,
+    backgroundColor: 'rgba(24, 144, 255, 0.1)',
+    color: '#1890ff',
+  };
+
+  const courseIconStyle = {
+    ...statIconStyle,
+    backgroundColor: 'rgba(82, 196, 26, 0.1)',
+    color: '#52c41a',
+  };
+
+  const statContentStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+  };
+
+  const statValueStyle = {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#000',
+    lineHeight: '1.2',
+  };
+
+  const statLabelStyle = {
+    fontSize: '14px',
+    color: 'rgba(0, 0, 0, 0.45)',
   };
 
   return (
@@ -249,11 +344,80 @@ const StudentManagement: React.FC = () => {
       <div className="student-management">
         <Card className="student-management-card">
           <div className="student-header">
-            <Space align="baseline" size="middle">
-              <Title level={4} className="student-title">学员管理</Title>
-              <Text type="secondary">学员总数: <Text strong>{df.data.totalStudents}</Text></Text>
-              <Text type="secondary">课程总数: <Text strong>{courseList.length}</Text></Text>
-            </Space>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Title level={4} className="student-title" style={{ marginRight: '24px', marginBottom: 0 }}>学员管理</Title>
+              
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: '4px 12px', 
+                  backgroundColor: 'rgba(24, 144, 255, 0.1)', 
+                  borderRadius: '8px', 
+                  borderLeft: '4px solid #1890ff',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+                  height: '38px',
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    width: '28px', 
+                    height: '28px', 
+                    borderRadius: '50%', 
+                    backgroundColor: '#f0f5ff',
+                    marginRight: '8px',
+                    color: '#1890ff',
+                    fontSize: '16px'
+                  }}>
+                    <UserOutlined />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '8px' }}>
+                      学员总数
+                    </div>
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1890ff' }}>
+                      {df.data.totalStudents}
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: '4px 12px', 
+                  backgroundColor: 'rgba(82, 196, 26, 0.1)', 
+                  borderRadius: '8px', 
+                  borderLeft: '4px solid #52c41a',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+                  height: '38px',
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    width: '28px', 
+                    height: '28px', 
+                    borderRadius: '50%', 
+                    backgroundColor: '#f6ffed',
+                    marginRight: '8px',
+                    color: '#52c41a',
+                    fontSize: '16px'
+                  }}>
+                    <ReadOutlined />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '8px' }}>
+                      课程总数
+                    </div>
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
+                      {courseList.length}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -276,7 +440,7 @@ const StudentManagement: React.FC = () => {
             params={df.search.params}
             onSearch={df.search.handleSearch}
             onReset={df.search.handleReset}
-            onExport={() => ui.export.handleExport(uiStudents)}
+            onExport={() => ui.export.handleExport(df.data.students as UiStudent[])}
             onTextChange={df.search.setSearchText}
             onStatusChange={df.search.setSelectedStatus}
             onCourseChange={df.search.setSelectedCourse}
@@ -288,13 +452,18 @@ const StudentManagement: React.FC = () => {
 
           {/* 数据表格 */}
           <StudentTable
-            data={uiStudents}
+            data={df.data.students as UiStudent[]}
             loading={df.data.loading}
             pagination={{
               current: ui.pagination.currentPage,
               pageSize: ui.pagination.pageSize,
               total: df.data.totalStudents,
               onChange: handleCustomPaginationChange, // 使用自定义分页处理函数
+              showSizeChanger: false,
+              showQuickJumper: true,
+              size: 'small',
+              showTotal: (total) => `共 ${total} 条`,
+              style: { marginTop: '16px', textAlign: 'right' }
             }}
             onEdit={(record: UiStudent) => df.form.showEditModal(record as ApiStudent)}
             onClassRecord={(record: UiStudent) => ui.classRecord.showClassRecordModal(record as ApiStudent)}
@@ -340,10 +509,12 @@ const StudentManagement: React.FC = () => {
         {/* 课程记录模态框 */}
         <ClassRecordModal
           visible={ui.classRecord.classRecordModalVisible}
-          student={ui.classRecord.studentClassRecords.student ? convertApiStudentToUiStudent(ui.classRecord.studentClassRecords.student) : null}
-          records={ui.classRecord.studentClassRecords.records}
-          loading={(ui.classRecord as any)?.classRecordLoading ?? false}
+          student={ui.classRecord.currentStudent}
+          records={ui.classRecord.classRecords}
+          loading={ui.classRecord.classRecordLoading}
+          pagination={ui.classRecord.classRecordPagination}
           onCancel={ui.classRecord.handleClassRecordModalCancel}
+          onTableChange={ui.classRecord.handleClassRecordTableChange}
         />
 
         {/* 课表模态框 */}
@@ -390,7 +561,7 @@ const StudentManagement: React.FC = () => {
           onOk={ui.refundTransfer.handleRefundTransferOk}
           onSearchTransferStudent={ui.refundTransfer.handleSearchTransferStudent}
           onSelectTransferStudent={ui.refundTransfer.handleSelectTransferStudent}
-          students={uiStudents}
+          students={df.data.students as UiStudent[]}
           isQuickAddStudentModalVisible={ui.refundTransfer.isQuickAddStudentModalVisible}
           quickAddStudentForm={ui.refundTransfer.quickAddStudentForm}
           showQuickAddStudentModal={ui.refundTransfer.showQuickAddStudentModal}

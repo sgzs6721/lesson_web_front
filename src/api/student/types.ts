@@ -1,5 +1,5 @@
 import { Dayjs } from 'dayjs';
-import { ApiResponse, PaginatedResponse } from '../types';
+import { ApiResponse, PaginatedResponse, PaginationParams } from '../types';
 
 // 定义课表接口
 export interface ClassSchedule {
@@ -107,6 +107,40 @@ export interface StudentDTO {
 
   // 固定排课时间
   fixedSchedule?: string;
+
+  // 新增课程列表 (对应API响应)
+  courses?: CourseInfoDTO[];
+}
+
+// 新增课程信息DTO接口 (对应API响应中的课程结构 - 根据截图更新)
+export interface CourseInfoDTO {
+  studentCourseId: number;
+  courseId: number;
+  courseName: string;
+  courseTypeId: number;
+  courseTypeName: string;
+  coachId: number;
+  coachName: string;
+  consumedHours: number;
+  totalHours: number;
+  status: string; // e.g., "STUDYING"
+  endDate?: string;
+  enrollmentDate?: string;
+  fixedSchedule?: string | null;
+  lastClassTime?: string | null;
+  remainingHours?: number; // API似乎也提供了计算好的remainingHours
+  // coaches?: { id: number; name: string; }[]; // 移除coaches数组，使用coachName
+  // 移除之前错误定义的字段
+  // id?: string;
+  // name?: string;
+  // type?: string;
+  // unitHours?: number;
+  // price?: number;
+  // campusId?: number;
+  // institutionId?: number;
+  // description?: string;
+  // createdTime?: string;
+  // updateTime?: string;
 }
 
 // 前端使用的学员接口
@@ -145,6 +179,7 @@ export interface Student {
   coachId?: number;
   institutionId?: number;
   institutionName?: string;
+  courses?: CourseInfoDTO[]; // 添加 courses 字段
 }
 
 // 学员创建请求
@@ -220,3 +255,27 @@ export interface StudentUISearchParams {
   enrollMonth: Dayjs | null;
   sortOrder?: 'enrollDateAsc' | 'enrollDateDesc' | 'ageAsc' | 'ageDesc' | 'remainingClassesAsc' | 'remainingClassesDesc' | 'lastClassDateAsc' | 'lastClassDateDesc';
 }
+
+// --- Attendance Record Types ---
+
+// 打卡记录列表请求参数
+export interface AttendanceListParams extends PaginationParams {
+  studentId: number;
+  campusId: number;
+}
+
+// 单条打卡记录 (API 返回)
+export interface AttendanceRecordDTO {
+  courseDate: string;
+  timeRange: string;
+  coachName: string;
+  courseName: string;
+  notes: string;
+  recordId: number;
+}
+
+// 打卡记录列表响应数据
+export interface AttendanceListResponseData extends PaginatedResponse<AttendanceRecordDTO> {}
+
+// 打卡记录列表完整 API 响应
+export interface AttendanceListApiResponse extends ApiResponse<AttendanceListResponseData> {}

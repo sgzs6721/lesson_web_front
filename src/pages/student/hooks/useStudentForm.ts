@@ -25,16 +25,22 @@ const mockSimpleCourses: SimpleCourse[] = [
 // Helper function to map frontend status to API status
 const mapStatusToApi = (status: string | undefined): string => {
   switch (status) {
+    case 'NORMAL':
+      return 'NORMAL';
+    case 'EXPIRED':
+      return 'EXPIRED';
+    case 'GRADUATED':
+      return 'GRADUATED';
+    // 兼容旧的状态值
     case 'active':
     case 'normal':
       return 'NORMAL';
-    case 'inactive':
-      return 'INACTIVE';
-    case 'pending':
-      return 'PENDING';
-    // Add mapping for 'completed' if needed
+    case 'expired':
+      return 'EXPIRED';
+    case 'graduated':
+      return 'GRADUATED';
     default:
-      return 'NORMAL'; // Default or throw error
+      return 'NORMAL'; // 默认值
   }
 };
 
@@ -42,15 +48,22 @@ const mapStatusToApi = (status: string | undefined): string => {
 const mapApiStatusToFrontend = (status: string | undefined): string => {
   switch (status) {
     case 'NORMAL':
-      return 'normal';
-    case 'INACTIVE':
-      return 'inactive';
-    case 'PENDING':
-      return 'pending';
+      return 'NORMAL';
+    case 'EXPIRED':
+      return 'EXPIRED';
+    case 'GRADUATED':
+      return 'GRADUATED';
     case 'STUDYING':
-      return 'normal'; // 将 STUDYING 映射为 normal
+      return 'NORMAL'; // 将 STUDYING 映射为 NORMAL
+    // 兼容旧的状态值
+    case 'normal':
+      return 'NORMAL';
+    case 'expired':
+      return 'EXPIRED';
+    case 'graduated':
+      return 'GRADUATED';
     default:
-      return 'normal'; // 默认值
+      return 'NORMAL'; // 默认值
   }
 };
 
@@ -316,7 +329,8 @@ export const useStudentForm = (
             courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
             startDate: primaryGroup.enrollDate,
             endDate: primaryGroup.expireDate,
-            coachId: coachId || 1, // 确保有教练ID
+            // 不需要传递 coachId，但需要传递教练名称用于回显
+            coachName: primaryGroup.coach || '' // 添加教练名称，用于创建后回显
           };
 
           // 如果有排课时间，添加到请求中
@@ -440,7 +454,8 @@ export const useStudentForm = (
             courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
             startDate: primaryGroup.enrollDate,
             endDate: primaryGroup.expireDate,
-            coachId: coachId || 1, // 确保有教练ID
+            // 不需要传递 coachId，但需要传递教练名称用于回显
+            coachName: primaryGroup.coach || '' // 添加教练名称，用于创建后回显
           };
 
           // 如果有排课时间，添加到请求中
