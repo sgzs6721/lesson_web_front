@@ -114,19 +114,19 @@ export const course = {
       }
 
       // 应用分页
-      const { page = 1, pageSize = 10 } = params || {};
-      const start = (page - 1) * pageSize;
+      const { pageNum = 1, pageSize = 10 } = params || {};
+      const start = (pageNum - 1) * pageSize;
       const end = start + pageSize;
       const list = filteredCourses.slice(start, end);
 
-      const response = mockPaginatedResponse(list, page, pageSize, filteredCourses.length);
+      const response = mockPaginatedResponse(list, pageNum, pageSize, filteredCourses.length);
       return response.data;
     }
 
     // Use imported config and path constants
     const queryParams = new URLSearchParams();
 
-    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageNum) queryParams.append('page', params.pageNum.toString());
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
     if (params?.searchText) queryParams.append('keyword', params.searchText);
 
@@ -210,7 +210,7 @@ export const course = {
         list: response.data.list || [],
         total: response.data.total || 0,
         pageSize: params?.pageSize || 10,
-        pageNum: params?.page || 1
+        pageNum: params?.pageNum || 1
       };
 
       // 更新缓存
@@ -222,7 +222,7 @@ export const course = {
       return formattedResponse;
     } else {
       console.error('课程列表响应格式错误:', response);
-      return { list: [], total: 0, pageSize: params?.pageSize || 10, pageNum: params?.page || 1 };
+      return { list: [], total: 0, pageSize: params?.pageSize || 10, pageNum: params?.pageNum || 1 };
     }
   },
 

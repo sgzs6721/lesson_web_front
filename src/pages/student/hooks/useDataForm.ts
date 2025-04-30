@@ -12,7 +12,7 @@ import { Student } from '@/api/student/types';
  */
 export const useDataForm = (
   courseList: SimpleCourse[],
-  createStudentApiFunc: (payload: { studentInfo: any; courseInfo: any }) => Promise<Student>
+  createStudentApiFunc: (payload: { studentInfo: any; courseInfoList: any[] }) => Promise<Student>
 ) => {
   const dataProps = useStudentData();
   const searchProps = useStudentSearch(dataProps.filterStudents);

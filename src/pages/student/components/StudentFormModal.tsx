@@ -433,7 +433,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               label="报名日期"
               required
@@ -447,7 +447,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               label="有效期至"
               required
@@ -459,6 +459,26 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 value={dayjs(group.expireDate)}
                 onChange={(date) => updateCourseGroup(index, 'expireDate', date ? date.format('YYYY-MM-DD') : '')}
               />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              label="状态"
+              required
+            >
+              <Select
+                placeholder="请选择状态"
+                style={{ width: '100%', background: 'transparent' }}
+                value={group.status}
+                onChange={(value) => updateCourseGroup(index, 'status', value)}
+                getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
+              >
+                {studentStatusOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
         </Row>
@@ -757,7 +777,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               label="报名日期"
               required
@@ -771,7 +791,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               label="有效期至"
               required
@@ -783,6 +803,26 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 value={dayjs(tempCourseGroup.expireDate)}
                 onChange={(date) => updateTempCourseGroup('expireDate', date ? date.format('YYYY-MM-DD') : '')}
               />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              label="状态"
+              required
+            >
+              <Select
+                placeholder="请选择状态"
+                style={{ width: '100%', background: 'transparent' }}
+                value={tempCourseGroup.status === '' ? undefined : tempCourseGroup.status}
+                onChange={(value) => updateTempCourseGroup('status', value)}
+                getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
+              >
+                {studentStatusOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
         </Row>
@@ -960,7 +1000,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
       maskClosable={!loading}
       keyboard={!loading}
       footer={[
-        <Button key="back" onClick={onCancel} disabled={loading}>
+        <Button 
+          key="back" 
+          onClick={onCancel} 
+          disabled={loading}
+          className="enrollment-cancel-btn"
+        >
           取消
         </Button>,
         <Button
@@ -968,6 +1013,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
           type="primary"
           onClick={onSubmit}
           loading={loading}
+          className="enrollment-confirm-btn"
         >
           {editingStudent ? '更新学员' : '添加学员'}
         </Button>
@@ -1013,7 +1059,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
           </Row>
 
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 name="age"
                 label="年龄"
@@ -1025,7 +1071,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 <Input type="number" placeholder="请输入年龄" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 name="phone"
                 label="联系电话"
@@ -1035,25 +1081,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 ]}
               >
                 <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                name="status"
-                label="状态"
-                rules={[{ required: true, message: '请选择状态' }]}
-              >
-                <Select
-                  placeholder="请选择状态"
-                  style={{ width: '100%' }}
-                  getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
-                >
-                  {studentStatusOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
               </Form.Item>
             </Col>
           </Row>

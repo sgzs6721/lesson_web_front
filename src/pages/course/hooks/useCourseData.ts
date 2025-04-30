@@ -170,7 +170,7 @@ export const useCourseData = () => {
     try {
       // 构建 API 请求参数
       const apiParams: any = {
-        page,
+        pageNum: page,
         pageSize,
         searchText: params.searchText,
         selectedStatus: params.selectedStatus,
@@ -222,7 +222,7 @@ export const useCourseData = () => {
 
       // 调用API获取课程列表，只带校区ID筛选条件
       const result = await courseAPI.getList({
-        page,
+        pageNum: page,
         pageSize,
         campusId
       });

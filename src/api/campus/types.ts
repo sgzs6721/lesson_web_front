@@ -52,7 +52,7 @@ export interface CampusCreateParams {
 export interface CampusQueryParams {
   keyword?: string;
   status?: string;
-  page?: number;
+  pageNum?: number;
   pageSize?: number;
 }
 

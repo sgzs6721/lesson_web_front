@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Student, StudentSearchParams, StudentUISearchParams } from '@/api/student/types';
+import { StudentSearchParams, StudentUISearchParams } from '@/api/student/types';
+import { Student } from '@/pages/student/types/student'; // 使用前端Student类型
 import { API } from '@/api';
 import { message } from 'antd';
 
@@ -79,7 +80,7 @@ export const useStudentData = () => {
 
       // 重新获取学员列表，确保数据最新
       await fetchStudents({
-        page: currentPage,
+        pageNum: currentPage,
         pageSize: pageSize
       });
 
@@ -123,7 +124,7 @@ export const useStudentData = () => {
 
       // 重新获取学员列表，确保数据最新
       await fetchStudents({
-        page: currentPage,
+        pageNum: currentPage,
         pageSize: pageSize
       });
     } catch (error) {
@@ -143,7 +144,7 @@ export const useStudentData = () => {
 
       // 重新获取学员列表，确保数据最新
       await fetchStudents({
-        page: currentPage,
+        pageNum: currentPage,
         pageSize: pageSize
       });
 
@@ -159,7 +160,7 @@ export const useStudentData = () => {
   // 将前端搜索参数转换为API搜索参数
   const convertToApiSearchParams = (uiParams: StudentUISearchParams): StudentSearchParams => {
     const apiParams: StudentSearchParams = {
-      page: currentPage,
+      pageNum: currentPage,
       pageSize: pageSize,
       // 默认按创建时间倒序排序
       sortField: 'createdTime',
@@ -302,7 +303,7 @@ export const useStudentData = () => {
 
     try {
       await fetchStudents({
-        page: 1,
+        pageNum: 1,
         pageSize: pageSize
       });
     } catch (error) {
@@ -318,7 +319,7 @@ export const useStudentData = () => {
 
     try {
       await fetchStudents({
-        page,
+        pageNum: page,
         pageSize: size || pageSize
       });
     } catch (error) {

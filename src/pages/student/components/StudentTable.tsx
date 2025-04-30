@@ -26,6 +26,7 @@ interface StudentTableProps {
   onTransferClass?: (student: Student) => void;
   onDelete?: (id: string) => void;
   onAttendance?: (student: Student & { selectedCourseIdForAttendance?: number | string }) => void;
+  onDetails?: (record: Student) => void;
 }
 
 const StudentTable: React.FC<StudentTableProps> = ({
@@ -40,6 +41,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
   onTransferClass,
   onDelete,
   onAttendance,
+  onDetails,
 }) => {
   // 创建各个回调函数的安全版本，避免undefined错误
   const safeOnPayment = onPayment || (() => {});
@@ -48,6 +50,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
   const safeOnTransferClass = onTransferClass || (() => {});
   const safeOnDelete = onDelete || (() => {});
   const safeOnAttendance = onAttendance || ((_: Student & { selectedCourseIdForAttendance?: number | string }) => {});
+  const safeOnDetails = onDetails || (() => {});
 
   const columns = getStudentColumns(
     onEdit,
@@ -58,6 +61,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
     safeOnTransferClass,
     safeOnDelete,
     safeOnAttendance,
+    safeOnDetails,
   );
 
   // 不再需要自定义加载图标

@@ -6,6 +6,7 @@ import {
   CreateStudentRequest,
   UpdateStudentRequest,
   ScheduleTime,
+  Student as ApiStudent,
   // Import Attendance types
   AttendanceListParams,
   AttendanceRecordDTO,
@@ -15,7 +16,12 @@ import {
 // 导入前端 UI 使用的 Student 类型
 import { Student } from '@/pages/student/types/student';
 import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
-import { mockApiResponse, mockStudents, mockClassRecords, mockPaymentRecords, mockPaginatedResponse } from './mock';
+// 修改导入，确保使用正确类型
+import { mockApiResponse, mockClassRecords, mockPaymentRecords, mockPaginatedResponse } from './mock';
+// 使用单独的变量存储mock数据，避免类型不兼容
+import { mockStudents as mockUIStudents } from './mock';
+// 将mock数据强制类型转换
+const mockStudents = mockUIStudents as unknown as Student[];
 
 // Import shared config
 import { request, USE_MOCK, API_HOST } from '../config';
@@ -97,7 +103,7 @@ const convertDtoToStudent = (dto: StudentDTO): Student => {
       // 如果 CourseInfo 和 CourseInfoDTO 结构完全一致，这里不需要额外转换
       // 如果有差异，需要在这里进行字段映射
     })) : [] // 如果 dto.courses 不存在，则返回空数组
-  };
+  } as Student; // 使用类型断言解决类型兼容问题
 };
 
 // 将前端Student对象转换为API所需的CreateStudentRequest
@@ -159,7 +165,7 @@ const buildQueryString = (params: StudentSearchParams): string => {
   if (params.campusId) queryParams.push(`campusId=${params.campusId}`);
   if (params.enrollDateStart) queryParams.push(`enrollDateStart=${params.enrollDateStart}`);
   if (params.enrollDateEnd) queryParams.push(`enrollDateEnd=${params.enrollDateEnd}`);
-  if (params.page) queryParams.push(`page=${params.page}`);
+  if (params.pageNum) queryParams.push(`page=${params.pageNum}`);
   if (params.pageSize) queryParams.push(`pageSize=${params.pageSize}`);
   if (params.sortField) queryParams.push(`sortField=${params.sortField}`);
   if (params.sortOrder) queryParams.push(`sortOrder=${params.sortOrder}`);
@@ -173,11 +179,11 @@ export const student = {
   getList: async (params?: StudentSearchParams): Promise<PaginatedResponse<Student>> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 800));
-      const { page = 1, pageSize = 10 } = params || {};
-      const start = (page - 1) * pageSize;
+      const { pageNum = 1, pageSize = 10 } = params || {};
+      const start = (pageNum - 1) * pageSize;
       const end = start + pageSize;
       const list = mockStudents.slice(start, end);
-      const response = mockPaginatedResponse(list, page, pageSize, mockStudents.length);
+      const response = mockPaginatedResponse(list, pageNum, pageSize, mockStudents.length);
       return response.data;
     }
 
@@ -224,7 +230,7 @@ export const student = {
   add: async (data: Omit<Student, 'id'>): Promise<Student> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      const newStudent: Student = { ...data, id: String(mockStudents.length + 1) };
+      const newStudent = { ...data, id: String(mockStudents.length + 1) } as Student;
       mockStudents.push(newStudent);
       return newStudent;
     }
@@ -239,8 +245,8 @@ export const student = {
   },
 
   // 创建学员及课程
-  createWithCourse: async (payload: { studentInfo: any; courseInfo: any }): Promise<Student> => {
-    if (!payload.studentInfo || !payload.courseInfo) {
+  createWithCourse: async (payload: { studentInfo: any; courseInfoList: any[] }): Promise<Student> => {
+    if (!payload.studentInfo || !payload.courseInfoList) {
       throw new Error('创建学员失败：请求参数不完整');
     }
 
@@ -269,26 +275,100 @@ export const student = {
         let courseTypeName = '大课'; // 默认值
         let coachName = '';
 
-        // 从请求中获取教练信息
-        const coachNameFromRequest = payload.courseInfo.coachName || '';
+        // 获取第一个课程信息作为主要课程
+        const primaryCourseInfo = payload.courseInfoList[0];
 
-        return {
+        // 从请求中获取教练信息
+        const coachNameFromRequest = primaryCourseInfo?.coachName || '';
+
+        // 将courseInfoList转换为courses数组
+        const courses = payload.courseInfoList.map(courseInfo => {
+          // 查找课程名称 - 优先使用提供的课程名称
+          let courseItemName = '';
+          
+          // 1. 首选：直接使用payload中提供的courseName
+          if (courseInfo.courseName && typeof courseInfo.courseName === 'string' && courseInfo.courseName.trim() !== '') {
+            courseItemName = courseInfo.courseName;
+          } 
+          // 2. 其次：使用课程ID找匹配的实际课程名
+          else if (typeof courseInfo.courseId !== 'undefined') {
+            // 这里可能需要根据ID去匹配实际课程名，但我们没有课程列表
+            // 所以只能使用格式化的ID作为名称
+            if (courseInfo.courseId.toString().startsWith('课程')) {
+              courseItemName = courseInfo.courseId.toString();
+            } else {
+              courseItemName = `课程${courseInfo.courseId}`;
+            }
+          }
+          
+          // 如果name字段存在（可能是旧版本API使用的格式）
+          if (courseInfo.name && typeof courseInfo.name === 'string' && courseInfo.name.trim() !== '') {
+            courseItemName = courseInfo.name;
+          }
+
+          // 查找课程类型名称
+          let courseItemType = courseInfo.courseTypeName || courseTypeName;
+          
+          // 使用表单中提供的课程类型
+          if (courseInfo.type || courseInfo.courseType) {
+            courseItemType = courseInfo.type || courseInfo.courseType || courseItemType;
+          }
+          
+          // 提取教练信息
+          let coachItemName = courseInfo.coachName || coachNameFromRequest || '';
+          if (courseInfo.coach) {
+            coachItemName = courseInfo.coach;
+          }
+          
+          console.log("课程信息处理结果:", {
+            courseId: courseInfo.courseId,
+            courseName: courseItemName,
+            courseType: courseItemType,
+            coachName: coachItemName
+          });
+          
+          // 返回的必须符合前端 CourseInfo 结构，但不需要所有字段
+          return {
+            studentCourseId: 0, // 默认填充必需字段
+            courseId: courseInfo.courseId,
+            courseName: courseItemName,
+            courseTypeId: 0, // 默认填充必需字段
+            courseTypeName: courseItemType,
+            coachId: 0, // 默认填充必需字段
+            coachName: coachItemName,
+            consumedHours: 0, // 默认填充必需字段
+            totalHours: courseInfo.totalHours || 0,
+            status: courseInfo.status || 'NORMAL',
+            startDate: courseInfo.startDate,
+            endDate: courseInfo.endDate,
+            remainingHours: courseInfo.remainingHours || 0,
+            enrollmentDate: courseInfo.startDate, // 映射startDate到enrollmentDate
+            fixedScheduleTimes: courseInfo.fixedScheduleTimes || []
+          };
+        });
+
+        // 使用类型断言确保类型兼容性
+        const studentData = {
           id: studentId.toString(),
           studentId: studentId,
           name: payload.studentInfo.name,
           gender: payload.studentInfo.gender,
           age: payload.studentInfo.age,
           phone: payload.studentInfo.phone,
-          course: courseName || payload.courseInfo.courseId?.toString() || '',
+          course: courseName || primaryCourseInfo?.courseId?.toString() || '',
           courseType: courseTypeName,
           coach: coachNameFromRequest || coachName || '', // 优先使用请求中的教练名称
-          enrollDate: payload.courseInfo.startDate || '',
-          expireDate: payload.courseInfo.endDate || '',
+          enrollDate: primaryCourseInfo?.startDate || '',
+          expireDate: primaryCourseInfo?.endDate || '',
           remainingClasses: '0', // 默认为0
-          status: 'STUDYING', // 使用后端的状态格式：STUDYING-在学
+          status: 'STUDYING' as 'normal' | 'expired' | 'graduated' | 'STUDYING', // 使用类型断言
           campusId: payload.studentInfo.campusId || 1,
-          createdTime: new Date().toISOString() // 添加创建时间以便排序
-        } as Student;
+          createdTime: new Date().toISOString(), // 添加创建时间以便排序
+          // 添加courses数组，这样表格就能显示课程信息了
+          courses: courses
+        } as Student; // 使用类型断言解决整体兼容性问题
+
+        return studentData;
       }
     }
 
@@ -347,7 +427,7 @@ export const student = {
       await new Promise(resolve => setTimeout(resolve, 800));
       const index = mockStudents.findIndex(s => s.id === id);
       if (index === -1) { throw new Error('学生不存在'); }
-      const updatedStudent = { ...mockStudents[index], ...data };
+      const updatedStudent = { ...mockStudents[index], ...data } as Student;
       mockStudents[index] = updatedStudent;
       return updatedStudent;
     }

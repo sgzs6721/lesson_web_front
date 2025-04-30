@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message } from 'antd';
+import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message, Spin } from 'antd';
 import { PlusOutlined, ExportOutlined, UserOutlined, ReadOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import StudentSearchBar from './components/StudentSearchBar';
@@ -70,9 +70,12 @@ const StudentManagement: React.FC = () => {
   // 添加状态存储课程列表和加载状态
   const [courseList, setCourseList] = useState<SimpleCourse[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
+  // 添加统计数据加载状态
+  const [loadingStats, setLoadingStats] = useState(true);
 
   // --- Pass student.createWithCourse as the API function ---
-  const df = useDataForm(courseList, student.createWithCourse);
+  // 使用类型断言解决类型不兼容问题
+  const df = useDataForm(courseList, student.createWithCourse as any);
   // -------------------------------------------------------
 
   // 状态类型使用 UiStudent
@@ -127,6 +130,7 @@ const StudentManagement: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       setLoadingCourses(true);
+      setLoadingStats(true); // 设置统计数据为加载中状态
       try {
         const data = await getCourseSimpleList();
         setCourseList(data);
@@ -173,7 +177,7 @@ const StudentManagement: React.FC = () => {
     if (!isLoadingRef.current) {
       isLoadingRef.current = true;
       df.data.fetchStudents({
-        page,
+        pageNum: page,
         pageSize: pageSize || ui.pagination.pageSize
       }).catch(error => {
         console.error('分页加载失败:', error);
@@ -190,11 +194,13 @@ const StudentManagement: React.FC = () => {
       isInitialMount.current = false;
 
       df.data.fetchStudents({
-        page: ui.pagination.currentPage,
+        pageNum: ui.pagination.currentPage,
         pageSize: ui.pagination.pageSize
       }).catch(error => {
         console.error('加载学员列表失败:', error);
         message.error('加载学员列表失败');
+      }).finally(() => {
+        setLoadingStats(false); // 无论成功失败，加载完成
       });
     }
   }, []);
@@ -270,6 +276,14 @@ const StudentManagement: React.FC = () => {
       console.error('[handleAttendanceOk] 本地更新课时调用失败:', error);
       message.error('更新课时信息失败，请尝试刷新页面');
     }
+  };
+
+  // 学员详情处理函数
+  const handleStudentDetails = (student: UiStudent) => {
+    console.log('查看学员详情:', student);
+    // 这里可以跳转到详情页或者显示详情模态框
+    // 暂时使用消息提示，后续可以替换为详情查看逻辑
+    message.info(`暂未实现详情查看功能，学员: ${student.name}`);
   };
 
   // 添加更多本地样式
@@ -356,19 +370,19 @@ const StudentManagement: React.FC = () => {
                   borderRadius: '8px', 
                   borderLeft: '4px solid #1890ff',
                   boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
-                  height: '38px',
+                  height: '32px',
                 }}>
                   <div style={{ 
                     display: 'flex', 
                     justifyContent: 'center', 
                     alignItems: 'center',
-                    width: '28px', 
-                    height: '28px', 
+                    width: '24px', 
+                    height: '24px', 
                     borderRadius: '50%', 
                     backgroundColor: '#f0f5ff',
                     marginRight: '8px',
                     color: '#1890ff',
-                    fontSize: '16px'
+                    fontSize: '14px'
                   }}>
                     <UserOutlined />
                   </div>
@@ -376,8 +390,18 @@ const StudentManagement: React.FC = () => {
                     <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '8px' }}>
                       学员总数
                     </div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1890ff' }}>
-                      {df.data.totalStudents}
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1890ff', minWidth: '40px', textAlign: 'right', position: 'relative' }}>
+                      {loadingStats ? (
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'center', 
+                          alignItems: 'center',
+                          width: '100%',
+                          height: '100%'
+                        }}>
+                          <Spin size="small" />
+                        </div>
+                      ) : df.data.totalStudents}
                     </div>
                   </div>
                 </div>
@@ -390,19 +414,19 @@ const StudentManagement: React.FC = () => {
                   borderRadius: '8px', 
                   borderLeft: '4px solid #52c41a',
                   boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
-                  height: '38px',
+                  height: '32px',
                 }}>
                   <div style={{ 
                     display: 'flex', 
                     justifyContent: 'center', 
                     alignItems: 'center',
-                    width: '28px', 
-                    height: '28px', 
+                    width: '24px', 
+                    height: '24px', 
                     borderRadius: '50%', 
                     backgroundColor: '#f6ffed',
                     marginRight: '8px',
                     color: '#52c41a',
-                    fontSize: '16px'
+                    fontSize: '14px'
                   }}>
                     <ReadOutlined />
                   </div>
@@ -410,8 +434,18 @@ const StudentManagement: React.FC = () => {
                     <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '8px' }}>
                       课程总数
                     </div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
-                      {courseList.length}
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a', minWidth: '40px', textAlign: 'right', position: 'relative' }}>
+                      {loadingCourses ? (
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'center', 
+                          alignItems: 'center',
+                          width: '100%',
+                          height: '100%'
+                        }}>
+                          <Spin size="small" />
+                        </div>
+                      ) : courseList.length}
                     </div>
                   </div>
                 </div>
@@ -465,14 +499,15 @@ const StudentManagement: React.FC = () => {
               showTotal: (total) => `共 ${total} 条`,
               style: { marginTop: '16px', textAlign: 'right' }
             }}
-            onEdit={(record: UiStudent) => df.form.showEditModal(record as ApiStudent)}
-            onClassRecord={(record: UiStudent) => ui.classRecord.showClassRecordModal(record as ApiStudent)}
-            onPayment={(record: UiStudent) => ui.payment.showPaymentModal(record as ApiStudent)}
-            onRefund={(record: UiStudent) => ui.refundTransfer.handleRefund(record as ApiStudent)}
-            onTransfer={(record: UiStudent) => ui.refundTransfer.handleTransfer(record as ApiStudent)}
-            onTransferClass={(record: UiStudent) => ui.refundTransfer.handleTransferClass(record as ApiStudent)}
+            onEdit={(record: UiStudent) => df.form.showEditModal(record as any)}
+            onClassRecord={(record: UiStudent) => ui.classRecord.showClassRecordModal(record as any)}
+            onPayment={(record: UiStudent) => ui.payment.showPaymentModal(record as any)}
+            onRefund={(record: UiStudent) => ui.refundTransfer.handleRefund(record as any)}
+            onTransfer={(record: UiStudent) => ui.refundTransfer.handleTransfer(record as any)}
+            onTransferClass={(record: UiStudent) => ui.refundTransfer.handleTransferClass(record as any)}
             onDelete={ui.deleteConfirm.showDeleteConfirm}
             onAttendance={handleAttendance}
+            onDetails={handleStudentDetails}
           />
         </Card>
 
@@ -480,7 +515,7 @@ const StudentManagement: React.FC = () => {
         <StudentFormModal
           visible={df.form.visible}
           form={df.form.form}
-          editingStudent={df.form.editingStudent ? convertApiStudentToUiStudent(df.form.editingStudent) : null}
+          editingStudent={df.form.editingStudent as any}
           courseGroups={df.form.courseGroups}
           tempCourseGroup={df.form.tempCourseGroup}
           currentEditingGroupIndex={df.form.currentEditingGroupIndex}
@@ -515,6 +550,16 @@ const StudentManagement: React.FC = () => {
           pagination={ui.classRecord.classRecordPagination}
           onCancel={ui.classRecord.handleClassRecordModalCancel}
           onTableChange={ui.classRecord.handleClassRecordTableChange}
+          courseSummaries={ui.classRecord.classRecords.reduce((acc: { courseName: string; count: number }[], record) => {
+            if (!record.courseName) return acc;
+            const existingCourse = acc.find(item => item.courseName === record.courseName);
+            if (existingCourse) {
+              existingCourse.count += 1;
+            } else {
+              acc.push({ courseName: record.courseName, count: 1 });
+            }
+            return acc;
+          }, [])}
         />
 
         {/* 课表模态框 */}
@@ -528,7 +573,7 @@ const StudentManagement: React.FC = () => {
         {/* 缴费模态框 */}
         <PaymentModal
           visible={ui.payment.paymentModalVisible}
-          student={ui.payment.currentStudent ? convertApiStudentToUiStudent(ui.payment.currentStudent) : null}
+          student={ui.payment.currentStudent as any}
           form={ui.payment.paymentForm}
           coursesList={ui.payment.currentStudent ? getStudentAllCourses(ui.payment.currentStudent) : []}
           selectedCourse={ui.payment.selectedPaymentCourse}
@@ -550,7 +595,7 @@ const StudentManagement: React.FC = () => {
           visible={ui.refundTransfer.isRefundTransferModalVisible}
           form={ui.refundTransfer.refundTransferForm}
           operationType={ui.refundTransfer.isRefundTransferModalVisible ? (ui.refundTransfer.refundTransferForm.getFieldValue('operationType') || 'refund') : 'refund'}
-          student={ui.refundTransfer.currentStudent ? convertApiStudentToUiStudent(ui.refundTransfer.currentStudent) : null}
+          student={ui.refundTransfer.currentStudent as any}
           studentCourses={ui.refundTransfer.currentStudent ? getStudentAllCourses(ui.refundTransfer.currentStudent).filter(
             course => course.status !== '未报名'
           ) : []}

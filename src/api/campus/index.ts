@@ -22,8 +22,8 @@ export const campus = {
   getList: async (params?: CampusQueryParams): Promise<PaginatedResponse<Campus>> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 800));
-      const { page = 1, pageSize = 10 } = params || {};
-      const start = (page - 1) * pageSize;
+      const { pageNum = 1, pageSize = 10 } = params || {};
+      const start = (pageNum - 1) * pageSize;
       const end = start + pageSize;
 
       // 过滤数据
@@ -44,13 +44,13 @@ export const campus = {
       }
 
       const list = filteredCampuses.slice(start, end);
-      const response = mockPaginatedResponse(list, page, pageSize, filteredCampuses.length);
+      const response = mockPaginatedResponse(list, pageNum, pageSize, filteredCampuses.length);
       return response.data;
     }
 
     // 构建查询参数
     const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('pageNum', params.page.toString());
+    if (params?.pageNum) queryParams.append('pageNum', params.pageNum.toString());
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
     if (params?.keyword) queryParams.append('keyword', params.keyword);
     if (params?.status) queryParams.append('status', params.status);

@@ -241,7 +241,7 @@ export interface StudentSearchParams {
   campusId?: number;
   enrollDateStart?: string;
   enrollDateEnd?: string;
-  page?: number;
+  pageNum?: number;
   pageSize?: number;
   sortField?: string;
   sortOrder?: 'asc' | 'desc';

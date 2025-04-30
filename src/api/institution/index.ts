@@ -20,14 +20,14 @@ export const institution = {
   getList: async (params?: PaginationParams): Promise<PaginatedResponse<Institution>> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 800));
-      const { page = 1, pageSize = 10 } = params || {};
-      const start = (page - 1) * pageSize;
+      const { pageNum = 1, pageSize = 10 } = params || {};
+      const start = (pageNum - 1) * pageSize;
       const end = start + pageSize;
       const list = mockInstitutions.slice(start, end);
-      const response = mockPaginatedResponse(list, page, pageSize, mockInstitutions.length);
+      const response = mockPaginatedResponse(list, pageNum, pageSize, mockInstitutions.length);
       return response.data;
     }
-    const queryParams = params ? `?page=${params.page}&pageSize=${params.pageSize}` : '';
+    const queryParams = params ? `?page=${params.pageNum}&pageSize=${params.pageSize}` : '';
     return request(`${INSTITUTION_API_PATHS.LIST}${queryParams}`);
   },
 

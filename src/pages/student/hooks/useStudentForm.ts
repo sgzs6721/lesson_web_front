@@ -142,8 +142,23 @@ const findCourseById = (courseList: SimpleCourse[], courseId: string | number): 
   return course;
 };
 
+// Helper function to convert Chinese weekday to number (1-7)
+const mapWeekdayToNumber = (weekday: string): number | undefined => {
+  const map: { [key: string]: number } = {
+    '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 7,
+    '周一': 1, '周二': 2, '周三': 3, '周四': 4, '周五': 5, '周六': 6, '周日': 7,
+    '星期一': 1, '星期二': 2, '星期三': 3, '星期四': 4, '星期五': 5, '星期六': 6, '星期日': 7
+  };
+  // Also handle if it's already a number or a string number
+  const num = Number(weekday);
+  if (!isNaN(num) && num >= 1 && num <= 7) {
+    return num;
+  }
+  return map[weekday];
+};
+
 export const useStudentForm = (
-  onAddStudent: (payload: { studentInfo: any; courseInfo: any }) => Promise<Student>,
+  onAddStudent: (payload: { studentInfo: any; courseInfoList: any[] }) => Promise<Student>,
   onUpdateStudent: (id: string, student: any) => Promise<void>,
   courseList: SimpleCourse[]
 ) => {
@@ -321,7 +336,6 @@ export const useStudentForm = (
             age: Number(values.age),
             phone: values.phone,
             campusId: 1, // TODO: 动态校区ID
-            status: mapStatusToApi(values.status)
           };
 
           // 准备课程信息
@@ -378,115 +392,115 @@ export const useStudentForm = (
             return false;
           }
         } else {
-          // --- ADDING NEW STUDENT (Nested Structure for /api/student/create) ---
-          const selectedCourseId = primaryGroup.courses[0];
-          console.log('选择的课程ID:', selectedCourseId);
-          console.log('可用课程列表:', courseList);
+          // --- ADDING NEW STUDENT (Send structure expected by API: { studentInfo, courseInfoList }) ---
+          const currentCourseGroups = tempCourseGroup ? courseGroups.concat([tempCourseGroup]) : courseGroups; // 确保包含临时组
 
-          // 使用辅助函数尝试匹配课程
-          console.log('课程ID类型:', typeof selectedCourseId, '值:', selectedCourseId);
-          console.log('课程列表长度:', courseList.length);
-          if (courseList.length > 0) {
-            console.log('课程列表中的第一个ID类型:', typeof courseList[0].id, '值:', courseList[0].id);
-          }
-
-          // 使用辅助函数进行灵活匹配
-          let selectedCourse = findCourseById(courseList, selectedCourseId);
-
-          // 如果找不到课程，尝试使用模拟数据
-          if (!selectedCourse && mockSimpleCourses) {
-            console.log('在正常课程列表中找不到课程，尝试使用模拟数据');
-            selectedCourse = findCourseById(mockSimpleCourses, selectedCourseId);
-          }
-
-          // 如果仍然找不到课程，但我们有课程ID，则创建一个虚拟课程对象
-          if (!selectedCourse && selectedCourseId) {
-            console.log('创建虚拟课程对象，使用ID:', selectedCourseId);
-            selectedCourse = {
-              id: selectedCourseId,
-              name: `课程${selectedCourseId}`,
-              typeName: '未知类型',
-              status: 'PUBLISHED',
-              coaches: [{ id: 1, name: primaryGroup.coach || '未知教练' }]
-            };
-          }
-
-          // 如果仍然没有课程，则报错
-          if (!selectedCourse) {
-            message.error('无法获取课程信息，请重新选择课程');
+          // 检查是否有课程组
+          if (!currentCourseGroups || currentCourseGroups.length === 0) {
+            message.error('请至少添加一个课程');
             setLoading(false);
             return false;
           }
 
-          let coachId = 0; // 默认教练ID
-
-          if (selectedCourse && primaryGroup.coach) {
-            console.log('找到课程:', selectedCourse);
-            const coach = selectedCourse.coaches?.find(co => co.name === primaryGroup.coach);
-            if (coach) {
-              coachId = coach.id;
-              console.log('找到教练:', coach);
-            } else {
-              // 如果找不到指定教练，使用第一个教练
-              if (selectedCourse.coaches && selectedCourse.coaches.length > 0) {
-                coachId = selectedCourse.coaches[0].id;
-                console.log(`无法找到教练 '${primaryGroup.coach}'，使用第一个教练:`, selectedCourse.coaches[0]);
-                message.warning(`无法找到课程 '${selectedCourse.name}' 下名为 '${primaryGroup.coach}' 的教练ID，将使用默认值。`);
-              } else {
-                console.log('课程没有教练信息，使用默认值 0');
-                message.warning(`课程 '${selectedCourse.name}' 没有教练信息，将使用默认值。`);
-              }
-            }
-          }
-
-          // 准备学员信息
+          // 准备学员基本信息
           const studentInfo = {
             name: values.name,
             gender: values.gender === 'male' ? 'MALE' : 'FEMALE',
             age: Number(values.age),
             phone: values.phone,
             campusId: 1, // TODO: 动态校区ID
-            status: mapStatusToApi(values.status)
           };
 
-          // 准备课程信息 - 确保包含courseId
-          const courseInfo: any = {
-            courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
-            startDate: primaryGroup.enrollDate,
-            endDate: primaryGroup.expireDate,
-            // 不需要传递 coachId，但需要传递教练名称用于回显
-            coachName: primaryGroup.coach || '' // 添加教练名称，用于创建后回显
-          };
+          // 准备 courseInfoList，遍历所有课程组
+          const courseInfoListPromises = currentCourseGroups.map(async (group) => {
+            if (!group.courses || group.courses.length === 0 || !group.enrollDate || !group.expireDate) {
+              console.error("跳过不完整的课程组:", group);
+              return null;
+            }
+            const courseId = safeProcessCourseId(group.courses[0]);
+            if (courseId === undefined || courseId === null || courseId === '') {
+               message.error(`课程组 ${group.key || ''} 缺少有效的课程ID`);
+               return null;
+            }
 
-          // 如果有排课时间，添加到请求中
-          if (primaryGroup.scheduleTimes && primaryGroup.scheduleTimes.length > 0) {
-            courseInfo.fixedScheduleTimes = primaryGroup.scheduleTimes.map(st => ({
-              weekday: st.weekday,
-              from: st.time,
-              to: st.endTime || st.time
-            }));
+            // 尝试通过courseId在课程列表中找到真实的课程信息
+            let courseName = '';
+            let courseTypeName = group.courseType || '';
+            
+            // 查找真实课程信息
+            let selectedCourse = findCourseById(courseList, courseId);
+            
+            // 如果找不到课程，尝试使用模拟数据
+            if (!selectedCourse && mockSimpleCourses) {
+              selectedCourse = findCourseById(mockSimpleCourses, courseId);
+            }
+            
+            // 如果找到了课程，使用其真实名称和类型
+            if (selectedCourse) {
+              courseName = selectedCourse.name || '';
+              courseTypeName = selectedCourse.typeName || group.courseType || '';
+            } else {
+              // 如果找不到课程，使用课程ID作为名称
+              courseName = typeof courseId === 'string' ? 
+                courseId : 
+                `课程${courseId}`;
+            }
+
+            const mappedScheduleTimes = group.scheduleTimes?.map(st => {
+              const weekdayNum = mapWeekdayToNumber(st.weekday);
+              if (weekdayNum === undefined) {
+                console.warn(`无法识别的星期几格式: ${st.weekday}，跳过此排课时间`);
+                return null; // Or handle error appropriately
+              }
+              return {
+                weekday: weekdayNum, // <--- 使用转换后的数字
+                from: st.time,
+                to: st.endTime || st.time
+              };
+            }).filter(st => st !== null) || []; // Filter out invalid times
+
+            console.log('课程信息：', {
+              courseId,
+              courseName,
+              courseTypeName,
+              coachName: group.coach || ''
+            });
+
+            return {
+              courseId: courseId,
+              // 使用找到的真实课程名称
+              courseName: courseName,
+              // 使用真实的课程类型
+              courseTypeName: courseTypeName,
+              // 添加教练名称
+              coachName: group.coach || '',
+              // 其他属性
+              startDate: group.enrollDate,
+              endDate: group.expireDate,
+              fixedScheduleTimes: mappedScheduleTimes, // <--- 使用处理过的排课时间
+              status: mapStatusToApi(group.status),
+              totalHours: 0, // 默认值
+              remainingHours: 0 // 默认值
+            };
+          });
+
+          // 等待所有可能的异步操作（如果未来有）并过滤掉无效的组
+          const resolvedCourseInfoList = (await Promise.all(courseInfoListPromises)).filter(info => info !== null);
+
+          // 检查是否至少有一个有效的课程信息
+          if (resolvedCourseInfoList.length === 0) {
+             message.error('没有有效的课程信息可供提交，请检查所有课程组是否填写完整。');
+             setLoading(false);
+             return false;
           }
 
-          // 确保courseId存在且有效
-          if (courseInfo.courseId === undefined || courseInfo.courseId === null || courseInfo.courseId === '') {
-            message.error('无法获取课程ID，请重新选择课程');
-            setLoading(false);
-            return false;
-          }
-
-          // 构建最终请求
+          // 构建最终请求 (使用包含所有有效课程的 courseInfoList)
           const payload = {
             studentInfo,
-            courseInfo
+            courseInfoList: resolvedCourseInfoList // 使用处理后的列表
           };
 
           console.log("提交创建请求到 /api/student/create:", JSON.stringify(payload, null, 2));
-
-          // 记录教练信息，用于调试
-          if (selectedCourse && selectedCourse.coaches && selectedCourse.coaches.length > 0) {
-            console.log("选中课程的教练信息:", selectedCourse.coaches);
-            console.log("选中的教练:", primaryGroup.coach);
-          }
 
           try {
             const createdStudent = await onAddStudent(payload);
@@ -503,9 +517,16 @@ export const useStudentForm = (
               window.sessionStorage.removeItem('afterAddStudent');
               window.dispatchEvent(new CustomEvent('studentAddedForTransfer', { detail: {id: 0, name: studentInfo.name} }));
             }
-          } catch (error) {
+
+          } catch (error: any) {
             console.error("创建学员失败:", error);
-            message.error('创建学员失败，请检查网络连接或联系管理员');
+            // 尝试打印更详细的后端错误响应
+            console.error("后端响应数据:", error?.response?.data);
+            // 提取更详细的错误信息用于 message 提示
+            const errorMsg = error?.response?.data?.message || // 优先用后端消息
+                             error?.message ||                 // 其次用 JS 错误消息
+                             '创建学员失败，请检查网络或联系管理员'; // 最后用通用消息
+            message.error(`创建学员失败：${errorMsg}`);
             setLoading(false);
             return false;
           }
@@ -557,12 +578,13 @@ export const useStudentForm = (
     }
 
     const newKey = Date.now().toString();
+    // 明确指定 newGroup 的类型为 CourseGroup
     const newGroup: CourseGroup = {
       key: newKey,
       courses: [],
       courseType: '',
       coach: '',
-      status: form.getFieldValue('status') || 'normal',
+      status: '' as any, // <--- 使用类型断言强制让空字符串通过类型检查
       enrollDate: dayjs().format('YYYY-MM-DD'),
       expireDate: dayjs().add(6, 'month').format('YYYY-MM-DD'),
       scheduleTimes: []

@@ -108,7 +108,7 @@ export interface CourseGroup {
   courses: string[]; // 课程 ID 列表
   courseType: string; // 课程类型名称 (来自 SimpleCourse.typeName)
   coach: string;      // 教练名称 (来自 SimpleCourse.coaches[0].name)
-  status: 'normal' | 'expired' | 'graduated' | 'STUDYING'; // 课程组状态 (需要确认是否需要，还是使用学生主状态)
+  status?: 'normal' | 'expired' | 'graduated' | 'STUDYING' | ''; // <--- 恢复允许空字符串
   enrollDate: string;
   expireDate: string;
   scheduleTimes: ScheduleTime[];
