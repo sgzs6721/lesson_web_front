@@ -46,8 +46,8 @@ export const weekdayOptions = [
   { value: '三', label: '周三' },
   { value: '四', label: '周四' },
   { value: '五', label: '周五' },
-  { value: '6', label: '周六' },
-  { value: '7', label: '周日' },
+  { value: '六', label: '周六' },
+  { value: '日', label: '周日' },
 ];
 
 // 缴费类型选项

@@ -222,7 +222,7 @@ export const getStudentColumns = (
                 statusText = '在学';
                 break;
               case 'EXPIRED':
-                statusColor = 'red';
+                statusColor = 'error';
                 statusText = '已过期';
                 break;
               case 'GRADUATED':
@@ -243,7 +243,18 @@ export const getStudentColumns = (
             }
 
             // 判断当前课程是否可打卡
-            const isDisabled = remainingHours <= 0;
+            const isDisabled = remainingHours <= 0 || !(statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING');
+            
+            // 获取打卡禁用原因
+            const getAttendanceDisabledReason = () => {
+              if (remainingHours <= 0) {
+                return '剩余课时不足';
+              }
+              if (!(statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING')) {
+                return `课程${statusText}，无法打卡`;
+              }
+              return '打卡';
+            };
 
             // 定义剩余操作的菜单项（退费、转课、转班）
             const remainingMenuItems = [
@@ -257,12 +268,12 @@ export const getStudentColumns = (
                   display: 'grid',
                   gridTemplateColumns: '30px 100px 80px 80px 90px 120px 80px auto', // 重新调整列宽
                   alignItems: 'center',
-                  backgroundColor: isDisabled ? '#fdfdfd' : '#fafafa',
+                  backgroundColor: statusUpperCase === 'EXPIRED' ? '#fff1f0' : (isDisabled ? '#fdfdfd' : '#fafafa'),
                   padding: '6px 0',
                   borderRadius: '4px',
                   width: '100%',
-                  opacity: isDisabled ? 0.7 : 1,
-                  border: '1px solid #f0f0f0',
+                  opacity: statusUpperCase === 'EXPIRED' ? 1 : (isDisabled ? 0.7 : 1),
+                  border: statusUpperCase === 'EXPIRED' ? '1px solid #ffccc7' : '1px solid #f0f0f0',
                   position: 'relative',
                   columnGap: '10px', // 减少列间距
               }}>
@@ -275,6 +286,7 @@ export const getStudentColumns = (
                     width: '4px',
                     height: '60%',
                     backgroundColor: 
+                      statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
                       course.courseTypeName === '大课' ? borderColorMapping['大课'] :
                       course.courseTypeName === '一对一' ? borderColorMapping['一对一'] :
                       (colorMapping[course.courseTypeName || ''] ? 
@@ -342,16 +354,18 @@ export const getStudentColumns = (
                       color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
                       textDecoration: isDisabled ? 'line-through' : 'none',
                       fontWeight: remainingHours <= 5 ? 'bold' : 'normal',
-                      textAlign: 'center'
+                      textAlign: 'right',
+                      paddingRight: '10px'
                   }}>
                     {`${remainingHours ?? 0}/${course.totalHours ?? 0}`}课时
                   </div>
                   
                   {/* 有效期 - 居中显示 */}
                   <div style={{
-                      color: isDisabled ? '#aaa' : '#888',
+                      color: statusUpperCase === 'EXPIRED' ? '#ff4d4f' : (isDisabled ? '#aaa' : '#888'),
                       fontSize: '12px',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      fontWeight: statusUpperCase === 'EXPIRED' ? 'bold' : 'normal'
                   }}>
                     有效期至: {course.endDate ? dayjs(course.endDate).format('YY-MM-DD') : '-'}
                   </div>
@@ -361,13 +375,35 @@ export const getStudentColumns = (
                     textAlign: 'center',
                     justifySelf: 'center'
                   }}>
-                    <FixedWidthTag 
-                      color={isDisabled ? 'default' : statusColor} 
-                      width={60} 
-                      style={{ opacity: isDisabled ? 0.7 : 1 }}
-                    >
-                      {statusText}
-                    </FixedWidthTag>
+                    {statusUpperCase === 'EXPIRED' ? (
+                      <Tag
+                        style={{
+                          width: '60px',
+                          textAlign: 'center',
+                          display: 'inline-block',
+                          margin: 0,
+                          padding: '4px 0',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          borderRadius: '6px',
+                          backgroundColor: '#ffccc7',
+                          color: '#cf1322',
+                          border: '1px solid #ffa39e'
+                        }}
+                      >
+                        {statusText}
+                      </Tag>
+                    ) : (
+                      <FixedWidthTag 
+                        color={isDisabled ? 'default' : statusColor} 
+                        width={60} 
+                        style={{ 
+                          opacity: isDisabled ? 0.7 : 1,
+                        }}
+                      >
+                        {statusText}
+                      </FixedWidthTag>
+                    )}
                   </div>
                   
                   {/* 操作按钮组 - 居中显示 */}
@@ -385,7 +421,7 @@ export const getStudentColumns = (
                       onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })} 
                       disabled={isDisabled} 
                       style={{ padding: '0' }} 
-                      title={isDisabled ? '剩余课时不足' : '打卡'} 
+                      title={getAttendanceDisabledReason()} 
                     />
                     
                     {/* 课程记录按钮 */}

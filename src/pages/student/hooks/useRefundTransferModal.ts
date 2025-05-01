@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Form, message } from 'antd';
 import { Student } from '@/pages/student/types/student';
 import { getStudentAllCourses, searchStudentsByKeyword } from '@/pages/student/utils/student';
 import { courseOptions } from '@/pages/student/constants/options';
 import dayjs from 'dayjs'; // 引入 dayjs
+import { API } from '@/api';
 
 /**
  * 退费转课模态框相关的hook
@@ -22,12 +23,13 @@ export const useRefundTransferModal = (
   const [refundTransferForm] = Form.useForm();
 
   // 确保表单在组件挂载后初始化
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible) {
       // 如果模态框可见，确保表单已初始化
       refundTransferForm.resetFields();
     }
   }, [visible]);
+
   const [transferStudentSearchResults, setTransferStudentSearchResults] = useState<Student[]>([]);
   const [isSearchingTransferStudent, setIsSearchingTransferStudent] = useState<boolean>(false);
   const [selectedTransferStudent, setSelectedTransferStudent] = useState<Student | null>(null);
@@ -36,6 +38,20 @@ export const useRefundTransferModal = (
   // 新增：快速添加学员模态框状态
   const [isQuickAddStudentModalVisible, setIsQuickAddStudentModalVisible] = useState(false);
   const [quickAddStudentForm] = Form.useForm();
+
+  // 同样为quickAddStudentForm添加清理
+  useEffect(() => {
+    return () => {
+      quickAddStudentForm.resetFields();
+    };
+  }, [quickAddStudentForm]);
+
+  // 重置表单和状态
+  const resetFormAndState = () => {
+    refundTransferForm.resetFields();
+    setSelectedTransferStudent(null);
+    setTransferStudentSearchResults([]);
+  };
 
   // 处理退费
   const handleRefund = (student: Student) => {

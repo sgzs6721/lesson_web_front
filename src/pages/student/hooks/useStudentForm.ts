@@ -1,25 +1,33 @@
 import { useState, useCallback } from 'react';
 import { Form, message } from 'antd';
-import { Student, CourseGroup, ScheduleTime as ApiScheduleTime } from '@/api/student/types';
-import { ScheduleTime as UiScheduleTime } from '@/pages/student/types/student';
+import { Student, CourseGroup, ScheduleTime } from '@/pages/student/types/student';
 import { SimpleCourse } from '@/api/course/types';
 import dayjs from 'dayjs';
 
-// 导入模拟课程数据，用于备用
-// 注意：这里的模拟数据应与 course/index.ts 中的保持一致
-// 如果有变化，需要同步更新
-// 这里复制一份是为了避免循环引用
-// 实际开发中应考虑将模拟数据提取到单独文件
-// 以便共享使用
+// Mock courses for testing
+// 模拟简单课程数据，当API未提供时使用
 const mockSimpleCourses: SimpleCourse[] = [
-  { id: 'basketball', name: '篮球训练', typeName: '体育大类', status: 'PUBLISHED', coaches: [{ id: 1001, name: '王教练' }, { id: 1002, name: '李教练' }] },
-  { id: 'swimming', name: '游泳课程', typeName: '体育小班', status: 'PUBLISHED', coaches: [{ id: 1003, name: '张教练' }] },
-  { id: 'tennis', name: '网球培训', typeName: '体育一对一', status: 'PUBLISHED', coaches: [{ id: 1004, name: '赵教练' }] },
-  { id: 'painting', name: '绘画班', typeName: '艺术启蒙', status: 'PUBLISHED', coaches: [{ id: 1005, name: '孙教练' }] },
-  { id: 'piano', name: '钢琴培训', typeName: '艺术一对一', status: 'PUBLISHED', coaches: [{ id: 1006, name: '吴教练' }] },
-  { id: 'dance', name: '舞蹈课程', typeName: '艺术形体', status: 'PUBLISHED', coaches: [{ id: 1007, name: '冯教练' }] },
-  { id: 'math', name: '数学辅导', typeName: '学科培优', status: 'PUBLISHED', coaches: [{ id: 1008, name: '杨教练' }] },
-  { id: 'english', name: '英语班', typeName: '语言提升', status: 'PUBLISHED', coaches: [{ id: 1009, name: '秦教练' }] },
+  {
+    id: 'basketball',
+    name: '篮球训练',
+    status: 'PUBLISHED',
+    typeName: '团体课',
+    coaches: [{ id: 1, name: '张教练' }]
+  },
+  {
+    id: 'swimming',
+    name: '游泳课程',
+    status: 'PUBLISHED',
+    typeName: '团体课',
+    coaches: [{ id: 2, name: '李教练' }]
+  },
+  {
+    id: 'tennis',
+    name: '网球培训',
+    status: 'PUBLISHED',
+    typeName: '一对一',
+    coaches: [{ id: 3, name: '王教练' }]
+  },
 ];
 
 // Helper function to map frontend status to API status
@@ -197,13 +205,59 @@ export const useStudentForm = (
 
     console.log('Mapped student for edit:', mappedStudent);
     console.log('Student scheduleTimes:', student.scheduleTimes);
+    console.log('Student courses:', student.courses);
 
     form.setFieldsValue(mappedStudent);
 
     setEditingStudent(student);
     setVisible(true);
+    
+    // 优先使用新的courses结构（API返回的数据）
+    if (student.courses && student.courses.length > 0) {
+      console.log('使用student.courses数组创建课程组');
+      const newCourseGroups: CourseGroup[] = student.courses.map((course, index) => {
+        // 解析固定排课时间字符串（如果有的话）
+        let scheduleTimes: ScheduleTime[] = [];
+        if (course.fixedSchedule) {
+          try {
+            const scheduleData = JSON.parse(course.fixedSchedule);
+            scheduleTimes = scheduleData.map((schedule: any) => {
+              // 将数字weekday转换为中文周几
+              let weekday = schedule.weekday;
+              // 如果weekday是数字（1-7），转换为对应的中文
+              if (/^[1-7]$/.test(String(weekday))) {
+                // 1-7 对应 周一到周日
+                const weekdayMap = ['', '一', '二', '三', '四', '五', '六', '日'];
+                weekday = weekdayMap[Number(weekday)];
+              }
+              
+              return {
+                weekday: weekday,
+                time: schedule.from,
+                endTime: schedule.to
+              };
+            });
+          } catch (e) {
+            console.error('解析固定排课时间失败:', e);
+          }
+        }
 
-    if (student.courseGroups && student.courseGroups.length > 0) {
+        // 将API状态值映射为UI使用的状态值
+        const statusValue = mapApiStatusToFrontend(course.status);
+
+        return {
+          key: `course-${index}-${course.courseId || course.studentCourseId}`,
+          courses: [course.courseId?.toString() || ''],
+          courseType: course.courseTypeName || '',
+          coach: course.coachName || '',
+          status: statusValue as 'normal' | 'expired' | 'graduated' | 'STUDYING' | '',
+          enrollDate: course.enrollmentDate || '',
+          expireDate: course.endDate || '',
+          scheduleTimes: scheduleTimes
+        };
+      });
+      setCourseGroups(newCourseGroups);
+    } else if (student.courseGroups && student.courseGroups.length > 0) {
       setCourseGroups(student.courseGroups);
     } else if (student.course) {
       // 确保scheduleTimes存在且格式正确
@@ -329,6 +383,11 @@ export const useStudentForm = (
             }
           }
 
+          // 确保每个课程组都有有效期
+          if (!primaryGroup.expireDate) {
+            primaryGroup.expireDate = dayjs(primaryGroup.enrollDate).add(180, 'day').format('YYYY-MM-DD');
+          }
+
           // 准备学员信息
           const studentInfo = {
             name: values.name,
@@ -402,6 +461,17 @@ export const useStudentForm = (
             return false;
           }
 
+          // 为每个课程组设置有效期（如果缺少）
+          const updatedCourseGroups = currentCourseGroups.map(group => {
+            if (!group.expireDate) {
+              return {
+                ...group,
+                expireDate: dayjs(group.enrollDate).add(180, 'day').format('YYYY-MM-DD')
+              };
+            }
+            return group;
+          });
+
           // 准备学员基本信息
           const studentInfo = {
             name: values.name,
@@ -412,7 +482,7 @@ export const useStudentForm = (
           };
 
           // 准备 courseInfoList，遍历所有课程组
-          const courseInfoListPromises = currentCourseGroups.map(async (group) => {
+          const courseInfoListPromises = updatedCourseGroups.map(async (group) => {
             if (!group.courses || group.courses.length === 0 || !group.enrollDate || !group.expireDate) {
               console.error("跳过不完整的课程组:", group);
               return null;
@@ -446,18 +516,11 @@ export const useStudentForm = (
                 `课程${courseId}`;
             }
 
-            const mappedScheduleTimes = group.scheduleTimes?.map(st => {
-              const weekdayNum = mapWeekdayToNumber(st.weekday);
-              if (weekdayNum === undefined) {
-                console.warn(`无法识别的星期几格式: ${st.weekday}，跳过此排课时间`);
-                return null; // Or handle error appropriately
-              }
-              return {
-                weekday: weekdayNum, // <--- 使用转换后的数字
-                from: st.time,
-                to: st.endTime || st.time
-              };
-            }).filter(st => st !== null) || []; // Filter out invalid times
+            const mappedScheduleTimes = group.scheduleTimes?.map(st => ({
+              weekday: st.weekday,
+              from: st.time,
+              to: st.endTime || st.time
+            })) || []; // 保持中文格式的周几
 
             console.log('课程信息：', {
               courseId,
@@ -586,7 +649,7 @@ export const useStudentForm = (
       coach: '',
       status: '' as any, // <--- 使用类型断言强制让空字符串通过类型检查
       enrollDate: dayjs().format('YYYY-MM-DD'),
-      expireDate: dayjs().add(6, 'month').format('YYYY-MM-DD'),
+      expireDate: dayjs().add(6, 'month').format('YYYY-MM-DD'), // 保留默认有效期设置
       scheduleTimes: []
     };
 
@@ -636,8 +699,8 @@ export const useStudentForm = (
   const confirmAddCourseGroup = (): boolean => {
     if (currentEditingGroupIndex !== null) {
       const group = courseGroups[currentEditingGroupIndex];
-      if (!group.courses || group.courses.length === 0 || !group.enrollDate || !group.expireDate) {
-        message.error('请确保课程、报名日期和有效期已填写');
+      if (!group.courses || group.courses.length === 0 || !group.enrollDate) {
+        message.error('请确保课程和报名日期已填写');
         return false;
       }
       setCurrentEditingGroupIndex(null);
@@ -647,8 +710,8 @@ export const useStudentForm = (
       return true;
     }
     else if (tempCourseGroup) {
-      if (!tempCourseGroup.courses || tempCourseGroup.courses.length === 0 || !tempCourseGroup.enrollDate || !tempCourseGroup.expireDate) {
-        message.error('请确保课程、报名日期和有效期已填写');
+      if (!tempCourseGroup.courses || tempCourseGroup.courses.length === 0 || !tempCourseGroup.enrollDate) {
+        message.error('请确保课程和报名日期已填写');
         return false;
       }
       setCourseGroups(prevGroups => [...prevGroups, tempCourseGroup]);

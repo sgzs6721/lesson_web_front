@@ -6,6 +6,7 @@ import { usePagination } from './usePagination';
 import { useDeleteConfirm } from './useDeleteConfirm';
 import { useExport } from './useExport';
 import { Student } from '../types/student';
+import { useState, useCallback } from 'react';
 
 /**
  * 学员管理UI相关钩子的整合
@@ -19,9 +20,19 @@ export const useStudentUI = (
   deleteStudent: (id: string) => void,
   addStudent?: (student: Omit<Student, 'id'> & { remainingClasses?: string; lastClassDate?: string }) => Student // 新增 addStudent 回调
 ) => {
-  // 分页功能
-  const paginationProps = usePagination();
-  
+  // --- 分页处理 ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // 分页信息变更处理函数
+  const handlePaginationChange = useCallback((page: number, size?: number) => {
+    console.log(`[分页] 变更页码：当前第${page}页，每页${size || pageSize}条`);
+    setCurrentPage(page);
+    if (size) {
+      setPageSize(size);
+    }
+  }, [pageSize]);
+
   // 删除确认功能
   const deleteConfirmProps = useDeleteConfirm(deleteStudent);
   
@@ -43,9 +54,9 @@ export const useStudentUI = (
   return {
     // 分页相关
     pagination: {
-      currentPage: paginationProps.currentPage,
-      pageSize: paginationProps.pageSize,
-      handlePaginationChange: paginationProps.handlePaginationChange
+      currentPage: currentPage,
+      pageSize: pageSize,
+      handlePaginationChange: handlePaginationChange
     },
     
     // 删除相关

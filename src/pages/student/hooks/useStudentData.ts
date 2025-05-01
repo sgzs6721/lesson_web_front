@@ -4,6 +4,9 @@ import { Student } from '@/pages/student/types/student'; // 使用前端Student�
 import { API } from '@/api';
 import { message } from 'antd';
 
+// 记录正在进行的请求ID，防止重复调用
+let pendingRequestId: string | null = null;
+
 export const useStudentData = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
@@ -15,16 +18,31 @@ export const useStudentData = () => {
 
   // 获取学员列表
   const fetchStudents = async (params?: StudentSearchParams) => {
+    // 生成唯一请求ID，用于日志跟踪
+    const requestId = `req_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    
+    // 检查是否已有正在进行的请求
+    if (pendingRequestId) {
+      console.warn(`[fetchStudents ${requestId}] 已有请求正在进行，ID=${pendingRequestId}，忽略当前请求`);
+      return [];
+    }
+    
+    // 记录当前请求ID
+    pendingRequestId = requestId;
+    console.log(`[fetchStudents ${requestId}] 开始获取学员列表`, params);
+    
     try {
       // 设置加载状态为true
       setLoading(true);
+      console.log(`[fetchStudents ${requestId}] 设置loading=true`);
 
       // 确保有校区ID
       const currentCampusId = localStorage.getItem('currentCampusId');
       if (!currentCampusId) {
-        console.warn('未选择校区，无法获取学员列表');
+        console.warn(`[fetchStudents ${requestId}] 未选择校区，无法获取学员列表`);
         message.warning('请先选择校区');
         setLoading(false);
+        pendingRequestId = null; // 清除请求ID
         return [];
       }
 
@@ -38,16 +56,19 @@ export const useStudentData = () => {
         campusId: Number(currentCampusId)
       };
 
+      console.log(`[fetchStudents ${requestId}] 准备调用API，参数:`, defaultParams);
       // 调用API获取学员列表
       const response = await API.student.getList(defaultParams);
+      console.log(`[fetchStudents ${requestId}] API调用成功，获取到 ${response?.list?.length || 0} 条记录`);
 
       if (response && response.list) {
         // 更新状态
         setStudents(response.list);
         setFilteredStudents(response.list);
         setTotal(response.total);
+        console.log(`[fetchStudents ${requestId}] 状态更新成功，总数: ${response.total}`);
       } else {
-        console.error('学员列表响应格式不正确:', response);
+        console.error(`[fetchStudents ${requestId}] 学员列表响应格式不正确:`, response);
         setStudents([]);
         setFilteredStudents([]);
         setTotal(0);
@@ -55,7 +76,7 @@ export const useStudentData = () => {
 
       return response?.list || [];
     } catch (error) {
-      console.error('获取学员列表失败:', error);
+      console.error(`[fetchStudents ${requestId}] 获取学员列表失败:`, error);
       message.error('获取学员列表失败');
 
       // 重置状态
@@ -66,7 +87,9 @@ export const useStudentData = () => {
       return [];
     } finally {
       // 无论成功还是失败，都关闭加载状态
+      console.log(`[fetchStudents ${requestId}] 完成，设置loading=false，清除请求ID`);
       setLoading(false);
+      pendingRequestId = null; // 清除请求ID，允许下一个请求
     }
   };
 
@@ -317,15 +340,11 @@ export const useStudentData = () => {
     setCurrentPage(page);
     if (size) setPageSize(size);
 
-    try {
-      await fetchStudents({
-        pageNum: page,
-        pageSize: size || pageSize
-      });
-    } catch (error) {
-      console.error('分页变化失败:', error);
-      message.error('分页变化失败');
-    }
+    // 使用fetchStudents获取数据，让重复请求检测机制生效
+    return fetchStudents({
+      pageNum: page,
+      pageSize: size || pageSize
+    });
   };
 
   // 直接将新创建的学员添加到列表开头

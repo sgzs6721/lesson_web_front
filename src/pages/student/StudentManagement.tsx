@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message, Spin } from 'antd';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message, Spin, Tooltip } from 'antd';
 import { PlusOutlined, ExportOutlined, UserOutlined, ReadOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import StudentSearchBar from './components/StudentSearchBar';
@@ -66,6 +66,27 @@ const convertApiStudentToUiStudent = (apiStudent: ApiStudent): UiStudent => {
   };
 };
 
+// 在组件外部创建防抖函数工厂
+const createDebounce = (fn: Function, delay: number) => {
+  let timer: NodeJS.Timeout | null = null;
+  
+  return (...args: any[]) => {
+    const execId = `debounce_${Date.now()}`;
+    console.log(`[${execId}] 触发防抖函数`);
+    
+    if (timer) {
+      console.log(`[${execId}] 清除之前的定时器`);
+      clearTimeout(timer);
+    }
+    
+    timer = setTimeout(() => {
+      console.log(`[${execId}] 执行实际函数`);
+      fn(...args);
+      timer = null;
+    }, delay);
+  };
+};
+
 const StudentManagement: React.FC = () => {
   // 添加状态存储课程列表和加载状态
   const [courseList, setCourseList] = useState<SimpleCourse[]>([]);
@@ -122,25 +143,50 @@ const StudentManagement: React.FC = () => {
   // Pass df.data.deleteStudent and the dummy add function
   const ui = useStudentUI(df.data.students as UiStudent[], df.data.deleteStudent, dummyAddStudentForUI);
 
-  // 添加打卡相关状态
+  // 修改打卡相关状态
   const [attendanceModalVisible, setAttendanceModalVisible] = useState(false);
+  // 只有在模态框打开时才创建表单实例，避免未连接警告
   const [attendanceForm] = Form.useForm();
 
-  // 获取课程列表
+  // 在useEffect中确保表单实例和模态框状态同步
   useEffect(() => {
-    const fetchCourses = async () => {
+    if (!attendanceModalVisible) {
+      // 模态框关闭时重置表单，避免内存泄漏
+      attendanceForm.resetFields();
+    }
+  }, [attendanceModalVisible, attendanceForm]);
+
+  // 获取课程列表和学生数据
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      // 设置所有加载状态为true
       setLoadingCourses(true);
-      setLoadingStats(true); // 设置统计数据为加载中状态
+      setLoadingStats(true);
+      
       try {
-        const data = await getCourseSimpleList();
-        setCourseList(data);
+        // 同步获取数据，让两个请求一起发出
+        const [courseData, studentData] = await Promise.all([
+          getCourseSimpleList(),
+          df.data.fetchStudents({
+            pageNum: ui.pagination.currentPage,
+            pageSize: ui.pagination.pageSize
+          })
+        ]);
+        
+        // 更新状态
+        setCourseList(courseData);
+        console.log("初始化数据加载完成: 课程数量=", courseData.length, "学员数量=", studentData?.length || 0);
       } catch (error) {
-        console.error("Failed to load courses in StudentManagement", error);
+        console.error("加载初始数据失败:", error);
+        message.error("加载数据失败");
       } finally {
+        // 同时更新所有loading状态
         setLoadingCourses(false);
+        setLoadingStats(false);
       }
     };
-    fetchCourses();
+    
+    fetchInitialData();
   }, []);
 
   // 监听学员创建事件，直接将新学员添加到列表开头
@@ -163,47 +209,46 @@ const StudentManagement: React.FC = () => {
     };
   }, []);
 
-  // 在组件挂载时获取学员列表，使用useRef确保只调用一次
-  const isInitialMount = useRef(true);
-  const isLoadingRef = useRef(false); // 添加一个引用来跟踪加载状态
-
-  // 自定义分页处理函数，确保分页变化时正确调用fetchStudents函数
-  const handleCustomPaginationChange = (page: number, pageSize?: number) => {
-    // 首先更新UI组件的分页状态
+  // 在组件内部创建防抖版本的分页处理函数
+  const debouncedHandlePagination = useCallback((page: number, pageSize?: number) => {
+    // 生成唯一操作ID，用于追踪整个分页过程
+    const operationId = `page_${Date.now()}`;
+    console.log(`[${operationId}] 分页操作执行: page=${page}, pageSize=${pageSize}`);
+    
+    // 同时设置所有loading状态
+    setLoadingStats(true);
+    setLoadingCourses(true);
+    console.log(`[${operationId}] 已设置所有loading状态为true`);
+    
+    // 1. 先更新UI组件状态
     ui.pagination.handlePaginationChange(page, pageSize);
+    console.log(`[${operationId}] 已更新UI分页状态: currentPage=${ui.pagination.currentPage}`);
+    
+    // 2. 直接调用API获取新数据
+    const finalPageSize = pageSize || ui.pagination.pageSize;
+    console.log(`[${operationId}] 即将调用API: pageNum=${page}, pageSize=${finalPageSize}`);
+    
+    df.data.fetchStudents({
+      pageNum: page,
+      pageSize: finalPageSize
+    }).then(result => {
+      console.log(`[${operationId}] API调用成功, 获取到${result?.length || 0}条数据`);
+      return result;
+    }).catch(error => {
+      console.error(`[${operationId}] API调用失败:`, error);
+      message.error('分页加载失败');
+    }).finally(() => {
+      console.log(`[${operationId}] API调用完成，重置所有loading状态`);
+      // 同时重置所有loading状态
+      setLoadingStats(false);
+      setLoadingCourses(false);
+    });
+    
+    console.log(`[${operationId}] 分页处理函数执行完毕`);
+  }, [ui.pagination, df.data, setLoadingStats, setLoadingCourses]);
 
-    // 然后调用fetchStudents函数获取数据
-    // 使用isLoadingRef来避免重复调用
-    if (!isLoadingRef.current) {
-      isLoadingRef.current = true;
-      df.data.fetchStudents({
-        pageNum: page,
-        pageSize: pageSize || ui.pagination.pageSize
-      }).catch(error => {
-        console.error('分页加载失败:', error);
-        message.error('分页加载失败');
-      }).finally(() => {
-        isLoadingRef.current = false;
-      });
-    }
-  };
-
-  useEffect(() => {
-    // 只在首次挂载时获取学员列表
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-
-      df.data.fetchStudents({
-        pageNum: ui.pagination.currentPage,
-        pageSize: ui.pagination.pageSize
-      }).catch(error => {
-        console.error('加载学员列表失败:', error);
-        message.error('加载学员列表失败');
-      }).finally(() => {
-        setLoadingStats(false); // 无论成功失败，加载完成
-      });
-    }
-  }, []);
+  // 应用防抖
+  const handleCustomPaginationChange = createDebounce(debouncedHandlePagination, 200);
 
   const handleAttendance = (student: UiStudent & { attendanceCourse?: { id: number | string; name: string } }) => {
     // 获取传递过来的课程信息
@@ -229,7 +274,9 @@ const StudentManagement: React.FC = () => {
 
     console.log('传递给打卡模态框的学员信息:', studentForModal);
 
+    // 先设置选中的学员，再打开模态框
     setSelectedStudent(studentForModal);
+    // 打开模态框状态 - 确保Form实例先被创建再使用
     setAttendanceModalVisible(true);
   };
 
@@ -492,7 +539,7 @@ const StudentManagement: React.FC = () => {
               current: ui.pagination.currentPage,
               pageSize: ui.pagination.pageSize,
               total: df.data.totalStudents,
-              onChange: handleCustomPaginationChange, // 使用自定义分页处理函数
+              onChange: handleCustomPaginationChange, // 直接传递我们的自定义处理函数
               showSizeChanger: false,
               showQuickJumper: true,
               size: 'small',

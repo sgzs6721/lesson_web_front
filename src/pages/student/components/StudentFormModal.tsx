@@ -449,34 +449,16 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
           </Col>
           <Col span={8}>
             <Form.Item
-              label="有效期至"
-              required
-            >
-              <DatePicker
-                style={{ width: '100%' }}
-                placeholder="选择有效期"
-                format="YYYY-MM-DD"
-                value={dayjs(group.expireDate)}
-                onChange={(date) => updateCourseGroup(index, 'expireDate', date ? date.format('YYYY-MM-DD') : '')}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
               label="状态"
-              required
             >
               <Select
-                placeholder="请选择状态"
-                style={{ width: '100%', background: 'transparent' }}
-                value={group.status}
+                style={{ width: '100%' }}
+                placeholder="选择状态"
+                value={group.status || undefined}
                 onChange={(value) => updateCourseGroup(index, 'status', value)}
-                getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
               >
                 {studentStatusOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
+                  <Option key={option.value} value={option.value}>{option.label}</Option>
                 ))}
               </Select>
             </Form.Item>
@@ -793,34 +775,16 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
           </Col>
           <Col span={8}>
             <Form.Item
-              label="有效期至"
-              required
-            >
-              <DatePicker
-                style={{ width: '100%' }}
-                placeholder="选择有效期"
-                format="YYYY-MM-DD"
-                value={dayjs(tempCourseGroup.expireDate)}
-                onChange={(date) => updateTempCourseGroup('expireDate', date ? date.format('YYYY-MM-DD') : '')}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
               label="状态"
-              required
             >
               <Select
-                placeholder="请选择状态"
-                style={{ width: '100%', background: 'transparent' }}
-                value={tempCourseGroup.status === '' ? undefined : tempCourseGroup.status}
+                style={{ width: '100%' }}
+                placeholder="选择状态"
+                value={tempCourseGroup.status || undefined}
                 onChange={(value) => updateTempCourseGroup('status', value)}
-                getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
               >
                 {studentStatusOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
+                  <Option key={option.value} value={option.value}>{option.label}</Option>
                 ))}
               </Select>
             </Form.Item>

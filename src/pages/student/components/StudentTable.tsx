@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, memo } from 'react';
 import { Table, Empty, TablePaginationConfig } from 'antd';
 import { Student } from '@/pages/student/types/student';
 import { getStudentColumns } from '@/pages/student/constants/tableColumns';
@@ -29,7 +29,8 @@ interface StudentTableProps {
   onDetails?: (record: Student) => void;
 }
 
-const StudentTable: React.FC<StudentTableProps> = ({
+// 使用React.memo包装组件以避免不必要的重渲染
+const StudentTable: React.FC<StudentTableProps> = memo(({
   data,
   loading,
   pagination,
@@ -64,33 +65,49 @@ const StudentTable: React.FC<StudentTableProps> = ({
     safeOnDetails,
   );
 
-  // 不再需要自定义加载图标
+  // 使用自定义分页器，完全禁用Table组件的内置分页处理机制
+  const customPagination = {
+    current: pagination.current,
+    pageSize: pagination.pageSize,
+    total: pagination.total,
+    showSizeChanger: pagination.showSizeChanger ?? false,
+    showQuickJumper: pagination.showQuickJumper ?? true,
+    showTotal: pagination.showTotal ?? (total => `共 ${total} 条记录`),
+    size: pagination.size,
+    style: pagination.style,
+    // 关键：使用我们自己的分页处理函数，直接调用外部传入的onChange
+    onChange: (page: number, pageSize?: number) => {
+      console.log(`[PAGINATION] 分页器点击: page=${page}, pageSize=${pageSize}`);
+      // 直接调用外部传入的onChange
+      pagination.onChange(page, pageSize || pagination.pageSize);
+    },
+    onShowSizeChange: (current: number, size: number) => {
+      console.log(`[PAGINATION] 改变每页显示: current=${current}, size=${size}`);
+      pagination.onChange(current, size);
+    }
+  };
+  
+  // 彻底禁用表格的onChange事件处理
+  const handleTableChange = useCallback(() => {
+    // 什么都不做，彻底禁用表格的默认onChange行为
+    console.log("[TABLE] 表格变化事件被拦截，不执行任何操作");
+  }, []);
 
   return (
     <div className="student-table-container">
-      {/* 使用默认的Table加载效果 */}
       <Table
         columns={columns}
         dataSource={data}
-        rowKey="id" // 使用 Student 类型中的 id 字段作为唯一标识符
-        loading={loading} // 与教练管理页面保持一致，使用简单的loading属性
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          showSizeChanger: pagination.showSizeChanger ?? true,
-          showQuickJumper: pagination.showQuickJumper ?? true,
-          showTotal: pagination.showTotal ?? (total => `共 ${total} 条记录`),
-          onChange: pagination.onChange,
-          size: pagination.size,
-          style: pagination.style
-        }}
+        rowKey="id" 
+        loading={loading}
+        onChange={handleTableChange} // 使用空函数拦截表格变化事件
+        pagination={customPagination} // 使用自定义分页配置
         locale={{
           emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" />
         }}
       />
     </div>
   );
-};
+});
 
 export default StudentTable;
