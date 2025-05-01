@@ -3,6 +3,31 @@ import { courseOptions } from '../constants/options';
 import dayjs from 'dayjs';
 
 /**
+ * 获取学生状态信息
+ * @param status 学生状态
+ * @returns 状态信息对象，包括文本和颜色
+ */
+export const getStatusInfo = (status: string) => {
+  const upperStatus = (status || '').toUpperCase();
+  
+  switch (upperStatus) {
+    case 'NORMAL':
+    case 'STUDYING':
+      return { text: '在学', color: 'green' };
+    case 'EXPIRED':
+      return { text: '已过期', color: 'error' };
+    case 'GRADUATED':
+      return { text: '已结业', color: 'blue' };
+    case 'PENDING':
+      return { text: '待开课', color: 'orange' };
+    case 'INACTIVE':
+      return { text: '停课', color: 'gray' };
+    default:
+      return { text: status || '未知', color: 'default' };
+  }
+};
+
+/**
  * 获取学生所有已报名的课程
  * @param student 学生对象
  * @returns 课程摘要数组

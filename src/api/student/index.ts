@@ -222,8 +222,25 @@ export const student = {
       return student;
     }
 
-    const response = await request(`${STUDENT_API_PATHS.DETAIL(id)}`);
-    return convertDtoToStudent(response.data);
+    try {
+      console.log(`获取学生详情，学生ID: ${id}`);
+      
+      const response = await request(`/lesson/api/student/detail?id=${id}`, {
+        method: 'GET'
+      });
+      
+      console.log('学生详情API响应:', response);
+      
+      if (response.code !== 200) {
+        console.error(`获取学生详情失败: ${response.message}`);
+        throw new Error(`获取学生详情失败: ${response.message || '未知错误'}`);
+      }
+      
+      return convertDtoToStudent(response.data);
+    } catch (error) {
+      console.error(`获取学生详情失败:`, error);
+      throw error;
+    }
   },
 
   // 添加学生
@@ -376,7 +393,21 @@ export const student = {
   },
 
   // 更新学员及课程
-  updateWithCourse: async (payload: { studentId: number; courseId: number; studentInfo: any; courseInfo: any }): Promise<void> => {
+  updateWithCourse: async (payload: { 
+    studentId: number; 
+    studentInfo: any; 
+    courseInfoList: Array<{
+      courseId: number;
+      startDate: string;
+      endDate: string;
+      fixedScheduleTimes?: Array<{
+        weekday: string;
+        from: string;
+        to: string;
+      }>;
+      status?: string;
+    }>;
+  }): Promise<void> => {
     try {
       // 验证payload结构
       if (!payload) {
@@ -388,20 +419,20 @@ export const student = {
         throw new Error('更新学员失败：无效的学员ID');
       }
 
-      if (payload.courseId === undefined || isNaN(Number(payload.courseId)) || Number(payload.courseId) <= 0) {
-        throw new Error('更新学员失败：无效的课程ID');
-      }
-
       if (!payload.studentInfo) {
         throw new Error('更新学员失败：缺少学员信息');
       }
 
-      if (!payload.courseInfo) {
-        throw new Error('更新学员失败：缺少课程信息');
+      if (!payload.courseInfoList || !Array.isArray(payload.courseInfoList) || payload.courseInfoList.length === 0) {
+        throw new Error('更新学员失败：缺少课程信息列表');
       }
 
-      // 确保courseInfo中也有courseId字段，与外层保持一致
-      payload.courseInfo.courseId = payload.courseId;
+      // 验证课程信息
+      for (const courseInfo of payload.courseInfoList) {
+        if (courseInfo.courseId === undefined || isNaN(Number(courseInfo.courseId)) || Number(courseInfo.courseId) <= 0) {
+          throw new Error('更新学员失败：课程列表中存在无效的课程ID');
+        }
+      }
 
       console.log('更新学员信息，请求数据:', JSON.stringify(payload, null, 2));
 
@@ -451,8 +482,8 @@ export const student = {
       return;
     }
 
-    await request(`${STUDENT_API_PATHS.DELETE(id)}`, {
-      method: 'DELETE'
+    await request(`/lesson/api/student/delete?id=${id}`, {
+      method: 'POST'
     });
   },
 

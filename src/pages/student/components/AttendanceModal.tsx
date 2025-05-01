@@ -120,10 +120,51 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     const weekday = date.day();
     // 转换为字符串格式，与排课表匹配
     const weekdayStr = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][weekday];
-    console.log('当前选择日期对应星期:', weekdayStr);
+    // 转换成数字格式，用于查找固定排课
+    const weekdayNum = weekday === 0 ? 7 : weekday; // 0(周日)->7, 1(周一)->1, ...
+    console.log('当前选择日期对应星期:', weekdayStr, '数字表示:', weekdayNum);
 
     // 从所有课程组中收集排课时间
-    let scheduledTimes: { time: string, endTime?: string }[] = [];
+    let scheduledTimes: { time: string, endTime?: string, weekday: string }[] = [];
+    let fixedScheduleTimes: { from: string, to: string, weekday: string }[] = [];
+
+    // 收集固定排课时间
+    if (student.courses && student.courses.length > 0) {
+      for (const course of student.courses) {
+        // 检查是否有固定排课时间
+        if (course.fixedSchedule) {
+          try {
+            const parsedSchedule = JSON.parse(course.fixedSchedule);
+            if (Array.isArray(parsedSchedule)) {
+              const formattedSchedules = parsedSchedule.map((item: any) => {
+                // 处理数字或字符串形式的weekday
+                let weekdayValue = item.weekday;
+                if (/^[1-7]$/.test(String(weekdayValue))) {
+                  weekdayValue = String(weekdayValue);
+                }
+                return {
+                  weekday: weekdayValue,
+                  from: item.from,
+                  to: item.to
+                };
+              });
+              fixedScheduleTimes = [...fixedScheduleTimes, ...formattedSchedules];
+              console.log('从课程固定排课中找到排课:', formattedSchedules);
+            }
+          } catch (e) {
+            console.error('解析固定排课失败:', e);
+          }
+        }
+      }
+    }
+
+    // 转换固定排课时间格式以与传统排课格式兼容
+    const convertedFixedTimes = fixedScheduleTimes.map(item => ({
+      time: item.from,
+      endTime: item.to,
+      weekday: `周${item.weekday}` // 转换格式为"周一"、"周二"等
+    }));
+    scheduledTimes = [...scheduledTimes, ...convertedFixedTimes];
 
     // 检查学员课程组中的排课信息
     if (student.courseGroups && student.courseGroups.length > 0) {
@@ -148,121 +189,144 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
       }
     }
 
-    // 如果找到了当天的排课时间
-    if (scheduledTimes.length > 0) {
-      console.log('找到当天排课时间，使用第一个:', scheduledTimes[0]);
-      // 使用第一个找到的时间
-      const schedule = scheduledTimes[0];
+    // 1. 首先尝试使用当天的排课时间
+    const todaySchedules = scheduledTimes.filter(st => {
+      // 判断weekday是否匹配当天
+      if (st.weekday === weekdayStr) return true;
+      
+      // 判断数字形式的weekday是否匹配
+      if (st.weekday === String(weekdayNum) || st.weekday === String(weekday)) return true;
+      
+      return false;
+    });
 
-      // 设置开始时间
-      if (schedule.time) {
-        const [hours, minutes] = schedule.time.split(':').map(Number);
-        const startTimeValue = dayjs().hour(hours).minute(minutes).second(0);
-        setStartTime(startTimeValue);
-        
-        // 强制设置表单值
-        try {
-          form.setFieldsValue({ startTime: startTimeValue });
-          console.log('设置开始时间成功:', startTimeValue.format('HH:mm'));
-        } catch (error) {
-          console.error('设置开始时间失败:', error);
-        }
-
-        // 设置结束时间（如果有）
-        let endTimeValue: dayjs.Dayjs;
-        if (schedule.endTime) {
-          const [endHours, endMinutes] = schedule.endTime.split(':').map(Number);
-          endTimeValue = dayjs().hour(endHours).minute(endMinutes).second(0);
-          console.log('使用排课表中的结束时间:', endTimeValue.format('HH:mm'));
-        } else {
-          // 如果没有结束时间，自动生成（默认课程时长为1小时）
-          endTimeValue = generateEndTime(startTimeValue);
-          console.log('生成默认结束时间:', endTimeValue.format('HH:mm'));
-        }
-        
-        setEndTime(endTimeValue);
-        
-        // 强制设置表单值
-        try {
-          form.setFieldsValue({ endTime: endTimeValue });
-          console.log('设置结束时间成功:', endTimeValue.format('HH:mm'));
-        } catch (error) {
-          console.error('设置结束时间失败:', error);
-        }
-        
-        // 只有两个时间都有，且用户未手动设置课时，才计算课时
-        if (!isDurationManuallySet) {
-          const newDuration = calculateDuration(startTimeValue, endTimeValue);
-          setDuration(String(newDuration));
-          form.setFieldsValue({ duration: String(newDuration) });
-          console.log('初始计算课时:', newDuration);
-        }
-        
-        return true; // 返回true表示成功填充
-      }
-    } else {
-      console.log('没有找到当天的排课时间，尝试使用其他排课时间');
-      // 如果没有找到当天的排课，尝试使用排课表中的第一个时间段
-      let allScheduledTimes: { time: string, endTime?: string, weekday: string }[] = [];
-
-      // 收集所有排课时间
-      if (student.courseGroups) {
-        student.courseGroups.forEach(group => {
-          if (group.scheduleTimes && group.scheduleTimes.length > 0) {
-            allScheduledTimes = [...allScheduledTimes, ...group.scheduleTimes];
-          }
-        });
-      }
-
-      // 如果学员直接有scheduleTimes属性
-      if (student.scheduleTimes && student.scheduleTimes.length > 0) {
-        allScheduledTimes = [...allScheduledTimes, ...student.scheduleTimes];
-      }
-
-      // 如果有任何排课时间，使用第一个
-      if (allScheduledTimes.length > 0) {
-        const firstSchedule = allScheduledTimes[0];
-        console.log('使用第一个可用的排课时间:', firstSchedule);
-
-        // 设置开始时间
-        if (firstSchedule.time) {
-          const [hours, minutes] = firstSchedule.time.split(':').map(Number);
-          const startTimeValue = dayjs().hour(hours).minute(minutes).second(0);
-          setStartTime(startTimeValue);
-          form.setFieldsValue({ startTime: startTimeValue });
-          console.log('设置开始时间:', startTimeValue.format('HH:mm'));
-
-          // 设置结束时间
-          let endTimeValue: dayjs.Dayjs;
-          if (firstSchedule.endTime) {
-            const [endHours, endMinutes] = firstSchedule.endTime.split(':').map(Number);
-            endTimeValue = dayjs().hour(endHours).minute(endMinutes).second(0);
-            console.log('使用排课表中的结束时间:', endTimeValue.format('HH:mm'));
-          } else {
-            // 如果没有结束时间，自动生成（默认课程时长为1小时）
-            endTimeValue = generateEndTime(startTimeValue);
-            console.log('生成默认结束时间:', endTimeValue.format('HH:mm'));
-          }
-          
-          setEndTime(endTimeValue);
-          form.setFieldsValue({ endTime: endTimeValue });
-          
-          // 只有用户未手动设置课时时才计算
-          if (!isDurationManuallySet) {
-            const newDuration = calculateDuration(startTimeValue, endTimeValue);
-            setDuration(String(newDuration));
-            form.setFieldsValue({ duration: String(newDuration) });
-            console.log('初始计算课时:', newDuration);
-          }
-          
-          return true; // 返回true表示成功填充
-        }
-      }
+    if (todaySchedules.length > 0) {
+      console.log('找到当天排课时间，使用第一个:', todaySchedules[0]);
+      return setTimeFromSchedule(todaySchedules[0]);
     }
     
-    console.log('未找到任何排课时间，不设置默认时间');
-    return false; // 返回false表示未能填充
+    // 2. 如果没有找到当天的排课时间，查找距离最近的排课
+    console.log('没有找到当天的排课时间，查找最近的排课');
+    
+    // 收集所有时间数据
+    let allTimes: { time: string, endTime?: string, weekday: string, dayDiff: number }[] = [];
+    
+    // 处理所有排课时间，计算与选定日期的距离
+    scheduledTimes.forEach(schedule => {
+      let scheduleWeekday: number;
+      
+      // 解析weekday字符串为数字
+      if (schedule.weekday.startsWith('周')) {
+        const dayChar = schedule.weekday.substring(1);
+        const dayMap: { [key: string]: number } = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0, '天': 0 };
+        scheduleWeekday = dayMap[dayChar] || -1;
+      } else {
+        // 直接是数字形式的weekday
+        scheduleWeekday = parseInt(schedule.weekday, 10);
+        // 处理周日表示方式: 0 或 7
+        if (scheduleWeekday === 7) scheduleWeekday = 0;
+      }
+      
+      if (scheduleWeekday >= 0 && scheduleWeekday <= 6) {
+        // 计算这个排课日与当前选择日期的天数差
+        let dayDiff = scheduleWeekday - weekday;
+        if (dayDiff <= 0) dayDiff += 7; // 确保是未来的天数
+        
+        allTimes.push({
+          ...schedule,
+          dayDiff: dayDiff
+        });
+      }
+    });
+    
+    // 按照与当前日期的距离排序
+    allTimes.sort((a, b) => a.dayDiff - b.dayDiff);
+    
+    // 如果有排序后的结果，使用最近的一个
+    if (allTimes.length > 0) {
+      const nearestSchedule = allTimes[0];
+      const nearestDate = date.add(nearestSchedule.dayDiff, 'day');
+      
+      console.log('找到最近的排课时间:', nearestSchedule, '在', nearestDate.format('YYYY-MM-DD'));
+      
+      // 更新表单日期为最近的排课日期
+      setSelectedDate(nearestDate);
+      form.setFieldsValue({ date: nearestDate });
+      
+      // 设置时间
+      return setTimeFromSchedule(nearestSchedule);
+    }
+    
+    // 如果没有任何排课信息，使用默认时间
+    console.log('未找到任何排课时间，设置默认时间');
+    const defaultStartTime = dayjs().hour(15).minute(0).second(0);
+    setStartTime(defaultStartTime);
+    form.setFieldsValue({ startTime: defaultStartTime });
+    
+    const defaultEndTime = defaultStartTime.add(1, 'hour');
+    setEndTime(defaultEndTime);
+    form.setFieldsValue({ endTime: defaultEndTime });
+    
+    if (!isDurationManuallySet) {
+      const newDuration = calculateDuration(defaultStartTime, defaultEndTime);
+      setDuration(String(newDuration));
+      form.setFieldsValue({ duration: String(newDuration) });
+    }
+    
+    return true;
   }, [student, form, generateEndTime, calculateDuration, isDurationManuallySet]);
+
+  // 辅助函数：从排课时间设置表单时间
+  const setTimeFromSchedule = useCallback((schedule: { time: string, endTime?: string }) => {
+    // 设置开始时间
+    if (schedule.time) {
+      const [hours, minutes] = schedule.time.split(':').map(Number);
+      const startTimeValue = dayjs().hour(hours).minute(minutes).second(0);
+      setStartTime(startTimeValue);
+      
+      // 强制设置表单值
+      try {
+        form.setFieldsValue({ startTime: startTimeValue });
+        console.log('设置开始时间成功:', startTimeValue.format('HH:mm'));
+      } catch (error) {
+        console.error('设置开始时间失败:', error);
+      }
+
+      // 设置结束时间（如果有）
+      let endTimeValue: dayjs.Dayjs;
+      if (schedule.endTime) {
+        const [endHours, endMinutes] = schedule.endTime.split(':').map(Number);
+        endTimeValue = dayjs().hour(endHours).minute(endMinutes).second(0);
+        console.log('使用排课表中的结束时间:', endTimeValue.format('HH:mm'));
+      } else {
+        // 如果没有结束时间，自动生成（默认课程时长为1小时）
+        endTimeValue = generateEndTime(startTimeValue);
+        console.log('生成默认结束时间:', endTimeValue.format('HH:mm'));
+      }
+      
+      setEndTime(endTimeValue);
+      
+      // 强制设置表单值
+      try {
+        form.setFieldsValue({ endTime: endTimeValue });
+        console.log('设置结束时间成功:', endTimeValue.format('HH:mm'));
+      } catch (error) {
+        console.error('设置结束时间失败:', error);
+      }
+      
+      // 只有两个时间都有，且用户未手动设置课时，才计算课时
+      if (!isDurationManuallySet) {
+        const newDuration = calculateDuration(startTimeValue, endTimeValue);
+        setDuration(String(newDuration));
+        form.setFieldsValue({ duration: String(newDuration) });
+        console.log('初始计算课时:', newDuration);
+      }
+      
+      return true; // 返回true表示成功填充
+    }
+    
+    return false; // 返回false表示未能填充
+  }, [form, generateEndTime, isDurationManuallySet, calculateDuration]);
 
   // 初始化学生课程列表和选中的课程
   useEffect(() => {

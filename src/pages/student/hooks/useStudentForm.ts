@@ -418,9 +418,22 @@ export const useStudentForm = (
           // 构建更新请求的payload
           const updatePayload = {
             studentId: editingStudent.studentId || Number(editingStudent.id),
-            courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
             studentInfo,
-            courseInfo
+            courseInfoList: [
+              {
+                courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
+                startDate: primaryGroup.enrollDate,
+                endDate: primaryGroup.expireDate,
+                status: primaryGroup.status || 'NORMAL',
+                fixedScheduleTimes: primaryGroup.scheduleTimes && primaryGroup.scheduleTimes.length > 0 
+                  ? primaryGroup.scheduleTimes.map(st => ({
+                      weekday: st.weekday,
+                      from: st.time,
+                      to: st.endTime || st.time
+                    }))
+                  : []
+              }
+            ]
           };
 
           console.log("提交更新请求到 /lesson/api/student/update:", JSON.stringify(updatePayload, null, 2));
@@ -432,8 +445,11 @@ export const useStudentForm = (
             return false;
           }
 
-          // 检查courseId是否有效
-          if (updatePayload.courseId === undefined || updatePayload.courseId === null || updatePayload.courseId === '') {
+          // 检查courseInfoList是否有有效的课程
+          if (!updatePayload.courseInfoList || updatePayload.courseInfoList.length === 0 || 
+              updatePayload.courseInfoList[0].courseId === undefined || 
+              updatePayload.courseInfoList[0].courseId === null || 
+              updatePayload.courseInfoList[0].courseId === '') {
             message.error('无法获取课程ID，请重新选择课程');
             setLoading(false);
             return false;

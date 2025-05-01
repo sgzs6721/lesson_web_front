@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message, Spin, Tooltip } from 'antd';
-import { PlusOutlined, ExportOutlined, UserOutlined, ReadOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message, Spin, Tooltip, Input, Select, DatePicker, Table, Tag, Modal } from 'antd';
+import { PlusOutlined, ExportOutlined, UserOutlined, ReadOutlined, SyncOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import StudentSearchBar from './components/StudentSearchBar';
 import StudentTable from './components/StudentTable';
@@ -11,6 +11,8 @@ import ScheduleModal from './components/ScheduleModal';
 import PaymentModal from './components/PaymentModal';
 import RefundTransferModal from './components/RefundTransferModal';
 import AttendanceModal from './components/AttendanceModal';
+import QuickAddStudentModal from './components/QuickAddStudentModal';
+import StudentDetailsModal from './components/StudentDetailsModal';
 import { useStudentUI } from './hooks/useStudentUI';
 import { useDataForm } from './hooks/useDataForm';
 import { getStudentAllCourses } from './utils/student';
@@ -24,6 +26,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import './student.css';
 import './components/StudentManagement.css';
+import './index.css'; // 引入全局样式
 
 const { Title, Text } = Typography;
 
@@ -326,11 +329,18 @@ const StudentManagement: React.FC = () => {
   };
 
   // 学员详情处理函数
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [currentStudentId, setCurrentStudentId] = useState<string | null>(null);
+  
   const handleStudentDetails = (student: UiStudent) => {
     console.log('查看学员详情:', student);
-    // 这里可以跳转到详情页或者显示详情模态框
-    // 暂时使用消息提示，后续可以替换为详情查看逻辑
-    message.info(`暂未实现详情查看功能，学员: ${student.name}`);
+    setCurrentStudentId(student.id);
+    setDetailsVisible(true);
+  };
+  
+  const handleDetailsModalClose = () => {
+    setDetailsVisible(false);
+    setCurrentStudentId(null);
   };
 
   // 添加更多本地样式
@@ -552,7 +562,7 @@ const StudentManagement: React.FC = () => {
             onRefund={(record: UiStudent) => ui.refundTransfer.handleRefund(record as any)}
             onTransfer={(record: UiStudent) => ui.refundTransfer.handleTransfer(record as any)}
             onTransferClass={(record: UiStudent) => ui.refundTransfer.handleTransferClass(record as any)}
-            onDelete={ui.deleteConfirm.showDeleteConfirm}
+            onDelete={(record: UiStudent) => ui.deleteConfirm.showDeleteConfirm(record)}
             onAttendance={handleAttendance}
             onDetails={handleStudentDetails}
           />
@@ -586,6 +596,7 @@ const StudentManagement: React.FC = () => {
           visible={ui.deleteConfirm.deleteModalVisible}
           onConfirm={ui.deleteConfirm.handleDeleteConfirm}
           onCancel={ui.deleteConfirm.handleCancelDelete}
+          student={ui.deleteConfirm.recordToDelete || undefined}
         />
 
         {/* 课程记录模态框 */}
@@ -661,12 +672,30 @@ const StudentManagement: React.FC = () => {
           handleQuickAddStudentCancel={ui.refundTransfer.handleQuickAddStudentCancel}
         />
 
-        <AttendanceModal
-          visible={attendanceModalVisible}
-          student={selectedStudent}
-          form={attendanceForm}
-          onCancel={() => setAttendanceModalVisible(false)}
-          onOk={handleAttendanceOk}
+        {/* 快速添加学员模态框 */}
+        <QuickAddStudentModal
+          visible={ui.refundTransfer.isQuickAddStudentModalVisible}
+          form={ui.refundTransfer.quickAddStudentForm}
+          onOk={ui.refundTransfer.handleQuickAddStudentOk}
+          onCancel={ui.refundTransfer.handleQuickAddStudentCancel}
+        />
+
+        {/* 学员打卡模态框 */}
+        {attendanceModalVisible && (
+          <AttendanceModal
+            visible={attendanceModalVisible}
+            student={selectedStudent}
+            form={attendanceForm}
+            onCancel={() => setAttendanceModalVisible(false)}
+            onOk={handleAttendanceOk}
+          />
+        )}
+        
+        {/* 学员详情模态框 */}
+        <StudentDetailsModal
+          visible={detailsVisible}
+          student={df.data.students.find(s => s.id === currentStudentId) || null}
+          onCancel={handleDetailsModalClose}
         />
       </div>
     </ConfigProvider>

@@ -1,0 +1,27 @@
+/* 学员管理页面全局样式 */
+
+/* 覆盖Select组件的默认样式 */
+.ant-select .ant-select-selector {
+  width: 100% !important;
+  transition: all 0.3s !important;
+}
+
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: #40a9ff !important;
+}
+
+.ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+  border-color: #40a9ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* 确保下拉内容宽度合适 */
+.ant-select-item {
+  padding: 5px 12px !important;
+}
+
+.ant-select-item-option-content {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+} 

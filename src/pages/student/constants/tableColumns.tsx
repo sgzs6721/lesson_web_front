@@ -119,7 +119,7 @@ export const getStudentColumns = (
   onRefund: (student: Student) => void,
   onTransfer: (student: Student) => void,
   onTransferClass: (student: Student) => void,
-  onDelete: (id: string) => void,
+  onDelete: (student: Student) => void,
   onAttendance: (student: Student & { attendanceCourse?: { id: number | string; name: string } }) => void,
   onDetails?: (record: Student) => void, // 添加详情查看回调
 ): ColumnsType<Student> => [
@@ -496,20 +496,14 @@ export const getStudentColumns = (
         />
         
         {/* 删除按钮 - 红色 */}
-        <Popconfirm
-          title="确定删除该学员吗？"
-          onConfirm={() => onDelete(record.id)}
-          okText="确定"
-          cancelText="取消"
-        >
-          <Button 
-            type="link" 
-            danger 
-            icon={<DeleteOutlined style={{ color: '#f5222d' }} />}
-            title="删除"
-            style={{ padding: '0' }}
-          />
-        </Popconfirm>
+        <Button 
+          type="link" 
+          danger 
+          icon={<DeleteOutlined style={{ color: '#f5222d' }} />}
+          onClick={() => onDelete(record)}
+          title="删除"
+          style={{ padding: '0' }}
+        />
       </Space>
     ),
   },

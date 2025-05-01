@@ -124,8 +124,12 @@ export const useStudentData = () => {
       setLoading(true);
       console.log('更新学员参数:', id, updatedData);
 
-      // 检查是否是学员及课程更新请求（来自嵌套结构的表单）
-      if (updatedData && updatedData.studentId !== undefined && updatedData.courseId !== undefined && updatedData.studentInfo && updatedData.courseInfo) {
+      // 检查是否是包含 courseInfoList 的新版更新请求
+      if (updatedData && 
+          updatedData.studentId !== undefined && 
+          updatedData.studentInfo && 
+          updatedData.courseInfoList && 
+          Array.isArray(updatedData.courseInfoList)) {
         // 使用 updateWithCourse 方法
         console.log('使用 updateWithCourse 方法更新学员及课程:', updatedData);
         await API.student.updateWithCourse(updatedData);

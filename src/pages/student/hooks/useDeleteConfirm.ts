@@ -7,18 +7,22 @@ import { useState } from 'react';
  */
 export const useDeleteConfirm = (deleteFunction: (id: string) => void) => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [recordToDelete, setRecordToDelete] = useState<string | null>(null);
+  const [recordToDelete, setRecordToDelete] = useState<{id: string; name?: string;} | null>(null);
   
   // 显示删除确认框
-  const showDeleteConfirm = (id: string) => {
-    setRecordToDelete(id);
+  const showDeleteConfirm = (idOrRecord: string | {id: string; name?: string;}) => {
+    if (typeof idOrRecord === 'string') {
+      setRecordToDelete({ id: idOrRecord });
+    } else {
+      setRecordToDelete(idOrRecord);
+    }
     setDeleteModalVisible(true);
   };
   
   // 执行删除
   const handleDeleteConfirm = () => {
     if (recordToDelete) {
-      deleteFunction(recordToDelete);
+      deleteFunction(recordToDelete.id);
       setDeleteModalVisible(false);
       setRecordToDelete(null);
     }

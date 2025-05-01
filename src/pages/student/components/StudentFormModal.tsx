@@ -10,7 +10,6 @@ import {
   Typography,
   Button,
   Space,
-
   TimePicker,
   Tag,
   Table,
@@ -23,13 +22,14 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-
+  CloseOutlined
 } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import { Student, CourseGroup, ScheduleTime } from '@/pages/student/types/student';
 import { courseTypeOptions, weekdayOptions, studentStatusOptions } from '@/pages/student/constants/options';
 import { SimpleCourse } from '@/api/course/types';
 import dayjs from 'dayjs';
+import locale from 'antd/es/date-picker/locale/zh_CN';
 import './EnrollmentModal.css';
 
 const { Option } = Select;
@@ -363,7 +363,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 style={{ width: '100%' }}
                 showSearch
                 optionFilterProp="children"
-                getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
+                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement || document.body}
+                dropdownStyle={{ zIndex: 1060 }}
                 loading={loadingCourses}
               >
                 {courseList && courseList.length > 0 ? (
@@ -456,6 +457,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 placeholder="选择状态"
                 value={group.status || undefined}
                 onChange={(value) => updateCourseGroup(index, 'status', value)}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement || document.body}
+                dropdownStyle={{ zIndex: 1060 }}
               >
                 {studentStatusOptions.map(option => (
                   <Option key={option.value} value={option.value}>{option.label}</Option>
@@ -689,7 +692,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 style={{ width: '100%' }}
                 showSearch
                 optionFilterProp="children"
-                getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
+                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement || document.body}
+                dropdownStyle={{ zIndex: 1060 }}
                 loading={loadingCourses}
               >
                 {courseList && courseList.length > 0 ? (
@@ -782,6 +786,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 placeholder="选择状态"
                 value={tempCourseGroup.status || undefined}
                 onChange={(value) => updateTempCourseGroup('status', value)}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement || document.body}
+                dropdownStyle={{ zIndex: 1060 }}
               >
                 {studentStatusOptions.map(option => (
                   <Option key={option.value} value={option.value}>{option.label}</Option>
