@@ -652,7 +652,27 @@ const StudentManagement: React.FC = () => {
         <RefundTransferModal
           visible={ui.refundTransfer.isRefundTransferModalVisible}
           form={ui.refundTransfer.refundTransferForm}
-          operationType={ui.refundTransfer.isRefundTransferModalVisible ? (ui.refundTransfer.refundTransferForm.getFieldValue('operationType') || 'refund') : 'refund'}
+          operationType={ui.refundTransfer.isRefundTransferModalVisible ? (
+            // 根据当前选择的操作类型确定显示哪种模态框
+            (() => {
+              // 从表单中获取当前操作类型
+              const currentType = ui.refundTransfer.refundTransferForm.getFieldValue('operationType');
+              console.log('当前模态框操作类型:', currentType);
+              
+              // 如果表单中设置了操作类型，则使用该类型
+              if (currentType === 'refund' || currentType === 'transfer' || currentType === 'transferClass') {
+                return currentType;
+              }
+              
+              // 如果学生已选择并处于转课模式，则确保保持为转课模式
+              if (ui.refundTransfer.selectedTransferStudent && currentType !== 'transferClass') {
+                return 'transfer';
+              }
+              
+              // 默认为退费模式
+              return 'refund';
+            })()
+          ) : 'refund'}
           student={ui.refundTransfer.currentStudent as any}
           studentCourses={ui.refundTransfer.currentStudent ? getStudentAllCourses(ui.refundTransfer.currentStudent).filter(
             course => course.status !== '未报名'
@@ -670,6 +690,7 @@ const StudentManagement: React.FC = () => {
           showQuickAddStudentModal={ui.refundTransfer.showQuickAddStudentModal}
           handleQuickAddStudentOk={ui.refundTransfer.handleQuickAddStudentOk}
           handleQuickAddStudentCancel={ui.refundTransfer.handleQuickAddStudentCancel}
+          courseList={courseList}
         />
 
         {/* 快速添加学员模态框 */}

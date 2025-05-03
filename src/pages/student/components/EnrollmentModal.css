@@ -34,3 +34,10 @@
   border-color: #1890ff !important;
   color: #1890ff !important;
 }
+
+/* 强制年龄错误提示单行显示 */
+.age-form-item .ant-form-item-explain div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

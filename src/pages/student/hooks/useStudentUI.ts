@@ -46,7 +46,12 @@ export const useStudentUI = (
   const paymentProps = usePaymentModal();
   
   // 退费转课模态框功能 (传入 addStudent)
-  const refundTransferProps = useRefundTransferModal(students, addStudent);
+  const refundTransferProps = useRefundTransferModal(
+    students, 
+    addStudent,
+    // 添加刷新回调函数，通过重新获取第一页数据刷新列表
+    () => handlePaginationChange(1, pageSize)
+  );
   
   // 导出功能
   const exportProps = useExport();

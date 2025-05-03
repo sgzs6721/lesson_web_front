@@ -279,3 +279,28 @@ export interface AttendanceListResponseData extends PaginatedResponse<Attendance
 
 // 打卡记录列表完整 API 响应
 export interface AttendanceListApiResponse extends ApiResponse<AttendanceListResponseData> {}
+
+// 退费请求接口
+export interface RefundRequest {
+  studentId: number;
+  courseId: number;
+  refundAmount: number;
+  refundReason: string;
+  refundDate: string;
+  notes?: string;
+  refundMethod?: string; // 退费方式：WECHAT, ALIPAY, CASH, CARD, BANK_TRANSFER
+}
+
+// 退费响应接口
+export interface RefundResponse {
+  refundId: number;
+  studentId: number;
+  studentName: string;
+  courseId: number;
+  courseName: string;
+  refundAmount: number;
+  refundDate: string;
+  refundReason: string;
+  notes?: string;
+  createdTime: string;
+}

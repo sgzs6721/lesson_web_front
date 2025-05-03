@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   Form,
@@ -134,6 +134,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
   loadingCourses,
   loading
 }) => {
+  const [courseSearchValue, setCourseSearchValue] = useState('');
+
+  useEffect(() => {
+    setCourseSearchValue('');
+  }, [visible, currentEditingGroupIndex, tempCourseGroup]);
+
   // 获取已选择的课程ID列表，用于禁用已选课程
   const getSelectedCourseIds = (excludeIndex?: number): string[] => {
     return courseGroups
@@ -324,7 +330,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               required
             >
               <Select
-                placeholder="请选择课程"
+                placeholder={courseSearchValue ? undefined : "请选择课程"}
                 value={group.courses && group.courses.length > 0 ? group.courses[0] : undefined}
                 onChange={(value) => {
                   console.log('选择课程，原始值:', value, '类型:', typeof value);
@@ -359,9 +365,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateCourseGroup(index, 'courseType', '');
                     updateCourseGroup(index, 'coach', '');
                   }
+                  setCourseSearchValue('');
                 }}
                 style={{ width: '100%' }}
                 showSearch
+                allowClear
+                onSearch={setCourseSearchValue}
                 optionFilterProp="children"
                 getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement || document.body}
                 dropdownStyle={{ zIndex: 1060 }}
@@ -608,14 +617,21 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
           <Space>
             <Button
-              onClick={() => cancelAddCourseGroup()}
+              onClick={() => {
+                setCourseSearchValue('');
+                cancelAddCourseGroup();
+              }}
               size="small"
               className="enrollment-cancel-btn"
             >
               取消
             </Button>
             <Button
-              onClick={() => confirmAddCourseGroup()}
+              onClick={() => {
+                if (confirmAddCourseGroup()) {
+                  setCourseSearchValue('');
+                }
+              }}
               size="small"
               className="enrollment-confirm-btn"
             >
@@ -653,7 +669,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               required
             >
               <Select
-                placeholder="请选择课程"
+                placeholder={courseSearchValue ? undefined : "请选择课程"}
                 value={tempCourseGroup.courses && tempCourseGroup.courses.length > 0 ? tempCourseGroup.courses[0] : undefined}
                 onChange={(value) => {
                   console.log('选择临时课程，原始值:', value, '类型:', typeof value);
@@ -688,9 +704,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateTempCourseGroup('courseType', '');
                     updateTempCourseGroup('coach', '');
                   }
+                  setCourseSearchValue('');
                 }}
                 style={{ width: '100%' }}
                 showSearch
+                allowClear
+                onSearch={setCourseSearchValue}
                 optionFilterProp="children"
                 getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement || document.body}
                 dropdownStyle={{ zIndex: 1060 }}
@@ -937,14 +956,21 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
           <Space>
             <Button
-              onClick={() => cancelAddCourseGroup()}
+              onClick={() => {
+                setCourseSearchValue('');
+                cancelAddCourseGroup();
+              }}
               size="small"
               className="enrollment-cancel-btn"
             >
               取消
             </Button>
             <Button
-              onClick={() => confirmAddCourseGroup()}
+              onClick={() => {
+                if (confirmAddCourseGroup()) {
+                  setCourseSearchValue('');
+                }
+              }}
               size="small"
               className="enrollment-confirm-btn"
             >
@@ -1037,6 +1063,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                   { required: true, message: '请输入年龄' },
                   { type: 'number', min: 1, message: '年龄必须是正整数', transform: (value) => Number(value) },
                 ]}
+                className="age-form-item"
               >
                 <Input type="number" placeholder="请输入年龄" />
               </Form.Item>

@@ -256,11 +256,35 @@ export const getStudentColumns = (
               return '打卡';
             };
 
+            // 判断是否为已结业状态
+            const isGraduated = statusUpperCase === 'GRADUATED';
+
             // 定义剩余操作的菜单项（退费、转课、转班）
             const remainingMenuItems = [
-              { key: 'refund', label: '退费', icon: <RollbackOutlined style={{ color: '#f5222d' }} />, onClick: () => onRefund(record) },
-              { key: 'transfer', label: '转课', icon: <TransactionOutlined />, onClick: () => onTransfer(record) },
-              { key: 'transferClass', label: '转班', icon: <SyncOutlined />, onClick: () => onTransferClass(record) },
+              { 
+                key: 'refund', 
+                label: '退费', 
+                icon: <RollbackOutlined style={{ color: isGraduated ? '#d9d9d9' : '#f5222d' }} />, 
+                onClick: () => !isGraduated && onRefund(record),
+                disabled: isGraduated, // 已结业禁用退费
+                style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+              },
+              { 
+                key: 'transfer', 
+                label: '转课', 
+                icon: <TransactionOutlined style={{ color: isGraduated ? '#d9d9d9' : '#1890ff' }} />, 
+                onClick: () => !isGraduated && onTransfer(record),
+                disabled: isGraduated, // 已结业禁用转课
+                style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+              },
+              { 
+                key: 'transferClass', 
+                label: '转班', 
+                icon: <SyncOutlined style={{ color: isGraduated ? '#d9d9d9' : '#52c41a' }} />, 
+                onClick: () => !isGraduated && onTransferClass(record),
+                disabled: isGraduated, // 已结业禁用转班
+                style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+              },
             ];
 
             return (
@@ -268,7 +292,7 @@ export const getStudentColumns = (
                   display: 'grid',
                   gridTemplateColumns: '30px 100px 80px 80px 90px 120px 80px auto', // 重新调整列宽
                   alignItems: 'center',
-                  backgroundColor: statusUpperCase === 'EXPIRED' ? '#fff1f0' : (isDisabled ? '#fdfdfd' : '#fafafa'),
+                  backgroundColor: isDisabled ? '#fdfdfd' : '#fafafa',
                   padding: '6px 0',
                   borderRadius: '4px',
                   width: '100%',
@@ -384,11 +408,47 @@ export const getStudentColumns = (
                           margin: 0,
                           padding: '4px 0',
                           fontSize: '12px',
-                          fontWeight: 'bold',
+                          fontWeight: '500',
                           borderRadius: '6px',
-                          backgroundColor: '#ffccc7',
-                          color: '#cf1322',
-                          border: '1px solid #ffa39e'
+                          backgroundColor: '#fff',
+                          color: '#ff4d4f',
+                          border: '1px solid #ff4d4f'
+                        }}
+                      >
+                        {statusText}
+                      </Tag>
+                    ) : statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? (
+                      <Tag
+                        style={{
+                          width: '60px',
+                          textAlign: 'center',
+                          display: 'inline-block',
+                          margin: 0,
+                          padding: '4px 0',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          borderRadius: '6px',
+                          backgroundColor: '#fff',
+                          color: '#52c41a',
+                          border: '1px solid #52c41a'
+                        }}
+                      >
+                        {statusText}
+                      </Tag>
+                    ) : statusUpperCase === 'GRADUATED' ? (
+                      <Tag
+                        style={{
+                          width: '60px',
+                          textAlign: 'center',
+                          display: 'inline-block',
+                          margin: 0,
+                          padding: '4px 0',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          borderRadius: '6px',
+                          backgroundColor: '#fff',
+                          color: '#f56c6c',
+                          border: '1px solid #f56c6c'
                         }}
                       >
                         {statusText}

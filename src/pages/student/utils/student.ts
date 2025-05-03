@@ -17,7 +17,7 @@ export const getStatusInfo = (status: string) => {
     case 'EXPIRED':
       return { text: '已过期', color: 'error' };
     case 'GRADUATED':
-      return { text: '已结业', color: 'blue' };
+      return { text: '已结业', color: '#f56c6c' };
     case 'PENDING':
       return { text: '待开课', color: 'orange' };
     case 'INACTIVE':

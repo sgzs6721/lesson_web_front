@@ -11,7 +11,10 @@ import {
   AttendanceListParams,
   AttendanceRecordDTO,
   AttendanceListResponseData,
-  AttendanceListApiResponse
+  AttendanceListApiResponse,
+  // Import Refund types
+  RefundRequest,
+  RefundResponse
 } from './types';
 // 导入前端 UI 使用的 Student 类型
 import { Student } from '@/pages/student/types/student';
@@ -37,6 +40,7 @@ const STUDENT_API_PATHS = {
   CLASS_RECORDS: (studentId: string) => `/lesson/api/student/${studentId}/class-records`,
   PAYMENT_RECORDS: (studentId: string) => `/lesson/api/student/${studentId}/payment-records`,
   PAYMENT: '/lesson/api/student/payment',
+  REFUND: '/lesson/api/student/refund',
 };
 
 // 修正 API 路径
@@ -533,6 +537,19 @@ export const student = {
     });
 
     console.log('缴费API响应:', response);
+    return response.data;
+  },
+
+  // 添加学生退费记录
+  refund: async (refundData: RefundRequest): Promise<RefundResponse> => {
+    console.log('添加退费记录，请求数据:', JSON.stringify(refundData, null, 2));
+
+    const response = await request(STUDENT_API_PATHS.REFUND, {
+      method: 'POST',
+      body: JSON.stringify(refundData)
+    });
+
+    console.log('退费API响应:', response);
     return response.data;
   },
 

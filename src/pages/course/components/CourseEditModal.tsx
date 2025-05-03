@@ -281,8 +281,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                   getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
                   loading={coachesLoading}
                   notFoundContent={coachesLoading ? <Spin size="small" /> : null}
-                  maxTagCount={3}
-                  maxTagTextLength={4}
+                  maxTagCount="responsive"
                   allowClear
                   optionFilterProp="children"
                   mode="multiple"
@@ -294,6 +293,26 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                   }}
                   disabled={loading}
                   value={form.getFieldValue('coachIds')}
+                  tagRender={(props) => {
+                    const { label, closable, onClose } = props;
+                    return (
+                      <span 
+                        style={{ 
+                          display: 'inline-block', 
+                          marginRight: '4px', 
+                          backgroundColor: '#f0f0f0',
+                          padding: '0 4px',
+                          borderRadius: '2px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        {label}
+                        {closable && (
+                          <span onClick={onClose} style={{ marginLeft: '2px', cursor: 'pointer' }}>×</span>
+                        )}
+                      </span>
+                    );
+                  }}
                 >
                   {cachedCoaches.map(coach => (
                     <Option key={coach.id} value={coach.id}>
@@ -306,7 +325,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           </Row>
 
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 name="unitHours"
                 label="每次消耗课时"
@@ -321,7 +340,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 name="totalHours"
                 label="总课时"
@@ -335,18 +354,34 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={6}>
               <Form.Item
                 name="price"
-                label="课程价格(元)"
-                rules={[{ required: true, message: '请输入课程价格' }]}
+                label="课程单价"
+                rules={[{ required: true, message: '请输入课程单价' }]}
               >
                 <InputNumber
                   min={0}
                   step={10}
                   style={{ width: '100%' }}
                   prefix={<DollarOutlined />}
-                  placeholder="请输入课程价格"
+                  placeholder="请输入课程单价"
+                  disabled={loading}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="coachFee"
+                label="教练课时费"
+                rules={[{ required: true, message: '请输入教练课时费' }]}
+              >
+                <InputNumber
+                  min={0}
+                  step={10}
+                  style={{ width: '100%' }}
+                  prefix={<DollarOutlined />}
+                  placeholder="请输入教练课时费"
                   disabled={loading}
                 />
               </Form.Item>

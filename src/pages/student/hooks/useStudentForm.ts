@@ -293,347 +293,75 @@ export const useStudentForm = (
 
   // 处理表单提交 - Rebuild nested structure for /api/student/create
   const handleSubmit = async (): Promise<boolean> => {
-    if (currentEditingGroupIndex !== null) {
-      message.warning('请先完成当前课程组的编辑');
-      return false;
-    }
-    if (courseGroups.length === 0 && !tempCourseGroup) {
-      message.error('请至少添加一个课程');
-      return false;
-    }
-    if (tempCourseGroup) {
-      const confirmed = confirmAddCourseGroup();
-      if (!confirmed) {
-        return false;
-      }
-    }
-
     try {
-      const values = await form.validateFields();
       setLoading(true);
+      // 1. 首先验证基本信息表单
+      const values = await form.validateFields();
+      console.log('基本信息验证通过:', values);
 
-      const currentCourseGroups = tempCourseGroup ? courseGroups.concat([tempCourseGroup]) : courseGroups;
-      if (currentCourseGroups.length === 0) {
-        message.error('无法获取课程信息，请重试');
+      // 2. 检查是否添加了至少一个课程（在基础信息验证通过后）
+      if (!courseGroups || courseGroups.length === 0) {
+        message.error('请至少添加一个课程');
+        setLoading(false);
+        return false; // 验证失败，阻止提交
+      }
+      
+      // 3. 检查是否有未确认的课程组（临时课程或正在编辑的课程）
+      if (tempCourseGroup) {
+        message.error('您有未确认添加的课程，请先确认或取消。');
         setLoading(false);
         return false;
       }
-      const primaryGroup = currentCourseGroups[0];
+      if (currentEditingGroupIndex !== null) {
+        message.error('您有未确认编辑的课程，请先确认或取消。');
+        setLoading(false);
+        return false;
+      }
 
-      try {
-        if (editingStudent) {
-          // --- EDITING EXISTING STUDENT (Nested Structure for /api/student/update) ---
-          const selectedCourseId = primaryGroup.courses[0];
-          console.log('选择的课程ID:', selectedCourseId);
-          console.log('可用课程列表:', courseList);
+      // 准备提交的数据
+      const studentInfo = {
+        ...values,
+        age: Number(values.age), // 确保年龄是数字
+        gender: values.gender === 'male' ? 'MALE' : 'FEMALE',
+      };
 
-          // 使用辅助函数尝试匹配课程
-          console.log('课程ID类型:', typeof selectedCourseId, '值:', selectedCourseId);
-          console.log('课程列表长度:', courseList.length);
-          if (courseList.length > 0) {
-            console.log('课程列表中的第一个ID类型:', typeof courseList[0].id, '值:', courseList[0].id);
-          }
-
-          // 使用辅助函数进行灵活匹配
-          let selectedCourse = findCourseById(courseList, selectedCourseId);
-
-          // 如果找不到课程，尝试使用模拟数据
-          if (!selectedCourse && mockSimpleCourses) {
-            console.log('在正常课程列表中找不到课程，尝试使用模拟数据');
-            selectedCourse = findCourseById(mockSimpleCourses, selectedCourseId);
-          }
-
-          // 如果仍然找不到课程，但我们有课程ID，则创建一个虚拟课程对象
-          if (!selectedCourse && selectedCourseId) {
-            console.log('创建虚拟课程对象，使用ID:', selectedCourseId);
-            selectedCourse = {
-              id: selectedCourseId,
-              name: `课程${selectedCourseId}`,
-              typeName: '未知类型',
-              status: 'PUBLISHED',
-              coaches: [{ id: 1, name: primaryGroup.coach || '未知教练' }]
-            };
-          }
-
-          // 如果仍然没有课程，则报错
-          if (!selectedCourse) {
-            message.error('无法获取课程信息，请重新选择课程');
-            setLoading(false);
-            return false;
-          }
-
-          let coachId = 0; // 默认教练ID
-
-          if (selectedCourse && primaryGroup.coach) {
-            console.log('找到课程:', selectedCourse);
-            const coach = selectedCourse.coaches?.find(co => co.name === primaryGroup.coach);
-            if (coach) {
-              coachId = coach.id;
-              console.log('找到教练:', coach);
-            } else {
-              // 如果找不到指定教练，使用第一个教练
-              if (selectedCourse.coaches && selectedCourse.coaches.length > 0) {
-                coachId = selectedCourse.coaches[0].id;
-                console.log(`无法找到教练 '${primaryGroup.coach}'，使用第一个教练:`, selectedCourse.coaches[0]);
-                message.warning(`无法找到课程 '${selectedCourse.name}' 下名为 '${primaryGroup.coach}' 的教练ID，将使用默认值。`);
-              } else {
-                console.log('课程没有教练信息，使用默认值 0');
-                message.warning(`课程 '${selectedCourse.name}' 没有教练信息，将使用默认值。`);
-              }
-            }
-          }
-
-          // 确保每个课程组都有有效期
-          if (!primaryGroup.expireDate) {
-            primaryGroup.expireDate = dayjs(primaryGroup.enrollDate).add(180, 'day').format('YYYY-MM-DD');
-          }
-
-          // 准备学员信息
-          const studentInfo = {
-            name: values.name,
-            gender: values.gender === 'male' ? 'MALE' : 'FEMALE',
-            age: Number(values.age),
-            phone: values.phone,
-            campusId: 1, // TODO: 动态校区ID
-          };
-
-          // 准备课程信息
-          const courseInfo: any = {
-            courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
-            startDate: primaryGroup.enrollDate,
-            endDate: primaryGroup.expireDate,
-            // 不需要传递 coachId，但需要传递教练名称用于回显
-            coachName: primaryGroup.coach || '' // 添加教练名称，用于创建后回显
-          };
-
-          // 如果有排课时间，添加到请求中
-          if (primaryGroup.scheduleTimes && primaryGroup.scheduleTimes.length > 0) {
-            courseInfo.fixedScheduleTimes = primaryGroup.scheduleTimes.map(st => ({
-              weekday: st.weekday,
-              from: st.time,
-              to: st.endTime || st.time
-            }));
-          }
-
-          // 构建更新请求的payload
-          const updatePayload = {
-            studentId: editingStudent.studentId || Number(editingStudent.id),
-            studentInfo,
-            courseInfoList: [
-              {
-                courseId: safeProcessCourseId(selectedCourse.id), // 使用找到的课程ID，保留字符串类型
-                startDate: primaryGroup.enrollDate,
-                endDate: primaryGroup.expireDate,
-                status: primaryGroup.status || 'NORMAL',
-                fixedScheduleTimes: primaryGroup.scheduleTimes && primaryGroup.scheduleTimes.length > 0 
-                  ? primaryGroup.scheduleTimes.map(st => ({
-                      weekday: st.weekday,
-                      from: st.time,
-                      to: st.endTime || st.time
-                    }))
-                  : []
-              }
-            ]
-          };
-
-          console.log("提交更新请求到 /lesson/api/student/update:", JSON.stringify(updatePayload, null, 2));
-
-          // 检查是否有studentId，确保能正确更新
-          if (!updatePayload.studentId) {
-            message.error('无法获取学员ID，请重新选择学员');
-            setLoading(false);
-            return false;
-          }
-
-          // 检查courseInfoList是否有有效的课程
-          if (!updatePayload.courseInfoList || updatePayload.courseInfoList.length === 0 || 
-              updatePayload.courseInfoList[0].courseId === undefined || 
-              updatePayload.courseInfoList[0].courseId === null || 
-              updatePayload.courseInfoList[0].courseId === '') {
-            message.error('无法获取课程ID，请重新选择课程');
-            setLoading(false);
-            return false;
-          }
-
-          try {
-            // 直接传递payload对象，不需要ID参数，因为studentId已经包含在payload中
-            await onUpdateStudent("", updatePayload);
-            console.log("学生信息更新成功");
-            message.success('学员更新成功');
-          } catch (error) {
-            console.error("更新学员失败:", error);
-            message.error('更新学员失败，请检查网络连接或联系管理员');
-            setLoading(false);
-            return false;
-          }
-        } else {
-          // --- ADDING NEW STUDENT (Send structure expected by API: { studentInfo, courseInfoList }) ---
-          const currentCourseGroups = tempCourseGroup ? courseGroups.concat([tempCourseGroup]) : courseGroups; // 确保包含临时组
-
-          // 检查是否有课程组
-          if (!currentCourseGroups || currentCourseGroups.length === 0) {
-            message.error('请至少添加一个课程');
-            setLoading(false);
-            return false;
-          }
-
-          // 为每个课程组设置有效期（如果缺少）
-          const updatedCourseGroups = currentCourseGroups.map(group => {
-            if (!group.expireDate) {
-              return {
-                ...group,
-                expireDate: dayjs(group.enrollDate).add(180, 'day').format('YYYY-MM-DD')
-              };
-            }
-            return group;
-          });
-
-          // 准备学员基本信息
-          const studentInfo = {
-            name: values.name,
-            gender: values.gender === 'male' ? 'MALE' : 'FEMALE',
-            age: Number(values.age),
-            phone: values.phone,
-            campusId: 1, // TODO: 动态校区ID
-          };
-
-          // 准备 courseInfoList，遍历所有课程组
-          const courseInfoListPromises = updatedCourseGroups.map(async (group) => {
-            if (!group.courses || group.courses.length === 0 || !group.enrollDate || !group.expireDate) {
-              console.error("跳过不完整的课程组:", group);
-              return null;
-            }
-            const courseId = safeProcessCourseId(group.courses[0]);
-            if (courseId === undefined || courseId === null || courseId === '') {
-               message.error(`课程组 ${group.key || ''} 缺少有效的课程ID`);
-               return null;
-            }
-
-            // 尝试通过courseId在课程列表中找到真实的课程信息
-            let courseName = '';
-            let courseTypeName = group.courseType || '';
-            
-            // 查找真实课程信息
-            let selectedCourse = findCourseById(courseList, courseId);
-            
-            // 如果找不到课程，尝试使用模拟数据
-            if (!selectedCourse && mockSimpleCourses) {
-              selectedCourse = findCourseById(mockSimpleCourses, courseId);
-            }
-            
-            // 如果找到了课程，使用其真实名称和类型
-            if (selectedCourse) {
-              courseName = selectedCourse.name || '';
-              courseTypeName = selectedCourse.typeName || group.courseType || '';
-            } else {
-              // 如果找不到课程，使用课程ID作为名称
-              courseName = typeof courseId === 'string' ? 
-                courseId : 
-                `课程${courseId}`;
-            }
-
-            const mappedScheduleTimes = group.scheduleTimes?.map(st => ({
-              weekday: st.weekday,
-              from: st.time,
-              to: st.endTime || st.time
-            })) || []; // 保持中文格式的周几
-
-            console.log('课程信息：', {
-              courseId,
-              courseName,
-              courseTypeName,
-              coachName: group.coach || ''
-            });
-
-            return {
-              courseId: courseId,
-              // 使用找到的真实课程名称
-              courseName: courseName,
-              // 使用真实的课程类型
-              courseTypeName: courseTypeName,
-              // 添加教练名称
-              coachName: group.coach || '',
-              // 其他属性
-              startDate: group.enrollDate,
-              endDate: group.expireDate,
-              fixedScheduleTimes: mappedScheduleTimes, // <--- 使用处理过的排课时间
-              status: mapStatusToApi(group.status),
-              totalHours: 0, // 默认值
-              remainingHours: 0 // 默认值
-            };
-          });
-
-          // 等待所有可能的异步操作（如果未来有）并过滤掉无效的组
-          const resolvedCourseInfoList = (await Promise.all(courseInfoListPromises)).filter(info => info !== null);
-
-          // 检查是否至少有一个有效的课程信息
-          if (resolvedCourseInfoList.length === 0) {
-             message.error('没有有效的课程信息可供提交，请检查所有课程组是否填写完整。');
-             setLoading(false);
-             return false;
-          }
-
-          // 构建最终请求 (使用包含所有有效课程的 courseInfoList)
-          const payload = {
-            studentInfo,
-            courseInfoList: resolvedCourseInfoList // 使用处理后的列表
-          };
-
-          console.log("提交创建请求到 /api/student/create:", JSON.stringify(payload, null, 2));
-
-          try {
-            const createdStudent = await onAddStudent(payload);
-            console.log("学员创建成功:", createdStudent);
-            message.success('学员添加成功');
-
-            // Trigger a global event to notify that a student has been added
-            // Pass the created student data to avoid an extra API call
-            window.dispatchEvent(new CustomEvent('studentCreated', {
-              detail: { student: createdStudent }
-            }));
-
-            if (window.sessionStorage.getItem('afterAddStudent') === 'true') {
-              window.sessionStorage.removeItem('afterAddStudent');
-              window.dispatchEvent(new CustomEvent('studentAddedForTransfer', { detail: {id: 0, name: studentInfo.name} }));
-            }
-
-          } catch (error: any) {
-            console.error("创建学员失败:", error);
-            // 尝试打印更详细的后端错误响应
-            console.error("后端响应数据:", error?.response?.data);
-            // 提取更详细的错误信息用于 message 提示
-            const errorMsg = error?.response?.data?.message || // 优先用后端消息
-                             error?.message ||                 // 其次用 JS 错误消息
-                             '创建学员失败，请检查网络或联系管理员'; // 最后用通用消息
-            message.error(`创建学员失败：${errorMsg}`);
-            setLoading(false);
-            return false;
-          }
+      const courseInfoList = courseGroups.map(group => {
+        let scheduleData: any[] = [];
+        if (group.scheduleTimes && group.scheduleTimes.length > 0) {
+          scheduleData = group.scheduleTimes.map(st => ({
+            weekday: mapWeekdayToNumber(st.weekday), // Convert Chinese weekday to number
+            from: st.time,
+            to: st.endTime
+          }));
         }
 
-        setVisible(false);
-        form.resetFields();
-        setCourseGroups([]);
-        setCurrentEditingGroupIndex(null);
-        setTempCourseGroup(null);
-        setOriginalCourseGroup(null);
-        setIsEditing(false);
-        return true;
+        return {
+          courseId: safeProcessCourseId(group.courses[0]),
+          status: mapStatusToApi(group.status),
+          enrollDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+          fixedSchedule: JSON.stringify(scheduleData) // 将排课时间转换为JSON字符串
+        };
+      });
 
-      } catch (error: any) {
-        console.error('提交学员数据失败:', error);
-        const errorMsg = error?.response?.data?.message || error?.message || '提交学员数据失败，请检查网络或联系管理员';
-        message.error(errorMsg);
-        return false;
-      } finally {
-        setLoading(false);
+      console.log('准备提交的数据:', { studentInfo, courseInfoList });
+
+      // 根据是编辑还是添加调用不同的回调函数
+      if (editingStudent) {
+        await onUpdateStudent(editingStudent.id, { ...studentInfo, id: editingStudent.id, courseInfoList });
+        message.success('学员信息更新成功');
+      } else {
+        await onAddStudent({ studentInfo, courseInfoList });
+        message.success('学员添加成功');
       }
 
-    } catch (info) {
-      console.log('表单校验失败:', info);
+      setVisible(false);
+      return true; // 提交成功
+    } catch (errorInfo) {
+      console.log('表单验证或提交失败:', errorInfo);
+      message.error('请检查表单信息是否填写完整且正确');
+      return false; // 提交失败
+    } finally {
       setLoading(false);
-      message.error('表单校验失败，请检查输入');
-      return false;
     }
   };
 

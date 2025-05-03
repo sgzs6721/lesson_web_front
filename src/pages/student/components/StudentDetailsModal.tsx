@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Tag, Divider, Typography, Row, Col, Card, Avatar } from 'antd';
+import { Modal, Tag, Divider, Typography, Row, Col, Card, Avatar, Button } from 'antd';
 import { Student, CourseInfo } from '@/pages/student/types/student';
 import { 
   InfoCircleOutlined, 
@@ -187,7 +187,7 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
     'NORMAL': '#52c41a',
     'STUDYING': '#52c41a',
     'EXPIRED': '#ff4d4f',
-    'GRADUATED': '#1890ff',
+    'GRADUATED': '#f56c6c',
     'PENDING': '#faad14',
     'INACTIVE': '#8c8c8c'
   };
@@ -381,6 +381,23 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                             const statusUpperCase = (course.status || '').toUpperCase();
                             const statusColor = statusColorMap[statusUpperCase] || '#d9d9d9';
                             const statusText = statusTextMap[statusUpperCase] || (course.status || '未知');
+                            
+                            // 为已结业状态创建特殊样式
+                            if (statusUpperCase === 'GRADUATED') {
+                              return (
+                                <Tag 
+                                  color="#f56c6c" 
+                                  style={{ 
+                                    fontSize: '13px', 
+                                    padding: '1px 10px', 
+                                    borderRadius: '4px',
+                                    fontWeight: '500'
+                                  }}
+                                >
+                                  {statusText}
+                                </Tag>
+                              );
+                            }
                             
                             return (
                               <Tag 
