@@ -21,6 +21,7 @@ export const generateMockCourses = (): Course[] => {
         totalHours,
         consumedHours: Math.floor(totalHours * (0.1 + Math.random() * 0.7)),
         price: 500 + index * 100,
+        coachFee: 100 + Math.floor(index * 50),
         coachIds: [
           String(index % 5 + 1),
           String((index + 3) % 5 + 1),

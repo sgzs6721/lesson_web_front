@@ -29,6 +29,7 @@ export const useCourseData = () => {
         totalHours: values.totalHours,
         consumedHours: 0, // 新课程消耗课时为0
         price: values.price,
+        coachFee: 0, // 设置默认的教练费用
         campusId: values.campusId,
         institutionId: 1, // 默认机构ID
         description: values.description || '',

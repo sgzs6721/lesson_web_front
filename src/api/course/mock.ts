@@ -19,6 +19,7 @@ export const mockCourses: Course[] = [
     type: CourseType.PRIVATE,
     status: CourseStatus.PUBLISHED,
     campusId: 1,
+    coachFee: 80,
     coaches: [
       { id: 1, name: '王老师' },
       { id: 2, name: '张老师' }
@@ -38,6 +39,7 @@ export const mockCourses: Course[] = [
     type: CourseType.GROUP,
     status: CourseStatus.PUBLISHED,
     campusId: 1,
+    coachFee: 120,
     coaches: [
       { id: 3, name: '李老师' }
     ]
@@ -56,6 +58,7 @@ export const mockCourses: Course[] = [
     type: CourseType.PRIVATE,
     status: CourseStatus.PUBLISHED,
     campusId: 2,
+    coachFee: 100,
     coaches: [
       { id: 2, name: '张老师' },
       { id: 4, name: '赵老师' }

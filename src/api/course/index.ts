@@ -262,6 +262,7 @@ export const course = {
         type: CourseType.PRIVATE.toString(),
         institutionId: 1,
         consumedHours: 0,
+        coachFee: 0, // 添加默认教练费用
         createdTime: now,
         updateTime: now,
         coaches: data.coachIds ? data.coachIds.map(id => ({ id: Number(id), name: `教练${id}` })) : []
