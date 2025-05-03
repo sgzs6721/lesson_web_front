@@ -1,0 +1,343 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# API和数据处理模式
+
+## API组织结构
+
+项目的API请求被组织在`/src/api`目录下，按功能模块划分：
+
+```
+/src/api
+  /student - 学员相关API
+    index.ts - 学员API函数集合
+    types.ts - 学员API类型定义
+    mock.ts - 学员API模拟数据
+  /course - 课程相关API
+  /coach - 教练相关API
+```
+
+## API模式
+
+### API函数定义
+API函数应该具有明确的类型定义、参数和返回值，例如[src/api/student/index.ts](mdc:src/api/student/index.ts)。
+
+```typescript
+import { StudentDTO, CreateStudentRequest, StudentListParams } from './types';
+
+export async function getStudentList(params: StudentListParams): Promise<{
+  list: StudentDTO[];
+  total: number;
+}> {
+  // API实现
+}
+
+export async function createStudent(data: CreateStudentRequest): Promise<StudentDTO> {
+  // API实现
+}
+```
+
+### API类型定义
+API类型定义在对应模块的`types.ts`文件中，例如[src/api/student/types.ts](mdc:src/api/student/types.ts)。
+
+```typescript
+// DTO类型 - 数据传输对象，与后端API响应结构匹配
+export interface StudentDTO {
+  id: string;
+  name: string;
+  // 其他属性
+}
+
+// 请求参数类型
+export interface StudentListParams {
+  pageNum?: number;
+  pageSize?: number;
+  searchText?: string;
+  // 其他查询参数
+}
+
+// 创建/更新请求类型
+export interface CreateStudentRequest {
+  name: string;
+  gender: 'MALE' | 'FEMALE';
+  // 其他属性
+}
+
+// 特定业务请求类型
+export interface RefundRequest {
+  studentId: string;
+  refundAmount: number;
+  reason: string;
+  // 其他属性
+}
+```
+
+## 数据流模式
+
+### API到UI的数据流
+1. API定义在`/src/api`目录中
+2. 数据Hook(如`useDataForm`)封装API调用
+3. 页面组件使用数据Hook获取和管理数据
+4. UI组件通过props接收数据并渲染
+
+```
+API定义 -> 数据Hook -> 页面组件 -> UI组件
+```
+
+### API请求生命周期
+1. 设置加载状态(`loading = true`)
+2. 发起API请求
+3. 处理响应或错误
+4. 更新数据状态
+5. 重置加载状态(`loading = false`)
+
+```typescript
+const fetchData = async () => {
+  setLoading(true);
+  try {
+    const response = await api.getData(params);
+    setData(response.data);
+  } catch (error) {
+    setError(error);
+    // 错误处理
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### DTO到UI模型的转换
+后端DTO需要转换为前端UI模型，通常在数据Hook或工具函数中完成：
+
+```typescript
+// 转换函数
+const convertApiToUiModel = (dto: ApiDTO): UiModel => {
+  return {
+    // 映射字段
+    id: dto.id,
+    displayName: dto.name,
+    // 转换字段
+    status: convertStatus(dto.status),
+    // 计算字段
+    isActive: dto.status === 'ACTIVE',
+    // 默认值
+    description: dto.description || '暂无描述'
+  };
+};
+
+// 使用转换函数
+const fetchData = async () => {
+  const apiData = await api.getData();
+  const uiData = apiData.map(convertApiToUiModel);
+  setData(uiData);
+};
+```
+
+## 数据处理Hook
+
+### useDataForm
+[src/pages/student/hooks/useDataForm.ts](mdc:src/pages/student/hooks/useDataForm.ts)是一个核心数据Hook，负责学员数据的CRUD操作。
+
+特点：
+- 管理学员列表数据和加载状态
+- 封装API调用
+- 提供表单状态和操作方法
+- 处理搜索和分页逻辑
+
+```typescript
+export const useDataForm = (courseList: SimpleCourse[], createApi: typeof student.create) => {
+  // 状态定义
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [totalStudents, setTotalStudents] = useState(0);
+  
+  // 数据加载函数
+  const fetchStudents = async (params: { pageNum: number; pageSize: number }) => {
+    setLoading(true);
+    try {
+      const response = await student.getList(params);
+      // 数据转换和处理
+      setStudents(response.list.map(convertApiStudentToUiStudent));
+      setTotalStudents(response.total);
+      return response.list;
+    } catch (error) {
+      console.error('获取学员列表失败:', error);
+      message.error('获取学员列表失败');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // 其他数据操作方法
+  
+  return {
+    data: {
+      students,
+      loading,
+      totalStudents,
+      fetchStudents,
+      deleteStudent,
+      // 其他数据方法
+    },
+    form: {
+      // 表单相关方法和状态
+    },
+    search: {
+      // 搜索相关方法和状态
+    }
+  };
+};
+```
+
+## 错误处理模式
+
+### API错误处理
+API错误处理遵循以下模式：
+
+```typescript
+try {
+  const response = await api.someMethod();
+  // 成功处理
+} catch (error) {
+  // 错误处理
+  console.error('操作失败:', error);
+  
+  // 用户反馈
+  message.error('操作失败，请稍后重试');
+  
+  // 可选：错误分类处理
+  if (error.status === 401) {
+    // 处理身份验证错误
+  } else if (error.status === 403) {
+    // 处理权限错误
+  } else {
+    // 处理其他错误
+  }
+} finally {
+  // 清理工作
+  setLoading(false);
+}
+```
+
+### 表单验证错误处理
+表单验证错误处理遵循以下模式：
+
+```typescript
+const handleSubmit = async () => {
+  try {
+    // 表单验证
+    const values = await form.validateFields();
+    
+    // API调用
+    await api.submitData(values);
+    
+    // 成功处理
+    message.success('操作成功');
+    handleCancel();
+    if (onSuccess) onSuccess();
+  } catch (error) {
+    // 区分表单验证错误和API错误
+    if (error.errorFields) {
+      // 表单验证错误
+      console.log('表单验证失败:', error.errorFields);
+    } else {
+      // API错误
+      console.error('提交数据失败:', error);
+      message.error('提交失败，请稍后重试');
+    }
+  }
+};
+```
+
+## 缓存和性能优化
+
+### 数据缓存
+使用React的状态和useEffect依赖数组实现简单的数据缓存。
+
+```typescript
+// 缓存查询结果
+const [cachedData, setCachedData] = useState({});
+const [cachedQueries, setCachedQueries] = useState({});
+
+const getData = async (query) => {
+  // 生成缓存键
+  const cacheKey = JSON.stringify(query);
+  
+  // 检查缓存
+  if (cachedQueries[cacheKey]) {
+    return cachedData[cachedQueries[cacheKey]];
+  }
+  
+  // 获取数据
+  const data = await api.getData(query);
+  
+  // 更新缓存
+  setCachedData(prev => ({
+    ...prev,
+    [data.id]: data
+  }));
+  
+  setCachedQueries(prev => ({
+    ...prev,
+    [cacheKey]: data.id
+  }));
+  
+  return data;
+};
+```
+
+### 性能优化技术
+- 使用React.memo避免不必要的重渲染
+- 使用useCallback缓存回调函数
+- 使用useMemo缓存计算结果
+- 分页加载大数据集
+- 使用节流和防抖处理频繁事件
+
+## 常见API操作
+
+### 学员管理API操作
+1. 获取学员列表
+   ```typescript
+   const { list, total } = await student.getList({ pageNum, pageSize, searchText });
+   ```
+
+2. 创建学员
+   ```typescript
+   const newStudent = await student.create(studentData);
+   ```
+
+3. 更新学员
+   ```typescript
+   await student.update(studentId, updateData);
+   ```
+
+4. 删除学员
+   ```typescript
+   await student.delete(studentId);
+   ```
+
+5. 学员退费
+   ```typescript
+   await student.refund({
+     studentId,
+     courseId,
+     refundAmount,
+     serviceFee,
+     refundMethod,
+     reason
+   });
+   ```
+
+6. 学员转课
+   ```typescript
+   await student.transfer({
+     fromStudentId,
+     toStudentId,
+     courseId,
+     transferHours,
+     reason
+   });
+   ```

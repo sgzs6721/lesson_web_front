@@ -23,8 +23,8 @@ export const fetchCategoryOptions = async (): Promise<{ value: number; label: st
 
 // 排序选项
 export const sortOptions = [
-  { value: 'priceAsc', label: '课筹单价升序' },
-  { value: 'priceDesc', label: '课筹单价降序' },
+  { value: 'priceAsc', label: '课程单价升序' },
+  { value: 'priceDesc', label: '课程单价降序' },
   { value: 'hoursAsc', label: '总课时升序' },
   { value: 'hoursDesc', label: '总课时降序' },
   { value: 'consumedHoursAsc', label: '已销课时升序' },

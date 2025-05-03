@@ -1,24 +1,29 @@
 import { useClassRecordModal } from './useClassRecordModal';
 import { useScheduleModal } from './useScheduleModal';
 import { usePaymentModal } from './usePaymentModal';
-import { useRefundTransferModal } from './useRefundTransferModal';
+import useRefundModal from './useRefundModal';
+import useTransferModal from './useTransferModal';
+import useTransferClassModal from './useTransferClassModal';
 import { usePagination } from './usePagination';
 import { useDeleteConfirm } from './useDeleteConfirm';
 import { useExport } from './useExport';
 import { Student } from '../types/student';
 import { useState, useCallback } from 'react';
+import { SimpleCourse } from '@/api/course/types'; // 导入SimpleCourse类型
 
 /**
  * 学员管理UI相关钩子的整合
  * @param students 学生列表
  * @param deleteStudent 删除学生的回调函数
  * @param addStudent 添加学生的回调函数 (新增)
+ * @param courseList 课程列表，从API获取的动态课程列表
  * @returns 整合的UI相关状态和函数
  */
 export const useStudentUI = (
   students: Student[], 
   deleteStudent: (id: string) => void,
-  addStudent?: (student: Omit<Student, 'id'> & { remainingClasses?: string; lastClassDate?: string }) => Student // 新增 addStudent 回调
+  addStudent?: (student: Omit<Student, 'id'> & { remainingClasses?: string; lastClassDate?: string }) => Student, // 新增 addStudent 回调
+  courseList: SimpleCourse[] = [] // 添加courseList参数并设置默认值为空数组
 ) => {
   // --- 分页处理 ---
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,10 +50,27 @@ export const useStudentUI = (
   // 缴费模态框功能
   const paymentProps = usePaymentModal();
   
-  // 退费转课模态框功能 (传入 addStudent)
-  const refundTransferProps = useRefundTransferModal(
-    students, 
+  // 退费模态框功能
+  const refundProps = useRefundModal(
+    students,
+    courseList, // 传递courseList参数
+    // 添加刷新回调函数，通过重新获取第一页数据刷新列表
+    () => handlePaginationChange(1, pageSize)
+  );
+  
+  // 转课模态框功能
+  const transferProps = useTransferModal(
+    students,
+    courseList, // 传递courseList参数
     addStudent,
+    // 添加刷新回调函数，通过重新获取第一页数据刷新列表
+    () => handlePaginationChange(1, pageSize)
+  );
+  
+  // 转班模态框功能
+  const transferClassProps = useTransferClassModal(
+    students,
+    courseList, // 传递courseList参数
     // 添加刷新回调函数，通过重新获取第一页数据刷新列表
     () => handlePaginationChange(1, pageSize)
   );
@@ -112,26 +134,46 @@ export const useStudentUI = (
       handleValidUntilChange: paymentProps.handleValidUntilChange
     },
     
-    // 退费转课相关
-    refundTransfer: {
-      isRefundTransferModalVisible: refundTransferProps.isRefundTransferModalVisible,
-      refundTransferForm: refundTransferProps.refundTransferForm,
-      currentStudent: refundTransferProps.currentStudent,
-      transferStudentSearchResults: refundTransferProps.transferStudentSearchResults,
-      isSearchingTransferStudent: refundTransferProps.isSearchingTransferStudent,
-      selectedTransferStudent: refundTransferProps.selectedTransferStudent,
-      handleRefund: refundTransferProps.handleRefund,
-      handleTransfer: refundTransferProps.handleTransfer,
-      handleTransferClass: refundTransferProps.handleTransferClass,
-      handleRefundTransferOk: refundTransferProps.handleRefundTransferOk,
-      handleRefundTransferCancel: refundTransferProps.handleRefundTransferCancel,
-      handleSearchTransferStudent: refundTransferProps.handleSearchTransferStudent,
-      handleSelectTransferStudent: refundTransferProps.handleSelectTransferStudent,
-      isQuickAddStudentModalVisible: refundTransferProps.isQuickAddStudentModalVisible,
-      quickAddStudentForm: refundTransferProps.quickAddStudentForm,
-      showQuickAddStudentModal: refundTransferProps.showQuickAddStudentModal,
-      handleQuickAddStudentOk: refundTransferProps.handleQuickAddStudentOk,
-      handleQuickAddStudentCancel: refundTransferProps.handleQuickAddStudentCancel
+    // 退费相关
+    refund: {
+      visible: refundProps.visible,
+      form: refundProps.form,
+      currentStudent: refundProps.currentStudent,
+      studentCourses: refundProps.studentCourses,
+      handleRefund: refundProps.handleRefund,
+      handleCancel: refundProps.handleCancel,
+      handleSubmit: refundProps.handleSubmit
+    },
+    
+    // 转课相关
+    transfer: {
+      visible: transferProps.visible,
+      form: transferProps.form,
+      currentStudent: transferProps.currentStudent,
+      studentCourses: transferProps.studentCourses,
+      searchResults: transferProps.searchResults,
+      searchLoading: transferProps.searchLoading,
+      quickAddVisible: transferProps.quickAddVisible,
+      availableStudents: transferProps.availableStudents,
+      handleTransfer: transferProps.handleTransfer,
+      handleCancel: transferProps.handleCancel,
+      handleQuickAddShow: transferProps.handleQuickAddShow,
+      handleQuickAddCancel: transferProps.handleQuickAddCancel,
+      handleAddStudent: transferProps.handleAddStudent,
+      handleSearch: transferProps.handleSearch,
+      handleSubmit: transferProps.handleSubmit
+    },
+    
+    // 转班相关
+    transferClass: {
+      visible: transferClassProps.visible,
+      form: transferClassProps.form,
+      currentStudent: transferClassProps.currentStudent,
+      studentCourses: transferClassProps.studentCourses,
+      courseList: transferClassProps.courseList,
+      handleTransferClass: transferClassProps.handleTransferClass,
+      handleCancel: transferClassProps.handleCancel,
+      handleSubmit: transferClassProps.handleSubmit
     },
     
     // 导出相关
@@ -139,4 +181,4 @@ export const useStudentUI = (
       handleExport: exportProps.handleExport
     }
   };
-}; 
+};

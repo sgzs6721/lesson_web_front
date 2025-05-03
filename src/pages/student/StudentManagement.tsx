@@ -9,14 +9,15 @@ import StudentDeleteModal from './components/StudentDeleteModal';
 import ClassRecordModal from './components/ClassRecordModal';
 import ScheduleModal from './components/ScheduleModal';
 import PaymentModal from './components/PaymentModal';
-import RefundTransferModal from './components/RefundTransferModal';
+import RefundModal from './components/RefundModal';
+import TransferModal from './components/TransferModal';
+import TransferClassModal from './components/TransferClassModal';
 import AttendanceModal from './components/AttendanceModal';
 import QuickAddStudentModal from './components/QuickAddStudentModal';
 import StudentDetailsModal from './components/StudentDetailsModal';
 import { useStudentUI } from './hooks/useStudentUI';
 import { useDataForm } from './hooks/useDataForm';
 import { getStudentAllCourses } from './utils/student';
-import { courseOptions } from '@/pages/student/constants/options';
 import { Student as ApiStudent } from '@/api/student/types';
 import { Student as UiStudent } from '@/pages/student/types/student';
 import { SimpleCourse } from '@/api/course/types';
@@ -144,7 +145,12 @@ const StudentManagement: React.FC = () => {
   };
 
   // Pass df.data.deleteStudent and the dummy add function
-  const ui = useStudentUI(df.data.students as UiStudent[], df.data.deleteStudent, dummyAddStudentForUI);
+  const ui = useStudentUI(
+    df.data.students as UiStudent[], 
+    df.data.deleteStudent, 
+    dummyAddStudentForUI,
+    courseList // 传递courseList给useStudentUI钩子
+  );
 
   // 修改打卡相关状态
   const [attendanceModalVisible, setAttendanceModalVisible] = useState(false);
@@ -559,9 +565,9 @@ const StudentManagement: React.FC = () => {
             onEdit={(record: UiStudent) => df.form.showEditModal(record as any)}
             onClassRecord={(record: UiStudent) => ui.classRecord.showClassRecordModal(record as any)}
             onPayment={(record: UiStudent) => ui.payment.showPaymentModal(record as any)}
-            onRefund={(record: UiStudent) => ui.refundTransfer.handleRefund(record as any)}
-            onTransfer={(record: UiStudent) => ui.refundTransfer.handleTransfer(record as any)}
-            onTransferClass={(record: UiStudent) => ui.refundTransfer.handleTransferClass(record as any)}
+            onRefund={(record: UiStudent) => ui.refund.handleRefund(record as any)}
+            onTransfer={(record: UiStudent) => ui.transfer.handleTransfer(record as any)}
+            onTransferClass={(record: UiStudent) => ui.transferClass.handleTransferClass(record as any)}
             onDelete={(record: UiStudent) => ui.deleteConfirm.showDeleteConfirm(record)}
             onAttendance={handleAttendance}
             onDetails={handleStudentDetails}
@@ -648,57 +654,52 @@ const StudentManagement: React.FC = () => {
           onValidUntilChange={ui.payment.handleValidUntilChange}
         />
 
-        {/* 退费转课模态框 */}
-        <RefundTransferModal
-          visible={ui.refundTransfer.isRefundTransferModalVisible}
-          form={ui.refundTransfer.refundTransferForm}
-          operationType={ui.refundTransfer.isRefundTransferModalVisible ? (
-            // 根据当前选择的操作类型确定显示哪种模态框
-            (() => {
-              // 从表单中获取当前操作类型
-              const currentType = ui.refundTransfer.refundTransferForm.getFieldValue('operationType');
-              console.log('当前模态框操作类型:', currentType);
-              
-              // 如果表单中设置了操作类型，则使用该类型
-              if (currentType === 'refund' || currentType === 'transfer' || currentType === 'transferClass') {
-                return currentType;
-              }
-              
-              // 如果学生已选择并处于转课模式，则确保保持为转课模式
-              if (ui.refundTransfer.selectedTransferStudent && currentType !== 'transferClass') {
-                return 'transfer';
-              }
-              
-              // 默认为退费模式
-              return 'refund';
-            })()
-          ) : 'refund'}
-          student={ui.refundTransfer.currentStudent as any}
-          studentCourses={ui.refundTransfer.currentStudent ? getStudentAllCourses(ui.refundTransfer.currentStudent).filter(
-            course => course.status !== '未报名'
-          ) : []}
-          transferStudentSearchResults={ui.refundTransfer.transferStudentSearchResults}
-          isSearchingTransferStudent={ui.refundTransfer.isSearchingTransferStudent}
-          selectedTransferStudent={ui.refundTransfer.selectedTransferStudent}
-          onCancel={ui.refundTransfer.handleRefundTransferCancel}
-          onOk={ui.refundTransfer.handleRefundTransferOk}
-          onSearchTransferStudent={ui.refundTransfer.handleSearchTransferStudent}
-          onSelectTransferStudent={ui.refundTransfer.handleSelectTransferStudent}
+        {/* 退费模态框 */}
+        <RefundModal
+          visible={ui.refund.visible}
+          form={ui.refund.form}
+          student={ui.refund.currentStudent as any}
+          studentCourses={ui.refund.studentCourses}
+          onCancel={ui.refund.handleCancel}
+          onOk={ui.refund.handleSubmit}
+        />
+
+        {/* 转课模态框 */}
+        <TransferModal
+          visible={ui.transfer.visible}
+          form={ui.transfer.form}
+          student={ui.transfer.currentStudent as any}
+          studentCourses={ui.transfer.studentCourses}
+          transferStudentSearchResults={ui.transfer.searchResults}
+          isSearchingTransferStudent={ui.transfer.searchLoading}
+          selectedTransferStudent={ui.transfer.currentStudent}
+          onCancel={ui.transfer.handleCancel}
+          onOk={ui.transfer.handleSubmit}
+          onSearchTransferStudent={ui.transfer.handleSearch}
+          onSelectTransferStudent={(student) => console.log('选择转入学员:', student)}
           students={df.data.students as UiStudent[]}
-          isQuickAddStudentModalVisible={ui.refundTransfer.isQuickAddStudentModalVisible}
-          quickAddStudentForm={ui.refundTransfer.quickAddStudentForm}
-          showQuickAddStudentModal={ui.refundTransfer.showQuickAddStudentModal}
-          handleQuickAddStudentOk={ui.refundTransfer.handleQuickAddStudentOk}
-          handleQuickAddStudentCancel={ui.refundTransfer.handleQuickAddStudentCancel}
+          isQuickAddStudentModalVisible={ui.transfer.quickAddVisible}
+          showQuickAddStudentModal={ui.transfer.handleQuickAddShow}
+          courseList={courseList}
+        />
+
+        {/* 转班模态框 */}
+        <TransferClassModal
+          visible={ui.transferClass.visible}
+          form={ui.transferClass.form}
+          student={ui.transferClass.currentStudent as any}
+          studentCourses={ui.transferClass.studentCourses}
+          onCancel={ui.transferClass.handleCancel}
+          onOk={ui.transferClass.handleSubmit}
           courseList={courseList}
         />
 
         {/* 快速添加学员模态框 */}
         <QuickAddStudentModal
-          visible={ui.refundTransfer.isQuickAddStudentModalVisible}
-          form={ui.refundTransfer.quickAddStudentForm}
-          onOk={ui.refundTransfer.handleQuickAddStudentOk}
-          onCancel={ui.refundTransfer.handleQuickAddStudentCancel}
+          visible={ui.transfer.quickAddVisible}
+          form={Form.useForm()[0]} // 使用新的表单实例
+          onOk={() => console.log('添加新学员')}
+          onCancel={ui.transfer.handleQuickAddCancel}
         />
 
         {/* 学员打卡模态框 */}

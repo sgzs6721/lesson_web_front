@@ -1,0 +1,267 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 组件模式与最佳实践
+
+## 核心组件模式
+
+### 模态框组件
+项目中的模态框组件遵循特定的模式，确保一致性和可维护性。
+
+```
+/src/pages/student/components/
+  RefundModal.tsx - 退费模态框
+  TransferModal.tsx - 转课模态框
+  TransferClassModal.tsx - 转班模态框
+```
+
+模态框组件应具有以下特征：
+- 使用Ant Design的Modal组件
+- 接收标准化的props（visible, onOk, onCancel等）
+- 内部集成Form组件处理表单逻辑
+- 使用React's useEffect处理副作用
+- 支持loading状态显示
+
+示例代码模式:
+```tsx
+interface EntityModalProps {
+  visible: boolean;
+  form: FormInstance;
+  data: EntityType | null;
+  onCancel: () => void;
+  onOk: () => void;
+}
+
+const EntityModal: React.FC<EntityModalProps> = ({
+  visible,
+  form,
+  data,
+  onCancel,
+  onOk
+}) => {
+  const [submitLoading, setSubmitLoading] = useState(false);
+  
+  // 当visible或data变化时，初始化表单
+  useEffect(() => {
+    if (visible && data) {
+      form.setFieldsValue({/* 初始值 */});
+    }
+  }, [visible, data, form]);
+  
+  return (
+    <Modal
+      title="模态框标题"
+      open={visible}
+      onOk={() => {
+        setSubmitLoading(true);
+        onOk();
+        // 模拟异步操作完成后重置状态
+        setTimeout(() => setSubmitLoading(false), 1000);
+      }}
+      onCancel={onCancel}
+      confirmLoading={submitLoading}
+    >
+      <Form form={form} layout="vertical">
+        {/* 表单内容 */}
+      </Form>
+    </Modal>
+  );
+};
+```
+
+### 表格组件
+表格组件是数据展示的核心，通常与分页、搜索和批量操作结合使用。
+
+表格组件应具有：
+- 使用Ant Design的Table组件
+- 支持排序、筛选和分页
+- 支持行操作按钮
+- 处理加载状态
+- 响应式列配置
+
+示例代码模式:
+```tsx
+interface EntityTableProps {
+  data: EntityType[];
+  loading: boolean;
+  pagination: TablePaginationConfig;
+  onEdit: (record: EntityType) => void;
+  onDelete: (record: EntityType) => void;
+  // 其他操作方法
+}
+
+const EntityTable: React.FC<EntityTableProps> = ({
+  data,
+  loading,
+  pagination,
+  onEdit,
+  onDelete,
+  // 其他props
+}) => {
+  const columns = [
+    // 数据列定义
+    {
+      title: '操作',
+      key: 'action',
+      render: (_, record) => (
+        <Space size="small">
+          <Button onClick={() => onEdit(record)}>编辑</Button>
+          <Button onClick={() => onDelete(record)}>删除</Button>
+          {/* 其他操作按钮 */}
+        </Space>
+      ),
+    },
+  ];
+  
+  return (
+    <Table
+      columns={columns}
+      dataSource={data}
+      rowKey="id"
+      pagination={pagination}
+      loading={loading}
+    />
+  );
+};
+```
+
+## Hook模式
+
+### UI状态管理Hook
+用于管理UI组件的状态和交互逻辑，例如[src/pages/student/hooks/useStudentUI.ts](mdc:src/pages/student/hooks/useStudentUI.ts)。
+
+特点：
+- 集中管理相关UI组件的状态
+- 提供状态变更方法
+- 整合多个子Hook的功能
+- 不直接处理API调用
+
+### 模态框管理Hook
+为特定模态框提供状态管理，例如[src/pages/student/hooks/useRefundModal.ts](mdc:src/pages/student/hooks/useRefundModal.ts)。
+
+特点：
+- 管理模态框可见性
+- 管理表单实例
+- 处理表单初始值设置
+- 提供提交和取消方法
+
+示例模式:
+```tsx
+export default function useEntityModal(
+  entityList: EntityType[],
+  onRefresh?: () => void
+) {
+  const [form] = Form.useForm();
+  const [visible, setVisible] = useState(false);
+  const [currentEntity, setCurrentEntity] = useState<EntityType | null>(null);
+  
+  const handleShow = (entity: EntityType) => {
+    form.resetFields();
+    setCurrentEntity(entity);
+    setVisible(true);
+  };
+  
+  const handleCancel = () => {
+    setVisible(false);
+    setCurrentEntity(null);
+    form.resetFields();
+  };
+  
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      // 处理提交逻辑
+      handleCancel();
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error('表单验证失败:', error);
+    }
+  };
+  
+  return {
+    form,
+    visible,
+    currentEntity,
+    handleShow,
+    handleCancel,
+    handleSubmit
+  };
+}
+```
+
+### 数据管理Hook
+处理组件的数据获取和处理逻辑，例如[src/pages/student/hooks/useDataForm.ts](mdc:src/pages/student/hooks/useDataForm.ts)。
+
+特点：
+- 封装API调用
+- 管理加载状态
+- 处理错误处理
+- 提供数据操作方法
+
+## 业务功能模式
+
+### 学员管理
+学员管理是系统核心功能之一，包括以下核心组件和Hook：
+
+- [src/pages/student/StudentManagement.tsx](mdc:src/pages/student/StudentManagement.tsx) - 学员管理主页面
+- [src/pages/student/components/StudentTable.tsx](mdc:src/pages/student/components/StudentTable.tsx) - 学员表格组件
+- [src/pages/student/components/RefundModal.tsx](mdc:src/pages/student/components/RefundModal.tsx) - 退费模态框
+- [src/pages/student/components/TransferModal.tsx](mdc:src/pages/student/components/TransferModal.tsx) - 转课模态框
+- [src/pages/student/components/TransferClassModal.tsx](mdc:src/pages/student/components/TransferClassModal.tsx) - 转班模态框
+- [src/pages/student/hooks/useRefundModal.ts](mdc:src/pages/student/hooks/useRefundModal.ts) - 退费模态框Hook
+- [src/pages/student/hooks/useTransferModal.ts](mdc:src/pages/student/hooks/useTransferModal.ts) - 转课模态框Hook
+- [src/pages/student/hooks/useTransferClassModal.ts](mdc:src/pages/student/hooks/useTransferClassModal.ts) - 转班模态框Hook
+
+### 常见业务流程
+1. 学员退费流程:
+   - 用户点击退费按钮
+   - 调用useRefundModal.handleRefund()打开退费模态框
+   - 用户填写退费表单并提交
+   - 验证通过后调用API提交退费请求
+   - 成功后关闭模态框并刷新学员列表
+
+2. 学员转课流程:
+   - 用户点击转课按钮
+   - 调用useTransferModal.handleTransfer()打开转课模态框
+   - 用户选择目标学员和课程，填写相关信息
+   - 验证通过后调用API提交转课请求
+   - 成功后关闭模态框并刷新学员列表
+
+## 组件间通信模式
+
+### Props下传
+- 父组件通过props向子组件传递数据和回调函数
+- 子组件通过调用父组件传递的回调函数与父组件通信
+
+### 状态提升
+- 将共享状态提升到最近的共同父组件
+- 子组件通过props接收状态和更新函数
+
+### 自定义Hook共享
+- 使用自定义Hook在不相关组件间共享逻辑和状态
+- 多个组件可以使用同一个Hook实例共享状态
+
+## 代码复用模式
+
+### 工具函数
+定义在utils目录下的纯函数，不依赖React状态。
+
+### 高阶组件(HOC)
+封装横切关注点的组件包装器。
+
+### 自定义Hook
+封装可复用的状态逻辑，允许组件间共享。
+
+## 调试与测试
+
+### 调试技巧
+- 使用console.log记录关键数据和事件
+- 检查组件props和状态
+- 追踪数据流向
+
+### 测试策略
+- 单元测试：测试工具函数和Hook
+- 组件测试：测试组件渲染和交互
+- 集成测试：测试组件组合和数据流

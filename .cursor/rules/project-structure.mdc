@@ -1,0 +1,602 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 项目结构与目录组织
+
+## 目录结构
+
+本项目采用功能模块划分的目录结构，主要目录如下：
+
+```
+/src
+  /api                  # API请求相关
+    /student            # 学员相关API
+    /course             # 课程相关API
+    /coach              # 教练相关API
+  /assets               # 静态资源
+    /images             # 图片资源
+    /styles             # 全局样式
+  /components           # 全局共享组件
+    /common             # 通用组件
+    /layout             # 布局组件
+  /config               # 全局配置
+  /hooks                # 全局共享Hook
+  /pages                # 页面组件
+    /student            # 学员管理页面
+      /components       # 学员管理页面组件
+      /hooks            # 学员管理页面Hook
+      /constants        # 学员管理页面常量
+      /utils            # 学员管理页面工具函数
+    /course             # 课程管理页面
+    /coach              # 教练管理页面
+    /schedule           # 排课管理页面
+    /statistics         # 统计分析页面
+  /redux                # Redux状态管理
+    /slices             # Redux切片
+    /selectors          # Redux选择器
+  /router               # 路由配置
+  /services             # 业务服务
+  /types                # 全局类型定义
+  /utils                # 全局工具函数
+```
+
+## 文件命名约定
+
+### 目录命名
+- 使用小驼峰命名法（camelCase）
+- 表示复数概念的目录使用复数形式，如`components`、`hooks`、`utils`
+- 单数概念的目录使用单数形式，如`student`、`course`、`coach`
+
+### 文件命名
+- 组件文件使用大驼峰命名法（PascalCase），如`StudentTable.tsx`
+- 非组件文件使用小驼峰命名法（camelCase），如`useStudentList.ts`
+- 常量文件使用小驼峰命名法，如`tableColumns.ts`
+- 类型定义文件使用小驼峰命名法，如`types.ts`
+- 工具函数文件使用小驼峰命名法，如`formatUtils.ts`
+
+### 特殊文件命名
+- 入口文件：`index.ts`/`index.tsx`
+- 路由配置：`router.tsx`
+- 状态管理根文件：`store.ts`
+- 环境变量配置：`.env`, `.env.development`, `.env.production`
+
+## 模块组织
+
+### 页面模块组织
+每个主要页面模块应该包含以下结构：
+
+```
+/pages/[module]                # 模块根目录
+  /components                  # 模块特定组件
+    /[ComponentName].tsx       # 组件文件
+  /hooks                       # 模块特定Hook
+    /use[HookName].ts          # Hook文件
+  /constants                   # 模块常量
+    /options.ts                # 选项常量
+    /tableColumns.tsx          # 表格列配置
+  /utils                       # 模块工具函数
+    /[utilName].ts             # 工具函数文件
+  /[ModuleName].tsx            # 模块主页面
+  /[SubPageName].tsx           # 子页面
+```
+
+### API模块组织
+API模块按功能划分，每个功能模块包含以下文件：
+
+```
+/api/[module]
+  /index.ts       # API函数导出
+  /types.ts       # API类型定义
+  /mock.ts        # API模拟数据（可选）
+```
+
+### 组件模块组织
+组件按功能和复用级别组织：
+
+```
+/components                   # 全局共享组件
+  /common                     # 通用UI组件
+    /Button                   # 按钮组件
+      /index.tsx              # 组件入口
+      /style.css              # 组件样式（可选）
+      /types.ts               # 组件类型（可选）
+  /form                       # 表单组件
+  /table                      # 表格组件
+  /modal                      # 模态框组件
+```
+
+## 导入规范
+
+### 导入顺序
+1. 外部库导入
+2. 全局类型导入
+3. 全局组件导入
+4. 全局工具/常量导入
+5. 当前模块相关导入
+6. 样式导入
+
+```typescript
+// 外部库导入
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, message } from 'antd';
+
+// 全局类型导入
+import { Student, Course } from '@/types';
+
+// 全局组件导入
+import PageHeader from '@/components/PageHeader';
+import TablePagination from '@/components/TablePagination';
+
+// 全局工具/常量导入
+import { formatDate } from '@/utils/dateUtils';
+import { DEFAULT_PAGE_SIZE } from '@/config/constants';
+
+// 当前模块相关导入
+import StudentForm from './components/StudentForm';
+import { columns } from './constants/tableColumns';
+import useStudentList from './hooks/useStudentList';
+
+// 样式导入
+import './StudentManagement.css';
+```
+
+### 路径别名
+使用路径别名简化导入路径，常见别名配置：
+- `@` -> `/src`
+- `@components` -> `/src/components`
+- `@utils` -> `/src/utils`
+- `@api` -> `/src/api`
+- `@hooks` -> `/src/hooks`
+- `@pages` -> `/src/pages`
+- `@types` -> `/src/types`
+
+```typescript
+// 使用路径别名
+import Button from '@components/common/Button';
+import { formatDate } from '@utils/dateUtils';
+import { getStudentList } from '@api/student';
+```
+
+## 模块化最佳实践
+
+### 单一职责原则
+- 每个文件应该只有一个主要职责
+- 组件文件应该只定义一个组件
+- 工具函数文件应该只包含相关的函数
+
+### 导出约定
+- 使用命名导出（named export）而非默认导出（default export）
+- 组件可以使用默认导出
+- 工具函数使用命名导出
+- 在`index.ts`中重新导出模块内容
+
+```typescript
+// 组件导出（StudentTable.tsx）
+const StudentTable: React.FC<StudentTableProps> = (props) => {
+  // 组件实现
+};
+
+export default StudentTable;
+
+// 工具函数导出（studentUtils.ts）
+export function formatStudentName(student: Student): string {
+  // 实现
+}
+
+export function calculateStudentAge(birthDate: string): number {
+  // 实现
+}
+
+// 在index.ts中重新导出
+export { default as StudentTable } from './StudentTable';
+export { default as StudentForm } from './StudentForm';
+export * from './studentUtils';
+```
+
+### 模块边界
+- 模块之间通过明确定义的API进行通信
+- 模块内部实现细节不应该对外暴露
+- 使用`index.ts`文件控制模块的公共API
+
+```typescript
+// /pages/student/index.ts
+export { default as StudentManagement } from './StudentManagement';
+export { default as StudentDetail } from './StudentDetail';
+// 只导出需要对外暴露的组件和函数
+```
+
+## 页面组件结构
+
+### 页面组件模式
+页面组件通常遵循以下结构：
+1. 导入和类型定义
+2. 组件内部状态
+3. 副作用（useEffect等）
+4. 事件处理函数
+5. 条件渲染逻辑
+6. 组件JSX结构
+
+```typescript
+import React, { useState, useEffect } from 'react';
+import { Table, Button, message } from 'antd';
+import { Student } from '@/types';
+import { getStudentList } from '@/api/student';
+import StudentForm from './components/StudentForm';
+import { columns } from './constants/tableColumns';
+
+interface StudentManagementProps {
+  title?: string;
+}
+
+const StudentManagement: React.FC<StudentManagementProps> = ({ title = '学员管理' }) => {
+  // 状态定义
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [current, setCurrent] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  
+  // 副作用
+  useEffect(() => {
+    fetchStudents();
+  }, [current, pageSize]);
+  
+  // 事件处理函数
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const res = await getStudentList({ pageNum: current, pageSize });
+      setStudents(res.list);
+      setTotal(res.total);
+    } catch (error) {
+      message.error('获取学员列表失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleAdd = () => {
+    setVisible(true);
+  };
+  
+  const handleCancel = () => {
+    setVisible(false);
+  };
+  
+  const handleSuccess = () => {
+    setVisible(false);
+    fetchStudents();
+  };
+  
+  // 页面JSX结构
+  return (
+    <div className="student-management">
+      <div className="student-management-header">
+        <h1>{title}</h1>
+        <Button type="primary" onClick={handleAdd}>添加学员</Button>
+      </div>
+      
+      <Table
+        columns={columns}
+        dataSource={students}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          current,
+          pageSize,
+          total,
+          onChange: (page, pageSize) => {
+            setCurrent(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      
+      <StudentForm
+        visible={visible}
+        onCancel={handleCancel}
+        onSuccess={handleSuccess}
+      />
+    </div>
+  );
+};
+
+export default StudentManagement;
+```
+
+### 容器组件与展示组件分离
+- 容器组件：管理状态和数据获取
+- 展示组件：负责展示UI和处理用户交互
+
+```typescript
+// 容器组件: StudentManagementContainer.tsx
+const StudentManagementContainer: React.FC = () => {
+  // 状态和数据处理逻辑
+  const { data, loading, pagination, handlePageChange, handleAdd } = useStudentList();
+  
+  return (
+    <StudentManagementView
+      data={data}
+      loading={loading}
+      pagination={pagination}
+      onPageChange={handlePageChange}
+      onAdd={handleAdd}
+    />
+  );
+};
+
+// 展示组件: StudentManagementView.tsx
+interface StudentManagementViewProps {
+  data: Student[];
+  loading: boolean;
+  pagination: PaginationConfig;
+  onPageChange: (page: number, pageSize?: number) => void;
+  onAdd: () => void;
+}
+
+const StudentManagementView: React.FC<StudentManagementViewProps> = ({
+  data,
+  loading,
+  pagination,
+  onPageChange,
+  onAdd,
+}) => {
+  return (
+    <div className="student-management">
+      <div className="student-management-header">
+        <h1>学员管理</h1>
+        <Button type="primary" onClick={onAdd}>添加学员</Button>
+      </div>
+      
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          ...pagination,
+          onChange: onPageChange,
+        }}
+      />
+    </div>
+  );
+};
+```
+
+## 构建与配置管理
+
+### 环境配置
+- 使用环境变量管理不同环境的配置
+- 创建环境变量配置文件：`.env`, `.env.development`, `.env.production`
+- 通过`process.env`访问环境变量
+
+```
+# .env.development
+REACT_APP_API_URL=http://localhost:3000/api
+REACT_APP_ENV=development
+
+# .env.production
+REACT_APP_API_URL=https://api.example.com
+REACT_APP_ENV=production
+```
+
+```typescript
+// src/config/index.ts
+export const config = {
+  apiUrl: process.env.REACT_APP_API_URL,
+  env: process.env.REACT_APP_ENV,
+  isProduction: process.env.REACT_APP_ENV === 'production',
+  isDevelopment: process.env.REACT_APP_ENV === 'development',
+};
+```
+
+### 构建配置
+- 使用Webpack、Rollup等构建工具管理构建流程
+- 针对不同环境优化构建配置
+- 使用路径别名简化导入
+
+```javascript
+// webpack.config.js 示例
+module.exports = {
+  // ...
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@components': path.resolve(__dirname, 'src/components'),
+      '@api': path.resolve(__dirname, 'src/api'),
+      '@utils': path.resolve(__dirname, 'src/utils'),
+    },
+    extensions: ['.tsx', '.ts', '.jsx', '.js'],
+  },
+  // ...
+};
+```
+
+### 静态资源管理
+- 图片和样式资源放在`/src/assets`目录下
+- 组件特定样式与组件放在一起
+- 全局样式放在`/src/assets/styles`目录下
+
+```
+/src/assets
+  /images
+    logo.png
+    icons/
+      user.svg
+      edit.svg
+  /styles
+    global.css
+    variables.css
+    themes/
+      light.css
+      dark.css
+```
+
+## 版本控制
+
+### Git忽略配置
+合理配置`.gitignore`文件，忽略不需要版本控制的文件：
+
+```
+# .gitignore
+# 依赖
+/node_modules
+
+# 构建产物
+/build
+/dist
+
+# 环境变量
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 编辑器和IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+```
+
+### 分支策略
+- `main`/`master`: 主分支，包含稳定代码
+- `develop`: 开发分支，包含最新的开发代码
+- `feature/*`: 特性分支，用于开发新功能
+- `bugfix/*`: 修复分支，用于修复bug
+- `release/*`: 发布分支，用于准备发布版本
+
+### 提交规范
+使用规范化的提交消息格式：
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+常见的类型（type）：
+- `feat`: 新功能
+- `fix`: 修复bug
+- `docs`: 文档更新
+- `style`: 代码样式修改，不影响功能
+- `refactor`: 代码重构，不添加功能也不修复bug
+- `perf`: 性能优化
+- `test`: 添加或修改测试
+- `chore`: 构建过程或辅助工具变动
+
+例如：
+```
+feat(student): 添加学员退费功能
+
+添加了学员退费的前端页面和API调用
+实现了退费金额计算和确认流程
+
+Closes #123
+```
+
+## 文档规范
+
+### 代码注释
+- 使用JSDoc风格的注释
+- 为组件、函数和复杂类型添加注释
+- 注释应该说明"为什么"而不仅仅是"做了什么"
+
+```typescript
+/**
+ * 计算学员已学课时的退费金额
+ * @param totalHours 总课时
+ * @param usedHours 已使用课时
+ * @param totalPrice 总价格
+ * @param isVIP 是否为VIP会员（VIP会员享有不同的退费规则）
+ * @returns 可退费金额
+ */
+export function calculateRefundAmount(
+  totalHours: number,
+  usedHours: number,
+  totalPrice: number,
+  isVIP: boolean = false
+): number {
+  // 实现退费计算逻辑
+}
+```
+
+### README文件
+在项目根目录和重要子目录中添加README文件：
+
+```markdown
+# 学员管理系统前端
+
+## 项目概述
+该项目是一个教育机构学员管理系统的前端部分，基于React和Ant Design开发。
+
+## 开发环境
+- Node.js >= 14.0.0
+- npm >= 6.0.0
+
+## 安装依赖
+```bash
+npm install
+```
+
+## 开发
+```bash
+npm run dev
+```
+
+## 构建
+```bash
+npm run build
+```
+
+## 项目结构
+- `/src/api`: API请求
+- `/src/components`: 共享组件
+- `/src/pages`: 页面组件
+- `/src/utils`: 工具函数
+
+## 主要功能
+- 学员管理：添加、编辑、删除学员
+- 课程管理：课程设置和分配
+- 排课管理：课程排期和时间表
+- 统计分析：学员和课程数据分析
+```
+
+## 质量保证
+
+### 代码审查清单
+- 代码是否遵循项目代码规范
+- 组件是否有清晰的职责和良好的封装
+- 是否有重复代码可以提取为共享函数
+- 是否有潜在的性能问题
+- 错误处理是否完善
+- 是否有适当的注释和文档
+
+### 性能优化清单
+- 避免不必要的重渲染
+- 大型列表使用虚拟滚动
+- 使用懒加载加载组件和数据
+- 按需加载第三方库
+- 优化图片和静态资源
+- 使用缓存减少重复请求
+
+### 可访问性清单
+- 确保所有交互元素可通过键盘访问
+- 提供适当的颜色对比度
+- 使用语义化HTML
+- 为非文本内容提供替代文本
+- 确保表单控件有关联的标签

@@ -80,7 +80,9 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     padding: '8px 0',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
+    flex: 1,
+    width: '100%'
   };
 
   return (
@@ -184,42 +186,42 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
       >
         <div style={{ 
           display: 'flex', 
-          justifyContent: 'space-between', 
+          justifyContent: 'center', 
           borderRadius: '4px',
           background: '#f7f9fc',
           padding: '16px'
         }}>
           <div style={courseInfoItemStyle}>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>每次消耗</div>
-            <div style={{ fontSize: '18px', color: '#1890ff', fontWeight: 600 }}>
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>每次消耗</div>
+            <div style={{ fontSize: '18px', color: '#1890ff', fontWeight: 600, textAlign: 'center' }}>
               0.5 小时
             </div>
           </div>
           
-          <Divider type="vertical" style={{ height: '45px', margin: '0 8px', background: '#e8e8e8' }} />
+          <Divider type="vertical" style={{ height: '45px', margin: '0 16px', background: '#e8e8e8' }} />
           
           <div style={courseInfoItemStyle}>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>总课时</div>
-            <div style={{ fontSize: '18px', color: '#52c41a', fontWeight: 600 }}>
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>总课时</div>
+            <div style={{ fontSize: '18px', color: '#52c41a', fontWeight: 600, textAlign: 'center' }}>
               {course.totalHours} 小时
             </div>
           </div>
           
-          <Divider type="vertical" style={{ height: '45px', margin: '0 8px', background: '#e8e8e8' }} />
+          <Divider type="vertical" style={{ height: '45px', margin: '0 16px', background: '#e8e8e8' }} />
           
           <div style={courseInfoItemStyle}>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>已消耗</div>
-            <div style={{ fontSize: '18px', color: '#fa8c16', fontWeight: 600 }}>
-              {course.consumedHours || 0} 小时
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>课程价格</div>
+            <div style={{ fontSize: '18px', color: '#fa8c16', fontWeight: 600, textAlign: 'center' }}>
+              ¥{course.price}
             </div>
           </div>
           
-          <Divider type="vertical" style={{ height: '45px', margin: '0 8px', background: '#e8e8e8' }} />
+          <Divider type="vertical" style={{ height: '45px', margin: '0 16px', background: '#e8e8e8' }} />
           
           <div style={courseInfoItemStyle}>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>课时费</div>
-            <div style={{ fontSize: '18px', fontWeight: 600, color: '#f5222d' }}>
-              ¥{course.price}
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>课时费</div>
+            <div style={{ fontSize: '18px', fontWeight: 600, color: '#f5222d', textAlign: 'center' }}>
+              ¥{course.coachFee}
             </div>
           </div>
         </div>

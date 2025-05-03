@@ -1,75 +1,66 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Form, message } from 'antd';
-import { Student, CourseInfo, CourseSummary } from '../types/student'; // 导入 CourseInfo 和 CourseSummary
-import { SimpleCourse } from '@/api/course/types'; // 导入 SimpleCourse
-import { getStudentAllCourses } from '../utils/student'; // 导入辅助函数
+import { useState, useMemo } from 'react';
+import { Form } from 'antd';
+import { Student, CourseSummary } from '../types/student';
+import { getStudentAllCourses } from '../utils/student';
+import { SimpleCourse } from '@/api/course/types';
 import dayjs from 'dayjs';
-// import API from '@/api';
 
 /**
- * 转班（同一学员转课程）模态框 Hook
- * @param courseList 全局课程列表
- * @returns 转班模态框相关的状态和函数
+ * 转课模态框钩子
+ * @param studentList 学生列表
+ * @param courseList 课程列表，从API获取的动态课程列表
+ * @param onAddStudent 添加学生回调函数
+ * @param onRefresh 刷新回调函数
  */
-export default function useTransferClassModal(
+export default function useTransferModal(
   studentList: Student[],
-  courseList?: SimpleCourse[],
+  courseList: SimpleCourse[] = [],
+  onAddStudent?: (student: Student) => void,
   onRefresh?: () => void
 ) {
+  // 表单实例
   const [form] = Form.useForm();
+  // 模态框可见状态
   const [visible, setVisible] = useState(false);
+  // 当前选中的学生
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
+  // 当前学生的所有课程
   const [studentCourses, setStudentCourses] = useState<CourseSummary[]>([]);
-  const [availableCourses, setAvailableCourses] = useState<SimpleCourse[]>([]); // 可选目标课程
-  const [loading, setLoading] = useState(false);
-  // 原始课程 ID，类型应为 string | number | null
-  const [originalCourseId, setOriginalCourseId] = useState<string | number | null>(null);
-  const [maxTransferHours, setMaxTransferHours] = useState<number>(0); // 最大可转课时
+  // 转课目标搜索结果
+  const [searchResults, setSearchResults] = useState<Student[]>([]);
+  // 搜索加载状态
+  const [searchLoading, setSearchLoading] = useState(false);
+  // 快速添加学生模态框可见状态
+  const [quickAddVisible, setQuickAddVisible] = useState(false);
+  // 搜索文本
+  const [searchText, setSearchText] = useState('');
 
-  // 辅助函数：确保 ID 为 string | number | null
-  const normalizeCourseId = (id: string | number | undefined | null): string | number | null => {
-    return id ?? null;
-  };
-
-  // 计算当前学员的课程列表和最大可转课时
-  const calculateStudentCourseInfo = useCallback((student: Student | null) => {
-    if (!student) return { courses: [], maxHours: 0 };
-    const studentCourses = getStudentAllCourses(student).filter(
-      course => course.status !== '未报名'
-    );
-    const defaultCourse = studentCourses.length > 0 ? studentCourses[0] : null;
-    let remainingHours = 0;
-    if (defaultCourse) {
-      if (student.courses) {
-        const courseInfo = student.courses.find((c: CourseInfo) => String(c.courseId) === String(defaultCourse.id));
-        if (courseInfo && courseInfo.remainingHours !== undefined) {
-          remainingHours = courseInfo.remainingHours;
-        } else if (defaultCourse.remainingClasses) { // 兼容旧数据结构
-          const parts = defaultCourse.remainingClasses.split('/');
-          if (parts.length > 0 && !isNaN(Number(parts[0]))) remainingHours = Number(parts[0]);
-        }
-      } else if (student.remainingClasses) { // 兼容最外层数据
-         const parts = student.remainingClasses.split('/');
-         if (parts.length > 0 && !isNaN(Number(parts[0]))) remainingHours = Number(parts[0]);
+  // 合并学生列表和搜索结果，确保不重复
+  const availableStudents = useMemo(() => {
+    const allStudents = [...searchResults];
+    
+    // 如果当前学生不在列表中，添加到列表前面
+    if (currentStudent) {
+      const exists = allStudents.some(s => s.id === currentStudent.id);
+      if (!exists) {
+        allStudents.unshift(currentStudent);
       }
     }
-    return { courses: studentCourses, maxHours: remainingHours > 0 ? remainingHours : 0 };
-  }, []);
+    
+    // 添加来自studentList的学生，确保不重复
+    studentList.forEach(student => {
+      const exists = allStudents.some(s => s.id === student.id);
+      if (!exists) {
+        allStudents.push(student);
+      }
+    });
+    
+    return allStudents;
+  }, [currentStudent, searchResults, studentList]);
 
-  // 副作用：更新可选课程
-  useEffect(() => {
-    if (currentStudent && courseList) {
-      console.log('[TransferClassModal] 当前学员:', currentStudent);
-      const currentCourseIdNorm = normalizeCourseId(originalCourseId); // 使用 state 中的 originalCourseId
-      // 过滤掉原课程
-      const filteredCourses = courseList.filter(course => String(course.id) !== String(currentCourseIdNorm));
-      setAvailableCourses(filteredCourses);
-      console.log('[TransferClassModal] 可选目标课程:', filteredCourses);
-    }
-  }, [currentStudent, courseList, originalCourseId]); // 依赖 originalCourseId
-
-  const handleTransferClass = (student: Student) => {
-    console.log('处理转班操作，学生:', student.name);
+  // 处理展示转课模态框
+  const handleTransfer = (student: Student) => {
+    console.log('处理转课操作，学生:', student.name);
     
     // 重置表单
     form.resetFields();
@@ -88,9 +79,6 @@ export default function useTransferClassModal(
     const defaultCourse = courses.length > 0 ? courses[0] : null;
     const courseName = defaultCourse ? defaultCourse.name : '';
     const courseId = defaultCourse ? defaultCourse.id : '';
-    
-    // 更新原始课程ID状态
-    setOriginalCourseId(courseId || null);
     
     // 获取剩余课时数
     let remainingHours = 0;
@@ -145,17 +133,15 @@ export default function useTransferClassModal(
       }
     }
     
-    // 设置最大可转课时
-    setMaxTransferHours(remainingHours);
-    
     // 准备表单值
     const formValues: any = {
       studentId: student.id,
       studentName: student.name,
       fromCourseId: courseName, // 显示课程名称，而不是ID
       _courseId: courseId, // 保存课程ID到隐藏字段，以便提交时使用
-      operationType: 'transferClass', // 设置为转班
+      operationType: 'transfer', // 设置为转课
       transferClassHours: remainingHours > 0 ? remainingHours : 1, // 设置默认转课课时为实际剩余课时
+      priceDifference: 0,
     };
     
     // 如果有有效期，添加到表单值中
@@ -173,31 +159,107 @@ export default function useTransferClassModal(
     // 设置表单值
     form.setFieldsValue(formValues);
     
+    // 重置搜索结果
+    setSearchResults([]);
+    
     // 打开模态框
     setVisible(true);
   };
 
+  // 关闭模态框
   const handleCancel = () => {
-    console.log('关闭转班模态框');
+    console.log('关闭转课模态框');
     setVisible(false);
     setCurrentStudent(null);
     setStudentCourses([]);
+    setSearchResults([]);
     form.resetFields();
   };
 
-  const handleSubmit = async () => {
-    console.log('提交转班表单');
-    try {
-      // 验证表单
-      const values = await form.validateFields();
-      console.log('表单数据:', values);
+  // 打开快速添加学生模态框
+  const handleQuickAddShow = () => {
+    setQuickAddVisible(true);
+  };
+
+  // 关闭快速添加学生模态框
+  const handleQuickAddCancel = () => {
+    setQuickAddVisible(false);
+  };
+
+  // 处理添加新学生
+  const handleAddStudent = (student: Student) => {
+    if (onAddStudent) {
+      onAddStudent(student);
+    }
+    setQuickAddVisible(false);
+    
+    // 将新添加的学生添加到搜索结果中
+    setSearchResults(prev => {
+      const exists = prev.some(s => s.id === student.id);
+      if (exists) return prev;
+      return [student, ...prev];
+    });
+  };
+
+  // 搜索学员
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+
+    if (value.trim() === '') {
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+
+    setSearchLoading(true);
+
+    // 模拟异步搜索
+    setTimeout(() => {
+      // 搜索结果应该排除当前转出学员
+      const results = studentList
+        .filter(s => {
+          // 排除当前转出学员
+          if (currentStudent && s.id === currentStudent.id) return false;
+          
+          // 匹配搜索条件
+          const searchLower = value.toLowerCase();
+          return (
+            s.name.toLowerCase().includes(searchLower) ||
+            s.id.toString().includes(searchLower) ||
+            (s.phone && s.phone.includes(value))
+          );
+        });
       
-      // TODO: 实际提交逻辑 (已在页面中实现)
+      setSearchResults(results);
+      setSearchLoading(false);
+    }, 300);
+  };
+
+  // 提交表单
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      
+      // 确保不能选择自己作为转入学员
+      if (values.targetStudentId === currentStudent?.id) {
+        // 如果选择了自己，显示错误并阻止提交
+        form.setFields([
+          {
+            name: 'targetStudentId',
+            errors: ['不能选择当前学员作为转入学员']
+          }
+        ]);
+        return;
+      }
+      
+      console.log('提交转课表单:', values);
+      
+      // 这里可以添加实际提交到后端的逻辑
       
       // 关闭模态框
       handleCancel();
       
-      // 刷新列表
+      // 如果提供了刷新回调，调用它
       if (onRefresh) {
         onRefresh();
       }
@@ -211,9 +273,17 @@ export default function useTransferClassModal(
     visible,
     currentStudent,
     studentCourses,
-    courseList,
-    handleTransferClass,
+    searchResults,
+    searchLoading,
+    quickAddVisible,
+    availableStudents,
+    handleTransfer,
     handleCancel,
-    handleSubmit
+    handleQuickAddShow,
+    handleQuickAddCancel,
+    handleAddStudent,
+    handleSearch,
+    handleSubmit,
+    courseList
   };
 } 

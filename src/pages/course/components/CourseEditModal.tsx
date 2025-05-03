@@ -111,6 +111,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
             unitHours: currentEditingCourse.unitHours,
             totalHours: currentEditingCourse.totalHours,
             price: currentEditingCourse.price,
+            coachFee: currentEditingCourse.coachFee,
             coachIds: coachIds,
             campusId: currentEditingCourse.campusId,
             description: currentEditingCourse.description || ''
@@ -139,6 +140,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
               unitHours: 1,
               totalHours: 10,
               price: 100,
+              coachFee: 50,
               coachIds: [],
               campusId: Number(localStorage.getItem('currentCampusId') || '1'),
               description: ''

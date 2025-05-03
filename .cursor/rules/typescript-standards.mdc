@@ -1,0 +1,653 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# TypeScript使用规范
+
+## 类型定义
+
+### 命名约定
+- 接口名称使用PascalCase，并且通常以`I`开头或以描述性名词命名
+- 类型别名使用PascalCase
+- 枚举使用PascalCase
+- 通用类型参数使用PascalCase，通常单字母如T, K, V等
+
+```typescript
+// 接口命名
+interface IStudent {
+  id: string;
+  name: string;
+}
+
+// 类型别名
+type StudentWithCourses = Student & {
+  courses: Course[];
+};
+
+// 枚举
+enum CourseStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+}
+
+// 泛型参数
+function getFirst<T>(items: T[]): T | undefined {
+  return items.length > 0 ? items[0] : undefined;
+}
+```
+
+### 接口定义
+- 使用接口描述对象的形状
+- 接口应包含所有必要的属性和方法
+- 相关接口应该放在一起
+- 对可选属性使用`?`修饰符
+
+```typescript
+// 学员接口
+interface Student {
+  id: string;
+  name: string;
+  gender: 'MALE' | 'FEMALE';
+  birthday?: string; // 可选属性
+  phone: string;
+  address?: {
+    province: string;
+    city: string;
+    detail: string;
+  };
+  status: StudentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 相关接口 - 学员状态
+type StudentStatus = 'NORMAL' | 'STUDYING' | 'GRADUATED' | 'EXPIRED';
+```
+
+### 类型别名
+- 使用类型别名创建复杂类型
+- 使用联合类型表示多种可能值
+- 使用交叉类型合并多个类型
+
+```typescript
+// 联合类型
+type PaymentMethod = 'CASH' | 'CARD' | 'WECHAT' | 'ALIPAY' | 'BANK_TRANSFER';
+
+// 交叉类型
+type StudentWithCourse = Student & {
+  courseId: string;
+  courseName: string;
+  enrolledAt: string;
+};
+
+// 函数类型
+type FetchStudentsFn = (params: StudentQueryParams) => Promise<{
+  list: Student[];
+  total: number;
+}>;
+```
+
+## API和请求类型
+
+### 请求参数类型
+- 参数类型以`Request`、`Params`或`Args`结尾
+- 清晰标注必选和可选参数
+- 使用精确的类型描述，避免过度使用`any`
+
+```typescript
+// 查询参数
+interface StudentQueryParams {
+  pageNum: number;
+  pageSize: number;
+  name?: string;
+  status?: StudentStatus;
+  startDate?: string;
+  endDate?: string;
+}
+
+// 创建请求
+interface CreateStudentRequest {
+  name: string;
+  gender: 'MALE' | 'FEMALE';
+  birthday?: string;
+  phone: string;
+  address?: {
+    province: string;
+    city: string;
+    detail: string;
+  };
+}
+
+// 更新请求
+interface UpdateStudentRequest {
+  id: string;
+  name?: string;
+  gender?: 'MALE' | 'FEMALE';
+  birthday?: string;
+  phone?: string;
+  address?: {
+    province?: string;
+    city?: string;
+    detail?: string;
+  };
+}
+```
+
+### 响应类型
+- 响应类型通常以`Response`或`Result`结尾
+- 可使用泛型定义通用响应结构
+- 尽量详细定义响应数据结构
+
+```typescript
+// 通用响应结构
+interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+// 分页响应
+interface PagedResponse<T> {
+  list: T[];
+  total: number;
+  pageNum: number;
+  pageSize: number;
+}
+
+// 学员列表响应
+type StudentListResponse = PagedResponse<Student>;
+
+// API函数返回类型
+async function getStudents(params: StudentQueryParams): Promise<StudentListResponse> {
+  // 实现
+}
+```
+
+## 状态管理类型
+
+### Redux/状态类型
+- 定义状态树的结构
+- 定义Action类型
+- 定义Reducer和Selector类型
+
+```typescript
+// 状态树
+interface RootState {
+  students: StudentsState;
+  courses: CoursesState;
+  auth: AuthState;
+  // 其他模块状态
+}
+
+// 模块状态
+interface StudentsState {
+  list: Student[];
+  total: number;
+  loading: boolean;
+  currentStudent: Student | null;
+  error: string | null;
+}
+
+// Action类型
+type StudentAction = 
+  | { type: 'FETCH_STUDENTS_START' }
+  | { type: 'FETCH_STUDENTS_SUCCESS'; payload: { list: Student[]; total: number } }
+  | { type: 'FETCH_STUDENTS_FAILURE'; payload: string }
+  | { type: 'SET_CURRENT_STUDENT'; payload: Student };
+
+// Reducer类型
+type StudentReducer = (state: StudentsState, action: StudentAction) => StudentsState;
+
+// Selector类型
+type StudentsSelector = (state: RootState) => Student[];
+type CurrentStudentSelector = (state: RootState) => Student | null;
+```
+
+## 组件类型
+
+### Props类型
+- 使用接口定义组件Props
+- 明确标注必选和可选Props
+- 类型化事件处理函数
+
+```typescript
+// 基本组件Props
+interface ButtonProps {
+  type?: 'primary' | 'default' | 'danger';
+  size?: 'small' | 'medium' | 'large';
+  disabled?: boolean;
+  loading?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  children: React.ReactNode;
+}
+
+// 表格组件Props
+interface StudentTableProps {
+  dataSource: Student[];
+  loading: boolean;
+  pagination: {
+    current: number;
+    pageSize: number;
+    total: number;
+  };
+  onPageChange: (page: number, pageSize: number) => void;
+  onEdit: (student: Student) => void;
+  onDelete: (studentId: string) => void;
+  onRefund?: (student: Student) => void;
+  onTransfer?: (student: Student) => void;
+}
+
+// 函数组件定义
+const StudentTable: React.FC<StudentTableProps> = ({
+  dataSource,
+  loading,
+  pagination,
+  onPageChange,
+  onEdit,
+  onDelete,
+  onRefund,
+  onTransfer,
+}) => {
+  // 实现
+};
+```
+
+### 状态类型
+- 使用泛型正确类型化state
+- 明确定义复杂状态的类型
+
+```typescript
+// 使用useState带类型
+const [students, setStudents] = useState<Student[]>([]);
+const [loading, setLoading] = useState(false);
+const [pagination, setPagination] = useState<{
+  current: number;
+  pageSize: number;
+  total: number;
+}>({
+  current: 1,
+  pageSize: 10,
+  total: 0,
+});
+
+// 复杂状态
+interface TableState {
+  data: Student[];
+  loading: boolean;
+  pagination: {
+    current: number;
+    pageSize: number;
+    total: number;
+  };
+  filters: {
+    name: string;
+    status: StudentStatus | null;
+  };
+  sorter: {
+    field: string | null;
+    order: 'ascend' | 'descend' | null;
+  };
+}
+
+const [tableState, setTableState] = useState<TableState>({
+  data: [],
+  loading: false,
+  pagination: {
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  },
+  filters: {
+    name: '',
+    status: null,
+  },
+  sorter: {
+    field: null,
+    order: null,
+  },
+});
+```
+
+## Hook类型
+
+### 自定义Hook类型
+- 使用命名约定以`use`开头
+- 明确定义返回类型
+- 类型化Hook参数
+
+```typescript
+// 自定义Hook返回类型
+interface UseStudentTableResult {
+  students: Student[];
+  loading: boolean;
+  pagination: {
+    current: number;
+    pageSize: number;
+    total: number;
+  };
+  handlePageChange: (page: number, pageSize: number) => void;
+  handleEdit: (student: Student) => void;
+  handleDelete: (studentId: string) => void;
+  handleRefresh: () => void;
+}
+
+// 自定义Hook定义
+function useStudentTable(initialParams?: Partial<StudentQueryParams>): UseStudentTableResult {
+  // 实现
+  return {
+    students,
+    loading,
+    pagination,
+    handlePageChange,
+    handleEdit,
+    handleDelete,
+    handleRefresh,
+  };
+}
+
+// 使用带参数的Hook
+interface UseModalHookParams {
+  onSuccess?: () => void;
+}
+
+function useModalForm<T>({ onSuccess }: UseModalHookParams = {}): {
+  visible: boolean;
+  data: T | null;
+  loading: boolean;
+  showModal: (initialData?: T) => void;
+  hideModal: () => void;
+  submitForm: (values: T) => Promise<void>;
+} {
+  // 实现
+}
+```
+
+## 工具类型
+
+### 实用工具类型
+- 使用TypeScript内置的工具类型
+- 创建自定义工具类型满足特定需求
+
+```typescript
+// 部分属性
+type PartialStudent = Partial<Student>;
+
+// 只读属性
+type ReadonlyStudent = Readonly<Student>;
+
+// 选取部分属性
+type StudentBasicInfo = Pick<Student, 'id' | 'name' | 'gender' | 'phone'>;
+
+// 排除部分属性
+type StudentWithoutAddress = Omit<Student, 'address'>;
+
+// 必选属性
+type RequiredStudentInfo = Required<Pick<Student, 'name' | 'gender' | 'phone'>>;
+
+// 自定义工具类型 - 深度部分
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+// 自定义工具类型 - 排除null和undefined
+type NonNullableProps<T> = {
+  [P in keyof T]: NonNullable<T[P]>;
+};
+```
+
+## 类型声明文件
+
+### 第三方库声明
+- 为没有类型定义的第三方库创建声明文件
+- 放置在`src/types`目录下
+- 文件命名为`[库名].d.ts`
+
+```typescript
+// 示例：为untyped-lib创建类型声明
+// src/types/untyped-lib.d.ts
+declare module 'untyped-lib' {
+  export function someFunction(param: string): Promise<any>;
+  
+  export interface LibConfig {
+    apiKey: string;
+    timeout?: number;
+  }
+  
+  export default class UntypedLib {
+    constructor(config: LibConfig);
+    initialize(): Promise<void>;
+    getData(id: string): Promise<any>;
+    // 其他方法
+  }
+}
+```
+
+### 全局声明
+- 全局声明放在`src/types/global.d.ts`
+- 适用于全局类型、扩展Window对象等
+
+```typescript
+// src/types/global.d.ts
+declare global {
+  interface Window {
+    __INITIAL_DATA__: any;
+    __APP_CONFIG__: {
+      apiUrl: string;
+      version: string;
+    };
+  }
+  
+  type AppTheme = 'light' | 'dark' | 'system';
+  
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: 'development' | 'production' | 'test';
+      REACT_APP_API_URL: string;
+      // 其他环境变量
+    }
+  }
+}
+
+// 确保这是一个模块
+export {};
+```
+
+## 类型断言与守卫
+
+### 类型断言
+- 使用`as`语法进行类型断言
+- 避免使用`any`断言，尽量使用精确类型
+- 必要时使用双重断言，但需谨慎
+
+```typescript
+// 基本类型断言
+const studentElement = document.getElementById('student-info') as HTMLDivElement;
+
+// 更精确的断言
+function getStudentById(id: string): Student | undefined {
+  const student = students.find(s => s.id === id);
+  return student as Student | undefined;
+}
+
+// 从API响应转换
+interface ApiStudent {
+  id: string;
+  student_name: string; // 蛇形命名
+  student_gender: 'male' | 'female';
+}
+
+function transformApiStudent(apiStudent: ApiStudent): Student {
+  return {
+    id: apiStudent.id,
+    name: apiStudent.student_name,
+    gender: apiStudent.student_gender === 'male' ? 'MALE' : 'FEMALE',
+    // 其他转换
+  } as Student;
+}
+```
+
+### 类型守卫
+- 使用类型谓词（type predicates）创建用户定义的类型守卫
+- 使用instanceof和typeof进行类型检查
+- 使用in操作符检查属性存在
+
+```typescript
+// 使用类型谓词
+function isStudent(obj: any): obj is Student {
+  return obj 
+    && typeof obj === 'object'
+    && typeof obj.id === 'string' 
+    && typeof obj.name === 'string';
+}
+
+// 使用类型守卫处理数据
+function processEntity(entity: Student | Course): void {
+  if (isStudent(entity)) {
+    // 在这个作用域内，TypeScript知道entity是Student类型
+    console.log(entity.name); // Student属性
+  } else {
+    // 在这个作用域内，TypeScript知道entity是Course类型
+    console.log(entity.title); // Course属性
+  }
+}
+
+// 使用in操作符
+function processUser(user: Admin | RegularUser): void {
+  if ('permissions' in user) {
+    // user是Admin类型
+    console.log(user.permissions);
+  } else {
+    // user是RegularUser类型
+    console.log(user.role);
+  }
+}
+```
+
+## 最佳实践
+
+### 避免类型"any"
+- 避免使用`any`类型，它绕过了类型检查
+- 必要时使用`unknown`作为替代，然后进行类型守卫
+- 使用更精确的类型如`Record<string, unknown>`替代`object`或`any`
+
+```typescript
+// 不推荐
+function processData(data: any): any {
+  return data.processedValue;
+}
+
+// 推荐
+function processData(data: unknown): unknown {
+  if (typeof data === 'object' && data !== null && 'processedValue' in data) {
+    return (data as { processedValue: unknown }).processedValue;
+  }
+  throw new Error('Invalid data format');
+}
+
+// 使用Record代替object
+function processConfig(config: Record<string, unknown>): void {
+  if (typeof config.timeout === 'number') {
+    // 安全地使用timeout
+  }
+}
+```
+
+### 类型的可读性和可维护性
+- 为复杂类型创建有意义的名称
+- 避免内联复杂类型定义
+- 将相关类型放在一起
+
+```typescript
+// 不推荐
+function processStudent(student: {
+  id: string;
+  name: string;
+  courses: Array<{
+    id: string;
+    name: string;
+    hours: number;
+    status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+  }>;
+}): void {
+  // ...
+}
+
+// 推荐
+interface StudentCourse {
+  id: string;
+  name: string;
+  hours: number;
+  status: CourseStatus;
+}
+
+interface StudentWithCourses {
+  id: string;
+  name: string;
+  courses: StudentCourse[];
+}
+
+function processStudent(student: StudentWithCourses): void {
+  // ...
+}
+```
+
+### 类型和逻辑分离
+- 将类型定义与逻辑实现分离
+- 避免在运行时依赖类型信息
+- 使用类型转换函数处理数据转换
+
+```typescript
+// 类型定义（可放在types.ts文件中）
+interface Student {
+  id: string;
+  name: string;
+  status: StudentStatus;
+}
+
+// 业务逻辑（在组件或服务中）
+function getActiveStudents(students: Student[]): Student[] {
+  return students.filter(student => student.status === 'STUDYING');
+}
+
+// 数据转换函数
+function mapApiStudentToModel(apiStudent: ApiStudentDTO): Student {
+  return {
+    id: apiStudent.id,
+    name: apiStudent.name,
+    status: apiStudent.status as StudentStatus,
+    // 其他属性映射
+  };
+}
+```
+
+### 类型安全的API调用
+- 使用泛型和类型来确保API调用的类型安全
+- 定义请求和响应的类型
+- 使用类型来指导API使用
+
+```typescript
+// 定义API函数类型
+interface ApiClient {
+  get<T>(url: string, params?: Record<string, unknown>): Promise<T>;
+  post<T, D>(url: string, data: D): Promise<T>;
+  put<T, D>(url: string, data: D): Promise<T>;
+  delete<T>(url: string, params?: Record<string, unknown>): Promise<T>;
+}
+
+// 使用类型安全的API调用
+async function fetchStudents(params: StudentQueryParams): Promise<StudentListResponse> {
+  return apiClient.get<StudentListResponse>('/api/students', params);
+}
+
+async function createStudent(student: CreateStudentRequest): Promise<Student> {
+  return apiClient.post<Student, CreateStudentRequest>('/api/students', student);
+}
+```
+
+## 参考资源
+
+- [TypeScript官方文档](https://www.typescriptlang.org/docs/)
+- [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/)
+- [React TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)

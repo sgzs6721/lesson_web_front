@@ -11,10 +11,36 @@ const getCoachNames = (coaches?: { id: number; name: string }[]) => {
   return coaches.map(coach => coach.name).join(', ');
 };
 
+// 课程类型颜色映射
+const courseTypeColorMap: Record<string, string> = {
+  '大课': 'orange',
+  '一对一': 'geekblue',
+  '小班': 'cyan',
+  '体育类': 'blue',
+  '艺术类': 'purple',
+  '学术类': 'green',
+  '英语': 'green',
+  '数学': 'gold',
+  '音乐': 'magenta',
+  '绘画': 'volcano',
+  '舞蹈': 'pink',
+  '体育': 'blue'
+};
+
 // 获取课程分类名称
 const getTypeName = (type: string) => {
   // 直接返回类型名称，因为API返回的已经是可读的名称
   return type || '未知类型';
+};
+
+// 渲染课程类型标签
+const renderCourseTypeTag = (type: string) => {
+  const color = courseTypeColorMap[type] || 'default';
+  return (
+    <Tag color={color} style={{ minWidth: '65px', textAlign: 'center' }}>
+      {type || '未知类型'}
+    </Tag>
+  );
 };
 
 // 渲染状态标签
@@ -63,7 +89,7 @@ export const getTableColumns = (
     dataIndex: 'type',
     key: 'type',
     align: 'center' as AlignType,
-    render: (type: string) => getTypeName(type),
+    render: (type: string) => renderCourseTypeTag(type),
   },
   {
     title: '总课时',
@@ -87,7 +113,7 @@ export const getTableColumns = (
     render: (coaches: { id: number; name: string }[]) => getCoachNames(coaches),
   },
   {
-    title: '课筹单价',
+    title: '课程单价',
     dataIndex: 'price',
     key: 'price',
     align: 'center' as AlignType,

@@ -2,19 +2,21 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Form, message } from 'antd';
 import { Student, CourseInfo } from '@/pages/student/types/student';
 import { getStudentAllCourses, searchStudentsByKeyword } from '@/pages/student/utils/student';
-import { courseOptions } from '@/pages/student/constants/options';
 import dayjs from 'dayjs'; // 引入 dayjs
 import { API } from '@/api';
+import { SimpleCourse } from '@/api/course/types'; // 导入SimpleCourse类型
 
 /**
  * 退费转课模态框相关的hook
  * @param students 所有学生列表
+ * @param courseList 课程列表，从API获取的动态课程列表
  * @param onAddStudent 外部添加学生的回调函数
  * @param onRefresh 外部刷新列表的回调函数
  * @returns 退费转课模态框相关的状态和函数
  */
 export const useRefundTransferModal = (
   students: Student[],
+  courseList: SimpleCourse[], // 添加courseList参数
   // 新增：接收外部添加学生的回调
   onAddStudent?: (student: Omit<Student, 'id'> & { remainingClasses?: string; lastClassDate?: string }) => Student,
   // 新增：接收外部刷新列表的回调
@@ -764,25 +766,24 @@ export const useRefundTransferModal = (
   };
 
   return {
-    isRefundTransferModalVisible: visible,
-    refundTransferForm,
+    visible,
     currentStudent,
-    transferStudentSearchResults,
-    isSearchingTransferStudent,
-    selectedTransferStudent,
-    transferStudentSearchText,
+    form: refundTransferForm, // 返回表单实例
     handleRefund,
     handleTransfer,
     handleTransferClass,
     handleRefundTransferOk,
     handleRefundTransferCancel,
+    transferStudentSearchResults,
+    isSearchingTransferStudent,
+    selectedTransferStudent,
     handleSearchTransferStudent,
     handleSelectTransferStudent,
-    // 新增导出
     isQuickAddStudentModalVisible,
     quickAddStudentForm,
     showQuickAddStudentModal,
     handleQuickAddStudentOk,
-    handleQuickAddStudentCancel
+    handleQuickAddStudentCancel,
+    courseList, // 返回courseList，以便传递给子组件
   };
 };

@@ -25,6 +25,7 @@ export interface Course {
   totalHours: number;
   consumedHours: number;
   price: number;
+  coachFee: number;
   campusId: number;
   institutionId: number;
   description?: string;

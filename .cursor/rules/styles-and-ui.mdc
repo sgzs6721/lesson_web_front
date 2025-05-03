@@ -1,0 +1,431 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 样式和UI规范
+
+## Ant Design使用指南
+
+本项目基于Ant Design组件库，遵循以下使用规范：
+
+### 基础组件使用
+- 使用Ant Design提供的基础组件，如Button、Input、Select等
+- 保持组件API的一致性
+- 使用ConfigProvider进行全局配置
+
+```tsx
+import { ConfigProvider, Button } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
+
+// 在应用根组件中配置
+<ConfigProvider locale={zhCN}>
+  <App />
+</ConfigProvider>
+
+// 在组件中使用
+<Button type="primary">按钮</Button>
+```
+
+### 布局组件使用
+- 使用Card组件包裹功能区块
+- 使用Row和Col组件实现栅格布局
+- 使用Space组件管理元素间距
+
+```tsx
+<Card>
+  <Row gutter={16}>
+    <Col span={12}>
+      <Form.Item label="姓名">
+        <Input />
+      </Form.Item>
+    </Col>
+    <Col span={12}>
+      <Form.Item label="年龄">
+        <InputNumber />
+      </Form.Item>
+    </Col>
+  </Row>
+</Card>
+```
+
+### 表单组件使用
+- 使用Form组件管理表单状态
+- 使用Form.Item组件包裹表单控件
+- 定义表单校验规则
+
+```tsx
+const [form] = Form.useForm();
+
+<Form
+  form={form}
+  layout="vertical"
+  onFinish={handleSubmit}
+>
+  <Form.Item
+    name="name"
+    label="姓名"
+    rules={[{ required: true, message: '请输入姓名' }]}
+  >
+    <Input />
+  </Form.Item>
+  
+  {/* 其他表单项 */}
+</Form>
+```
+
+## 样式规范
+
+### 样式命名与组织
+- 组件样式文件与组件同名，如`StudentTable.tsx`对应`StudentTable.css`
+- 页面样式文件放在页面同级目录，如`student.css`
+- 全局样式文件放在顶层目录，如`index.css`
+
+### 样式优先级
+按优先级从高到低排列：
+1. 内联样式（紧急需求或特定场景）
+2. 组件CSS样式（组件特定样式）
+3. 页面CSS样式（页面共享样式）
+4. 全局CSS样式（全局共享样式）
+
+### 响应式设计
+使用Ant Design的响应式栅格系统实现响应式设计：
+- xs: < 576px（手机）
+- sm: >= 576px（平板）
+- md: >= 768px（小屏幕）
+- lg: >= 992px（中等屏幕）
+- xl: >= 1200px（大屏幕）
+- xxl: >= 1600px（超大屏幕）
+
+```tsx
+<Row gutter={16}>
+  <Col xs={24} sm={12} md={8} lg={6}>
+    {/* 内容 */}
+  </Col>
+</Row>
+```
+
+## UI设计规范
+
+### 颜色规范
+遵循Ant Design的颜色体系：
+- 主色：#1890ff（蓝色）
+- 成功色：#52c41a（绿色）
+- 警告色：#faad14（黄色）
+- 错误色：#f5222d（红色）
+- 链接色：#1890ff（蓝色）
+
+自定义业务颜色：
+- 学员状态-在学：#52c41a（绿色）
+- 学员状态-停课：#faad14（黄色）
+- 学员状态-结业：#f56c6c（红色）
+- 学员状态-过期：#f5222d（红色）
+
+### 字体规范
+- 主字体：系统默认字体
+- 标题：16-24px，加粗
+- 正文：14px，常规
+- 辅助文字：12px，常规
+- 禁用文字：使用浅灰色（#00000040）
+
+### 间距规范
+遵循8px倍数的间距系统：
+- 紧凑间距：4px/8px
+- 常规间距：16px/24px
+- 宽松间距：32px/48px
+
+```tsx
+// 使用Space组件控制间距
+<Space size={16}>
+  <Button>按钮1</Button>
+  <Button>按钮2</Button>
+</Space>
+
+// 使用margin/padding样式
+<div style={{ padding: 16, margin: 8 }}>
+  {/* 内容 */}
+</div>
+```
+
+## 常见UI模式
+
+### 数据表格
+使用Ant Design的Table组件展示数据列表：
+- 定义columns配置表格列
+- 实现分页、排序和筛选
+- 添加操作列进行数据操作
+
+```tsx
+const columns = [
+  {
+    title: '姓名',
+    dataIndex: 'name',
+    sorter: true,
+  },
+  {
+    title: '年龄',
+    dataIndex: 'age',
+    sorter: (a, b) => a.age - b.age,
+  },
+  {
+    title: '操作',
+    key: 'action',
+    render: (_, record) => (
+      <Space size="small">
+        <Button onClick={() => onEdit(record)}>编辑</Button>
+        <Button onClick={() => onDelete(record)}>删除</Button>
+      </Space>
+    ),
+  },
+];
+
+<Table
+  columns={columns}
+  dataSource={data}
+  rowKey="id"
+  pagination={{
+    current: currentPage,
+    pageSize,
+    total,
+    onChange: handlePageChange,
+  }}
+  loading={loading}
+/>
+```
+
+### 状态展示
+使用Tag组件展示状态信息：
+- 使用不同颜色区分不同状态
+- 保持视觉一致性
+
+```tsx
+const getStatusTag = (status) => {
+  switch (status) {
+    case 'STUDYING':
+      return <Tag color="green">在学</Tag>;
+    case 'GRADUATED':
+      return <Tag color="red">已结业</Tag>;
+    case 'EXPIRED':
+      return <Tag color="red">已过期</Tag>;
+    default:
+      return <Tag>未知</Tag>;
+  }
+};
+
+// 在渲染中使用
+{getStatusTag(record.status)}
+```
+
+### 表单布局
+常见表单布局模式：
+- 单列表单：适用于简单表单
+- 双列表单：适用于信息较多的表单
+- 分组表单：适用于复杂表单
+
+```tsx
+// 双列表单布局
+<Form layout="vertical">
+  <Row gutter={16}>
+    <Col span={12}>
+      <Form.Item name="name" label="姓名">
+        <Input />
+      </Form.Item>
+    </Col>
+    <Col span={12}>
+      <Form.Item name="age" label="年龄">
+        <InputNumber />
+      </Form.Item>
+    </Col>
+  </Row>
+  <Row gutter={16}>
+    <Col span={12}>
+      <Form.Item name="gender" label="性别">
+        <Select>
+          <Option value="male">男</Option>
+          <Option value="female">女</Option>
+        </Select>
+      </Form.Item>
+    </Col>
+    <Col span={12}>
+      <Form.Item name="phone" label="手机号">
+        <Input />
+      </Form.Item>
+    </Col>
+  </Row>
+</Form>
+```
+
+## 交互规范
+
+### 加载状态
+- 页面加载：使用Spin组件覆盖整个内容区域
+- 局部加载：使用Spin组件覆盖特定区域
+- 按钮加载：使用Button的loading属性
+
+```tsx
+// 页面加载
+<Spin spinning={loading}>
+  <div className="content">
+    {/* 页面内容 */}
+  </div>
+</Spin>
+
+// 按钮加载
+<Button loading={submitting} onClick={handleSubmit}>
+  提交
+</Button>
+```
+
+### 反馈提示
+- 操作成功：使用message.success
+- 操作失败：使用message.error
+- 操作警告：使用message.warning
+- 需要确认：使用Modal.confirm
+
+```tsx
+// 操作反馈
+const handleOperation = async () => {
+  try {
+    await api.operation();
+    message.success('操作成功');
+  } catch (error) {
+    message.error('操作失败');
+  }
+};
+
+// 确认提示
+const showDeleteConfirm = () => {
+  Modal.confirm({
+    title: '确认删除',
+    content: '确定要删除这条记录吗？',
+    okText: '确认',
+    cancelText: '取消',
+    onOk: handleDelete,
+  });
+};
+```
+
+### 禁用状态
+- 使用disabled属性禁用交互元素
+- 提供禁用原因的提示信息
+
+```tsx
+<Button
+  disabled={!hasPermission}
+  title={!hasPermission ? '无权限执行此操作' : ''}
+>
+  操作
+</Button>
+
+<Tooltip title={isDisabled ? '当前状态不可操作' : ''}>
+  <span>
+    <Button disabled={isDisabled}>
+      操作
+    </Button>
+  </span>
+</Tooltip>
+```
+
+## 可访问性
+
+### 键盘可访问性
+- 为交互元素设置适当的tabIndex
+- 使用键盘事件处理Enter和Space键
+- 确保焦点样式清晰可见
+
+### 屏幕阅读器支持
+- 为非文本元素提供alt文本
+- 使用aria属性提升可访问性
+- 确保表单控件有关联的label
+
+```tsx
+<img src="image.png" alt="图片描述" />
+
+<button aria-label="关闭" onClick={handleClose}>
+  <CloseIcon />
+</button>
+
+<Form.Item
+  label={<label htmlFor="name">姓名</label>}
+  name="name"
+>
+  <Input id="name" />
+</Form.Item>
+```
+
+## 响应式设计
+
+### 移动优先原则
+- 先设计移动端布局
+- 再逐步扩展到大屏幕
+- 确保关键功能在所有屏幕尺寸可用
+
+### 自适应布局
+- 使用Row和Col组件实现响应式布局
+- 使用百分比和弹性布局
+- 必要时隐藏或调整元素
+
+```tsx
+// 响应式布局示例
+<Row gutter={[16, 16]}>
+  {/* 在小屏幕上占满宽度，在大屏幕上占1/3宽度 */}
+  <Col xs={24} md={8}>
+    <Card>内容1</Card>
+  </Col>
+  <Col xs={24} md={8}>
+    <Card>内容2</Card>
+  </Col>
+  <Col xs={24} md={8}>
+    <Card>内容3</Card>
+  </Col>
+</Row>
+
+// 响应式显示/隐藏
+<div className="hidden-xs">只在大屏幕显示</div>
+<div className="hidden-md">只在小屏幕显示</div>
+```
+
+## 最佳实践
+
+### 样式封装
+- 使用组件封装特定样式
+- 避免内联样式泛滥
+- 保持样式一致性
+
+```tsx
+// 自定义样式组件
+const StatusTag = ({ status }) => {
+  const getColor = () => {
+    switch (status) {
+      case 'STUDYING': return 'green';
+      case 'GRADUATED': return 'red';
+      case 'EXPIRED': return 'red';
+      default: return 'default';
+    }
+  };
+  
+  const getText = () => {
+    switch (status) {
+      case 'STUDYING': return '在学';
+      case 'GRADUATED': return '已结业';
+      case 'EXPIRED': return '已过期';
+      default: return '未知';
+    }
+  };
+  
+  return <Tag color={getColor()}>{getText()}</Tag>;
+};
+
+// 使用
+<StatusTag status={record.status} />
+```
+
+### 主题定制
+- 使用Ant Design的主题定制功能
+- 保持系统视觉一致性
+- 确保足够的颜色对比度
+
+### 性能优化
+- 避免不必要的重渲染
+- 延迟加载不可见内容
+- 压缩静态资源

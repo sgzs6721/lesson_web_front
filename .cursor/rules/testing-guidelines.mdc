@@ -1,0 +1,703 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 测试规范与最佳实践
+
+## 测试类型
+
+本项目采用多层次的测试策略，包括以下类型的测试：
+
+### 单元测试
+- 测试独立的函数、Hook和小型组件
+- 关注逻辑正确性和边界条件
+- 使用Jest和React Testing Library
+
+### 集成测试
+- 测试多个组件的协同工作
+- 关注组件之间的交互和数据流
+- 使用Jest和React Testing Library
+
+### 端到端测试
+- 测试完整的用户流程
+- 关注实际用户体验和业务流程
+- 使用Cypress或Playwright
+
+## 测试目录结构
+
+测试文件应该与被测试的源文件保持相似的目录结构，遵循以下规则：
+
+```
+/src
+  /components
+    /Button
+      Button.tsx
+      Button.test.tsx
+  /utils
+    formatDate.ts
+    formatDate.test.ts
+  /hooks
+    useDataForm.ts
+    useDataForm.test.ts
+```
+
+对于更复杂的测试，可以创建专门的测试目录：
+
+```
+/tests
+  /unit        # 单元测试
+  /integration # 集成测试
+  /e2e         # 端到端测试
+  /mocks       # 测试模拟数据
+  /fixtures    # 测试固定数据
+  /utils       # 测试工具函数
+```
+
+## 单元测试规范
+
+### 测试文件命名
+- 使用`.test.ts`或`.test.tsx`后缀
+- 文件名应与被测试的源文件名匹配
+
+### 测试套件组织
+使用Jest的`describe`和`it`/`test`函数组织测试套件：
+
+```typescript
+// formatDate.test.ts
+import { formatDate } from './formatDate';
+
+describe('formatDate', () => {
+  it('formats date with default format', () => {
+    const date = new Date('2023-01-01');
+    expect(formatDate(date)).toBe('2023-01-01');
+  });
+
+  it('formats date with custom format', () => {
+    const date = new Date('2023-01-01');
+    expect(formatDate(date, 'YYYY/MM/DD')).toBe('2023/01/01');
+  });
+
+  it('handles null input', () => {
+    expect(formatDate(null)).toBe('');
+  });
+});
+```
+
+### 测试命名约定
+- 使用描述性的测试名称
+- 测试名称应描述预期行为，而不是实现细节
+- 遵循"given-when-then"模式
+
+```typescript
+// Good: 描述预期行为
+it('returns empty string when input is null', () => {});
+
+// Bad: 专注于实现细节
+it('calls isNull and returns empty string', () => {});
+```
+
+### 测试覆盖率目标
+- 工具函数：90%+行覆盖率
+- 自定义Hook：80%+行覆盖率
+- UI组件：70%+行覆盖率
+- 关键业务逻辑：90%+行覆盖率
+
+## React组件测试规范
+
+### 组件测试策略
+- 测试组件渲染输出而不是实现细节
+- 测试用户交互和行为
+- 模拟必要的依赖和上下文
+
+### 使用React Testing Library
+遵循React Testing Library的指导原则：
+
+```typescript
+// Button.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import Button from './Button';
+
+describe('Button', () => {
+  it('renders with correct text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('calls onClick when clicked', () => {
+    const handleClick = jest.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    fireEvent.click(screen.getByText('Click me'));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('is disabled when disabled prop is true', () => {
+    render(<Button disabled>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeDisabled();
+  });
+});
+```
+
+### 测试选择器优先级
+按照以下优先级使用测试选择器：
+1. `getByRole` - 最接近用户体验
+2. `getByLabelText` - 表单元素
+3. `getByPlaceholderText` - 输入框
+4. `getByText` - 文本内容
+5. `getByDisplayValue` - 表单当前值
+6. `getByAltText` - 图片
+7. `getByTitle` - 标题属性
+8. `getByTestId` - 最后手段，使用`data-testid`属性
+
+### 模拟用户交互
+使用`@testing-library/user-event`模拟真实用户交互：
+
+```typescript
+import userEvent from '@testing-library/user-event';
+
+it('updates input value when user types', async () => {
+  render(<SearchInput onSearch={mockSearch} />);
+  const input = screen.getByRole('textbox');
+  
+  await userEvent.type(input, 'test query');
+  expect(input).toHaveValue('test query');
+});
+```
+
+## Hook测试规范
+
+### 使用renderHook
+使用`@testing-library/react-hooks`的`renderHook`函数测试自定义Hook：
+
+```typescript
+import { renderHook, act } from '@testing-library/react-hooks';
+import useCounter from './useCounter';
+
+describe('useCounter', () => {
+  it('initializes with default value', () => {
+    const { result } = renderHook(() => useCounter());
+    expect(result.current.count).toBe(0);
+  });
+
+  it('initializes with custom value', () => {
+    const { result } = renderHook(() => useCounter(10));
+    expect(result.current.count).toBe(10);
+  });
+
+  it('increments counter', () => {
+    const { result } = renderHook(() => useCounter());
+    
+    act(() => {
+      result.current.increment();
+    });
+    
+    expect(result.current.count).toBe(1);
+  });
+});
+```
+
+### 测试异步Hook
+对于包含异步逻辑的Hook，使用`waitFor`或`waitForNextUpdate`：
+
+```typescript
+import { renderHook, act } from '@testing-library/react-hooks';
+import { waitFor } from '@testing-library/react';
+import useDataFetch from './useDataFetch';
+
+// 模拟API
+jest.mock('../../api/getData', () => ({
+  getData: jest.fn(() => Promise.resolve({ data: 'test data' }))
+}));
+
+describe('useDataFetch', () => {
+  it('fetches and updates data', async () => {
+    const { result } = renderHook(() => useDataFetch());
+    
+    // 初始状态
+    expect(result.current.loading).toBe(true);
+    expect(result.current.data).toBe(null);
+    
+    // 等待异步操作完成
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+    
+    // 检查最终状态
+    expect(result.current.data).toBe('test data');
+    expect(result.current.error).toBe(null);
+  });
+});
+```
+
+## API模拟
+
+### 使用Jest模拟API调用
+使用Jest的模拟功能模拟API调用：
+
+```typescript
+// 模拟整个模块
+jest.mock('../../api/student', () => ({
+  getStudentList: jest.fn(),
+  createStudent: jest.fn(),
+  updateStudent: jest.fn(),
+}));
+
+import { getStudentList, createStudent } from '../../api/student';
+
+beforeEach(() => {
+  // 重置模拟函数
+  jest.clearAllMocks();
+});
+
+it('fetches student list', async () => {
+  // 设置模拟返回值
+  getStudentList.mockResolvedValue({
+    list: [{ id: '1', name: 'Test Student' }],
+    total: 1,
+  });
+  
+  // 测试代码
+  const result = await getStudentList({ pageNum: 1, pageSize: 10 });
+  
+  // 验证结果
+  expect(result.list).toHaveLength(1);
+  expect(result.list[0].name).toBe('Test Student');
+  
+  // 验证调用参数
+  expect(getStudentList).toHaveBeenCalledWith({
+    pageNum: 1,
+    pageSize: 10,
+  });
+});
+```
+
+### 使用MSW模拟HTTP请求
+对于更复杂的场景，使用MSW（Mock Service Worker）模拟HTTP请求：
+
+```typescript
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+
+// 设置模拟服务器
+const server = setupServer(
+  rest.get('/api/students', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        list: [{ id: '1', name: 'Test Student' }],
+        total: 1,
+      })
+    );
+  }),
+  
+  rest.post('/api/students', (req, res, ctx) => {
+    return res(
+      ctx.status(201),
+      ctx.json({ id: '2', ...req.body })
+    );
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+it('fetches students from API', async () => {
+  // 测试代码
+});
+```
+
+## 集成测试规范
+
+### 组件集成测试
+测试多个组件的协同工作：
+
+```typescript
+describe('StudentManagement integration', () => {
+  it('displays student list and allows adding new student', async () => {
+    // 模拟API响应
+    getStudentList.mockResolvedValue({
+      list: [{ id: '1', name: 'Existing Student' }],
+      total: 1,
+    });
+    
+    createStudent.mockResolvedValue({
+      id: '2',
+      name: 'New Student',
+    });
+    
+    // 渲染组件
+    render(<StudentManagement />);
+    
+    // 验证学员列表加载
+    expect(await screen.findByText('Existing Student')).toBeInTheDocument();
+    
+    // 点击添加按钮
+    userEvent.click(screen.getByText('添加学员'));
+    
+    // 填写表单
+    userEvent.type(screen.getByLabelText('姓名'), 'New Student');
+    userEvent.click(screen.getByText('提交'));
+    
+    // 验证API调用
+    expect(createStudent).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'New Student' })
+    );
+    
+    // 验证刷新学员列表
+    expect(getStudentList).toHaveBeenCalledTimes(2);
+  });
+});
+```
+
+### 路由集成测试
+测试路由和页面导航：
+
+```typescript
+import { MemoryRouter } from 'react-router-dom';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import App from './App';
+
+it('navigates between pages', async () => {
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <App />
+    </MemoryRouter>
+  );
+  
+  // 验证初始页面
+  expect(screen.getByText('首页')).toBeInTheDocument();
+  
+  // 点击导航链接
+  userEvent.click(screen.getByText('学员管理'));
+  
+  // 验证导航到学员管理页面
+  expect(await screen.findByText('学员列表')).toBeInTheDocument();
+});
+```
+
+## 端到端测试规范
+
+### 使用Cypress测试关键流程
+为关键业务流程编写端到端测试：
+
+```javascript
+// cypress/integration/student_management.spec.js
+describe('Student Management', () => {
+  beforeEach(() => {
+    // 访问页面
+    cy.visit('/students');
+    
+    // 登录（如果需要）
+    cy.get('input[name="username"]').type('admin');
+    cy.get('input[name="password"]').type('password');
+    cy.get('button[type="submit"]').click();
+  });
+
+  it('allows adding a new student', () => {
+    // 点击添加按钮
+    cy.contains('添加学员').click();
+    
+    // 填写表单
+    cy.get('input[name="name"]').type('New Student');
+    cy.get('select[name="gender"]').select('男');
+    cy.get('input[name="phone"]').type('13800138000');
+    
+    // 提交表单
+    cy.contains('提交').click();
+    
+    // 验证成功消息
+    cy.contains('添加成功').should('be.visible');
+    
+    // 验证学员列表更新
+    cy.contains('New Student').should('be.visible');
+  });
+
+  it('allows editing an existing student', () => {
+    // 找到学员行
+    cy.contains('tr', 'Existing Student')
+      .find('button')
+      .contains('编辑')
+      .click();
+    
+    // 修改表单
+    cy.get('input[name="name"]').clear().type('Updated Student');
+    
+    // 提交表单
+    cy.contains('提交').click();
+    
+    // 验证成功消息
+    cy.contains('更新成功').should('be.visible');
+    
+    // 验证学员列表更新
+    cy.contains('Updated Student').should('be.visible');
+  });
+});
+```
+
+### 测试关键业务流程
+确保测试覆盖以下关键业务流程：
+
+1. 用户登录和认证
+2. 学员管理（添加、编辑、删除）
+3. 学员报名和缴费
+4. 学员退费流程
+5. 学员转课流程
+
+## 测试数据管理
+
+### 测试固定数据
+将测试数据保存在`/tests/fixtures`目录中：
+
+```typescript
+// /tests/fixtures/students.ts
+export const students = [
+  {
+    id: '1',
+    name: 'Student 1',
+    gender: 'MALE',
+    phone: '13800138001',
+    status: 'STUDYING',
+    // 其他属性
+  },
+  {
+    id: '2',
+    name: 'Student 2',
+    gender: 'FEMALE',
+    phone: '13800138002',
+    status: 'GRADUATED',
+    // 其他属性
+  },
+];
+
+// 在测试中使用
+import { students } from '../../fixtures/students';
+
+it('renders student list', () => {
+  render(<StudentTable students={students} />);
+  // 测试内容
+});
+```
+
+### 测试数据生成
+使用函数生成测试数据：
+
+```typescript
+// /tests/utils/generateTestData.ts
+export function generateStudent(overrides = {}) {
+  return {
+    id: `student-${Math.floor(Math.random() * 1000)}`,
+    name: `Test Student ${Math.floor(Math.random() * 100)}`,
+    gender: Math.random() > 0.5 ? 'MALE' : 'FEMALE',
+    phone: `138${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
+    status: 'STUDYING',
+    // 其他默认属性
+    ...overrides,
+  };
+}
+
+export function generateStudentList(count = 10) {
+  return Array.from({ length: count }, (_, i) => 
+    generateStudent({ id: `student-${i + 1}` })
+  );
+}
+
+// 在测试中使用
+import { generateStudent, generateStudentList } from '../../utils/generateTestData';
+
+it('handles pagination correctly', () => {
+  const students = generateStudentList(20);
+  render(<StudentTable students={students} />);
+  // 测试内容
+});
+```
+
+## 测试工具和辅助函数
+
+### 自定义渲染函数
+创建包含通用提供者的自定义渲染函数：
+
+```typescript
+// /tests/utils/testUtils.tsx
+import { render, RenderOptions } from '@testing-library/react';
+import { ReactElement } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/lib/locale/zh_CN';
+import { store } from '../../src/redux/store';
+
+const AllProviders = ({ children }) => {
+  return (
+    <Provider store={store}>
+      <BrowserRouter>
+        <ConfigProvider locale={zhCN}>
+          {children}
+        </ConfigProvider>
+      </BrowserRouter>
+    </Provider>
+  );
+};
+
+const customRender = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>
+) => render(ui, { wrapper: AllProviders, ...options });
+
+// 导出所有testing-library工具
+export * from '@testing-library/react';
+
+// 覆盖render方法
+export { customRender as render };
+```
+
+### 自定义Matcher
+创建自定义的Jest匹配器：
+
+```typescript
+// /tests/utils/customMatchers.ts
+import { expect } from '@jest/globals';
+
+// 添加自定义匹配器
+expect.extend({
+  toBeValidStudent(received) {
+    const isValid = 
+      received &&
+      typeof received.id === 'string' &&
+      typeof received.name === 'string' &&
+      ['MALE', 'FEMALE'].includes(received.gender);
+    
+    return {
+      pass: isValid,
+      message: () => `Expected ${received} to be a valid student object`,
+    };
+  },
+});
+
+// 在测试中使用
+import '../utils/customMatchers';
+
+it('creates a valid student', () => {
+  const student = createStudent({ name: 'Test' });
+  expect(student).toBeValidStudent();
+});
+```
+
+## 测试自动化和CI集成
+
+### Jest配置
+创建合适的Jest配置：
+
+```javascript
+// jest.config.js
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  testMatch: [
+    '**/__tests__/**/*.ts?(x)',
+    '**/?(*.)+(spec|test).ts?(x)',
+  ],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/index.tsx',
+    '!src/serviceWorker.ts',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+  },
+};
+```
+
+### CI流程集成
+在CI流程中集成测试：
+
+```yaml
+# .github/workflows/test.yml
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linter
+      run: npm run lint
+      
+    - name: Run tests
+      run: npm test -- --coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+```
+
+## 测试最佳实践
+
+### 测试原则
+1. **测试行为而非实现** - 关注组件做什么，而不是如何做
+2. **避免测试实现细节** - 不要测试私有方法或内部状态
+3. **保持测试简单** - 每个测试只测试一个功能点
+4. **使用真实场景** - 测试应反映实际使用场景
+5. **确保测试独立** - 每个测试应独立运行，不依赖其他测试
+
+### 常见错误模式
+避免以下常见错误：
+
+1. **浅渲染过度使用** - 优先使用完整渲染测试真实行为
+2. **测试库内部实现** - 不要测试第三方库的功能
+3. **忽略异步行为** - 确保正确处理异步操作
+4. **过度模拟** - 只模拟必要的依赖
+5. **snapshot测试滥用** - 谨慎使用snapshot，优先使用明确的断言
+
+### 代码覆盖率报告
+定期运行覆盖率报告并分析结果：
+
+```bash
+npm test -- --coverage
+```
+
+### 测试驱动开发
+尝试采用测试驱动开发（TDD）流程：
+
+1. 编写失败的测试
+2. 实现最小功能使测试通过
+3. 重构代码保持测试通过
+
+### 持续集成
+确保测试在每次提交和合并请求时运行
+
+### 测试文档
+在README或专门的测试文档中记录：
+
+- 测试策略和方法
+- 测试环境设置
+- 运行测试的命令
+- 测试覆盖率目标
+- 测试数据管理
