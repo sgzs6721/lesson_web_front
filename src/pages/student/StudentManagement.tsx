@@ -97,6 +97,11 @@ const StudentManagement: React.FC = () => {
   const [loadingCourses, setLoadingCourses] = useState(false);
   // 添加统计数据加载状态
   const [loadingStats, setLoadingStats] = useState(true);
+  // 添加不同状态的学员数量统计
+  const [studyingStudents, setStudyingStudents] = useState(0);
+  const [graduatedStudents, setGraduatedStudents] = useState(0);
+  const [expiredStudents, setExpiredStudents] = useState(0);
+  const [refundedStudents, setRefundedStudents] = useState(0);
 
   // --- Pass student.createWithCourse as the API function ---
   // 使用类型断言解决类型不兼容问题
@@ -185,6 +190,34 @@ const StudentManagement: React.FC = () => {
         // 更新状态
         setCourseList(courseData);
         console.log("初始化数据加载完成: 课程数量=", courseData.length, "学员数量=", studentData?.length || 0);
+        
+        // 计算不同状态的学员数量
+        if (studentData && Array.isArray(studentData)) {
+          const studying = studentData.filter(s => {
+            const status = String(s.status).toUpperCase();
+            return status === 'NORMAL' || status === 'STUDYING';
+          }).length;
+          
+          const graduated = studentData.filter(s => {
+            const status = String(s.status).toUpperCase();
+            return status === 'GRADUATED';
+          }).length;
+          
+          const expired = studentData.filter(s => {
+            const status = String(s.status).toUpperCase();
+            return status === 'EXPIRED';
+          }).length;
+          
+          const refunded = studentData.filter(s => {
+            const status = String(s.status).toUpperCase();
+            return status === 'REFUNDED';
+          }).length;
+          
+          setStudyingStudents(studying);
+          setGraduatedStudents(graduated);
+          setExpiredStudents(expired);
+          setRefundedStudents(refunded);
+        }
       } catch (error) {
         console.error("加载初始数据失败:", error);
         message.error("加载数据失败");
@@ -425,90 +458,178 @@ const StudentManagement: React.FC = () => {
               <Title level={4} className="student-title" style={{ marginRight: '24px', marginBottom: 0 }}>学员管理</Title>
               
               <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  padding: '4px 12px', 
-                  backgroundColor: 'rgba(24, 144, 255, 0.1)', 
-                  borderRadius: '8px', 
-                  borderLeft: '4px solid #1890ff',
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
-                  height: '32px',
+                {/* 学员统计长标签 - 红色方框主体 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'stretch',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                  overflow: 'hidden',
+                  border: '1px solid #e8e8e8',
+                  height: '36px',
                 }}>
+                  {/* 学员标签 */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: '#2474d9',
+                    color: 'white',
+                    width: '56px',
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                  }}>
+                    学员
+                  </div>
+                
+                  {/* 学员总数 */}
                   <div style={{ 
                     display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center',
-                    width: '24px', 
-                    height: '24px', 
-                    borderRadius: '50%', 
-                    backgroundColor: '#f0f5ff',
-                    marginRight: '8px',
-                    color: '#1890ff',
-                    fontSize: '14px'
+                    alignItems: 'center', 
+                    padding: '0 16px',
+                    borderRight: '1px solid #f0f0f0',
                   }}>
-                    <UserOutlined />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '8px' }}>
-                      学员总数
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                    }}>
+                      <UserOutlined style={{ color: '#2474d9', marginRight: '8px' }} />
+                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
+                        学员总数
+                      </span>
+                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#2474d9' }}>
+                        {loadingStats ? <Spin size="small" /> : df.data.totalStudents}
+                      </span>
                     </div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1890ff', minWidth: '40px', textAlign: 'right', position: 'relative' }}>
-                      {loadingStats ? (
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'center', 
-                          alignItems: 'center',
-                          width: '100%',
-                          height: '100%'
-                        }}>
-                          <Spin size="small" />
-                        </div>
-                      ) : df.data.totalStudents}
+                  </div>
+                  
+                  {/* 在学学员 */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    padding: '0 16px',
+                    borderRight: '1px solid #f0f0f0',
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                    }}>
+                      <UserOutlined style={{ color: '#52c41a', marginRight: '8px' }} />
+                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
+                        在学学员
+                      </span>
+                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#52c41a' }}>
+                        {loadingStats ? <Spin size="small" /> : studyingStudents}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* 结业学员 */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    padding: '0 16px',
+                    borderRight: '1px solid #f0f0f0',
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                    }}>
+                      <UserOutlined style={{ color: '#f56c6c', marginRight: '8px' }} />
+                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
+                        结业学员
+                      </span>
+                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#f56c6c' }}>
+                        {loadingStats ? <Spin size="small" /> : graduatedStudents}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* 过期学员 */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    padding: '0 16px',
+                    borderRight: '1px solid #f0f0f0',
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                    }}>
+                      <UserOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
+                        过期学员
+                      </span>
+                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#faad14' }}>
+                        {loadingStats ? <Spin size="small" /> : expiredStudents}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* 退费学员 */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    padding: '0 16px',
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                    }}>
+                      <UserOutlined style={{ color: '#9254de', marginRight: '8px' }} />
+                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
+                        退费学员
+                      </span>
+                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#9254de' }}>
+                        {loadingStats ? <Spin size="small" /> : refundedStudents}
+                      </span>
                     </div>
                   </div>
                 </div>
                 
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  padding: '4px 12px', 
-                  backgroundColor: 'rgba(82, 196, 26, 0.1)', 
-                  borderRadius: '8px', 
-                  borderLeft: '4px solid #52c41a',
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
-                  height: '32px',
+                {/* 课程总数 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'stretch',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                  overflow: 'hidden',
+                  border: '1px solid #e8e8e8',
+                  height: '36px',
                 }}>
+                  {/* 课程标签 */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: '#52c41a',
+                    color: 'white',
+                    width: '56px',
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                  }}>
+                    课程
+                  </div>
+                
+                  {/* 课程总数 */}
                   <div style={{ 
                     display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center',
-                    width: '24px', 
-                    height: '24px', 
-                    borderRadius: '50%', 
-                    backgroundColor: '#f6ffed',
-                    marginRight: '8px',
-                    color: '#52c41a',
-                    fontSize: '14px'
+                    alignItems: 'center', 
+                    padding: '0 16px',
                   }}>
-                    <ReadOutlined />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '8px' }}>
-                      课程总数
-                    </div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a', minWidth: '40px', textAlign: 'right', position: 'relative' }}>
-                      {loadingCourses ? (
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'center', 
-                          alignItems: 'center',
-                          width: '100%',
-                          height: '100%'
-                        }}>
-                          <Spin size="small" />
-                        </div>
-                      ) : courseList.length}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                    }}>
+                      <ReadOutlined style={{ color: '#52c41a', marginRight: '8px' }} />
+                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
+                        课程总数
+                      </span>
+                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#52c41a' }}>
+                        {loadingCourses ? <Spin size="small" /> : courseList.length}
+                      </span>
                     </div>
                   </div>
                 </div>
