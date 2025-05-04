@@ -112,6 +112,9 @@ export interface CourseGroup {
   enrollDate: string;
   expireDate: string;
   scheduleTimes: ScheduleTime[];
+  // 新增字段
+  originalCourseName?: string; // 原始课程名称，用于API调用
+  originalCoachName?: string;  // 原始教练名称，用于API调用
 }
 
 // 新增课程信息接口 (基于API响应 - 根据截图更新)

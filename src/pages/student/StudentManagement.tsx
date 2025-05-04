@@ -219,12 +219,47 @@ const StudentManagement: React.FC = () => {
 
   // 监听学员创建事件，直接将新学员添加到列表开头
   useEffect(() => {
+    // 学员创建事件处理器
     const handleStudentCreated = (event: CustomEvent) => {
-      console.log('Student created event detected, adding to list:', event.detail?.student);
-
-      if (event.detail?.student) {
-        // 直接将新学员添加到列表开头，而不是重新调用 API
+      console.log('学员创建事件触发，正在处理...');
+      
+      try {
+        if (!event.detail || !event.detail.student) {
+          console.warn('学员创建事件缺少学员数据');
+          return;
+        }
+        
+        // 确保学员数据满足最低要求
+        const newStudent = event.detail.student;
+        if (!newStudent.id) {
+          console.warn('新创建的学员缺少ID，无法添加到列表');
+          return;
+        }
+        
+        console.log('新创建的学员数据:', newStudent);
+        
+        // 检查是否已存在相同ID的学员，避免重复添加
+        const existingStudent = df.data.students.find(
+          s => s.id === newStudent.id || s.studentId === newStudent.studentId
+        );
+        
+        if (existingStudent) {
+          console.log('学员已存在，跳过添加:', existingStudent);
+          return;
+        }
+        
+        console.log('添加新学员到列表...');
+        // 添加学员到列表的第一位
         df.data.addNewStudentToList(event.detail.student);
+        
+        // 如果在搜索状态下，考虑清除搜索状态并显示所有学员
+        if (df.search.params.searchText || df.search.params.selectedStatus) {
+          console.log('检测到处于搜索状态，清除搜索参数以显示新添加的学员');
+          df.search.handleReset();
+        }
+      } catch (error) {
+        console.error('处理学员创建事件失败:', error);
+        message.error('无法显示新添加的学员，请刷新页面');
       }
     };
 
@@ -235,7 +270,7 @@ const StudentManagement: React.FC = () => {
     return () => {
       window.removeEventListener('studentCreated', handleStudentCreated as EventListener);
     };
-  }, []);
+  }, [df.data, df.search]);
 
   // 在组件内部创建防抖版本的分页处理函数
   const debouncedHandlePagination = useCallback((page: number, pageSize?: number) => {

@@ -347,6 +347,9 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     const courseId = String(selectedCourse.id);
                     console.log('使用课程ID:', courseId);
 
+                    // 保存完整课程对象到控制台，便于调试
+                    console.log('课程完整信息:', selectedCourse);
+
                     // Provide default empty string if typeName is missing
                     const courseType = selectedCourse.typeName || '';
                     // Provide default or handle missing coaches gracefully
@@ -357,7 +360,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateCourseGroup(index, 'courses', [courseId]);
                     updateCourseGroup(index, 'courseType', courseType);
                     updateCourseGroup(index, 'coach', coachName);
-
+                    // 保存原始课程名称，用于后续API调用
+                    updateCourseGroup(index, 'originalCourseName', selectedCourse.name);
+                    // 保存原始教练名称，如果有的话
+                    if (selectedCourse.coaches && selectedCourse.coaches.length > 0) {
+                      updateCourseGroup(index, 'originalCoachName', selectedCourse.coaches[0].name);
+                    }
 
                   } else {
                     // Clear fields if no course is selected or found
@@ -686,6 +694,9 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     const courseId = String(selectedCourse.id);
                     console.log('使用课程ID:', courseId);
 
+                    // 保存完整课程对象到控制台，便于调试
+                    console.log('课程完整信息:', selectedCourse);
+
                     // Provide default empty string if typeName is missing
                     const courseType = selectedCourse.typeName || '';
                     // Provide default or handle missing coaches gracefully
@@ -693,11 +704,16 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                                       ? selectedCourse.coaches[0].name
                                       : '无'; // Or handle as needed, e.g., ''
 
+                    // 更新临时课程组数据
                     updateTempCourseGroup('courses', [courseId]);
                     updateTempCourseGroup('courseType', courseType);
                     updateTempCourseGroup('coach', coachName);
-
-
+                    // 保存原始课程名称，用于后续API调用
+                    updateTempCourseGroup('originalCourseName', selectedCourse.name);
+                    // 保存原始教练名称，如果有的话
+                    if (selectedCourse.coaches && selectedCourse.coaches.length > 0) {
+                      updateTempCourseGroup('originalCoachName', selectedCourse.coaches[0].name);
+                    }
                   } else {
                      // Clear fields if no course is selected or found
                     updateTempCourseGroup('courses', selectedCourseId ? [selectedCourseId] : []);

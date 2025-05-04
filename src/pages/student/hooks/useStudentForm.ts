@@ -335,8 +335,20 @@ export const useStudentForm = (
           }));
         }
 
+        // 找到对应的课程对象，以保留更多信息
+        const courseObj = group.courses && group.courses.length > 0 
+          ? courseList.find(c => String(c.id) === String(group.courses[0]))
+          : null;
+
         return {
           courseId: safeProcessCourseId(group.courses[0]),
+          // 保留课程名称、类型和教练信息，方便API处理
+          courseName: courseObj?.name || '',
+          courseTypeName: courseObj?.typeName || group.courseType || '',
+          coachName: group.coach || '',
+          // 记录原始数据，避免信息丢失
+          originalCourseName: courseObj?.name || '',
+          originalCoachName: courseObj?.coaches && courseObj.coaches.length > 0 ? courseObj.coaches[0].name : '',
           status: mapStatusToApi(group.status),
           enrollDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
           fixedSchedule: JSON.stringify(scheduleData) // 将排课时间转换为JSON字符串
@@ -350,8 +362,12 @@ export const useStudentForm = (
         await onUpdateStudent(editingStudent.id, { ...studentInfo, id: editingStudent.id, courseInfoList });
         message.success('学员信息更新成功');
       } else {
-        await onAddStudent({ studentInfo, courseInfoList });
+        // 创建学员 - API层会自动触发学员创建事件，这里不需要重复触发
+        const newStudent = await onAddStudent({ studentInfo, courseInfoList });
         message.success('学员添加成功');
+        
+        // 删除重复的事件触发代码，只依赖API层的触发
+        console.log('学员创建成功，等待API层触发事件:', newStudent);
       }
 
       setVisible(false);

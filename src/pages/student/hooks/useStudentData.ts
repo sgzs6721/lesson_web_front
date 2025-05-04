@@ -356,9 +356,27 @@ export const useStudentData = () => {
     try {
       console.log('添加新学员到列表:', newStudent);
 
-      // 确保教练信息存在
-      if (!newStudent.coach) {
-        console.warn('新学员缺少教练信息，尝试从课程中获取');
+      // 确保学生对象有效性
+      if (!newStudent || typeof newStudent !== 'object') {
+        console.error('无效的学员数据:', newStudent);
+        return;
+      }
+
+      // 确保必要字段存在
+      if (!newStudent.id) {
+        console.error('新学员缺少ID字段:', newStudent);
+        return;
+      }
+
+      // 检查学员是否已存在于列表中
+      const exists = students.some(s => 
+        s.id === newStudent.id || 
+        (s.studentId && s.studentId === newStudent.studentId)
+      );
+
+      if (exists) {
+        console.log('该学员已存在于列表中，不重复添加:', newStudent.id);
+        return;
       }
 
       // 无论当前在哪一页，都将新学员添加到列表开头
@@ -369,8 +387,11 @@ export const useStudentData = () => {
 
       // 如果当前不在第一页，则自动跳转到第一页
       if (currentPage !== 1) {
+        console.log('添加新学员后自动跳转到第一页');
         setCurrentPage(1);
       }
+
+      console.log('新学员成功添加到列表:', newStudent.name);
     } catch (error) {
       console.error('添加学员到列表失败:', error);
       message.error('添加学员到列表失败');
@@ -464,7 +485,7 @@ export const useStudentData = () => {
     resetData,
     handlePageChange,
     fetchStudents,
-    addNewStudentToList, // 新增方法
-    updateStudentAttendanceLocally // 新增方法
+    addNewStudentToList,
+    updateStudentAttendanceLocally
   };
 };
