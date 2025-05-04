@@ -1,23 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Card, Typography, Row, Col, Button, ConfigProvider, Statistic, Space, Form, message, Spin, Tooltip, Input, Select, DatePicker, Table, Tag, Modal } from 'antd';
-import { PlusOutlined, ExportOutlined, UserOutlined, ReadOutlined, SyncOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, ConfigProvider, Form, message, Spin } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import StudentSearchBar from './components/StudentSearchBar';
-import StudentTable from './components/StudentTable';
-import StudentFormModal from './components/StudentFormModal';
-import StudentDeleteModal from './components/StudentDeleteModal';
-import ClassRecordModal from './components/ClassRecordModal';
-import ScheduleModal from './components/ScheduleModal';
-import PaymentModal from './components/PaymentModal';
-import RefundModal from './components/RefundModal';
-import TransferModal from './components/TransferModal';
-import TransferClassModal from './components/TransferClassModal';
-import AttendanceModal from './components/AttendanceModal';
-import QuickAddStudentModal from './components/QuickAddStudentModal';
-import StudentDetailsModal from './components/StudentDetailsModal';
+import StudentHeader from './components/StudentHeader';
+import StudentContent from './components/StudentContent';
+import StudentModals from './components/StudentModals';
 import { useStudentUI } from './hooks/useStudentUI';
 import { useDataForm } from './hooks/useDataForm';
-import { getStudentAllCourses } from './utils/student';
 import { Student as ApiStudent } from '@/api/student/types';
 import { Student as UiStudent } from '@/pages/student/types/student';
 import { SimpleCourse } from '@/api/course/types';
@@ -28,8 +16,6 @@ import 'dayjs/locale/zh-cn';
 import './student.css';
 import './components/StudentManagement.css';
 import './index.css'; // 引入全局样式
-
-const { Title, Text } = Typography;
 
 // 设置 dayjs 使用中文
 dayjs.locale('zh-cn');
@@ -382,280 +368,34 @@ const StudentManagement: React.FC = () => {
     setCurrentStudentId(null);
   };
 
-  // 添加更多本地样式
-  const statCardsStyle = {
-    display: 'flex',
-    gap: '16px',
-    marginLeft: '24px',
-  };
-
-  const statCardStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '12px 16px',
-    backgroundColor: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-    transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)',
-  };
-
-  const studentCountStyle = {
-    ...statCardStyle,
-    borderLeft: '4px solid #1890ff',
-  };
-
-  const courseCountStyle = {
-    ...statCardStyle,
-    borderLeft: '4px solid #52c41a',
-  };
-
-  const statIconStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    fontSize: '20px',
-    marginRight: '12px',
-  };
-
-  const studentIconStyle = {
-    ...statIconStyle,
-    backgroundColor: 'rgba(24, 144, 255, 0.1)',
-    color: '#1890ff',
-  };
-
-  const courseIconStyle = {
-    ...statIconStyle,
-    backgroundColor: 'rgba(82, 196, 26, 0.1)',
-    color: '#52c41a',
-  };
-
-  const statContentStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-  };
-
-  const statValueStyle = {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#000',
-    lineHeight: '1.2',
-  };
-
-  const statLabelStyle = {
-    fontSize: '14px',
-    color: 'rgba(0, 0, 0, 0.45)',
-  };
-
   return (
     <ConfigProvider locale={zhCN}>
       <div className="student-management">
         <Card className="student-management-card">
-          <div className="student-header">
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Title level={4} className="student-title" style={{ marginRight: '24px', marginBottom: 0 }}>学员管理</Title>
-              
-              <div style={{ display: 'flex', gap: '16px' }}>
-                {/* 学员统计长标签 - 红色方框主体 */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'stretch',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                  overflow: 'hidden',
-                  border: '1px solid #e8e8e8',
-                  height: '36px',
-                }}>
-                  {/* 学员标签 */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: '#2474d9',
-                    color: 'white',
-                    width: '56px',
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                  }}>
-                    学员
-                  </div>
-                
-                  {/* 学员总数 */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    padding: '0 16px',
-                    borderRight: '1px solid #f0f0f0',
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                    }}>
-                      <UserOutlined style={{ color: '#2474d9', marginRight: '8px' }} />
-                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
-                        学员总数
-                      </span>
-                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#2474d9' }}>
-                        {loadingStats ? <Spin size="small" /> : df.data.totalStudents}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* 在学学员 */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    padding: '0 16px',
-                    borderRight: '1px solid #f0f0f0',
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                    }}>
-                      <UserOutlined style={{ color: '#52c41a', marginRight: '8px' }} />
-                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
-                        在学学员
-                      </span>
-                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#52c41a' }}>
-                        {loadingStats ? <Spin size="small" /> : studyingStudents}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* 结业学员 */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    padding: '0 16px',
-                    borderRight: '1px solid #f0f0f0',
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                    }}>
-                      <UserOutlined style={{ color: '#f56c6c', marginRight: '8px' }} />
-                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
-                        结业学员
-                      </span>
-                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#f56c6c' }}>
-                        {loadingStats ? <Spin size="small" /> : graduatedStudents}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* 过期学员 */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    padding: '0 16px',
-                    borderRight: '1px solid #f0f0f0',
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                    }}>
-                      <UserOutlined style={{ color: '#faad14', marginRight: '8px' }} />
-                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
-                        过期学员
-                      </span>
-                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#faad14' }}>
-                        {loadingStats ? <Spin size="small" /> : expiredStudents}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* 退费学员 */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    padding: '0 16px',
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                    }}>
-                      <UserOutlined style={{ color: '#9254de', marginRight: '8px' }} />
-                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
-                        退费学员
-                      </span>
-                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#9254de' }}>
-                        {loadingStats ? <Spin size="small" /> : refundedStudents}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* 课程总数 */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'stretch',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                  overflow: 'hidden',
-                  border: '1px solid #e8e8e8',
-                  height: '36px',
-                }}>
-                  {/* 课程标签 */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: '#52c41a',
-                    color: 'white',
-                    width: '56px',
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                  }}>
-                    课程
-                  </div>
-                
-                  {/* 课程总数 */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    padding: '0 16px',
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                    }}>
-                      <ReadOutlined style={{ color: '#52c41a', marginRight: '8px' }} />
-                      <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)', marginRight: '6px' }}>
-                        课程总数
-                      </span>
-                      <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#52c41a' }}>
-                        {loadingCourses ? <Spin size="small" /> : courseList.length}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={df.form.showAddModal}
-              className="add-student-button"
-              style={{
-                background: 'linear-gradient(135deg, #52c41a, #1890ff)',
-                border: 'none',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-                fontWeight: 500,
-                borderRadius: '8px',
-                transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)'
-              }}
-            >
-              添加学员
-            </Button>
-          </div>
-          {/* 搜索栏 */}
-          <StudentSearchBar
-            params={df.search.params}
+          {/* 页面头部组件 */}
+          <StudentHeader
+            totalStudents={df.data.totalStudents}
+            studyingStudents={studyingStudents}
+            graduatedStudents={graduatedStudents}
+            expiredStudents={expiredStudents}
+            refundedStudents={refundedStudents}
+            courseCount={courseList.length}
+            loadingStats={loadingStats}
+            loadingCourses={loadingCourses}
+            onAddStudent={df.form.showAddModal}
+          />
+
+          {/* 页面主体内容组件 */}
+          <StudentContent
+            students={df.data.students as UiStudent[]}
+            courseList={courseList}
+            loadingCourses={loadingCourses}
+            loading={df.data.loading}
+            totalStudents={df.data.totalStudents}
+            currentPage={ui.pagination.currentPage}
+            pageSize={ui.pagination.pageSize}
+            onPageChange={handleCustomPaginationChange}
+            searchParams={df.search.params}
             onSearch={df.search.handleSearch}
             onReset={df.search.handleReset}
             onExport={() => ui.export.handleExport(df.data.students as UiStudent[])}
@@ -664,181 +404,32 @@ const StudentManagement: React.FC = () => {
             onCourseChange={df.search.setSelectedCourse}
             onMonthChange={df.search.setEnrollMonth}
             onSortOrderChange={df.search.setSortOrder}
-            courseList={courseList}
-            loadingCourses={loadingCourses}
-          />
-
-          {/* 数据表格 */}
-          <StudentTable
-            data={df.data.students as UiStudent[]}
-            loading={df.data.loading}
-            pagination={{
-              current: ui.pagination.currentPage,
-              pageSize: ui.pagination.pageSize,
-              total: df.data.totalStudents,
-              onChange: handleCustomPaginationChange, // 直接传递我们的自定义处理函数
-              showSizeChanger: false,
-              showQuickJumper: true,
-              size: 'small',
-              showTotal: (total) => `共 ${total} 条`,
-              style: { marginTop: '16px', textAlign: 'right' }
-            }}
-            onEdit={(record: UiStudent) => df.form.showEditModal(record as any)}
-            onClassRecord={(record: UiStudent) => ui.classRecord.showClassRecordModal(record as any)}
-            onPayment={(record: UiStudent) => ui.payment.showPaymentModal(record as any)}
-            onRefund={(record: UiStudent) => ui.refund.handleRefund(record as any)}
-            onTransfer={(record: UiStudent) => ui.transfer.handleTransfer(record as any)}
-            onTransferClass={(record: UiStudent) => ui.transferClass.handleTransferClass(record as any)}
-            onDelete={(record: UiStudent) => ui.deleteConfirm.showDeleteConfirm(record)}
+            onEdit={(record) => df.form.showEditModal(record as any)}
+            onClassRecord={(record) => ui.classRecord.showClassRecordModal(record as any)}
+            onPayment={(record) => ui.payment.showPaymentModal(record as any)}
+            onRefund={(record) => ui.refund.handleRefund(record as any)}
+            onTransfer={(record) => ui.transfer.handleTransfer(record as any)}
+            onTransferClass={(record) => ui.transferClass.handleTransferClass(record as any)}
+            onDelete={(record) => ui.deleteConfirm.showDeleteConfirm(record)}
             onAttendance={handleAttendance}
             onDetails={handleStudentDetails}
           />
         </Card>
 
-        {/* 添加/编辑模态框 */}
-        <StudentFormModal
-          visible={df.form.visible}
-          form={df.form.form}
-          editingStudent={df.form.editingStudent as any}
-          courseGroups={df.form.courseGroups}
-          tempCourseGroup={df.form.tempCourseGroup}
-          currentEditingGroupIndex={df.form.currentEditingGroupIndex}
-          isEditing={df.form.isEditing}
-          onCancel={df.form.handleCancel}
-          onSubmit={df.form.handleSubmit}
-          updateTempCourseGroup={df.form.updateTempCourseGroup}
-          updateCourseGroup={df.form.updateCourseGroup}
-          confirmAddCourseGroup={df.form.confirmAddCourseGroup}
-          cancelAddCourseGroup={df.form.cancelAddCourseGroup}
-          editCourseGroup={df.form.editCourseGroup}
-          removeCourseGroup={df.form.removeCourseGroup}
-          startAddCourseGroup={df.form.startAddCourseGroup}
+        {/* 所有模态框组件 */}
+        <StudentModals 
+          df={df}
+          ui={ui}
           courseList={courseList}
           loadingCourses={loadingCourses}
-          loading={df.form.loading}
-        />
-
-        {/* 删除确认模态框 */}
-        <StudentDeleteModal
-          visible={ui.deleteConfirm.deleteModalVisible}
-          onConfirm={ui.deleteConfirm.handleDeleteConfirm}
-          onCancel={ui.deleteConfirm.handleCancelDelete}
-          student={ui.deleteConfirm.recordToDelete || undefined}
-        />
-
-        {/* 课程记录模态框 */}
-        <ClassRecordModal
-          visible={ui.classRecord.classRecordModalVisible}
-          student={ui.classRecord.currentStudent}
-          records={ui.classRecord.classRecords}
-          loading={ui.classRecord.classRecordLoading}
-          pagination={ui.classRecord.classRecordPagination}
-          onCancel={ui.classRecord.handleClassRecordModalCancel}
-          onTableChange={ui.classRecord.handleClassRecordTableChange}
-          courseSummaries={ui.classRecord.classRecords.reduce((acc: { courseName: string; count: number }[], record) => {
-            if (!record.courseName) return acc;
-            const existingCourse = acc.find(item => item.courseName === record.courseName);
-            if (existingCourse) {
-              existingCourse.count += 1;
-            } else {
-              acc.push({ courseName: record.courseName, count: 1 });
-            }
-            return acc;
-          }, [])}
-        />
-
-        {/* 课表模态框 */}
-        <ScheduleModal
-          visible={ui.schedule.scheduleModalVisible}
-          student={ui.schedule.studentSchedule.student}
-          schedules={ui.schedule.studentSchedule.schedules}
-          onCancel={ui.schedule.handleScheduleModalCancel}
-        />
-
-        {/* 缴费模态框 */}
-        <PaymentModal
-          visible={ui.payment.paymentModalVisible}
-          student={ui.payment.currentStudent as any}
-          form={ui.payment.paymentForm}
-          coursesList={ui.payment.currentStudent ? getStudentAllCourses(ui.payment.currentStudent) : []}
-          selectedCourse={ui.payment.selectedPaymentCourse}
-          selectedCourseName={ui.payment.selectedPaymentCourseName}
-          currentClassHours={ui.payment.currentClassHours}
-          newClassHours={ui.payment.newClassHours}
-          totalClassHours={ui.payment.totalClassHours}
-          newValidUntil={ui.payment.newValidUntil}
-          loading={(ui.payment as any)?.paymentLoading ?? false}
-          onOk={ui.payment.handlePaymentOk}
-          onCancel={ui.payment.handlePaymentCancel}
-          onCourseChange={ui.payment.handlePaymentCourseChange}
-          onClassHoursChange={ui.payment.handleClassHoursChange}
-          onValidUntilChange={ui.payment.handleValidUntilChange}
-        />
-
-        {/* 退费模态框 */}
-        <RefundModal
-          visible={ui.refund.visible}
-          form={ui.refund.form}
-          student={ui.refund.currentStudent as any}
-          studentCourses={ui.refund.studentCourses}
-          onCancel={ui.refund.handleCancel}
-          onOk={ui.refund.handleSubmit}
-        />
-
-        {/* 转课模态框 */}
-        <TransferModal
-          visible={ui.transfer.visible}
-          form={ui.transfer.form}
-          student={ui.transfer.currentStudent as any}
-          studentCourses={ui.transfer.studentCourses}
-          transferStudentSearchResults={ui.transfer.searchResults}
-          isSearchingTransferStudent={ui.transfer.searchLoading}
-          selectedTransferStudent={ui.transfer.currentStudent}
-          onCancel={ui.transfer.handleCancel}
-          onOk={ui.transfer.handleSubmit}
-          onSearchTransferStudent={ui.transfer.handleSearch}
-          onSelectTransferStudent={(student) => console.log('选择转入学员:', student)}
-          students={df.data.students as UiStudent[]}
-          isQuickAddStudentModalVisible={ui.transfer.quickAddVisible}
-          showQuickAddStudentModal={ui.transfer.handleQuickAddShow}
-          courseList={courseList}
-        />
-
-        {/* 转班模态框 */}
-        <TransferClassModal
-          visible={ui.transferClass.visible}
-          form={ui.transferClass.form}
-          student={ui.transferClass.currentStudent as any}
-          studentCourses={ui.transferClass.studentCourses}
-          onCancel={ui.transferClass.handleCancel}
-          onOk={ui.transferClass.handleSubmit}
-          courseList={courseList}
-        />
-
-        {/* 快速添加学员模态框 */}
-        <QuickAddStudentModal
-          visible={ui.transfer.quickAddVisible}
-          form={Form.useForm()[0]} // 使用新的表单实例
-          onOk={() => console.log('添加新学员')}
-          onCancel={ui.transfer.handleQuickAddCancel}
-        />
-
-        {/* 学员打卡模态框 */}
-        {attendanceModalVisible && (
-          <AttendanceModal
-            visible={attendanceModalVisible}
-            student={selectedStudent}
-            form={attendanceForm}
-            onCancel={() => setAttendanceModalVisible(false)}
-            onOk={handleAttendanceOk}
-          />
-        )}
-        
-        {/* 学员详情模态框 */}
-        <StudentDetailsModal
-          visible={detailsVisible}
-          student={df.data.students.find(s => s.id === currentStudentId) || null}
-          onCancel={handleDetailsModalClose}
+          attendanceModalVisible={attendanceModalVisible}
+          selectedStudent={selectedStudent}
+          attendanceForm={attendanceForm}
+          detailsVisible={detailsVisible}
+          currentStudentId={currentStudentId}
+          handleAttendanceOk={handleAttendanceOk}
+          handleDetailsModalClose={handleDetailsModalClose}
+          setAttendanceModalVisible={setAttendanceModalVisible}
         />
       </div>
     </ConfigProvider>

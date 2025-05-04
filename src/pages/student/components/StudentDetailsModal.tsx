@@ -458,10 +458,10 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                             borderTop: '1px solid #f0f0f0',
                             paddingTop: 16,
                             display: 'flex',
-                            alignItems: 'flex-start'
+                            alignItems: 'center'
                           }}
                         >
-                          <Text style={{ marginRight: 16, fontSize: '14px', fontWeight: '500', color: '#262626', minWidth: '72px' }}>
+                          <Text style={{ fontSize: '12px', fontWeight: '500', color: '#262626', minWidth: '70px', marginRight: '10px' }}>
                             固定排课:
                           </Text>
                           <div style={{ flex: 1 }}>
@@ -487,23 +487,28 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                                      display: 'flex',
                                      alignItems: 'center',
                                      width: '100%',
+                                     height: '28px',
                                      backgroundColor: '#fff',
-                                     padding: '8px 12px',
-                                     borderRadius: '6px',
+                                     borderRadius: '4px',
                                      border: `1px solid ${weekdayStyle.border}`,
-                                     boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                                     padding: '0',
+                                     overflow: 'hidden',
+                                     boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
                                    }}>
                                      <div
                                        style={{
                                          color: weekdayStyle.text,
                                          fontWeight: '500',
                                          backgroundColor: weekdayStyle.bg,
-                                         borderRadius: '6px',
-                                         padding: '4px 12px',
-                                         minWidth: '70px',
-                                         textAlign: 'center',
-                                         marginRight: '12px',
-                                         border: `1px solid ${weekdayStyle.border}`
+                                         padding: '0',
+                                         margin: '0',
+                                         height: '100%',
+                                         display: 'flex',
+                                         alignItems: 'center',
+                                         justifyContent: 'center',
+                                         fontSize: '12px',
+                                         borderRight: `1px solid ${weekdayStyle.border}`,
+                                         minWidth: '70px'
                                        }}
                                      >
                                        星期{time.weekday}
@@ -511,10 +516,11 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                                      <div style={{ 
                                        display: 'flex', 
                                        alignItems: 'center',
+                                       padding: '0 12px',
                                        flex: 1
                                      }}>
-                                       <ClockCircleOutlined style={{ fontSize: '14px', color: '#8c8c8c', marginRight: '8px' }} />
-                                       <span style={{ fontWeight: '500', color: '#555' }}>{time.from} - {time.to}</span>
+                                       <ClockCircleOutlined style={{ fontSize: '12px', color: '#8c8c8c', marginRight: '6px' }} />
+                                       <span style={{ fontWeight: '500', color: '#555', fontSize: '12px' }}>{time.from} - {time.to}</span>
                                      </div>
                                    </div>
                                  </div>
