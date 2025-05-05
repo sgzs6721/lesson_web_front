@@ -378,10 +378,12 @@ export const getStudentColumns = (
                       color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
                       textDecoration: isDisabled ? 'line-through' : 'none',
                       fontWeight: remainingHours <= 5 ? 'bold' : 'normal',
-                      textAlign: 'right',
-                      paddingRight: '10px'
+                      textAlign: 'center',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-block',
+                      minWidth: '100px'
                   }}>
-                    {`${remainingHours ?? 0}/${course.totalHours ?? 0}`}课时
+                    {`${remainingHours ?? 0}/${course.totalHours ?? 0}课时`}
                   </div>
                   
                   {/* 有效期 - 居中显示 */}
