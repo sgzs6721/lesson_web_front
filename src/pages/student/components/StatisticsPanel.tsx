@@ -162,7 +162,7 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
         placement="bottom" 
         trigger="hover"
         overlayStyle={{ minWidth: totalPanelWidth > 0 ? `${totalPanelWidth}px` : '280px' }}
-        overlayInnerStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
       >
         <div 
           ref={totalPanelRef}
