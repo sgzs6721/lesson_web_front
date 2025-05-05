@@ -350,27 +350,25 @@ export const useStudentForm = (
         // 严格按照文档构建 courseInfo 对象
         return {
           courseId: typeof courseIdNum === 'number' ? courseIdNum : 0, // 确保是数字
-          startDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'), // 使用 startDate 字段
-          endDate: group.expireDate ? dayjs(group.expireDate).format('YYYY-MM-DD') : dayjs().add(1, 'year').format('YYYY-MM-DD'), // 添加 endDate，如果 expireDate 存在则使用，否则给个默认值（例如一年后）
+          enrollDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'), // 使用 enrollDate
           fixedScheduleTimes: scheduleData, // 使用 fixedScheduleTimes 字段，并传递数组
-          status: mapStatusToApi(group.status) || 'NORMAL' // 确保有默认值 NORMAL
-          // 不再传递 courseName, courseTypeName, coachName 等辅助字段
+          status: mapStatusToApi(group.status) || 'NORMAL', // 确保有默认值 NORMAL
+          coachName: group.coach || '' // !! 为创建操作添加 coachName !!
         };
       });
 
       // 构建 studentInfo 对象，只包含文档要求的字段
       const finalStudentInfo = {
         name: studentInfo.name,
-        gender: studentInfo.gender, // 假设 studentInfo.gender 已经是 MALE/FEMALE
-        age: studentInfo.age, // 假设 studentInfo.age 已经是数字
+        gender: studentInfo.gender, 
+        age: studentInfo.age, 
         phone: studentInfo.phone,
-        campusId: studentInfo.campusId || Number(localStorage.getItem('currentCampusId')) || 0 // 确保 campusId 存在且为数字
+        campusId: studentInfo.campusId || Number(localStorage.getItem('currentCampusId')) || 0 
       };
 
       // 根据是编辑还是添加，构建不同的 payload 并调用不同的函数
       if (editingStudent) {
         // --- 编辑逻辑 --- 
-        // 检查 editingStudent 是否存在（理论上这里应该总存在，但为了健壮性）
         if (!editingStudent.id) {
           console.error('handleSubmit called in edit mode without a valid editingStudent.id');
           message.error('更新操作失败，缺少学员ID，请重试');
@@ -378,30 +376,55 @@ export const useStudentForm = (
           return false; 
         }
         
-        // 构建更新的 payload
+        // 构建更新的 payload (courseInfoList 不含 coachName)
         const payload = {
-          studentId: Number(editingStudent.id), // 使用 studentId 字段，并确保是数字
+          studentId: Number(editingStudent.id), 
           studentInfo: finalStudentInfo,
-          courseInfoList: courseInfoList
+          courseInfoList: courseInfoList.map(ci => ({ // 重新映射，移除 coachName 等
+            courseId: ci.courseId,
+            enrollDate: ci.enrollDate,
+            fixedScheduleTimes: ci.fixedScheduleTimes,
+            status: ci.status
+          })) // 确保更新 payload 不含 coachName
         };
         console.log('准备提交的最终 Payload (Update):', JSON.stringify(payload, null, 2));
-        // 调用更新函数
         await onUpdateStudent(editingStudent.id, payload); 
         message.success('学员信息更新成功');
 
       } else {
         // --- 添加逻辑 --- 
-        // 构建创建的 payload (不需要 studentId)
+        // 构建创建的 payload (courseInfoList 需要包含 coachName)
+        // 重新构建 courseInfoList 以包含 coachName
+        const courseInfoListForCreate = courseGroups.map(group => {
+          let scheduleData: any[] = [];
+          if (group.scheduleTimes && group.scheduleTimes.length > 0) {
+            scheduleData = group.scheduleTimes.map(st => ({
+              weekday: mapWeekdayToNumber(st.weekday),
+              from: st.time,
+              to: st.endTime
+            }));
+          }
+          const courseObj = group.courses && group.courses.length > 0 
+            ? courseList.find(c => String(c.id) === String(group.courses[0]))
+            : null;
+          const courseIdNum = safeProcessCourseId(group.courses[0]);
+
+          return {
+            courseId: typeof courseIdNum === 'number' ? courseIdNum : 0,
+            enrollDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+            fixedScheduleTimes: scheduleData, 
+            status: mapStatusToApi(group.status) || 'NORMAL',
+            coachName: group.coach || '' // !! 为创建操作添加 coachName !!
+          };
+        });
+
         const createPayload = {
           studentInfo: finalStudentInfo, 
-          courseInfoList: courseInfoList
+          courseInfoList: courseInfoListForCreate // 使用包含 coachName 的列表
         }
         console.log('准备提交的最终 Payload (Create):', JSON.stringify(createPayload, null, 2));
-        // 调用添加函数
         const newStudent = await onAddStudent(createPayload);
         message.success('学员添加成功');
-        // 这里可以根据需要看是否要处理 newStudent，比如更新本地状态或触发事件
-        // console.log('学员创建成功，等待API层触发事件:', newStudent);
       }
 
       setVisible(false);

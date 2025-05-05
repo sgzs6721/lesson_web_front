@@ -448,6 +448,20 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
+          <Col span={8}>
+            <Form.Item
+              label="报名日期"
+              required
+            >
+              <DatePicker
+                style={{ width: '100%' }}
+                placeholder="选择报名日期"
+                format="YYYY-MM-DD"
+                value={dayjs(group.enrollDate)}
+                onChange={(date) => updateCourseGroup(index, 'enrollDate', date ? date.format('YYYY-MM-DD') : '')}
+              />
+            </Form.Item>
+          </Col>
         </Row>
 
         <Row gutter={16}>
@@ -463,24 +477,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 value={dayjs(group.enrollDate)}
                 onChange={(date) => updateCourseGroup(index, 'enrollDate', date ? date.format('YYYY-MM-DD') : '')}
               />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              label="状态"
-            >
-              <Select
-                style={{ width: '100%' }}
-                placeholder="选择状态"
-                value={group.status || undefined}
-                onChange={(value) => updateCourseGroup(index, 'status', value)}
-                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement || document.body}
-                dropdownStyle={{ zIndex: 1060 }}
-              >
-                {studentStatusOptions.map(option => (
-                  <Option key={option.value} value={option.value}>{option.label}</Option>
-                ))}
-              </Select>
             </Form.Item>
           </Col>
         </Row>
@@ -795,6 +791,20 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
+          <Col span={8}>
+            <Form.Item
+              label="报名日期"
+              required
+            >
+              <DatePicker
+                style={{ width: '100%' }}
+                placeholder="选择报名日期"
+                format="YYYY-MM-DD"
+                value={dayjs(tempCourseGroup.enrollDate)}
+                onChange={(date) => updateTempCourseGroup('enrollDate', date ? date.format('YYYY-MM-DD') : '')}
+              />
+            </Form.Item>
+          </Col>
         </Row>
 
         <Row gutter={16}>
@@ -810,24 +820,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 value={dayjs(tempCourseGroup.enrollDate)}
                 onChange={(date) => updateTempCourseGroup('enrollDate', date ? date.format('YYYY-MM-DD') : '')}
               />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              label="状态"
-            >
-              <Select
-                style={{ width: '100%' }}
-                placeholder="选择状态"
-                value={tempCourseGroup.status || undefined}
-                onChange={(value) => updateTempCourseGroup('status', value)}
-                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement || document.body}
-                dropdownStyle={{ zIndex: 1060 }}
-              >
-                {studentStatusOptions.map(option => (
-                  <Option key={option.value} value={option.value}>{option.label}</Option>
-                ))}
-              </Select>
             </Form.Item>
           </Col>
         </Row>

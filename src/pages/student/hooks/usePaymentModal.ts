@@ -287,17 +287,18 @@ export const usePaymentModal = () => {
         courseHours: values.regularClasses || 0,
         giftHours: values.bonusClasses || 0,
         validUntil: values.validUntil.format('YYYY-MM-DD'),
-        giftItems: Array.isArray(values.gift) ? values.gift.join(',') : values.gift || '',
+        giftItems: values.gift || [], // 保持数组格式，不再使用join
         notes: values.remarks || ''
       };
 
       console.log('缴费课程ID:', values.courseId);
       console.log('最终缴费数据:', JSON.stringify(paymentData, null, 2));
 
-      // 调用缴费API
-      await API.student.addPayment(paymentData);
-
-      message.success('缴费信息已保存');
+      // 阻止API调用，仅在另一处调用
+      // 不再调用 API.student.addPayment(paymentData);
+      
+      // 移除成功提示信息，让另一处来显示
+      // message.success('缴费信息已保存');
       setVisible(false);
 
       // 重置表单和状态

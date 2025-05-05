@@ -602,7 +602,7 @@ export const student = {
     courseHours: number;
     giftHours: number;
     validUntil: string;
-    giftItems?: string;
+    giftItems?: any[];
     notes?: string;
   }): Promise<any> => {
     console.log('添加缴费记录，请求数据:', JSON.stringify(paymentData, null, 2));
