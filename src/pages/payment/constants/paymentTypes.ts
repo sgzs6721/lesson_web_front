@@ -12,11 +12,7 @@ export const PAYMENT_METHOD = {
   REFUND: '退费',
 };
 
-export const COURSE_TYPES = {
-  JUNIOR: '游泳初级班',
-  INTERMEDIATE: '游泳中级班',
-  ADVANCED: '游泳高级班',
-};
+export const COURSE_TYPES = {};
 
 export const PAYMENT_TYPE = {
   TYPE_30: '30次课',

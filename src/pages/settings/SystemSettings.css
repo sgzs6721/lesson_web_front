@@ -1,0 +1,181 @@
+/* 系统设置页面样式 */
+.system-settings {
+  padding: 0 4px;
+}
+
+.system-settings-card {
+  margin-top: -12px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.system-settings .ant-tabs {
+  background-color: #fff;
+  padding: 16px 0;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab {
+  margin: 0 8px 0 0;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid #f0f0f0;
+  border-bottom: none;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab-active {
+  background: linear-gradient(to bottom, #f5f7fa, #ffffff);
+  border-color: #1890ff;
+  border-top: 3px solid #1890ff;
+}
+
+.system-settings .tab-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.system-settings .ant-tabs-content {
+  padding: 20px 0;
+}
+
+.system-settings .ant-form-item-label > label {
+  font-weight: 500;
+  color: #333;
+}
+
+.system-settings .ant-divider {
+  margin: 16px 0 24px;
+}
+
+.system-settings .option-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #f0f0f0;
+}
+
+.system-settings .option-item {
+  transition: all 0.3s ease;
+  padding: 12px 16px;
+}
+
+.system-settings .option-item:hover {
+  background-color: #f5f7fa;
+}
+
+.system-settings .option-input {
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.system-settings .option-input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+  outline: none;
+}
+
+.system-settings .backup-table th,
+.system-settings .backup-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.system-settings .backup-table tr:hover {
+  background-color: #f5f7fa;
+}
+
+.system-settings .ant-btn {
+  border-radius: 6px;
+}
+
+.system-settings .ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  border: none;
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+}
+
+.system-settings .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #096dd9 100%);
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.4);
+}
+
+.system-settings .ant-form {
+  animation: fadeIn 0.5s ease;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .system-settings {
+    padding: 0;
+  }
+  
+  .system-settings-card {
+    margin-top: -8px;
+  }
+}
+
+/* 动画样式 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Toast样式 */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease forwards;
+  z-index: 1000;
+}

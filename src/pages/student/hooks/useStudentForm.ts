@@ -33,45 +33,62 @@ const mockSimpleCourses: SimpleCourse[] = [
 // Helper function to map frontend status to API status
 const mapStatusToApi = (status: string | undefined): string => {
   switch (status) {
-    case 'NORMAL':
-      return 'NORMAL';
+    case 'STUDYING':
+      return 'STUDYING';
     case 'EXPIRED':
       return 'EXPIRED';
     case 'GRADUATED':
       return 'GRADUATED';
+    case 'WAITING_PAYMENT':
+      return 'WAITING_PAYMENT';
+    case 'WAITING_CLASS':
+      return 'WAITING_CLASS';
+    case 'WAITING_RENEWAL':
+      return 'WAITING_RENEWAL';
+    case 'REFUNDED':
+      return 'REFUNDED';
     // 兼容旧的状态值
-    case 'active':
+    case 'NORMAL':
+      return 'STUDYING';
     case 'normal':
-      return 'NORMAL';
+      return 'STUDYING';
     case 'expired':
       return 'EXPIRED';
     case 'graduated':
       return 'GRADUATED';
     default:
-      return 'NORMAL'; // 默认值
+      return 'STUDYING'; // 默认值
   }
 };
 
 // Helper function to map API status to frontend status
 const mapApiStatusToFrontend = (status: string | undefined): string => {
   switch (status) {
-    case 'NORMAL':
-      return 'NORMAL';
+    case 'STUDYING':
+      return 'STUDYING';
     case 'EXPIRED':
       return 'EXPIRED';
     case 'GRADUATED':
       return 'GRADUATED';
-    case 'STUDYING':
-      return 'NORMAL'; // 将 STUDYING 映射为 NORMAL
+    case 'WAITING_PAYMENT':
+      return 'WAITING_PAYMENT';
+    case 'WAITING_CLASS':
+      return 'WAITING_CLASS';
+    case 'WAITING_RENEWAL':
+      return 'WAITING_RENEWAL';
+    case 'REFUNDED':
+      return 'REFUNDED';
     // 兼容旧的状态值
+    case 'NORMAL':
+      return 'STUDYING'; // 将 NORMAL 映射为 STUDYING
     case 'normal':
-      return 'NORMAL';
+      return 'STUDYING';
     case 'expired':
       return 'EXPIRED';
     case 'graduated':
       return 'GRADUATED';
     default:
-      return 'NORMAL'; // 默认值
+      return 'STUDYING'; // 默认值
   }
 };
 
@@ -384,7 +401,7 @@ export const useStudentForm = (
             courseId: ci.courseId,
             enrollDate: ci.enrollDate,
             fixedScheduleTimes: ci.fixedScheduleTimes,
-            status: ci.status
+            // status: ci.status // 从这里移除 status
           })) // 确保更新 payload 不含 coachName
         };
         console.log('准备提交的最终 Payload (Update):', JSON.stringify(payload, null, 2));
@@ -413,7 +430,6 @@ export const useStudentForm = (
             courseId: typeof courseIdNum === 'number' ? courseIdNum : 0,
             enrollDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
             fixedScheduleTimes: scheduleData, 
-            status: mapStatusToApi(group.status) || 'NORMAL',
             coachName: group.coach || '' // !! 为创建操作添加 coachName !!
           };
         });

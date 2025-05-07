@@ -75,8 +75,26 @@ export const giftOptions = [
   { value: 'cap', label: '帽子' },
 ];
 
+// 学员状态选项
 export const studentStatusOptions = [
-  { value: 'NORMAL', label: '正常' },
+  { value: 'STUDYING', label: '学习中' },
   { value: 'EXPIRED', label: '过期' },
   { value: 'GRADUATED', label: '结业' },
+  { value: 'WAITING_PAYMENT', label: '待缴费' },
+  { value: 'WAITING_CLASS', label: '待上课' },
+  { value: 'WAITING_RENEWAL', label: '待续费' },
+  { value: 'REFUNDED', label: '已退费' },
 ];
+
+// 状态中英文映射
+export const statusMap = {
+  'STUDYING': '学习中',
+  'EXPIRED': '过期',
+  'GRADUATED': '结业',
+  'WAITING_PAYMENT': '待缴费',
+  'WAITING_CLASS': '待上课',
+  'WAITING_RENEWAL': '待续费',
+  'REFUNDED': '已退费',
+  // 兼容旧状态
+  'NORMAL': '学习中'
+};

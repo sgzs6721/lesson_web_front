@@ -111,15 +111,35 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   }, [visible]);
 
   const getStatusInfo = (status?: string) => {
-    if (!status) return { color: 'green', text: '在学' };
+    if (!status) return { color: 'green', text: '学习中' };
     
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('expire') || statusLower === 'expired') {
-      return { color: 'orange', text: '过期' };
-    } else if (statusLower.includes('graduate') || statusLower === 'graduated') {
-      return { color: 'blue', text: '结业' };
+    const statusUpper = status.toUpperCase();
+    switch (statusUpper) {
+      case 'STUDYING':
+      case 'NORMAL':
+        return { color: 'green', text: '学习中' };
+      case 'EXPIRED':
+        return { color: 'error', text: '过期' };
+      case 'GRADUATED':
+        return { color: 'blue', text: '结业' };
+      case 'WAITING_PAYMENT':
+        return { color: 'orange', text: '待缴费' };
+      case 'WAITING_CLASS':
+        return { color: 'purple', text: '待上课' };
+      case 'WAITING_RENEWAL':
+        return { color: 'cyan', text: '待续费' };
+      case 'REFUNDED':
+        return { color: 'red', text: '已退费' };
+      default:
+        // 兼容旧的状态映射方式
+        const statusLower = status.toLowerCase();
+        if (statusLower.includes('expire') || statusLower === 'expired') {
+          return { color: 'orange', text: '过期' };
+        } else if (statusLower.includes('graduate') || statusLower === 'graduated') {
+          return { color: 'blue', text: '结业' };
+        }
+        return { color: 'green', text: '学习中' };
     }
-    return { color: 'green', text: '在学' };
   };
 
   const getGiftLabels = (values: number[] | undefined): React.ReactNode => {

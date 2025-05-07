@@ -1,0 +1,85 @@
+/* 左侧标签页修复样式 */
+.settings-container {
+  height: 100%;
+  width: 100% !important;
+  padding: 0 !important;
+  border: none !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 修复垂直标签栏 */
+.settings-vertical-tabs {
+  height: 100%;
+  width: 100% !important;
+}
+
+.settings-vertical-tabs .ant-tabs {
+  height: 100%;
+  width: 100% !important;
+}
+
+.settings-vertical-tabs .ant-tabs-content {
+  height: 100%;
+  width: 100% !important;
+  padding-left: 24px;
+}
+
+.settings-vertical-tabs .ant-tabs-nav {
+  width: 160px !important;
+  flex-shrink: 0;
+}
+
+.options-tab {
+  border: none !important;
+  width: 100% !important;
+}
+
+/* 确保左侧内容没有冗余边框 */
+.tab-content-card {
+  height: 100%;
+  background-color: #fff;
+  border-radius: 8px;
+  width: 100% !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.settings-tab-content {
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+/* 调整内容区的宽度 */
+.option-section {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 移除所有额外边框 */
+.tab-content-card > div,
+.settings-vertical-tabs > div,
+.settings-tabs > div {
+  border: none !important;
+}
+
+/* 调整行列布局 */
+.option-card {
+  width: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .settings-vertical-tabs .ant-tabs-content {
+    padding-left: 12px;
+  }
+  
+  .settings-vertical-tabs .ant-tabs-nav {
+    width: 120px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .ant-col-md-8 {
+    max-width: 33.33% !important;
+  }
+} 

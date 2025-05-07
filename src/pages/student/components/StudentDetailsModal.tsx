@@ -187,17 +187,25 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
     'NORMAL': '#52c41a',
     'STUDYING': '#52c41a',
     'EXPIRED': '#ff4d4f',
-    'GRADUATED': '#f56c6c',
+    'GRADUATED': '#1890ff',
+    'WAITING_PAYMENT': '#fa8c16',
+    'WAITING_CLASS': '#722ed1',
+    'WAITING_RENEWAL': '#13c2c2',
+    'REFUNDED': '#f5222d',
     'PENDING': '#faad14',
     'INACTIVE': '#8c8c8c'
   };
 
   // 状态标签文本映射
   const statusTextMap: Record<string, string> = {
-    'NORMAL': '正常',
-    'STUDYING': '正常',
-    'EXPIRED': '已过期',
-    'GRADUATED': '已结业',
+    'NORMAL': '学习中',
+    'STUDYING': '学习中',
+    'EXPIRED': '过期',
+    'GRADUATED': '结业',
+    'WAITING_PAYMENT': '待缴费',
+    'WAITING_CLASS': '待上课',
+    'WAITING_RENEWAL': '待续费',
+    'REFUNDED': '已退费',
     'PENDING': '待开课',
     'INACTIVE': '停课'
   };
@@ -322,7 +330,7 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                 
                 {processedCourses.map((course, index) => (
                   <Card 
-                    key={course.courseId || index} 
+                    key={course.studentCourseId || course.courseId || index} 
                     bordered={false}
                     style={{
                       marginBottom: index !== processedCourses.length - 1 ? 16 : 0,
@@ -382,36 +390,107 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                             const statusColor = statusColorMap[statusUpperCase] || '#d9d9d9';
                             const statusText = statusTextMap[statusUpperCase] || (course.status || '未知');
                             
-                            // 为已结业状态创建特殊样式
-                            if (statusUpperCase === 'GRADUATED') {
-                              return (
-                                <Tag 
-                                  color="#f56c6c" 
-                                  style={{ 
-                                    fontSize: '13px', 
-                                    padding: '1px 10px', 
-                                    borderRadius: '4px',
-                                    fontWeight: '500'
-                                  }}
-                                >
-                                  {statusText}
-                                </Tag>
-                              );
+                            // 根据不同状态设置不同样式
+                            switch (statusUpperCase) {
+                              case 'GRADUATED':
+                                return (
+                                  <Tag 
+                                    color="#1890ff" 
+                                    style={{ 
+                                      fontSize: '13px', 
+                                      padding: '1px 10px', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500'
+                                    }}
+                                  >
+                                    {statusText}
+                                  </Tag>
+                                );
+                              case 'EXPIRED':
+                                return (
+                                  <Tag 
+                                    color="#ff4d4f" 
+                                    style={{ 
+                                      fontSize: '13px', 
+                                      padding: '1px 10px', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500'
+                                    }}
+                                  >
+                                    {statusText}
+                                  </Tag>
+                                );
+                              case 'WAITING_PAYMENT':
+                                return (
+                                  <Tag 
+                                    color="#fa8c16" 
+                                    style={{ 
+                                      fontSize: '13px', 
+                                      padding: '1px 10px', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500'
+                                    }}
+                                  >
+                                    {statusText}
+                                  </Tag>
+                                );
+                              case 'WAITING_CLASS':
+                                return (
+                                  <Tag 
+                                    color="#722ed1" 
+                                    style={{ 
+                                      fontSize: '13px', 
+                                      padding: '1px 10px', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500'
+                                    }}
+                                  >
+                                    {statusText}
+                                  </Tag>
+                                );
+                              case 'WAITING_RENEWAL':
+                                return (
+                                  <Tag 
+                                    color="#13c2c2" 
+                                    style={{ 
+                                      fontSize: '13px', 
+                                      padding: '1px 10px', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500'
+                                    }}
+                                  >
+                                    {statusText}
+                                  </Tag>
+                                );
+                              case 'REFUNDED':
+                                return (
+                                  <Tag 
+                                    color="#f5222d" 
+                                    style={{ 
+                                      fontSize: '13px', 
+                                      padding: '1px 10px', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500'
+                                    }}
+                                  >
+                                    {statusText}
+                                  </Tag>
+                                );
+                              default:
+                                return (
+                                  <Tag 
+                                    color={statusColor} 
+                                    style={{ 
+                                      fontSize: '13px', 
+                                      padding: '1px 10px', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500'
+                                    }}
+                                  >
+                                    {statusText}
+                                  </Tag>
+                                );
                             }
-                            
-                            return (
-                              <Tag 
-                                color={statusColor} 
-                                style={{ 
-                                  fontSize: '13px', 
-                                  padding: '1px 10px', 
-                                  borderRadius: '4px',
-                                  fontWeight: '500'
-                                }}
-                              >
-                                {statusText}
-                              </Tag>
-                            );
                           })()}
                         </div>
                       </div>

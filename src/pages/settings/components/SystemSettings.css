@@ -1,0 +1,284 @@
+.settings-container {
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  background: #ffffff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-tabs {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.settings-tabs .ant-tabs-nav {
+  margin-bottom: 0;
+  padding: 0;
+  position: relative;
+  background: rgba(246, 248, 252, 0.8);
+  border-bottom: none;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+
+.settings-tabs .ant-tabs-nav::before {
+  display: none;
+}
+
+.settings-tabs .ant-tabs-nav-wrap {
+  padding: 0;
+}
+
+.settings-tabs .ant-tabs-tab {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0 8px;
+  height: 56px;
+  line-height: 56px;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.settings-tabs .ant-tabs-tab-btn {
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #909090;
+  transition: all 0.3s;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  justify-content: center;
+}
+
+.settings-tabs .ant-tabs-tab:not(.ant-tabs-tab-active) .ant-tabs-tab-btn:hover {
+  color: #6b9aee !important;
+  background-color: rgba(107, 154, 238, 0.06);
+}
+
+.settings-tabs .ant-tabs-tab-active {
+  background: transparent !important;
+}
+
+.settings-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #6b9aee !important;
+  background-color: rgba(107, 154, 238, 0.1);
+  position: relative;
+  font-weight: 500;
+}
+
+.settings-tabs .ant-tabs-ink-bar {
+  display: none;
+}
+
+.settings-tabs .ant-tabs-content {
+  flex: 1;
+}
+
+.settings-tabs .ant-tabs-tabpane {
+  height: 100%;
+}
+
+.tab-content-card {
+  border-radius: 0;
+  padding: 24px 24px 0;
+  min-height: 500px;
+  transition: all 0.3s;
+  box-shadow: none;
+  background: #ffffff;
+  border: none;
+  height: 100%;
+  display: flex;
+  padding: 0;
+}
+
+.settings-vertical-tabs {
+  margin-top: 0;
+  display: flex;
+  height: 100%;
+}
+
+.settings-vertical-tabs .ant-tabs-nav {
+  width: 170px;
+  background: #f6f8fc;
+  border-radius: 0;
+  padding: 12px 0;
+  margin-right: 0;
+  position: relative;
+  z-index: 1;
+  border-right: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+  margin-left: -1px;
+  height: 100%;
+}
+
+.settings-vertical-tabs .ant-tabs-tab {
+  height: auto;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  transition: all 0.3s;
+  display: block;
+  position: relative;
+}
+
+.settings-vertical-tabs .ant-tabs-tab-btn {
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 14px;
+  border-radius: 0;
+  color: #909090;
+  width: 100%;
+  transition: all 0.3s;
+}
+
+.settings-vertical-tabs .ant-tabs-tab:not(.ant-tabs-tab-active) .ant-tabs-tab-btn:hover {
+  color: #6b9aee;
+  background-color: rgba(107, 154, 238, 0.06);
+}
+
+.settings-vertical-tabs .ant-tabs-tab-active {
+  background-color: transparent !important;
+}
+
+.settings-vertical-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #6b9aee !important;
+  background-color: rgba(107, 154, 238, 0.1);
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
+}
+
+.settings-vertical-tabs .ant-tabs-ink-bar {
+  display: none;
+}
+
+.settings-vertical-tabs .ant-tabs-content-holder {
+  border: none !important;
+  margin-left: 0;
+  padding-left: 20px;
+  flex: 1;
+  border-left: 1px solid #f0f0f0 !important;
+  margin-left: -1px;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.tab-item .anticon {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.option-section {
+  margin-bottom: 20px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  transition: all 0.3s;
+  border: none;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, #78a6f5 0%, #6b9aee 100%);
+  border: none;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(107, 154, 238, 0.2);
+  transition: all 0.3s;
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #6b9aee 0%, #5c8bdf 100%);
+  box-shadow: 0 4px 8px rgba(107, 154, 238, 0.3);
+  transform: translateY(-1px);
+}
+
+.option-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.option-header .ant-typography {
+  font-size: 16px;
+  font-weight: 500;
+  color: #606060;
+}
+
+.option-card {
+  border-radius: 8px;
+  transition: all 0.3s;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  background-color: #fcfcfc;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.ant-divider {
+  margin: 16px 0;
+  border-top-color: #f0f0f0;
+}
+
+.ant-empty {
+  margin: 20px 0;
+}
+
+.ant-empty-image {
+  opacity: 0.7;
+}
+
+.ant-empty-description {
+  color: #909090;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .settings-tabs .ant-tabs-nav {
+    padding-left: 10px;
+    height: 50px;
+  }
+  
+  .settings-tabs .ant-tabs-tab {
+    height: 50px;
+    line-height: 50px;
+  }
+  
+  .settings-tabs .ant-tabs-tab-btn {
+    padding: 0 12px;
+    font-size: 14px;
+  }
+  
+  .tab-content-card {
+    padding: 16px 16px 0;
+  }
+  
+  .settings-vertical-tabs .ant-tabs-nav {
+    width: 140px;
+  }
+}
+
+.options-tab {
+  height: 100%;
+} 

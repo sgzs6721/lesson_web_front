@@ -127,9 +127,8 @@ const convertStudentToCreateRequest = (student: Omit<Student, 'id'>): CreateStud
     enrollDate: student.enrollDate,
     expireDate: student.expireDate,
     remainingClasses: student.remainingClasses ? parseInt(student.remainingClasses) : 0,
-    status: student.status,
     campusId: student.campusId
-  };
+  } as CreateStudentRequest;
 };
 
 // 将前端Student对象转换为API所需的UpdateStudentRequest
@@ -153,7 +152,6 @@ const convertStudentToUpdateRequest = (student: Partial<Student>): UpdateStudent
   if (student.remainingClasses !== undefined) {
     request.remainingClasses = parseInt(student.remainingClasses);
   }
-  if (student.status !== undefined) request.status = student.status;
   if (student.campusId !== undefined) request.campusId = student.campusId;
 
   return request;
@@ -398,7 +396,7 @@ export const student = {
             coachName: coachItemName,
             consumedHours: 0, // 默认填充必需字段
             totalHours: courseInfo.totalHours || 0,
-            status: courseInfo.status || 'NORMAL',
+            status: courseInfo.status || undefined, // 如果 courseInfo.status 未定义，则设为 undefined
             startDate: courseInfo.startDate || courseInfo.enrollDate,
             endDate: courseInfo.endDate,
             remainingHours: courseInfo.remainingHours || 0,

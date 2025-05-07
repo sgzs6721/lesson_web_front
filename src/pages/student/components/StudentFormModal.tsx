@@ -202,57 +202,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               align: 'center'
             },
             {
-              title: '状态',
-              dataIndex: 'status',
-              align: 'center',
-              render: (status) => {
-                // 处理后端枚举值
-                let normalizedStatus = status;
-                if (status === 'STUDYING') {
-                  normalizedStatus = 'NORMAL';
-                } else if (status === 'MALE' || status === 'FEMALE') {
-                  normalizedStatus = status;
-                } else if (status === 'normal') {
-                  normalizedStatus = 'NORMAL';
-                } else if (status === 'expired') {
-                  normalizedStatus = 'EXPIRED';
-                } else if (status === 'graduated') {
-                  normalizedStatus = 'GRADUATED';
-                }
-
-                // Find the corresponding option in studentStatusOptions
-                const statusOption = studentStatusOptions.find(opt => opt.value === normalizedStatus);
-                const text = statusOption ? statusOption.label : (status === 'STUDYING' ? '正常' : status); // Use found label or fallback to raw status
-
-                // Determine tag color based on status value
-                let color = 'default'; // Default color for unknown statuses
-                switch (normalizedStatus) {
-                  case 'NORMAL':
-                    color = 'green';
-                    break;
-                  case 'EXPIRED':
-                    color = 'orange';
-                    break;
-                  case 'GRADUATED':
-                    color = 'blue';
-                    break;
-                  // 兼容旧的状态值
-                  case 'active':
-                  case 'normal':
-                    color = 'green';
-                    break;
-                  case 'inactive':
-                    color = 'red';
-                    break;
-                  case 'pending':
-                    color = 'orange';
-                    break;
-                }
-
-                return <Tag color={color}>{text}</Tag>;
-              }
-            },
-            {
               title: '固定排课时间',
               dataIndex: 'scheduleTimes',
               align: 'center',
@@ -324,7 +273,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
         </div>
 
         <Row gutter={16}>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="报名课程"
               required
@@ -428,7 +377,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="课程类型"
             >
@@ -438,7 +387,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="上课教练"
             >
@@ -448,24 +397,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item
-              label="报名日期"
-              required
-            >
-              <DatePicker
-                style={{ width: '100%' }}
-                placeholder="选择报名日期"
-                format="YYYY-MM-DD"
-                value={dayjs(group.enrollDate)}
-                onChange={(date) => updateCourseGroup(index, 'enrollDate', date ? date.format('YYYY-MM-DD') : '')}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="报名日期"
               required
@@ -667,7 +599,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
         </div>
 
         <Row gutter={16}>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="报名课程"
               required
@@ -771,7 +703,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="课程类型"
             >
@@ -781,7 +713,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="上课教练"
             >
@@ -791,24 +723,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item
-              label="报名日期"
-              required
-            >
-              <DatePicker
-                style={{ width: '100%' }}
-                placeholder="选择报名日期"
-                format="YYYY-MM-DD"
-                value={dayjs(tempCourseGroup.enrollDate)}
-                onChange={(date) => updateTempCourseGroup('enrollDate', date ? date.format('YYYY-MM-DD') : '')}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={8}>
+          <Col span={6}>
             <Form.Item
               label="报名日期"
               required

@@ -215,19 +215,42 @@ export const getStudentColumns = (
             // 使用 FixedWidthTag 中定义的颜色
             const statusUpperCase = (course.status || '').toUpperCase();
             switch (statusUpperCase) {
-              case 'PUBLISHED':
               case 'STUDYING':
-              case 'NORMAL':  // 添加对NORMAL状态的处理
                 statusColor = 'green';
-                statusText = '在学';
+                statusText = '学习中';
+                break;
+              case 'NORMAL':  // 兼容旧状态
+                statusColor = 'green';
+                statusText = '学习中';
                 break;
               case 'EXPIRED':
                 statusColor = 'error';
-                statusText = '已过期';
+                statusText = '过期';
                 break;
               case 'GRADUATED':
                 statusColor = 'blue';
-                statusText = '已结业';
+                statusText = '结业';
+                break;
+              case 'WAITING_PAYMENT':
+                statusColor = 'orange';
+                statusText = '待缴费';
+                break;
+              case 'WAITING_CLASS':
+                statusColor = 'purple';
+                statusText = '待上课';
+                break;
+              case 'WAITING_RENEWAL':
+                statusColor = 'cyan';
+                statusText = '待续费';
+                break;
+              case 'REFUNDED':
+                statusColor = 'red';
+                statusText = '已退费';
+                break;
+              // 兼容其他旧状态
+              case 'PUBLISHED':
+                statusColor = 'green';
+                statusText = '学习中';
                 break;
               case 'PENDING':
                 statusColor = 'orange';
@@ -288,7 +311,7 @@ export const getStudentColumns = (
             ];
 
             return (
-              <div key={`${record.id}-course-${course.courseId || index}`} style={{
+              <div key={`${record.id}-course-${course.studentCourseId || course.courseId || index}`} style={{
                   display: 'grid',
                   gridTemplateColumns: '30px 100px 80px 80px 90px 120px 80px auto', // 重新调整列宽
                   alignItems: 'center',
