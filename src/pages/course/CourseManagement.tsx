@@ -13,7 +13,7 @@ import { useCourseForm } from './hooks/useCourseForm';
 import { Course } from './types/course';
 import { coach as coachAPI } from '@/api/coach';
 import { CoachSimple } from '@/api/coach/types';
-import { fetchCategoryOptions } from './constants/courseOptions';
+import { fetchCategoryOptions, getCachedCategoryOptions } from './constants/courseOptions';
 import { Constant } from '@/api/constants/types';
 import './components/CourseManagement.css';
 
@@ -34,7 +34,7 @@ const CourseManagement: React.FC = () => {
     filterCourses,
     resetFilters
   } = useCourseData();
-
+  
   // 当前页码和页面大小
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -75,7 +75,9 @@ const CourseManagement: React.FC = () => {
         type: 'COURSE_TYPE',
         status: 1
       }));
+      
       setCourseTypes(typesData);
+      console.log('课程类型数据已加载:', typesData);
     } catch (error) {
       console.error('获取课程类型数据失败', error);
     } finally {
@@ -109,6 +111,17 @@ const CourseManagement: React.FC = () => {
     handleSubmit,
     handleCancel
   } = useCourseForm(addCourse, updateCourse, coaches);
+
+  // 自定义提交方法，不再重新加载课程类型和教练列表
+  const customHandleSubmit = async () => {
+    try {
+      // 调用原始的提交方法
+      await handleSubmit();
+      // 提交成功后不再调用 loadCourseTypes 和 loadCoaches
+    } catch (error) {
+      console.error('提交表单时出错:', error);
+    }
+  };
 
   // 包装添加和编辑函数
   const handleAdd = () => {
@@ -274,7 +287,7 @@ const CourseManagement: React.FC = () => {
         loading={formLoading}
         form={form}
         onCancel={handleCancel}
-        onSubmit={handleSubmit}
+        onSubmit={customHandleSubmit}
         cachedTypes={courseTypes}
         cachedCoaches={coaches}
         typesLoading={typesLoading}

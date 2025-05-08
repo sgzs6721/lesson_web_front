@@ -50,8 +50,12 @@ export const useTransferCourseModal = (
   // 副作用：更新可选课程 (转课时显示所有课程)
   useEffect(() => {
     if (courseList) {
-      setAvailableCourses(courseList);
-      console.log('[TransferCourseModal] 可选目标课程 (所有):', courseList);
+      // 只显示状态为PUBLISHED或'1'的课程
+      const publishedCourses = courseList.filter(course => 
+        course.status === 'PUBLISHED' || course.status === '1'
+      );
+      setAvailableCourses(publishedCourses);
+      console.log('[TransferCourseModal] 可选目标课程 (已发布):', publishedCourses);
     }
   }, [courseList]);
 

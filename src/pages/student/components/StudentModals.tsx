@@ -22,6 +22,8 @@ interface StudentModalsProps {
   ui: any;
   // 课程列表
   courseList: SimpleCourse[];
+  // 过滤后的课程列表（只包含已发布课程）
+  filteredCourseList: SimpleCourse[];
   // 加载状态
   loadingCourses: boolean;
   // 打卡相关
@@ -44,6 +46,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
   df,
   ui,
   courseList,
+  filteredCourseList,
   loadingCourses,
   attendanceModalVisible,
   selectedStudent,
@@ -74,7 +77,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         editCourseGroup={df.form.editCourseGroup}
         removeCourseGroup={df.form.removeCourseGroup}
         startAddCourseGroup={df.form.startAddCourseGroup}
-        courseList={courseList}
+        courseList={filteredCourseList}
         loadingCourses={loadingCourses}
         loading={df.form.loading}
       />
@@ -162,7 +165,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         students={df.data.students as UiStudent[]}
         isQuickAddStudentModalVisible={ui.transfer.quickAddVisible}
         showQuickAddStudentModal={ui.transfer.handleQuickAddShow}
-        courseList={courseList}
+        courseList={filteredCourseList}
       />
 
       {/* 转班模态框 */}
@@ -173,7 +176,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         studentCourses={ui.transferClass.studentCourses}
         onCancel={ui.transferClass.handleCancel}
         onOk={ui.transferClass.handleSubmit}
-        courseList={courseList}
+        courseList={filteredCourseList}
       />
 
       {/* 快速添加学员模态框 */}

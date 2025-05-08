@@ -248,8 +248,8 @@ export const course = {
 
   // 添加课程
   add: async (data: CourseCreateRequest): Promise<any> => {
-    // 添加课程时清除课程列表缓存
-    clearCourseListCache();
+    // 不再清除课程列表缓存
+    // clearCourseListCache();
 
     if (USE_MOCK) {
       // 模拟添加课程
@@ -263,6 +263,7 @@ export const course = {
         institutionId: 1,
         consumedHours: 0,
         coachFee: 0, // 添加默认教练费用
+        totalHours: data.unitHours, // 设置 totalHours 与 unitHours 相同
         createdTime: now,
         updateTime: now,
         coaches: data.coachIds ? data.coachIds.map(id => ({ id: Number(id), name: `教练${id}` })) : []
@@ -315,8 +316,8 @@ export const course = {
 
   // 更新课程
   update: async (data: CourseUpdateRequest): Promise<void> => {
-    // 更新课程时清除课程列表缓存
-    clearCourseListCache();
+    // 不再清除课程列表缓存
+    // clearCourseListCache();
 
     if (USE_MOCK) {
       // 模拟更新课程
@@ -384,8 +385,8 @@ export const course = {
 
   // 删除课程
   delete: async (id: string): Promise<void> => {
-    // 删除课程时清除课程列表缓存
-    clearCourseListCache();
+    // 不再清除课程列表缓存
+    // clearCourseListCache();
 
     if (USE_MOCK) {
       // 模拟删除课程
@@ -427,13 +428,18 @@ const mockSimpleCourses: SimpleCourse[] = [
 /**
  * 获取简化的课程列表 (用于下拉框)
  * @param campusId 可选的校区 ID
+ * @param filterPublished 是否只返回已发布的课程，默认为false
  */
-export const getCourseSimpleList = async (campusId?: string | number): Promise<SimpleCourse[]> => {
+export const getCourseSimpleList = async (campusId?: string | number, filterPublished: boolean = false): Promise<SimpleCourse[]> => {
   if (USE_MOCK) {
-    console.log("Using mock course simple list for campus:", campusId);
+    console.log("Using mock course simple list for campus:", campusId, "filterPublished:", filterPublished);
     await new Promise(resolve => setTimeout(resolve, 300));
-    // 如果需要，可以根据 campusId 过滤 mock 数据
-    return mockSimpleCourses;
+    // 按需过滤状态为PUBLISHED的模拟课程
+    return filterPublished 
+      ? mockSimpleCourses.filter((course: SimpleCourse) => 
+          course.status === 'PUBLISHED' || course.status === '1'
+        )
+      : mockSimpleCourses;
   }
 
   try {
@@ -454,6 +460,10 @@ export const getCourseSimpleList = async (campusId?: string | number): Promise<S
     let apiUrl = COURSE_API_PATHS.SIMPLE_LIST;
     // 始终添加 campusId 参数
     apiUrl += `?campusId=${finalCampusId}`;
+    // 只有在需要过滤时才添加状态参数
+    if (filterPublished) {
+      apiUrl += `&status=PUBLISHED`;
+    }
 
     console.log(`Fetching simple course list from: ${apiUrl}`);
     const response = await request(apiUrl);
@@ -465,20 +475,37 @@ export const getCourseSimpleList = async (campusId?: string | number): Promise<S
       // 检查响应数据是否为空数组
       if (Array.isArray(response.data) && response.data.length === 0) {
         console.warn('课程列表为空，返回默认模拟数据');
-        // 如果服务器返回空数组，使用模拟数据
-        return mockSimpleCourses;
+        // 按需返回过滤后的模拟数据
+        return filterPublished
+          ? mockSimpleCourses.filter((course: SimpleCourse) => 
+              course.status === 'PUBLISHED' || course.status === '1'
+            )
+          : mockSimpleCourses;
       }
-      return response.data;
+      // 按需在前端过滤，确保只返回已发布的课程
+      return filterPublished
+        ? response.data.filter((course: SimpleCourse) => 
+            course.status === 'PUBLISHED' || course.status === '1'
+          )
+        : response.data;
     } else {
       console.error("Failed to fetch course simple list or unexpected code:", response.code, response.message);
-      // 如果响应不成功，返回模拟数据而不是抛出异常
+      // 如果响应不成功，返回按需过滤的模拟数据
       console.warn('返回默认模拟数据');
-      return mockSimpleCourses;
+      return filterPublished
+        ? mockSimpleCourses.filter((course: SimpleCourse) => 
+            course.status === 'PUBLISHED' || course.status === '1'
+          )
+        : mockSimpleCourses;
     }
   } catch (error) {
     console.error("Error fetching course simple list:", error);
-    // 异常情况下返回模拟数据而不是空数组
+    // 异常情况下返回按需过滤的模拟数据
     console.warn('发生异常，返回默认模拟数据');
-    return mockSimpleCourses;
+    return filterPublished
+      ? mockSimpleCourses.filter((course: SimpleCourse) => 
+          course.status === 'PUBLISHED' || course.status === '1'
+        )
+      : mockSimpleCourses;
   }
 };

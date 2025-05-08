@@ -43,7 +43,6 @@ export interface CourseCreateRequest {
   typeId: number; // 修改为 typeId
   status: CourseStatus;
   unitHours: number;
-  totalHours: number;
   price: number;
   coachIds: number[]; // 教练ID列表
   campusId: number;
@@ -57,7 +56,6 @@ export interface CourseUpdateRequest {
   typeId: number; // 修改为 typeId
   status: CourseStatus;
   unitHours: number;
-  totalHours: number;
   price: number;
   coachIds: number[]; // 教练ID列表
   campusId: number;

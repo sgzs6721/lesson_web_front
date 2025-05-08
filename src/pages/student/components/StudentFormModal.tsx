@@ -334,7 +334,9 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 loading={loadingCourses}
               >
                 {courseList && courseList.length > 0 ? (
-                  courseList.map(course => {
+                  courseList
+                    .filter(course => course.status === 'PUBLISHED' || course.status === '1')
+                    .map(course => {
                     // 获取已选课程ID列表，排除当前正在编辑的课程组
                     const selectedCourseIds = getSelectedCourseIds(currentEditingGroupIndex !== null ? currentEditingGroupIndex : undefined);
                     // 检查当前课程是否已被选择
@@ -660,9 +662,11 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 loading={loadingCourses}
               >
                 {courseList && courseList.length > 0 ? (
-                  courseList.map(course => {
-                    // 获取已选课程ID列表
-                    const selectedCourseIds = getSelectedCourseIds();
+                  courseList
+                    .filter(course => course.status === 'PUBLISHED' || course.status === '1')
+                    .map(course => {
+                    // 获取已选课程ID列表，排除当前正在编辑的课程组
+                    const selectedCourseIds = getSelectedCourseIds(currentEditingGroupIndex !== null ? currentEditingGroupIndex : undefined);
                     // 检查当前课程是否已被选择
                     const isDisabled = selectedCourseIds.includes(String(course.id));
 

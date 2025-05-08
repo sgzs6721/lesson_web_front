@@ -12,10 +12,14 @@ export const PAYMENT_METHOD = {
   REFUND: '退费',
 };
 
-export const COURSE_TYPES = {};
+export const COURSE_TYPES = {
+  JUNIOR: '初级班',
+  INTERMEDIATE: '中级班',
+  ADVANCED: '高级班',
+};
 
 export const PAYMENT_TYPE = {
   TYPE_30: '30次课',
   TYPE_50: '50次课',
   TYPE_100: '100次课',
-}; 
+};

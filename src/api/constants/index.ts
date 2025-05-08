@@ -150,8 +150,8 @@ export const constants = {
     }
 
     try {
-      const response = await request(`${CONSTANTS_API_PATHS.DELETE}/${id}`, {
-        method: 'DELETE'
+      const response = await request(`${CONSTANTS_API_PATHS.DELETE}?id=${id}`, {
+        method: 'POST'
       });
 
       // API成功返回code=200

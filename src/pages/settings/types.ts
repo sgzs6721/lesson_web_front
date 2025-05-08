@@ -55,7 +55,7 @@ export interface IOptionListProps {
   title: string;
   addButtonText: string;
   onAdd: (option: IOptionItem) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, name: string) => void;
   onUpdate: (id: string, option: IOptionItem) => void;
   loading?: boolean;
   closeForm?: boolean;
@@ -76,7 +76,7 @@ export interface IFormCardProps {
 }
 
 // 组件Tab类型
-export type TabKey = 'basic' | 'salary' | 'options' | 'backup';
+export type TabKey = 'basic' | 'advanced' | 'options' | 'backup';
 
 export interface IAdvancedSettings {
   enableCache: boolean;

@@ -45,30 +45,33 @@ const renderCourseTypeTag = (type: string) => {
 
 // 渲染状态标签
 export const renderStatusTag = (status: string) => {
+  // 统一处理状态值
   let color = '';
   let text = '';
 
-  switch (status) {
-    case '1':  // PUBLISHED
-      color = 'green';
-      text = '已发布';
-      break;
-    case 'SUSPENDED':
-      color = 'orange';
-      text = '已暂停';
-      break;
-    case 'TERMINATED':
-      color = 'red';
-      text = '已终止';
-      break;
-    case 'PUBLISHED':  // 添加对英文枚举值的处理
-      color = 'green';
-      text = '已发布';
-      break;
-    default:
-      color = 'default';
-      text = status;
+  // 转换为大写字符串以便比较
+  const normalizedStatus = status?.toString().toUpperCase() || '';
+  console.log('表格渲染状态标签, 原始状态:', status, '标准化后:', normalizedStatus);
+
+  if (normalizedStatus === '1' || normalizedStatus === 'PUBLISHED') {
+    color = 'green';
+    text = '已发布';
+  } else if (normalizedStatus === 'SUSPENDED') {
+    color = 'orange';
+    text = '已暂停';
+  } else if (normalizedStatus === 'TERMINATED') {
+    color = 'red';
+    text = '已终止';
+  } else if (normalizedStatus === '0' || normalizedStatus === 'DRAFT') {
+    color = 'default';
+    text = '草稿';
+  } else {
+    // 未知状态
+    color = 'default';
+    text = status || '未知状态';
   }
+
+  console.log('渲染状态标签结果:', { color, text });
 
   return <Tag color={color} style={{ display: 'inline-flex', alignItems: 'center', height: '22px', padding: '0 8px', fontSize: '12px', lineHeight: '22px' }}>{text}</Tag>;
 };

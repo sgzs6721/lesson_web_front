@@ -61,8 +61,11 @@ export default function useTransferClassModal(
     if (currentStudent && courseList) {
       console.log('[TransferClassModal] 当前学员:', currentStudent);
       const currentCourseIdNorm = normalizeCourseId(originalCourseId); // 使用 state 中的 originalCourseId
-      // 过滤掉原课程
-      const filteredCourses = courseList.filter(course => String(course.id) !== String(currentCourseIdNorm));
+      // 过滤掉原课程，并且只保留状态为PUBLISHED的课程
+      const filteredCourses = courseList.filter(course => 
+        String(course.id) !== String(currentCourseIdNorm) && 
+        (course.status === 'PUBLISHED' || course.status === '1')
+      );
       setAvailableCourses(filteredCourses);
       console.log('[TransferClassModal] 可选目标课程:', filteredCourses);
     }

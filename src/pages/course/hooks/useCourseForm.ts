@@ -28,12 +28,17 @@ export const useCourseForm = (
   // 显示编辑表单
   const handleEdit = (record: Course) => {
     console.log('准备编辑课程:', JSON.stringify(record, null, 2));
+    console.log('课程状态值:', record.status);
 
-    // 不在这里重置表单，会在CourseEditModal组件中处理
-    // form.resetFields() 可能会导致表单实例未连接
+    // 为确保组件内部能正确处理，先在这里保留一份课程完整信息
+    const courseToEdit = {
+      ...record,
+      // 确保状态值保持一致
+      status: record.status
+    };
     
     // 仅设置编辑状态，表单数据会在CourseEditModal组件中完整设置
-    setEditingCourse(record);
+    setEditingCourse(courseToEdit);
     
     // 显示模态框
     setVisible(true);
@@ -44,6 +49,9 @@ export const useCourseForm = (
     try {
       const values = await form.validateFields();
       setLoading(true);
+
+      // 打印状态值
+      console.log('提交表单时的状态值:', values.status, '类型:', typeof values.status);
 
       // 确保教练IDs是数组
       let coachIds = values.coachIds || [];

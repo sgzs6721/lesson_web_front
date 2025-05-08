@@ -463,33 +463,33 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                                   </Tag>
                                 );
                               case 'REFUNDED':
-                                return (
-                                  <Tag 
+                              return (
+                                <Tag 
                                     color="#f5222d" 
-                                    style={{ 
-                                      fontSize: '13px', 
-                                      padding: '1px 10px', 
-                                      borderRadius: '4px',
-                                      fontWeight: '500'
-                                    }}
-                                  >
-                                    {statusText}
-                                  </Tag>
-                                );
+                                  style={{ 
+                                    fontSize: '13px', 
+                                    padding: '1px 10px', 
+                                    borderRadius: '4px',
+                                    fontWeight: '500'
+                                  }}
+                                >
+                                  {statusText}
+                                </Tag>
+                              );
                               default:
-                                return (
-                                  <Tag 
-                                    color={statusColor} 
-                                    style={{ 
-                                      fontSize: '13px', 
-                                      padding: '1px 10px', 
-                                      borderRadius: '4px',
-                                      fontWeight: '500'
-                                    }}
-                                  >
-                                    {statusText}
-                                  </Tag>
-                                );
+                            return (
+                              <Tag 
+                                color={statusColor} 
+                                style={{ 
+                                  fontSize: '13px', 
+                                  padding: '1px 10px', 
+                                  borderRadius: '4px',
+                                  fontWeight: '500'
+                                }}
+                              >
+                                {statusText}
+                              </Tag>
+                            );
                             }
                           })()}
                         </div>

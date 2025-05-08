@@ -7,8 +7,6 @@ import FormCard from './FormCard';
 import { IBasicSettings } from '../types';
 import { SYSTEM_THEMES, SYSTEM_LANGUAGES } from '../constants';
 
-const { Option } = Select;
-
 interface IBasicSettingsTabProps {
   form: FormInstance<IBasicSettings>;
   logoFileList: UploadFile[];
@@ -24,6 +22,20 @@ const BasicSettingsTab: React.FC<IBasicSettingsTabProps> = ({
   beforeUpload,
   onSave
 }) => {
+  // 自定义 Upload 组件的值转换函数
+  const normFile = (e: any) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList || [];
+  };
+
+  // 确保 logoFileList 始终是数组
+  const safeLogoFileList = Array.isArray(logoFileList) ? logoFileList : [];
+  
+  // 空的文件列表数组
+  const emptyFileList: UploadFile[] = [];
+
   return (
     <FormCard title="基础设置">
       <Form
@@ -63,12 +75,12 @@ const BasicSettingsTab: React.FC<IBasicSettingsTabProps> = ({
             >
               <Upload
                 listType="picture-card"
-                fileList={logoFileList}
+                fileList={safeLogoFileList}
                 onChange={handleLogoChange}
                 beforeUpload={beforeUpload}
                 maxCount={1}
               >
-                {logoFileList.length >= 1 ? null : (
+                {safeLogoFileList.length >= 1 ? null : (
                   <div>
                     <UploadOutlined />
                     <div style={{ marginTop: 8 }}>上传</div>
@@ -82,11 +94,10 @@ const BasicSettingsTab: React.FC<IBasicSettingsTabProps> = ({
               label="系统主题"
               rules={[{ required: true, message: '请选择系统主题' }]}
             >
-              <Select placeholder="请选择系统主题">
-                {SYSTEM_THEMES.map(theme => (
-                  <Option key={theme.value} value={theme.value}>{theme.label}</Option>
-                ))}
-              </Select>
+              <Select 
+                placeholder="请选择系统主题"
+                options={SYSTEM_THEMES}
+              />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -99,6 +110,7 @@ const BasicSettingsTab: React.FC<IBasicSettingsTabProps> = ({
                 listType="picture-card"
                 maxCount={1}
                 beforeUpload={beforeUpload}
+                fileList={emptyFileList}
               >
                 <div>
                   <UploadOutlined />
@@ -112,11 +124,10 @@ const BasicSettingsTab: React.FC<IBasicSettingsTabProps> = ({
               label="系统语言"
               rules={[{ required: true, message: '请选择系统语言' }]}
             >
-              <Select placeholder="请选择系统语言">
-                {SYSTEM_LANGUAGES.map(lang => (
-                  <Option key={lang.value} value={lang.value}>{lang.label}</Option>
-                ))}
-              </Select>
+              <Select 
+                placeholder="请选择系统语言"
+                options={SYSTEM_LANGUAGES}
+              />
             </Form.Item>
           </Col>
         </Row>

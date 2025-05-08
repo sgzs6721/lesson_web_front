@@ -68,6 +68,22 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           // 编辑模式
           console.log('编辑课程数据:', JSON.stringify(currentEditingCourse, null, 2));
 
+          // 处理状态值，确保它始终为预期的格式
+          let statusValue = currentEditingCourse.status;
+          console.log('原始状态值:', statusValue, '类型:', typeof statusValue);
+          
+          // 如果状态值不是 CourseStatus 枚举中定义的值，尝试转换
+          const statusStr = String(statusValue).toUpperCase();
+          if (statusStr === '1' || statusStr === 'PUBLISHED') {
+            statusValue = CourseStatus.PUBLISHED;
+          } else if (statusStr === 'SUSPENDED') {
+            statusValue = CourseStatus.SUSPENDED;
+          } else if (statusStr === 'TERMINATED') {
+            statusValue = CourseStatus.TERMINATED;
+          }
+          
+          console.log('处理后的状态值:', statusValue);
+
           // 从 coaches 数组提取教练 ID
           const coachIds = currentEditingCourse.coaches?.map(coach => Number(coach.id)) || [];
           console.log('解析后的教练ID列表:', coachIds);
@@ -107,9 +123,8 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           const formValues = {
             name: currentEditingCourse.name,
             typeId: typeId, // 使用找到的类型 ID
-            status: currentEditingCourse.status,
+            status: statusValue, // 使用处理后的状态值
             unitHours: currentEditingCourse.unitHours,
-            totalHours: currentEditingCourse.totalHours,
             price: currentEditingCourse.price,
             coachFee: currentEditingCourse.coachFee,
             coachIds: coachIds,
@@ -120,6 +135,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           console.log('设置表单初始值:', JSON.stringify(formValues, null, 2));
           console.log('coachIds值:', formValues.coachIds);
           console.log('typeId值:', formValues.typeId);
+          console.log('status值:', formValues.status, '类型:', typeof formValues.status);
 
           // 设置表单值
           form.setFieldsValue(formValues);
@@ -129,24 +145,68 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           console.log('设置后的表单实际值:', JSON.stringify(currentValues, null, 2));
           console.log('表单中的coachIds实际值:', currentValues.coachIds);
           console.log('表单中的typeId实际值:', currentValues.typeId);
+          console.log('表单中的status实际值:', currentValues.status, '类型:', typeof currentValues.status);
           
-          // 表单值设置完成后，设置初始化状态为完成
-          setFormInitialized(true);
+          // 强制设置状态值
+          setTimeout(() => {
+            console.log('强制设置状态值:', statusValue);
+            
+            // 先使用setFields直接设置
+            form.setFields([
+              {
+                name: 'status',
+                value: statusValue
+              }
+            ]);
+            
+            // 然后使用setFieldValue再次设置
+            form.setFieldValue('status', statusValue);
+            
+            // 再次获取状态值，检查是否设置成功
+            const updatedStatus = form.getFieldValue('status');
+            console.log('强制设置后的状态值:', updatedStatus);
+            
+            // 标记表单为初始化完成
+            setFormInitialized(true);
+          }, 200);
         } else {
           // 添加模式
           if (currentCachedTypes.length > 0) {
+            const defaultStatus = CourseStatus.PUBLISHED;
+            console.log('添加模式，设置默认状态:', defaultStatus);
+            
             form.setFieldsValue({
-              status: CourseStatus.PUBLISHED,
+              status: defaultStatus,
               unitHours: 1,
-              totalHours: 10,
               price: 100,
               coachFee: 50,
               coachIds: [],
               campusId: Number(localStorage.getItem('currentCampusId') || '1'),
               description: ''
             });
-            // 添加模式下直接设置初始化完成
-            setFormInitialized(true);
+            
+            // 强制设置状态值
+            setTimeout(() => {
+              console.log('强制设置默认状态值:', defaultStatus);
+              
+              // 先使用setFields直接设置
+              form.setFields([
+                {
+                  name: 'status',
+                  value: defaultStatus
+                }
+              ]);
+              
+              // 然后使用setFieldValue再次设置
+              form.setFieldValue('status', defaultStatus);
+              
+              // 再次获取状态值，检查是否设置成功
+              const updatedStatus = form.getFieldValue('status');
+              console.log('强制设置后的默认状态值:', updatedStatus);
+              
+              // 添加模式下直接设置初始化完成
+              setFormInitialized(true);
+            }, 200);
           }
         }
       } catch (error) {
@@ -211,6 +271,12 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           layout="vertical"
           name="courseForm"
           preserve={false}
+          initialValues={{ status: CourseStatus.PUBLISHED }}
+          onValuesChange={(changedValues) => {
+            if ('status' in changedValues) {
+              console.log('状态值变更为:', changedValues.status);
+            }
+          }}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -344,20 +410,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
             </Col>
             <Col span={6}>
               <Form.Item
-                name="totalHours"
-                label="总课时"
-                rules={[{ required: true, message: '请输入总课时' }]}
-              >
-                <InputNumber
-                  min={1}
-                  style={{ width: '100%' }}
-                  placeholder="请输入总课时"
-                  disabled={loading}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={6}>
-              <Form.Item
                 name="price"
                 label="课程单价"
                 rules={[{ required: true, message: '请输入课程单价' }]}
@@ -372,7 +424,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                 />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={12}>
               <Form.Item
                 name="coachFee"
                 label="教练课时费"

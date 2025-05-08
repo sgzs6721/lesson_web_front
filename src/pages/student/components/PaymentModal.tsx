@@ -132,12 +132,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         return { color: 'red', text: '已退费' };
       default:
         // 兼容旧的状态映射方式
-        const statusLower = status.toLowerCase();
-        if (statusLower.includes('expire') || statusLower === 'expired') {
-          return { color: 'orange', text: '过期' };
-        } else if (statusLower.includes('graduate') || statusLower === 'graduated') {
-          return { color: 'blue', text: '结业' };
-        }
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('expire') || statusLower === 'expired') {
+      return { color: 'orange', text: '过期' };
+    } else if (statusLower.includes('graduate') || statusLower === 'graduated') {
+      return { color: 'blue', text: '结业' };
+    }
         return { color: 'green', text: '学习中' };
     }
   };

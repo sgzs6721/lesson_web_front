@@ -3,6 +3,8 @@ import { message } from 'antd';
 import { Course, CourseSearchParams, CourseType, CourseStatus } from '../types/course';
 import { course as courseAPI } from '@/api/course';
 import { CourseCreateRequest, CourseUpdateRequest } from '@/api/course/types';
+import { constants } from '@/api/constants';
+import { getTypeNameById } from '../constants/courseOptions';
 
 export const useCourseData = () => {
   // 存储所有课程数据，用于重置过滤器
@@ -19,14 +21,26 @@ export const useCourseData = () => {
       // 调用API添加课程
       const courseId = await courseAPI.add(values);
 
+      // 对于教练信息，直接使用 ID 和简单名称，不再获取完整信息
+      const coaches = values.coachIds ? values.coachIds.map((id: any) => {
+        return {
+          id: Number(id),
+          name: `教练${id}` // 使用简单名称
+        };
+      }) : [];
+
+      // 获取类型名称
+      let typeName = getTypeNameById(values.typeId);
+      console.log('添加课程使用的类型名称:', typeName);
+
       // 构造新课程对象，直接使用提交的表单数据
       const newCourse: Course = {
         id: courseId,
         name: values.name,
-        type: String(values.typeId), // 前端会在表单中显示实际的课程类型名称
+        type: typeName, // 使用类型名称而不是ID
         status: values.status,
         unitHours: values.unitHours,
-        totalHours: values.totalHours,
+        totalHours: values.unitHours, // 默认与单课时相同
         consumedHours: 0, // 新课程消耗课时为0
         price: values.price,
         coachFee: 0, // 设置默认的教练费用
@@ -35,12 +49,7 @@ export const useCourseData = () => {
         description: values.description || '',
         createdTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
-        coaches: values.coachIds ? values.coachIds.map((id: any) => {
-          return {
-            id: Number(id),
-            name: `教练${id}` // 使用简单名称，下次刷新列表时会自动获取完整信息
-          };
-        }) : []
+        coaches: coaches
       };
 
       // 更新本地状态
@@ -68,6 +77,8 @@ export const useCourseData = () => {
         ...values
       };
 
+      console.log('提交到API的更新数据:', updateData);
+      
       // 调用API更新课程
       await courseAPI.update(updateData);
 
@@ -79,50 +90,54 @@ export const useCourseData = () => {
         throw new Error('找不到要更新的课程');
       }
 
-      // 获取课程类型名称
-      let typeName = originalCourse.type;
-      if (values.typeId && values.typeId !== Number(originalCourse.type)) {
-        const courseTypeList = await import('@/api/constants').then(module => module.constants.getList('COURSE_TYPE'));
-        const courseType = courseTypeList.find(type => type.id === Number(values.typeId));
-        if (courseType) {
-          typeName = courseType.constantValue;
+      // 处理课程类型显示
+      let typeName = originalCourse.type; // 默认保持原来的类型名称
+      
+      // 如果类型发生变化，尝试查找匹配的名称
+      if (values.typeId && Number(values.typeId) !== Number(originalCourse.type)) {
+        console.log('类型ID已更改:', `${originalCourse.type} -> ${values.typeId}`);
+        
+        // 使用辅助函数获取类型名称
+        typeName = getTypeNameById(values.typeId);
+        console.log('获取到的类型名称:', typeName);
+      } else {
+        console.log('类型ID未变化，保持原类型名称:', typeName);
+      }
+
+      // 使用提交的表单值更新课程，不再获取远程数据
+      const coachesWithNames = values.coachIds ? values.coachIds.map((id: any) => {
+        // 尝试保留原教练名称
+        const originalCoach = originalCourse.coaches?.find(coach => coach.id === Number(id));
+        if (originalCoach?.name) {
+          return originalCoach;
         }
-      }
+        // 如果找不到原教练名称，使用简单名称
+        return {
+          id: Number(id),
+          name: `教练${id}` // 简单名称
+        };
+      }) : (originalCourse.coaches || []);
 
-      // 获取教练名称
-      let coachesWithNames = originalCourse.coaches;
-      if (values.coachIds) {
-        const currentCampusId = values.campusId || originalCourse.campusId || localStorage.getItem('currentCampusId') || '1';
-        const coachList = await import('@/api/coach').then(module => module.coach.getSimpleList(currentCampusId));
-
-        coachesWithNames = values.coachIds.map((id: any) => {
-          // 尝试保留原教练名称
-          const originalCoach = originalCourse.coaches?.find(coach => coach.id === Number(id));
-          if (originalCoach?.name) {
-            return originalCoach;
-          }
-          // 从教练列表中查找对应的教练名称
-          const coach = coachList.find(coach => coach.id === Number(id));
-          return {
-            id: Number(id),
-            name: coach?.name || `教练${id}` // 如果找不到教练名称，显示默认名称
-          };
-        });
-      }
+      // 获取最新的状态值，确保它是正确的格式
+      let statusValue = values.status;
+      console.log('更新操作的状态值:', statusValue);
 
       // 构造更新后的课程对象
       const updatedCourse: Course = {
         ...originalCourse,
         name: values.name || originalCourse.name,
         type: typeName, // 使用课程类型名称而不是ID
-        status: values.status || originalCourse.status,
+        status: statusValue, // 使用新的状态值
         unitHours: values.unitHours || originalCourse.unitHours,
-        totalHours: values.totalHours || originalCourse.totalHours,
+        totalHours: values.unitHours || originalCourse.unitHours, // 与单课时相同
         price: values.price || originalCourse.price,
         description: values.description !== undefined ? values.description : originalCourse.description,
         updateTime: new Date().toISOString(),
         coaches: coachesWithNames
       };
+
+      console.log('更新后的课程对象:', updatedCourse);
+      console.log('更新后的状态值:', updatedCourse.status);
 
       // 更新本地状态
       setCourses(prevCourses =>

@@ -14,7 +14,7 @@
   cursor: pointer;
   transition: all 0.3s;
   background-color: #f5f5f5;
-  border: 1px solid #e8e8e8;
+  border: none;
   position: relative;
   font-size: 14px;
   color: #666;
@@ -61,53 +61,53 @@
 
 /* 活跃状态图标 */
 .custom-radio-button.active-status {
-  border-color: #66BB6A;
+  border-color: transparent;
 }
 
 .custom-radio-button.active-status.active {
   background-color: #4CAF50;
-  border-color: #43A047;
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(76, 175, 80, 0.15);
 }
 
 .custom-radio-button.active-status:not(.active):hover {
   background-color: #E8F5E9;
   color: #43A047;
-  border-color: #81C784;
+  border-color: transparent;
 }
 
 /* 非活跃状态图标 */
 .custom-radio-button.inactive-status {
-  border-color: #ff4d4f;
+  border-color: transparent;
 }
 
 .custom-radio-button.inactive-status.active {
   background-color: #ff4d4f;
-  border-color: #ff4d4f;
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(255, 77, 79, 0.15);
 }
 
 .custom-radio-button.inactive-status:not(.active):hover {
   background-color: #fff1f0;
   color: #ff4d4f;
-  border-color: #ffa39e;
+  border-color: transparent;
 }
 
 /* 待开课状态图标 */
 .custom-radio-button.pending-status {
-  border-color: #faad14;
+  border-color: transparent;
 }
 
 .custom-radio-button.pending-status.active {
   background-color: #faad14;
-  border-color: #faad14;
+  border-color: transparent;
   box-shadow: 0 1px 3px rgba(250, 173, 20, 0.15);
 }
 
 .custom-radio-button.pending-status:not(.active):hover {
   background-color: #fffbe6;
   color: #faad14;
-  border-color: #ffe58f;
+  border-color: transparent;
 }
 
 /* 隐藏原始单选框 */
@@ -125,14 +125,14 @@
   cursor: not-allowed;
   color: rgba(0, 0, 0, 0.25);
   background-color: #f5f5f5;
-  border-color: #d9d9d9;
+  border-color: transparent;
 }
 
 /* 禁用时不显示悬停效果 */
 .custom-radio-button.disabled:hover {
   background-color: #f5f5f5;
   color: rgba(0, 0, 0, 0.25);
-  border-color: #d9d9d9;
+  border-color: transparent;
 }
 
 /* 禁用但选中的状态 */

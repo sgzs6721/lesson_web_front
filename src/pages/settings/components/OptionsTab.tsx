@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Tabs, Divider, Typography } from 'antd';
 import { BookOutlined, DollarOutlined, GiftOutlined, PercentageOutlined } from '@ant-design/icons';
 import { IOptionItem } from '../types';
 import OptionListComponent from './OptionListComponent';
 import './OptionsTab.css';
 
-const { TabPane } = Tabs;
 const { Title } = Typography;
 
 interface OptionsTabProps {
@@ -16,6 +15,7 @@ interface OptionsTabProps {
   onAddOption: (type: string, option: IOptionItem) => void;
   onDeleteOption: (type: string, id: string) => void;
   onUpdateOption: (id: string, option: IOptionItem) => void;
+  showDeleteConfirm: (type: string, id: string, name: string) => void;
   loading?: Record<string, boolean>;
   closeAddForm?: Record<string, boolean>;
   closeEditForm?: Record<string, boolean>;
@@ -29,6 +29,7 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
   onAddOption,
   onDeleteOption,
   onUpdateOption,
+  showDeleteConfirm,
   loading = {},
   closeAddForm = {},
   closeEditForm = {}
@@ -43,57 +44,53 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
   };
 
   // 处理删除选项
-  const handleDeleteOption = (type: string, id: string) => {
-    // 直接调用父组件方法，让父组件处理API调用和状态更新
-    onDeleteOption(type, id);
+  const handleDeleteOption = (type: string, id: string, name: string) => {
+    // 调用父组件的显示删除确认模态框方法
+    showDeleteConfirm(type, id, name);
   };
 
   // 处理更新选项
   const handleUpdateOption = (id: string, option: IOptionItem) => {
-    // 不再需要传递 type，直接传递 id 和 option 给父组件
+    // 不再需要传递 type，直接传递 id 和 option
     onUpdateOption(id, option);
   };
 
-  return (
-    <div className="options-tab">
-      <Tabs 
-        defaultActiveKey="course" 
-        tabPosition="left"
-        className="settings-vertical-tabs"
-      >
-        <TabPane 
-          tab={
-            <span className="tab-item">
-              <BookOutlined />
-              课程相关
-            </span>
-          }
-          key="course"
-        >
-          <div className="option-section">
-            <OptionListComponent
-              type="courseType"
-              options={courseTypeOptions}
-              title="课程类型"
-              addButtonText="添加"
-              onAdd={(option) => handleAddOption('courseType', option)}
-              onDelete={(id) => handleDeleteOption('courseType', id)}
-              onUpdate={(id, option) => handleUpdateOption(id, option)}
-              loading={loading['COURSE_TYPE']}
-              closeForm={closeAddForm['COURSE_TYPE'] || closeEditForm['COURSE_TYPE']}
-            />
-          </div>
-        </TabPane>
-        
-        <TabPane 
-          tab={
-            <span className="tab-item">
-              <DollarOutlined />
-              支付相关
-            </span>
-          }
-          key="payment"
-        >
+  // 定义 tabs 的 items 配置
+  const tabItems = [
+    {
+      key: 'course',
+      label: (
+        <span className="tab-item">
+          <BookOutlined />
+          课程相关
+        </span>
+      ),
+      children: (
+        <div className="option-section">
+          <OptionListComponent
+            type="courseType"
+            options={courseTypeOptions}
+            title="课程类型"
+            addButtonText="添加"
+            onAdd={(option) => handleAddOption('courseType', option)}
+            onDelete={(id, name) => handleDeleteOption('courseType', id, name)}
+            onUpdate={(id, option) => handleUpdateOption(id, option)}
+            loading={loading['COURSE_TYPE']}
+            closeForm={closeAddForm['COURSE_TYPE'] || closeEditForm['COURSE_TYPE']}
+          />
+        </div>
+      )
+    },
+    {
+      key: 'payment',
+      label: (
+        <span className="tab-item">
+          <DollarOutlined />
+          支付相关
+        </span>
+      ),
+      children: (
+        <>
           <div className="option-section">
             <OptionListComponent
               type="paymentMethod"
@@ -101,7 +98,7 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
               title="支付方式"
               addButtonText="添加"
               onAdd={(option) => handleAddOption('paymentMethod', option)}
-              onDelete={(id) => handleDeleteOption('paymentMethod', id)}
+              onDelete={(id, name) => handleDeleteOption('paymentMethod', id, name)}
               onUpdate={(id, option) => handleUpdateOption(id, option)}
               loading={loading['PAYMENT_TYPE']}
               closeForm={closeAddForm['PAYMENT_TYPE'] || closeEditForm['PAYMENT_TYPE']}
@@ -117,7 +114,7 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
               title="赠品列表"
               addButtonText="添加"
               onAdd={(option) => handleAddOption('gift', option)}
-              onDelete={(id) => handleDeleteOption('gift', id)}
+              onDelete={(id, name) => handleDeleteOption('gift', id, name)}
               onUpdate={(id, option) => handleUpdateOption(id, option)}
               loading={loading['GIFT_ITEM']}
               closeForm={closeAddForm['GIFT_ITEM'] || closeEditForm['GIFT_ITEM']}
@@ -133,14 +130,25 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
               title="手续费选项"
               addButtonText="添加"
               onAdd={(option) => handleAddOption('fee', option)}
-              onDelete={(id) => handleDeleteOption('fee', id)}
+              onDelete={(id, name) => handleDeleteOption('fee', id, name)}
               onUpdate={(id, option) => handleUpdateOption(id, option)}
               loading={loading['HANDLING_FEE_TYPE']}
               closeForm={closeAddForm['HANDLING_FEE_TYPE'] || closeEditForm['HANDLING_FEE_TYPE']}
             />
           </div>
-        </TabPane>
-      </Tabs>
+        </>
+      )
+    }
+  ];
+
+  return (
+    <div className="options-tab">
+      <Tabs 
+        defaultActiveKey="course" 
+        tabPosition="left"
+        className="settings-vertical-tabs"
+        items={tabItems}
+      />
     </div>
   );
 };

@@ -21,13 +21,13 @@ const OptionList: React.FC<IOptionListProps> = ({
     if (!newOptionName.trim() || !newOptionValue.trim()) {
       return;
     }
-    
+
     const newOption: IOptionItem = {
       id: '', // 会在父组件中通过uuid生成
       name: newOptionName,
       value: newOptionValue
     };
-    
+
     onAdd(newOption);
     setNewOptionName('');
     setNewOptionValue('');
@@ -43,7 +43,7 @@ const OptionList: React.FC<IOptionListProps> = ({
     if (!editingId || !editName.trim() || !editValue.trim()) {
       return;
     }
-    
+
     onUpdate(editingId, { id: editingId, name: editName, value: editValue });
     setEditingId(null);
   };
@@ -61,34 +61,34 @@ const OptionList: React.FC<IOptionListProps> = ({
             actions={
               editingId === item.id
                 ? [
-                    <Button 
-                      icon={<SaveOutlined />} 
-                      size="small" 
+                    <Button
+                      icon={<SaveOutlined />}
+                      size="small"
                       type="primary"
                       onClick={saveEdit}
                     >
                       保存
                     </Button>,
-                    <Button 
-                      size="small" 
+                    <Button
+                      size="small"
                       onClick={() => setEditingId(null)}
                     >
                       取消
                     </Button>
                   ]
                 : [
-                    <Button 
-                      icon={<EditOutlined />} 
-                      size="small" 
+                    <Button
+                      icon={<EditOutlined />}
+                      size="small"
                       onClick={() => startEditing(item)}
                     >
                       编辑
                     </Button>,
-                    <Button 
-                      danger 
-                      icon={<DeleteOutlined />} 
+                    <Button
+                      danger
+                      icon={<DeleteOutlined />}
                       size="small"
-                      onClick={() => onDelete(item.id)}
+                      onClick={() => onDelete(item.id, item.name)}
                     >
                       删除
                     </Button>
@@ -132,8 +132,8 @@ const OptionList: React.FC<IOptionListProps> = ({
               onChange={(e) => setNewOptionValue(e.target.value)}
               style={{ width: '40%' }}
             />
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               icon={<PlusOutlined />}
               onClick={handleAdd}
             >
@@ -146,4 +146,4 @@ const OptionList: React.FC<IOptionListProps> = ({
   );
 };
 
-export default OptionList; 
+export default OptionList;

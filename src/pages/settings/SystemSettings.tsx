@@ -13,6 +13,7 @@ import BasicSettingsTab from './components/BasicSettingsTab';
 import AdvancedSettingsTab from './components/AdvancedSettingsTab';
 import OptionsTab from './components/OptionsTab';
 import BackupTab from './components/BackupTab';
+import ConstantDeleteModal from './components/ConstantDeleteModal';
 import {
   SettingOutlined,
   ToolOutlined,
@@ -60,6 +61,10 @@ const SystemSettings: React.FC = () => {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [closeAddForm, setCloseAddForm] = useState<Record<string, boolean>>({});
   const [closeEditForm, setCloseEditForm] = useState<Record<string, boolean>>({});
+  
+  // 删除模态框相关状态
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{id: string, type: string, name: string} | null>(null);
 
   // 加载选项数据 - 修改为强制返回空数组
   const loadOptions = async (type: string) => {
@@ -217,6 +222,30 @@ const SystemSettings: React.FC = () => {
     }
   };
 
+  // 显示删除确认模态框
+  const showDeleteConfirm = (type: string, id: string, name: string) => {
+    setItemToDelete({ id, type, name });
+    setDeleteModalVisible(true);
+  };
+
+  // 取消删除
+  const cancelDelete = () => {
+    setDeleteModalVisible(false);
+    setItemToDelete(null);
+  };
+
+  // 确认删除选项
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    const { type, id } = itemToDelete;
+    await handleDeleteOption(type, id);
+    
+    setDeleteModalVisible(false);
+    setItemToDelete(null);
+  };
+
+  // 修改已有的删除选项函数
   const handleDeleteOption = async (type: string, id: string) => {
     const apiType = getApiType(type);
     
@@ -417,107 +446,106 @@ const SystemSettings: React.FC = () => {
   };
 
   return (
-    <div className="system-settings">
-      <Card className="system-settings-card">
-        <div className="settings-header">
-          <Title level={4} className="settings-title">系统设置</Title>
-        </div>
-
-        <Tabs 
-          activeKey={activeTab} 
-          onChange={(key) => setActiveTab(key as TabKey)}
-          type="card"
-          size="large"
-          className="settings-tabs"
+    <div className="system-settings-container">
+      <Typography.Title level={2} className="page-title">系统设置</Typography.Title>
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as TabKey)}
+        type="card"
+        className="settings-tabs"
+      >
+        <TabPane 
+          tab={
+            <span className="tab-item">
+              <SettingOutlined />
+              基础设置
+            </span>
+          }
+          key="basic"
         >
-          <TabPane 
-            tab={
-              <span className="tab-label">
-                <SettingOutlined />
-                基础设置
-              </span>
-            } 
-            key="basic" 
-            forceRender
-          >
-            {shouldRenderTab('basic') && (
-              <BasicSettingsTab
-                form={basicForm}
-                logoFileList={logoFileList}
-                handleLogoChange={handleLogoChange}
-                beforeUpload={beforeUpload}
-                onSave={handleSaveBasicSettings}
-              />
-            )}
-          </TabPane>
-          
-          <TabPane 
-            tab={
-              <span className="tab-label">
-                <ToolOutlined />
-                高级设置
-              </span>
-            } 
-            key="options" 
-            forceRender
-          >
-            {shouldRenderTab('options') && (
-              <AdvancedSettingsTab
-                form={advancedForm}
-                onSave={handleSaveAdvancedSettings}
-              />
-            )}
-          </TabPane>
-          
-          <TabPane 
-            tab={
-              <span className="tab-label">
-                <AppstoreOutlined />
-                选项管理
-              </span>
-            } 
-            key="salary" 
-            forceRender
-          >
-            {shouldRenderTab('salary') && (
-              <OptionsTab
-                courseTypeOptions={courseTypeOptions}
-                paymentMethodOptions={paymentMethodOptions}
-                giftOptions={giftOptions}
-                feeOptions={feeOptions}
-                onAddOption={handleAddOption}
-                onDeleteOption={handleDeleteOption}
-                onUpdateOption={handleUpdateOption}
-                loading={loading}
-                closeAddForm={closeAddForm}
-                closeEditForm={closeEditForm}
-              />
-            )}
-          </TabPane>
-          
-          <TabPane 
-            tab={
-              <span className="tab-label">
-                <SafetyCertificateOutlined />
-                备份与恢复
-              </span>
-            } 
-            key="backup" 
-            forceRender
-          >
-            {shouldRenderTab('backup') && (
-              <BackupTab
-                backupList={backupList}
-                onCreateBackup={handleCreateBackup}
-                onRestoreBackup={handleRestoreBackup}
-                onDeleteBackup={handleDeleteBackup}
-                onDownloadBackup={handleDownloadBackup}
-                onUploadBackup={handleUploadBackup}
-              />
-            )}
-          </TabPane>
-        </Tabs>
-      </Card>
+          {shouldRenderTab('basic') && (
+            <BasicSettingsTab
+              form={basicForm}
+              logoFileList={logoFileList}
+              handleLogoChange={handleLogoChange}
+              beforeUpload={beforeUpload}
+              onSave={handleSaveBasicSettings}
+            />
+          )}
+        </TabPane>
+        
+        <TabPane 
+          tab={
+            <span className="tab-item">
+              <ToolOutlined />
+              高级设置
+            </span>
+          }
+          key="advanced"
+        >
+          {shouldRenderTab('advanced') && (
+            <AdvancedSettingsTab
+              form={advancedForm}
+              onSave={handleSaveAdvancedSettings}
+            />
+          )}
+        </TabPane>
+        
+        <TabPane 
+          tab={
+            <span className="tab-item">
+              <AppstoreOutlined />
+              选项管理
+            </span>
+          }
+          key="options"
+        >
+          {shouldRenderTab('options') && (
+            <OptionsTab
+              courseTypeOptions={courseTypeOptions}
+              paymentMethodOptions={paymentMethodOptions}
+              giftOptions={giftOptions}
+              feeOptions={feeOptions}
+              onAddOption={handleAddOption}
+              onDeleteOption={handleDeleteOption}
+              onUpdateOption={handleUpdateOption}
+              showDeleteConfirm={showDeleteConfirm}
+              loading={loading}
+              closeAddForm={closeAddForm}
+              closeEditForm={closeEditForm}
+            />
+          )}
+        </TabPane>
+        
+        <TabPane 
+          tab={
+            <span className="tab-item">
+              <SafetyCertificateOutlined />
+              备份恢复
+            </span>
+          }
+          key="backup"
+        >
+          {shouldRenderTab('backup') && (
+            <BackupTab
+              backupList={backupList}
+              onCreateBackup={handleCreateBackup}
+              onRestoreBackup={handleRestoreBackup}
+              onDeleteBackup={handleDeleteBackup}
+              onDownloadBackup={handleDownloadBackup}
+              onUploadBackup={handleUploadBackup}
+            />
+          )}
+        </TabPane>
+      </Tabs>
+
+      {/* 删除确认模态框 */}
+      <ConstantDeleteModal
+        visible={deleteModalVisible}
+        title={itemToDelete?.name || ''}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Typography, Form, message, Spin, Row, Col, Space, Card, Empty, Switch } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, Input, Typography, Form, message, Spin, Row, Col, Space, Card, Empty, Switch, Modal } from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined, CheckOutlined, CloseOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { IOptionListProps, IOptionItem } from '../types';
 
 const { Title, Text } = Typography;
@@ -91,14 +91,14 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
 
     setAddLoading(true);
     try {
-      onAdd({
-        id: '',
-        name: newOption.name,
-        value: newOption.value,
-        enabled: newOption.enabled,
-        description: newOption.description,
-        status: newOption.enabled ? 1 : 0
-      });
+    onAdd({
+      id: '',
+      name: newOption.name,
+      value: newOption.value,
+      enabled: newOption.enabled,
+      description: newOption.description,
+      status: newOption.enabled ? 1 : 0
+    });
       // 不在这里关闭表单，而是等待父组件通过props告知是否关闭
     } catch (error) {
       // 发生错误时关闭加载状态，但保留表单
@@ -133,14 +133,14 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
 
     setEditLoadingId(id);
     try {
-      onUpdate(id, {
-        id,
-        name: newOption.name,
-        value: newOption.value,
-        enabled: newOption.enabled,
-        description: newOption.description,
-        status: newOption.enabled ? 1 : 0
-      });
+    onUpdate(id, {
+      id,
+      name: newOption.name,
+      value: newOption.value,
+      enabled: newOption.enabled,
+      description: newOption.description,
+      status: newOption.enabled ? 1 : 0
+    });
       // 不在这里关闭表单，而是等待父组件通过props告知是否关闭
     } catch (error) {
       // 发生错误时关闭加载状态，但保留表单
@@ -159,18 +159,18 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
       {/* 添加内联样式标签 */}
       <style>{localSpinStyle}</style>
       <div>
-        <div className="option-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          {title && <Title level={5} style={{ margin: 0 }}>{title}</Title>}
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={startAddingNew}
+      <div className="option-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        {title && <Title level={5} style={{ margin: 0 }}>{title}</Title>}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={startAddingNew}
             disabled={loading || isAddingNew || addLoading}
             loading={addLoading}
-          >
-            {addButtonText}
-          </Button>
-        </div>
+        >
+          {addButtonText}
+        </Button>
+      </div>
 
         {/* 编辑表单优先显示在最上方 */}
         {isInlineEditing && editingItemId && options.find(item => item.id === editingItemId) && (
@@ -240,244 +240,244 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
         {isAddingNew && (
           <div className="adding-card" style={{ width: '100%', marginBottom: '24px', background: '#f8faff', border: '1px dashed #1677FF', borderRadius: '8px', padding: '16px', position: 'relative' }}>
             <Spin spinning={addLoading} tip="添加中..." wrapperClassName="local-spin">
-              <Form layout="horizontal">
-                <Row gutter={[16, 8]} align="middle">
-                  <Col xs={24} sm={8} md={6} lg={6}>
-                    <Form.Item style={{ marginBottom: 8 }} label="显示文本">
-                      <Input
-                        placeholder="请输入显示文本"
-                        value={newOption.name}
-                        onChange={(e) => setNewOption({...newOption, name: e.target.value})}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8} md={6} lg={6}>
-                    <Form.Item style={{ marginBottom: 8 }} label="枚举值">
-                      <Input
-                        placeholder="请输入枚举值"
-                        value={newOption.value}
-                        onChange={(e) => setNewOption({...newOption, value: e.target.value})}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={16} md={8} lg={9}>
-                    <Form.Item style={{ marginBottom: 8 }} label="描述">
-                      <Input
-                        placeholder="请输入描述信息（选填）"
-                        value={newOption.description}
-                        onChange={(e) => setNewOption({...newOption, description: e.target.value})}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8} md={4} lg={3}>
-                    <Form.Item style={{ marginBottom: 8 }} label="是否启用">
-                      <Switch
-                        checked={newOption.enabled}
-                        onChange={(checked) => setNewOption({...newOption, enabled: checked})}
-                        defaultChecked
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8} md={24} lg={24} style={{ textAlign: 'center', marginTop: 8 }}>
-                    <Space>
-                      <Button 
-                        type="primary" 
-                        icon={<CheckOutlined />} 
-                        onClick={saveNewOption}
+            <Form layout="horizontal">
+              <Row gutter={[16, 8]} align="middle">
+                <Col xs={24} sm={8} md={6} lg={6}>
+                  <Form.Item style={{ marginBottom: 8 }} label="显示文本">
+                    <Input
+                      placeholder="请输入显示文本"
+                      value={newOption.name}
+                      onChange={(e) => setNewOption({...newOption, name: e.target.value})}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={8} md={6} lg={6}>
+                  <Form.Item style={{ marginBottom: 8 }} label="枚举值">
+                    <Input
+                      placeholder="请输入枚举值"
+                      value={newOption.value}
+                      onChange={(e) => setNewOption({...newOption, value: e.target.value})}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={16} md={8} lg={9}>
+                  <Form.Item style={{ marginBottom: 8 }} label="描述">
+                    <Input
+                      placeholder="请输入描述信息（选填）"
+                      value={newOption.description}
+                      onChange={(e) => setNewOption({...newOption, description: e.target.value})}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={8} md={4} lg={3}>
+                  <Form.Item style={{ marginBottom: 8 }} label="是否启用">
+                    <Switch
+                      checked={newOption.enabled}
+                      onChange={(checked) => setNewOption({...newOption, enabled: checked})}
+                      defaultChecked
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={8} md={24} lg={24} style={{ textAlign: 'center', marginTop: 8 }}>
+                  <Space>
+                    <Button 
+                      type="primary" 
+                      icon={<CheckOutlined />} 
+                      onClick={saveNewOption}
                         disabled={addLoading}
-                      >
-                        确认
-                      </Button>
-                      <Button 
-                        icon={<CloseOutlined />} 
-                        onClick={cancelAddingNew}
+                    >
+                      确认
+                    </Button>
+                    <Button 
+                      icon={<CloseOutlined />} 
+                      onClick={cancelAddingNew}
                         disabled={addLoading}
-                      >
-                        取消
-                      </Button>
-                    </Space>
-                  </Col>
-                </Row>
-              </Form>
+                    >
+                      取消
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
+            </Form>
             </Spin>
           </div>
         )}
         {/* 卡片列表内容保持不变 */}
         {(
           options.length === 0 && !loading && !isAddingNew && !isInlineEditing ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={<span>暂无数据，请点击添加按钮创建</span>}
-              style={{ margin: '32px 0' }}
-            />
-          ) : (
-            <Row gutter={[16, 16]} style={{ width: '100%', margin: '0' }}>
-              {options.map((item) => (
-                <Col xs={24} sm={12} md={8} lg={6} key={item.id} style={{ padding: '0 8px 16px 8px' }}>
+            style={{ margin: '32px 0' }}
+          />
+        ) : (
+          <Row gutter={[16, 16]} style={{ width: '100%', margin: '0' }}>
+            {options.map((item) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={item.id} style={{ padding: '0 8px 16px 8px' }}>
                   <Spin spinning={editLoadingId === item.id} tip="更新中...">
-                    <div style={{ 
-                      position: 'relative', 
-                      borderRadius: '10px', 
-                      border: '1px solid #e8edf3', 
-                      overflow: 'hidden',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                  <div style={{ 
+                    position: 'relative', 
+                    borderRadius: '10px', 
+                    border: '1px solid #e8edf3', 
+                    overflow: 'hidden',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                  }}>
+                    {/* 启用状态标签 - 右上角 */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '0',
+                      right: '0',
+                      zIndex: 5,
+                      fontSize: '13px',
+                      fontWeight: '400',
+                      padding: '3px 10px',
+                      borderRadius: '0 0 0 4px',
+                      backgroundColor: item.enabled ? 'rgba(26, 127, 55, 0.08)' : 'rgba(175, 184, 193, 0.2)',
+                      color: item.enabled ? '#1a7f37' : '#57606a'
                     }}>
-                      {/* 启用状态标签 - 右上角 */}
-                      <div style={{
-                        position: 'absolute',
-                        top: '0',
-                        right: '0',
-                        zIndex: 5,
-                        fontSize: '13px',
-                        fontWeight: '400',
-                        padding: '3px 10px',
-                        borderRadius: '0 0 0 4px',
-                        backgroundColor: item.enabled ? 'rgba(26, 127, 55, 0.08)' : 'rgba(175, 184, 193, 0.2)',
-                        color: item.enabled ? '#1a7f37' : '#57606a'
+                      {item.enabled ? '启用' : '禁用'}
+                    </div>
+                    
+                    <div style={{ display: 'flex' }}>
+                      {/* 主要内容区域 */}
+                      <div style={{ 
+                        flex: 1,
+                        borderRadius: '8px',
+                        backgroundColor: '#fff'
                       }}>
-                        {item.enabled ? '启用' : '禁用'}
-                      </div>
-                      
-                      <div style={{ display: 'flex' }}>
-                        {/* 主要内容区域 */}
-                        <div style={{ 
-                          flex: 1,
-                          borderRadius: '8px',
-                          backgroundColor: '#fff'
-                        }}>
-                          <div>
-                            {/* 内容区域：标题、枚举值和描述 */}
-                            <div style={{ 
-                              background: '#f9fafc',
-                              padding: '14px'
+                        <div>
+                          {/* 内容区域：标题、枚举值和描述 */}
+                          <div style={{ 
+                            background: '#f9fafc',
+                            padding: '14px'
+                          }}>
+                            {/* 标题行 */}
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              marginBottom: '12px',
+                              paddingBottom: '10px',
+                              borderBottom: '1px solid #eaecef'
                             }}>
-                              {/* 标题行 */}
                               <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                marginBottom: '12px',
-                                paddingBottom: '10px',
-                                borderBottom: '1px solid #eaecef'
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#18232c',
+                                textAlign: 'left',
+                                position: 'relative',
+                                paddingLeft: '10px'
                               }}>
                                 <div style={{
-                                  fontSize: '14px',
-                                  fontWeight: '600',
-                                  color: '#18232c',
-                                  textAlign: 'left',
-                                  position: 'relative',
-                                  paddingLeft: '10px'
-                                }}>
-                                  <div style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    width: '3px',
-                                    height: '70%',
-                                    backgroundColor: '#2468E8',
-                                    borderRadius: '2px'
-                                  }}></div>
-                                  {item.name}
-                                </div>
+                                  position: 'absolute',
+                                  left: 0,
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  width: '3px',
+                                  height: '70%',
+                                  backgroundColor: '#2468E8',
+                                  borderRadius: '2px'
+                                }}></div>
+                                {item.name}
                               </div>
-                              
-                              {/* 枚举值 */}
+                            </div>
+                            
+                            {/* 枚举值 */}
+                            <div style={{ 
+                              display: 'flex', 
+                              marginBottom: item.description ? '12px' : '0',
+                              paddingBottom: item.description ? '12px' : '0',
+                              borderBottom: item.description ? '1px solid rgba(234, 236, 239, 0.6)' : 'none'
+                            }}>
                               <div style={{ 
-                                display: 'flex', 
-                                marginBottom: item.description ? '12px' : '0',
-                                paddingBottom: item.description ? '12px' : '0',
-                                borderBottom: item.description ? '1px solid rgba(234, 236, 239, 0.6)' : 'none'
+                                fontSize: '13px', 
+                                color: '#57606a', 
+                                marginRight: '8px',
+                                fontWeight: '500',
+                                minWidth: '50px'
+                              }}>枚举值</div>
+                              <div style={{ 
+                                fontSize: '13px', 
+                                color: '#0969da',
+                                fontFamily: "'SF Mono', Monaco, monospace",
+                                wordBreak: 'break-all'
                               }}>
+                                {item.value}
+                              </div>
+                            </div>
+                            
+                            {/* 描述 */}
+                            {item.description && (
+                              <div style={{ display: 'flex' }}>
                                 <div style={{ 
                                   fontSize: '13px', 
                                   color: '#57606a', 
                                   marginRight: '8px',
                                   fontWeight: '500',
                                   minWidth: '50px'
-                                }}>枚举值</div>
+                                }}>描述</div>
                                 <div style={{ 
                                   fontSize: '13px', 
-                                  color: '#0969da',
-                                  fontFamily: "'SF Mono', Monaco, monospace",
-                                  wordBreak: 'break-all'
+                                  color: '#57606a', 
+                                  lineHeight: '1.5',
+                                  wordBreak: 'break-word'
                                 }}>
-                                  {item.value}
+                                  {item.description.length > 80 ? `${item.description.slice(0, 80)}...` : item.description}
                                 </div>
                               </div>
-                              
-                              {/* 描述 */}
-                              {item.description && (
-                                <div style={{ display: 'flex' }}>
-                                  <div style={{ 
-                                    fontSize: '13px', 
-                                    color: '#57606a', 
-                                    marginRight: '8px',
-                                    fontWeight: '500',
-                                    minWidth: '50px'
-                                  }}>描述</div>
-                                  <div style={{ 
-                                    fontSize: '13px', 
-                                    color: '#57606a', 
-                                    lineHeight: '1.5',
-                                    wordBreak: 'break-word'
-                                  }}>
-                                    {item.description.length > 80 ? `${item.description.slice(0, 80)}...` : item.description}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </div>
+                      </div>
 
-                        {/* 右侧按钮区域 */}
-                        <div style={{ 
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          gap: '14px',
-                          padding: '0 12px',
-                          borderLeft: '1px solid rgba(234, 236, 239, 0.5)',
-                          background: '#f9fafc',
-                          paddingTop: '45px' // 增加顶部内边距，使按钮往下移
-                        }}>
-                          <Button
-                            type="text"
-                            icon={<EditOutlined style={{ fontSize: '16px', color: '#2468E8' }} />}
-                            style={{ 
-                              padding: '4px', 
-                              minWidth: '32px', 
-                              height: '32px',
-                              background: 'transparent',
-                              border: 'none'
-                            }}
-                            onClick={() => startInlineEditing(item)}
-                            disabled={loading || isInlineEditing}
-                          />
-                          <Button
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined style={{ fontSize: '16px' }} />}
-                            style={{ 
-                              padding: '4px', 
-                              minWidth: '32px', 
-                              height: '32px',
-                              background: 'transparent',
-                              border: 'none'
-                            }}
-                            onClick={() => onDelete(item.id)}
+                      {/* 右侧按钮区域 */}
+                      <div style={{ 
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        gap: '14px',
+                        padding: '0 12px',
+                        borderLeft: '1px solid rgba(234, 236, 239, 0.5)',
+                        background: '#f9fafc',
+                        paddingTop: '45px' // 增加顶部内边距，使按钮往下移
+                      }}>
+                        <Button
+                          type="text"
+                          icon={<EditOutlined style={{ fontSize: '16px', color: '#2468E8' }} />}
+                          style={{ 
+                            padding: '4px', 
+                            minWidth: '32px', 
+                            height: '32px',
+                            background: 'transparent',
+                            border: 'none'
+                          }}
+                          onClick={() => startInlineEditing(item)}
+                          disabled={loading || isInlineEditing}
+                        />
+                        <Button
+                          type="text"
+                          danger
+                          icon={<DeleteOutlined style={{ fontSize: '16px' }} />}
+                          style={{ 
+                            padding: '4px', 
+                            minWidth: '32px', 
+                            height: '32px',
+                            background: 'transparent',
+                            border: 'none'
+                          }}
+                            onClick={() => onDelete(item.id, item.name)}
                             disabled={loading || isInlineEditing || item.enabled}
                             title={item.enabled ? "已启用的选项不能删除" : "删除"}
-                          />
+                        />
                         </div>
                       </div>
                     </div>
                   </Spin>
-                </Col>
-              ))}
-            </Row>
+              </Col>
+            ))}
+          </Row>
           )
         )}
-      </div>
+          </div>
     </div>
   );
 };

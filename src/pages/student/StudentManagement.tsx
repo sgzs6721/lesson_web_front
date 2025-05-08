@@ -80,6 +80,8 @@ const createDebounce = (fn: Function, delay: number) => {
 const StudentManagement: React.FC = () => {
   // 添加状态存储课程列表和加载状态
   const [courseList, setCourseList] = useState<SimpleCourse[]>([]);
+  // 添加状态存储过滤后的课程列表（只包含已发布课程）
+  const [filteredCourseList, setFilteredCourseList] = useState<SimpleCourse[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   // 添加统计数据加载状态
   const [loadingStats, setLoadingStats] = useState(true);
@@ -91,7 +93,7 @@ const StudentManagement: React.FC = () => {
 
   // --- Pass student.createWithCourse as the API function ---
   // 使用类型断言解决类型不兼容问题
-  const df = useDataForm(courseList, student.createWithCourse as any);
+  const df = useDataForm(filteredCourseList, student.createWithCourse as any);
   // -------------------------------------------------------
 
   // 状态类型使用 UiStudent
@@ -166,7 +168,7 @@ const StudentManagement: React.FC = () => {
       try {
         // 同步获取数据，让两个请求一起发出
         const [courseData, studentData] = await Promise.all([
-          getCourseSimpleList(),
+          getCourseSimpleList(undefined, false), // 设置filterPublished为false，获取所有课程
           df.data.fetchStudents({
             pageNum: ui.pagination.currentPage,
             pageSize: ui.pagination.pageSize
@@ -175,7 +177,14 @@ const StudentManagement: React.FC = () => {
         
         // 更新状态
         setCourseList(courseData);
-        console.log("初始化数据加载完成: 课程数量=", courseData.length, "学员数量=", studentData?.length || 0);
+        
+        // 过滤出已发布的课程用于学生注册表单
+        const publishedCourses = courseData.filter(course => 
+          course.status === 'PUBLISHED' || course.status === '1'
+        );
+        setFilteredCourseList(publishedCourses);
+        
+        console.log("初始化数据加载完成: 课程数量=", courseData.length, "已发布课程数量=", publishedCourses.length, "学员数量=", studentData?.length || 0);
         
         // 计算不同状态的学员数量
         if (studentData && Array.isArray(studentData)) {
@@ -452,10 +461,11 @@ const StudentManagement: React.FC = () => {
         </Card>
 
         {/* 所有模态框组件 */}
-        <StudentModals 
+        <StudentModals
           df={df}
           ui={ui}
           courseList={courseList}
+          filteredCourseList={filteredCourseList}
           loadingCourses={loadingCourses}
           attendanceModalVisible={attendanceModalVisible}
           selectedStudent={selectedStudent}
