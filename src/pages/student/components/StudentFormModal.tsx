@@ -171,15 +171,30 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               title: '报名课程',
               dataIndex: 'courses',
               align: 'center',
-              render: (courses) => {
+              render: (courses, record) => {
                 const courseId = courses && courses.length > 0 ? String(courses[0]) : '';
                 console.log('表格中的课程ID:', courseId);
-                // 先尝试从课程列表中查找
+
+                // 1. 首先检查是否有originalCourseName属性（在选择课程时保存的）
+                if (record.originalCourseName) {
+                  return record.originalCourseName;
+                }
+
+                // 2. 尝试从课程列表中查找 - 使用精确匹配
                 const foundCourse = courseList.find(c => String(c.id) === courseId);
                 if (foundCourse) {
                   return foundCourse.name;
                 }
-                // 如果找不到，尝试从模拟数据中查找
+
+                // 3. 尝试从课程列表中查找 - 使用数字匹配
+                if (courseId && !isNaN(Number(courseId))) {
+                  const numericCourse = courseList.find(c => Number(c.id) === Number(courseId));
+                  if (numericCourse) {
+                    return numericCourse.name;
+                  }
+                }
+
+                // 4. 如果找不到，尝试从模拟数据中查找
                 const mockCourseNames = {
                   'basketball': '篮球训练',
                   'swimming': '游泳课程',
@@ -187,6 +202,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                   'painting': '绘画班',
                   'piano': '钢琴培训'
                 };
+
+                // 5. 如果是数字ID，显示为"未知课程"
+                if (courseId && !isNaN(Number(courseId))) {
+                  return `未知课程 (ID: ${courseId})`;
+                }
+
                 return mockCourseNames[courseId as keyof typeof mockCourseNames] || courseId || '-';
               }
             },
@@ -288,8 +309,14 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                   const selectedCourseId = value ? String(value) : null;
                   console.log('转换后的课程ID:', selectedCourseId);
 
-                  // 查找匹配的课程
-                  const selectedCourse = courseList.find(c => String(c.id) === selectedCourseId);
+                  // 查找匹配的课程 - 精确匹配
+                  let selectedCourse = courseList.find(c => String(c.id) === selectedCourseId);
+
+                  // 如果没找到，尝试数字匹配
+                  if (!selectedCourse && selectedCourseId && !isNaN(Number(selectedCourseId))) {
+                    selectedCourse = courseList.find(c => Number(c.id) === Number(selectedCourseId));
+                  }
+
                   console.log('找到的课程:', selectedCourse);
 
                   if (selectedCourse) {
@@ -309,7 +336,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateCourseGroup(index, 'courses', [courseId]);
                     updateCourseGroup(index, 'courseType', courseType);
                     updateCourseGroup(index, 'coach', coachName);
-                    // 保存原始课程名称，用于后续API调用
+                    // 保存原始课程名称，用于后续API调用和显示
                     updateCourseGroup(index, 'originalCourseName', selectedCourse.name);
                     // 保存原始教练名称，如果有的话
                     if (selectedCourse.coaches && selectedCourse.coaches.length > 0) {
@@ -321,6 +348,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateCourseGroup(index, 'courses', selectedCourseId ? [selectedCourseId] : []);
                     updateCourseGroup(index, 'courseType', '');
                     updateCourseGroup(index, 'coach', '');
+                    // 如果有课程ID但找不到对应课程，设置一个默认名称
+                    if (selectedCourseId) {
+                      updateCourseGroup(index, 'originalCourseName', `未知课程 (ID: ${selectedCourseId})`);
+                    } else {
+                      updateCourseGroup(index, 'originalCourseName', undefined);
+                    }
                   }
                   setCourseSearchValue('');
                 }}
@@ -616,8 +649,14 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                   const selectedCourseId = value ? String(value) : null;
                   console.log('转换后的课程ID:', selectedCourseId);
 
-                  // 查找匹配的课程
-                  const selectedCourse = courseList.find(c => String(c.id) === selectedCourseId);
+                  // 查找匹配的课程 - 精确匹配
+                  let selectedCourse = courseList.find(c => String(c.id) === selectedCourseId);
+
+                  // 如果没找到，尝试数字匹配
+                  if (!selectedCourse && selectedCourseId && !isNaN(Number(selectedCourseId))) {
+                    selectedCourse = courseList.find(c => Number(c.id) === Number(selectedCourseId));
+                  }
+
                   console.log('找到的课程:', selectedCourse);
 
                   if (selectedCourse) {
@@ -638,17 +677,23 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     updateTempCourseGroup('courses', [courseId]);
                     updateTempCourseGroup('courseType', courseType);
                     updateTempCourseGroup('coach', coachName);
-                    // 保存原始课程名称，用于后续API调用
+                    // 保存原始课程名称，用于后续API调用和显示
                     updateTempCourseGroup('originalCourseName', selectedCourse.name);
                     // 保存原始教练名称，如果有的话
                     if (selectedCourse.coaches && selectedCourse.coaches.length > 0) {
                       updateTempCourseGroup('originalCoachName', selectedCourse.coaches[0].name);
                     }
                   } else {
-                     // Clear fields if no course is selected or found
+                    // Clear fields if no course is selected or found
                     updateTempCourseGroup('courses', selectedCourseId ? [selectedCourseId] : []);
                     updateTempCourseGroup('courseType', '');
                     updateTempCourseGroup('coach', '');
+                    // 如果有课程ID但找不到对应课程，设置一个默认名称
+                    if (selectedCourseId) {
+                      updateTempCourseGroup('originalCourseName', `未知课程 (ID: ${selectedCourseId})`);
+                    } else {
+                      updateTempCourseGroup('originalCourseName', undefined);
+                    }
                   }
                   setCourseSearchValue('');
                 }}
@@ -923,9 +968,9 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
       maskClosable={!loading}
       keyboard={!loading}
       footer={[
-        <Button 
-          key="back" 
-          onClick={onCancel} 
+        <Button
+          key="back"
+          onClick={onCancel}
           disabled={loading}
           className="enrollment-cancel-btn"
         >
