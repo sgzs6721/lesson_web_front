@@ -92,7 +92,7 @@ const textColorMapping: Record<string, string> = {
 // 课程类型渲染函数 - 调整颜色和样式
 const renderCourseType = (text: string | undefined) => {
   if (!text) return (
-    <FixedWidthTag color="gray" width={70} variant="outlined"> 
+    <FixedWidthTag color="gray" width={70} variant="outlined">
       未设置
     </FixedWidthTag>
   );
@@ -207,11 +207,11 @@ export const getStudentColumns = (
           {record.courses.map((course: CourseInfo & { courseTypeName?: string }, index: number) => {
             // 获取课时
             const remainingHours = course.remainingHours ?? 0;
-            
+
             // 获取状态
             let statusColor = '';
             let statusText = '';
-            
+
             // 使用 FixedWidthTag 中定义的颜色
             const statusUpperCase = (course.status || '').toUpperCase();
             switch (statusUpperCase) {
@@ -267,7 +267,7 @@ export const getStudentColumns = (
 
             // 判断当前课程是否可打卡
             const isDisabled = remainingHours <= 0 || !(statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING');
-            
+
             // 获取打卡禁用原因
             const getAttendanceDisabledReason = () => {
               if (remainingHours <= 0) {
@@ -284,26 +284,26 @@ export const getStudentColumns = (
 
             // 定义剩余操作的菜单项（退费、转课、转班）
             const remainingMenuItems = [
-              { 
-                key: 'refund', 
-                label: '退费', 
-                icon: <RollbackOutlined style={{ color: isGraduated ? '#d9d9d9' : '#f5222d' }} />, 
+              {
+                key: 'refund',
+                label: '退费',
+                icon: <RollbackOutlined style={{ color: isGraduated ? '#d9d9d9' : '#f5222d' }} />,
                 onClick: () => !isGraduated && onRefund(record),
                 disabled: isGraduated, // 已结业禁用退费
                 style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
-              { 
-                key: 'transfer', 
-                label: '转课', 
-                icon: <TransactionOutlined style={{ color: isGraduated ? '#d9d9d9' : '#1890ff' }} />, 
+              {
+                key: 'transfer',
+                label: '转课',
+                icon: <TransactionOutlined style={{ color: isGraduated ? '#d9d9d9' : '#1890ff' }} />,
                 onClick: () => !isGraduated && onTransfer(record),
                 disabled: isGraduated, // 已结业禁用转课
                 style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
-              { 
-                key: 'transferClass', 
-                label: '转班', 
-                icon: <SyncOutlined style={{ color: isGraduated ? '#d9d9d9' : '#52c41a' }} />, 
+              {
+                key: 'transferClass',
+                label: '转班',
+                icon: <SyncOutlined style={{ color: isGraduated ? '#d9d9d9' : '#52c41a' }} />,
                 onClick: () => !isGraduated && onTransferClass(record),
                 disabled: isGraduated, // 已结业禁用转班
                 style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
@@ -332,19 +332,19 @@ export const getStudentColumns = (
                     transform: 'translateY(-50%)',
                     width: '4px',
                     height: '60%',
-                    backgroundColor: 
+                    backgroundColor:
                       statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
                       course.courseTypeName === '大课' ? borderColorMapping['大课'] :
                       course.courseTypeName === '一对一' ? borderColorMapping['一对一'] :
-                      (colorMapping[course.courseTypeName || ''] ? 
-                        borderColorMapping[colorMapping[course.courseTypeName || '']] || '#faad14' : 
+                      (colorMapping[course.courseTypeName || ''] ?
+                        borderColorMapping[colorMapping[course.courseTypeName || '']] || '#faad14' :
                         '#faad14'),
                     borderRadius: '0 2px 2px 0',
                   }}></div>
 
                   {/* 左侧空间，仅作为间隔 */}
                   <div></div>
-                  
+
                   {/* 课程名称 - 居中显示 */}
                   <div style={{
                     margin: 0,
@@ -359,9 +359,9 @@ export const getStudentColumns = (
                   }} title={course.courseName}>
                     {course.courseName || '-'}
                   </div>
-                  
+
                   {/* 课程类型 - 居中显示 */}
-                  <div style={{ 
+                  <div style={{
                     textAlign: 'center',
                     justifySelf: 'center'
                   }}>
@@ -375,7 +375,7 @@ export const getStudentColumns = (
                         fontWeight: 400,
                         fontSize: '12px',
                         border: '1px solid',
-                        borderColor: colorMapping[course.courseTypeName || ''] ? 
+                        borderColor: colorMapping[course.courseTypeName || ''] ?
                           `${borderColorMapping[colorMapping[course.courseTypeName || '']]}33` : '#ffd591',
                         backgroundColor: bgColorMapping[colorMapping[course.courseTypeName || ''] || 'amber'] || '#fffbeb',
                         color: textColorMapping[colorMapping[course.courseTypeName || ''] || 'amber'] || '#92400e'
@@ -384,7 +384,7 @@ export const getStudentColumns = (
                       {course.courseTypeName || '未知'}
                     </Tag>
                   </div>
-                  
+
                   {/* 教练 - 居中显示 */}
                   <div style={{
                       color: 'rgba(0, 0, 0, 0.65)',
@@ -395,7 +395,7 @@ export const getStudentColumns = (
                   }}>
                     {course.coachName || '-'}
                   </div>
-                  
+
                   {/* 课时 - 居中显示 */}
                   <div style={{
                       color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
@@ -408,7 +408,7 @@ export const getStudentColumns = (
                   }}>
                     {`${remainingHours ?? 0}/${course.totalHours ?? 0}课时`}
                   </div>
-                  
+
                   {/* 有效期 - 居中显示 */}
                   <div style={{
                       color: statusUpperCase === 'EXPIRED' ? '#ff4d4f' : (isDisabled ? '#aaa' : '#888'),
@@ -418,9 +418,9 @@ export const getStudentColumns = (
                   }}>
                     有效期至: {course.endDate ? dayjs(course.endDate).format('YY-MM-DD') : '-'}
                   </div>
-                  
+
                   {/* 状态 - 居中显示 */}
-                  <div style={{ 
+                  <div style={{
                     textAlign: 'center',
                     justifySelf: 'center'
                   }}>
@@ -479,10 +479,10 @@ export const getStudentColumns = (
                         {statusText}
                       </Tag>
                     ) : (
-                      <FixedWidthTag 
-                        color={isDisabled ? 'default' : statusColor} 
-                        width={60} 
-                        style={{ 
+                      <FixedWidthTag
+                        color={isDisabled ? 'default' : statusColor}
+                        width={60}
+                        style={{
                           opacity: isDisabled ? 0.7 : 1,
                         }}
                       >
@@ -490,57 +490,57 @@ export const getStudentColumns = (
                       </FixedWidthTag>
                     )}
                   </div>
-                  
+
                   {/* 操作按钮组 - 居中显示 */}
-                  <div style={{ 
-                    display: 'flex', 
+                  <div style={{
+                    display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: '8px'
                   }}>
                     {/* 打卡按钮 */}
-                    <Button 
-                      type="link" 
-                      icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />} 
-                      size="small" 
-                      onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })} 
-                      disabled={isDisabled} 
-                      style={{ padding: '0' }} 
-                      title={getAttendanceDisabledReason()} 
+                    <Button
+                      type="link"
+                      icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
+                      size="small"
+                      onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
+                      disabled={isDisabled}
+                      style={{ padding: '0' }}
+                      title={getAttendanceDisabledReason()}
                     />
-                    
+
                     {/* 课程记录按钮 */}
-                    <Button 
-                      type="link" 
-                      icon={<FileTextOutlined style={{ color: '#1890ff' }} />} 
-                      size="small" 
-                      onClick={() => onClassRecord(record)} 
-                      style={{ padding: '0' }} 
-                      title="课程记录" 
+                    <Button
+                      type="link"
+                      icon={<FileTextOutlined style={{ color: '#1890ff' }} />}
+                      size="small"
+                      onClick={() => onClassRecord(record)}
+                      style={{ padding: '0' }}
+                      title="课程记录"
                     />
-                    
+
                     {/* 缴费按钮 */}
-                    <Button 
-                      type="link" 
-                      icon={<DollarOutlined style={{ color: '#fa8c16' }} />} 
-                      size="small" 
-                      onClick={() => onPayment(record)} 
-                      style={{ padding: '0' }} 
-                      title="缴费" 
+                    <Button
+                      type="link"
+                      icon={<DollarOutlined style={{ color: '#fa8c16' }} />}
+                      size="small"
+                      onClick={() => onPayment(record)}
+                      style={{ padding: '0' }}
+                      title="缴费"
                     />
-                    
+
                     {/* 更多操作 */}
                     {remainingMenuItems.length > 0 && (
-                      <Dropdown 
-                        menu={{ items: remainingMenuItems }} 
-                        trigger={['hover']} 
+                      <Dropdown
+                        menu={{ items: remainingMenuItems }}
+                        trigger={['hover']}
                         placement="bottomRight"
                       >
-                        <Button 
-                          type="text" 
-                          size="small" 
-                          icon={<MoreOutlined />} 
-                          style={{ padding: '0' }} 
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<MoreOutlined />}
+                          style={{ padding: '0' }}
                         />
                       </Dropdown>
                     )}
@@ -557,33 +557,34 @@ export const getStudentColumns = (
     key: 'action',
     width: 110,
     align: 'center',
+    fixed: 'right', // 固定在右侧，确保在小屏幕上也可见
     onHeaderCell: () => ({
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
     render: (_, record) => (
-      <Space size={8}>
+      <Space size={8} className="student-action-buttons">
         {/* 详情按钮 - 蓝色 */}
-        <Button 
-          type="link" 
-          icon={<InfoCircleOutlined style={{ color: '#1890ff' }} />} 
-          onClick={() => onDetails?.(record)} 
+        <Button
+          type="link"
+          icon={<InfoCircleOutlined style={{ color: '#1890ff' }} />}
+          onClick={() => onDetails?.(record)}
           title="详情"
           style={{ padding: '0' }}
         />
-        
+
         {/* 编辑按钮 - 黄色 */}
-        <Button 
-          type="link" 
-          icon={<EditOutlined style={{ color: '#faad14' }} />} 
-          onClick={() => onEdit(record)} 
+        <Button
+          type="link"
+          icon={<EditOutlined style={{ color: '#faad14' }} />}
+          onClick={() => onEdit(record)}
           title="编辑"
           style={{ padding: '0' }}
         />
-        
+
         {/* 删除按钮 - 红色 */}
-        <Button 
-          type="link" 
-          danger 
+        <Button
+          type="link"
+          danger
           icon={<DeleteOutlined style={{ color: '#f5222d' }} />}
           onClick={() => onDelete(record)}
           title="删除"

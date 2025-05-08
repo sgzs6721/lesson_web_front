@@ -148,6 +148,57 @@
 /* 课程记录模态框中，用于分隔不同课程组的样式 (★ 删除) */
 /*
 .course-group-separator td {
-  border-top: 2px dashed #e8e8e8; 
+  border-top: 2px dashed #e8e8e8;
 }
 */
+
+/* 响应式表格样式 - 适配小屏幕 */
+@media screen and (max-width: 1200px) {
+  /* 确保表格内容不会溢出 */
+  .student-table-container .ant-table {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  /* 确保操作列按钮在小屏幕上正确显示 */
+  .student-table-container .ant-table-tbody > tr > td:last-child {
+    white-space: nowrap;
+    min-width: 110px;
+    position: sticky;
+    right: 0;
+    z-index: 2;
+  }
+
+  /* 确保操作列背景色与行背景色一致 */
+  .student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(odd) > td:last-child {
+    background-color: #fff;
+  }
+
+  .student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(even) > td:last-child {
+    background-color: #fafafa;
+  }
+
+  /* 确保课程信息列在小屏幕上可以水平滚动 */
+  .student-table-container [data-row-key] > td {
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  /* 课程信息内容容器样式 */
+  .student-table-container [data-row-key] > td > div {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* 确保表格可以水平滚动 */
+  .student-table-container .ant-table-container {
+    overflow-x: auto;
+  }
+
+  /* 确保操作按钮在小屏幕上不会换行 */
+  .student-action-buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+}
