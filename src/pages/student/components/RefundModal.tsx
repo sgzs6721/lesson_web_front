@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Modal, 
   Form, 
@@ -11,6 +11,8 @@ import {
 } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { Student, CourseSummary } from '../types/student';
+import { API } from '@/api';
+import { Constant } from '@/api/constants/types';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -22,6 +24,7 @@ interface RefundModalProps {
   studentCourses: CourseSummary[];
   onCancel: () => void;
   onOk: () => void;
+  submitting?: boolean;
 }
 
 const RefundModal: React.FC<RefundModalProps> = ({
@@ -30,19 +33,52 @@ const RefundModal: React.FC<RefundModalProps> = ({
   student,
   studentCourses,
   onCancel,
-  onOk
+  onOk,
+  submitting = false
 }) => {
-  // 添加提交loading状态
-  const [submitLoading, setSubmitLoading] = React.useState(false);
+  const [handlingFeeTypes, setHandlingFeeTypes] = useState<Constant[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<Constant[]>([]);
+  const [loading, setLoading] = useState({
+    handlingFeeTypes: false,
+    paymentMethods: false
+  });
 
-  // 当模态框可见且学生信息存在时，确保表单中的学生姓名和ID被正确设置
-  React.useEffect(() => {
+  useEffect(() => {
+    if (visible) {
+      const fetchHandlingFeeTypes = async () => {
+        setLoading(prev => ({ ...prev, handlingFeeTypes: true }));
+        try {
+          const data = await API.constants.getList('HANDLING_FEE_TYPE');
+          setHandlingFeeTypes(data || []);
+        } catch (error) {
+          console.error('获取手续费类型失败:', error);
+        } finally {
+          setLoading(prev => ({ ...prev, handlingFeeTypes: false }));
+        }
+      };
+
+      const fetchPaymentMethods = async () => {
+        setLoading(prev => ({ ...prev, paymentMethods: true }));
+        try {
+          const data = await API.constants.getList('PAYMENT_TYPE');
+          setPaymentMethods(data || []);
+        } catch (error) {
+          console.error('获取退费方式失败:', error);
+        } finally {
+          setLoading(prev => ({ ...prev, paymentMethods: false }));
+        }
+      };
+
+      fetchHandlingFeeTypes();
+      fetchPaymentMethods();
+    }
+  }, [visible]);
+
+  useEffect(() => {
     if (visible && student) {
-      // 获取课程信息
       if (studentCourses && studentCourses.length > 0) {
         const defaultCourse = studentCourses[0];
         
-        // 获取剩余课时
         let remainingHours = 0;
         if (student.courses && student.courses.length > 0) {
           const coursesInfo = student.courses.find(c => String(c.courseId) === String(defaultCourse.id));
@@ -51,7 +87,6 @@ const RefundModal: React.FC<RefundModalProps> = ({
           }
         }
         
-        // 如果没有找到精确课时，从课程概要中获取
         if (remainingHours === 0 && defaultCourse.remainingClasses) {
           const parts = defaultCourse.remainingClasses.split('/');
           if (parts.length > 0 && !isNaN(Number(parts[0]))) {
@@ -59,7 +94,6 @@ const RefundModal: React.FC<RefundModalProps> = ({
           }
         }
         
-        // 如果仍未找到，尝试从学生对象直接获取
         if (remainingHours === 0 && student.remainingClasses) {
           const parts = student.remainingClasses.split('/');
           if (parts.length > 0 && !isNaN(Number(parts[0]))) {
@@ -67,22 +101,27 @@ const RefundModal: React.FC<RefundModalProps> = ({
           }
         }
         
-        // 设置表单值
         form.setFieldsValue({
           studentName: student.name,
           studentId: student.id,
-          fromCourseId: defaultCourse.name, // 使用课程名称
-          _courseId: defaultCourse.id, // 隐藏字段保存课程ID
+          fromCourseId: defaultCourse.name,
+          _courseId: defaultCourse.id,
           refundClassHours: remainingHours,
-          operationType: 'refund' // 确保设置operationType
+          operationType: 'refund',
+          handlingFeeTypeId: undefined,
+          serviceFee: 0,
         });
       } else {
         form.setFieldsValue({
           studentName: student.name,
           studentId: student.id,
-          operationType: 'refund'
+          operationType: 'refund',
+          handlingFeeTypeId: undefined,
+          serviceFee: 0,
         });
       }
+    } else if (!visible) {
+        form.resetFields(); 
     }
   }, [visible, student, studentCourses, form]);
 
@@ -92,22 +131,14 @@ const RefundModal: React.FC<RefundModalProps> = ({
       open={visible}
       onOk={() => {
         console.log('确认提交按钮点击');
-        // 设置提交中状态
-        setSubmitLoading(true);
-        // 在调用onOk之前，确保operationType字段被正确设置
         form.setFieldsValue({ operationType: 'refund' });
-        // 调用提交方法
         onOk();
-        // 延迟关闭loading状态（因为onOk是异步的，但不会返回Promise）
-        setTimeout(() => {
-          setSubmitLoading(false);
-        }, 2000);
       }}
       onCancel={onCancel}
       width={800}
       okText="确认提交"
       cancelText="取消"
-      confirmLoading={submitLoading}
+      confirmLoading={submitting}
       okButtonProps={{
         style: {},
         className: 'no-hover-button' 
@@ -119,7 +150,6 @@ const RefundModal: React.FC<RefundModalProps> = ({
         form={form}
         layout="vertical"
       >
-        {/* 隐藏字段 - 操作类型 */}
         <Form.Item name="operationType" hidden>
           <Input type="hidden" />
         </Form.Item>
@@ -155,7 +185,6 @@ const RefundModal: React.FC<RefundModalProps> = ({
                 disabled={true}
               />
             </Form.Item>
-            {/* 隐藏字段保存课程ID */}
             <Form.Item
               name="_courseId"
               hidden={true}
@@ -206,29 +235,54 @@ const RefundModal: React.FC<RefundModalProps> = ({
           </Col>
           <Col span={12}>
             <Form.Item
-              name="serviceFee"
+              name="handlingFeeTypeId"
               label="手续费"
-              initialValue={0}
-              rules={[{ required: true, message: '请输入手续费' }]}
+              rules={[{ required: true, message: '请选择手续费类型' }]}
             >
-              <InputNumber 
-                min={0} 
+              <Select 
                 style={{ width: '100%' }} 
-                formatter={value => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value: string | undefined) => {
-                  const parsed = value ? value.replace(/[^\d.]/g, '') : '0';
-                  return parseFloat(parsed);
-                }}
-                onChange={() => {
+                loading={loading.handlingFeeTypes}
+                placeholder="选择手续费类型"
+                dropdownMatchSelectWidth={true}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                onChange={(selectedFeeTypeIdValue) => {
+                  const selectedType = handlingFeeTypes.find(type => type.id === selectedFeeTypeIdValue);
+                  let feeAmount = 0;
+
+                  if (selectedType) {
+                    const parsedAmount = parseFloat(selectedType.constantValue.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(parsedAmount)) {
+                      feeAmount = parsedAmount;
+                    } else {
+                      const parsedFromKey = selectedType.constantKey ? parseFloat(selectedType.constantKey.replace(/[^0-9.]/g, '')) : NaN;
+                      if(!isNaN(parsedFromKey)){
+                        feeAmount = parsedFromKey;
+                      } else {
+                         console.warn(`Fee amount not parseable from constantValue ('${selectedType.constantValue}') or constantKey for type ID ${selectedFeeTypeIdValue}. Defaulting to 0.`);
+                      }
+                    }
+                  }
+                  
+                  form.setFieldsValue({ serviceFee: feeAmount });
+
                   setTimeout(() => {
                     const refundAmount = form.getFieldValue('refundAmount') || 0;
-                    const serviceFee = form.getFieldValue('serviceFee') || 0;
+                    const currentServiceFee = form.getFieldValue('serviceFee') || 0;
                     const otherFee = form.getFieldValue('otherFee') || 0;
-                    const actualRefund = refundAmount - serviceFee - otherFee;
+                    const actualRefund = refundAmount - currentServiceFee - otherFee;
                     form.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
                   }, 0);
                 }}
-              />
+              >
+                {handlingFeeTypes.map(type => (
+                  <Option key={type.id} value={type.id}>
+                    {type.constantValue}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="serviceFee" hidden initialValue={0}>
+                 <InputNumber /> 
             </Form.Item>
           </Col>
         </Row>
@@ -270,14 +324,15 @@ const RefundModal: React.FC<RefundModalProps> = ({
             >
               <Select
                 placeholder="请选择退费方式"
+                loading={loading.paymentMethods}
                 dropdownMatchSelectWidth={true}
                 getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
               >
-                <Option value="WECHAT">微信支付</Option>
-                <Option value="ALIPAY">支付宝</Option>
-                <Option value="CASH">现金</Option>
-                <Option value="CARD">刷卡</Option>
-                <Option value="BANK_TRANSFER">转账</Option>
+                {paymentMethods.map(method => (
+                  <Option key={method.id} value={method.id}>
+                    {method.constantValue}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>

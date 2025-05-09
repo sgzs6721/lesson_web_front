@@ -287,26 +287,26 @@ export const getStudentColumns = (
               {
                 key: 'refund',
                 label: '退费',
-                icon: <RollbackOutlined style={{ color: isGraduated ? '#d9d9d9' : '#f5222d' }} />,
-                onClick: () => !isGraduated && onRefund(record),
-                disabled: isGraduated, // 已结业禁用退费
-                style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+                icon: <RollbackOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#f5222d' }} />,
+                onClick: () => !isGraduated && remainingHours > 0 && onRefund(record),
+                disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用退费
+                style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
               {
                 key: 'transfer',
                 label: '转课',
-                icon: <TransactionOutlined style={{ color: isGraduated ? '#d9d9d9' : '#1890ff' }} />,
-                onClick: () => !isGraduated && onTransfer(record),
-                disabled: isGraduated, // 已结业禁用转课
-                style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+                icon: <TransactionOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#1890ff' }} />,
+                onClick: () => !isGraduated && remainingHours > 0 && onTransfer(record),
+                disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用转课
+                style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
               {
                 key: 'transferClass',
                 label: '转班',
-                icon: <SyncOutlined style={{ color: isGraduated ? '#d9d9d9' : '#52c41a' }} />,
-                onClick: () => !isGraduated && onTransferClass(record),
-                disabled: isGraduated, // 已结业禁用转班
-                style: isGraduated ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+                icon: <SyncOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#52c41a' }} />,
+                onClick: () => !isGraduated && remainingHours > 0 && onTransferClass(record),
+                disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用转班
+                style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
             ];
 

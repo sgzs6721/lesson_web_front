@@ -147,6 +147,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         studentCourses={ui.refund.studentCourses}
         onCancel={ui.refund.handleCancel}
         onOk={ui.refund.handleSubmit}
+        submitting={ui.refund.submitting}
       />
 
       {/* 转课模态框 */}
