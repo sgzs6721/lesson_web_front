@@ -2,9 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Typography, Form, message, Spin, Row, Col, Space, Card, Empty, Switch, Modal, InputNumber } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, CheckOutlined, CloseOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { IOptionListProps, IOptionItem } from '../types';
+import './cards.css';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+
+// 类型颜色映射，每种类型使用一种固定颜色
+const typeColorMap: Record<string, string> = {
+  'courseType': '#4F46E5',     // 课程类型 - 深蓝色
+  'VALIDITY_PERIOD': '#10B981', // 有效期 - 绿色
+  'paymentMethod': '#6366F1',  // 支付方式 - 靛蓝色
+  'fee': '#F97316',            // 手续费 - 橙色
+  'gift': '#A855F7',           // 赠品 - 紫色
+};
+
+// 获取指示器颜色函数，按类型固定颜色
+const getIndicatorColor = (type: string): string => {
+  // 根据类型返回固定颜色
+  return typeColorMap[type] || '#1677FF'; // 默认蓝色
+};
 
 // 定义局部加载蒙板的样式
 const localSpinStyle = `
@@ -42,6 +58,7 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editLoadingId, setEditLoadingId] = useState<string | null>(null);
+  const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
   const [addLoading, setAddLoading] = useState(false);
   const [newOption, setNewOption] = useState<{name: string, value: string, enabled: boolean, description: string}>({
     name: '',
@@ -57,6 +74,9 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
   useEffect(() => {
     // 当 loading 从 true 变为 false 时，检查是否需要关闭表单
     if (loading === false) {
+      // 清除删除loading状态
+      setDeleteLoadingId(null);
+      
       // 只有当表单正在添加时并且API调用成功时才关闭添加表单
       if (addLoading) {
         setAddLoading(false);
@@ -175,22 +195,40 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
     setEditingItemId(null);
   };
 
+  // 处理删除选项
+  const handleDeleteOption = (id: string, name: string) => {
+    setDeleteLoadingId(id);
+    onDelete(id, name);
+  };
+
   return (
     <div className="option-list-container" style={{ width: '100%' }}>
       {/* 添加内联样式标签 */}
       <style>{localSpinStyle}</style>
       <div>
-      <div className="option-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+      <div className="option-header" style={{ 
+        marginBottom: '16px', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        width: '100%',
+        position: 'static',
+        padding: '0 0 12px 0',
+        borderBottom: '1px solid #f0f0f0'
+      }}>
         {title && <Title level={5} style={{ margin: 0 }}>{title}</Title>}
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={startAddingNew}
+        <div style={{ position: 'static' }}>
+          <Button
+            type="primary"
+            className="add-button"
+            icon={<PlusOutlined />}
+            onClick={startAddingNew}
             disabled={loading || isAddingNew || addLoading}
             loading={addLoading}
-        >
-          {addButtonText}
-        </Button>
+          >
+            {addButtonText}
+          </Button>
+        </div>
       </div>
 
         {/* 编辑表单优先显示在最上方 */}
@@ -245,10 +283,16 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                     />
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-                  <Space>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  marginTop: '16px',
+                  position: 'static'
+                }}>
+                  <Space style={{ position: 'static' }}>
                     <Button 
                       type="primary" 
+                      className="form-button"
                       icon={<CheckOutlined />} 
                       onClick={() => saveInlineEdit(editingItemId)}
                       disabled={editLoadingId === editingItemId}
@@ -256,6 +300,7 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                       确认
                     </Button>
                     <Button 
+                      className="form-button"
                       icon={<CloseOutlined />} 
                       onClick={cancelInlineEdit}
                       disabled={editLoadingId === editingItemId}
@@ -322,20 +367,26 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                 </Col>
               </Row>
               <Row>
-                <Col span={24} style={{ textAlign: 'center', marginTop: '8px' }}>
-                  <Space>
+                <Col span={24} style={{ 
+                  textAlign: 'center', 
+                  marginTop: '8px',
+                  position: 'static'
+                }}>
+                  <Space style={{ position: 'static' }}>
                     <Button 
                       type="primary" 
+                      className="form-button"
                       icon={<CheckOutlined />} 
                       onClick={saveNewOption}
-                        disabled={addLoading}
+                      disabled={addLoading}
                     >
                       确认
                     </Button>
                     <Button 
+                      className="form-button"
                       icon={<CloseOutlined />} 
                       onClick={cancelAddingNew}
-                        disabled={addLoading}
+                      disabled={addLoading}
                     >
                       取消
                     </Button>
@@ -347,18 +398,17 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
           </div>
         )}
         {/* 卡片列表内容保持不变 */}
-        {(
-          safeOptions.length === 0 && !loading && !isAddingNew && !isInlineEditing ? (
+        {safeOptions.length === 0 && !loading && !isAddingNew && !isInlineEditing ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={<span>暂无数据，请点击添加按钮创建</span>}
+            description={<span>暂无数据，请点击添加按钮创建</span>}
             style={{ margin: '32px 0' }}
           />
         ) : (
           <Row gutter={[16, 16]} style={{ width: '100%', margin: '0' }}>
             {safeOptions.map((item) => (
               <Col xs={24} sm={12} md={8} lg={6} key={item.id} style={{ padding: '0 8px 16px 8px' }}>
-                  <Spin spinning={editLoadingId === item.id} tip="更新中...">
+                <Spin spinning={editLoadingId === item.id || deleteLoadingId === item.id} tip={editLoadingId === item.id ? "更新中..." : "删除中..."}>
                   <div style={{ 
                     position: 'relative', 
                     borderRadius: '10px', 
@@ -393,34 +443,35 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                           {/* 内容区域：标题、枚举值和描述 */}
                           <div style={{ 
                             background: '#f9fafc',
-                            padding: '14px'
+                            padding: '14px',
+                            position: 'relative'
                           }}>
+                            <div style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              height: '30px',
+                              width: '4px',
+                              backgroundColor: getIndicatorColor(type),
+                              borderRadius: 0
+                            }}></div>
+                            
                             {/* 标题行 */}
                             <div style={{
                               display: 'flex',
                               alignItems: 'center',
                               marginBottom: '12px',
                               paddingBottom: '10px',
-                              borderBottom: '1px solid #eaecef'
+                              borderBottom: '1px solid #eaecef',
+                              position: 'relative',
+                              paddingLeft: '10px'
                             }}>
                               <div style={{
                                 fontSize: '14px',
                                 fontWeight: '600',
                                 color: '#18232c',
-                                textAlign: 'left',
-                                position: 'relative',
-                                paddingLeft: '10px'
+                                textAlign: 'left'
                               }}>
-                                <div style={{
-                                  position: 'absolute',
-                                  left: 0,
-                                  top: '50%',
-                                  transform: 'translateY(-50%)',
-                                  width: '3px',
-                                  height: '70%',
-                                  backgroundColor: '#2468E8',
-                                  borderRadius: '2px'
-                                }}></div>
                                 {item.name}
                               </div>
                             </div>
@@ -486,42 +537,29 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                       }}>
                         <Button
                           type="text"
-                          icon={<EditOutlined style={{ fontSize: '16px', color: '#2468E8' }} />}
-                          style={{ 
-                            padding: '4px', 
-                            minWidth: '32px', 
-                            height: '32px',
-                            background: 'transparent',
-                            border: 'none'
-                          }}
+                          className="action-button"
+                          icon={<EditOutlined />}
                           onClick={() => startInlineEditing(item)}
-                          disabled={loading || isInlineEditing}
+                          disabled={loading || isInlineEditing || deleteLoadingId !== null}
                         />
                         <Button
                           type="text"
+                          className="action-button"
                           danger
-                          icon={<DeleteOutlined style={{ fontSize: '16px' }} />}
-                          style={{ 
-                            padding: '4px', 
-                            minWidth: '32px', 
-                            height: '32px',
-                            background: 'transparent',
-                            border: 'none'
-                          }}
-                            onClick={() => onDelete(item.id, item.name)}
-                            disabled={loading || isInlineEditing || item.enabled}
-                            title={item.enabled ? "已启用的选项不能删除" : "删除"}
+                          icon={<DeleteOutlined />}
+                          onClick={() => handleDeleteOption(item.id, item.name)}
+                          disabled={loading || isInlineEditing || item.enabled || deleteLoadingId !== null}
+                          title={item.enabled ? "已启用的选项不能删除" : "删除"}
                         />
-                        </div>
                       </div>
                     </div>
-                  </Spin>
+                  </div>
+                </Spin>
               </Col>
             ))}
           </Row>
-          )
         )}
-          </div>
+      </div>
     </div>
   );
 };

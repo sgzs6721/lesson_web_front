@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, Form, message, Card, Typography, Divider } from 'antd';
+import { Tabs, Form, message, Card, Typography, Divider, Spin } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   IBasicSettings, 
@@ -62,6 +62,8 @@ const SystemSettings: React.FC = () => {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [closeAddForm, setCloseAddForm] = useState<Record<string, boolean>>({});
   const [closeEditForm, setCloseEditForm] = useState<Record<string, boolean>>({});
+  // 记录选项管理是否已经加载过
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
   
   // 删除模态框相关状态
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -98,6 +100,18 @@ const SystemSettings: React.FC = () => {
     } finally {
       setLoading(prev => ({ ...prev, [type]: false }));
     }
+  };
+
+  // 加载所有选项数据
+  const loadAllOptions = () => {
+    if (optionsLoaded) return; // 如果已经加载过，不再重复加载
+    
+    loadOptions('COURSE_TYPE');
+    loadOptions('PAYMENT_TYPE');
+    loadOptions('GIFT_ITEM');
+    loadOptions('HANDLING_FEE_TYPE');
+    loadOptions('VALIDITY_PERIOD');
+    setOptionsLoaded(true);
   };
 
   // 初始化数据
@@ -147,13 +161,19 @@ const SystemSettings: React.FC = () => {
       },
     ]);
     
-    // 加载各类型选项数据
-    loadOptions('COURSE_TYPE');
-    loadOptions('PAYMENT_TYPE');
-    loadOptions('GIFT_ITEM');
-    loadOptions('HANDLING_FEE_TYPE');
-    loadOptions('VALIDITY_PERIOD');
+    // 不再初始加载选项管理的数据
+    // 而是等用户点击选项管理选项卡时加载
   }, [basicForm, advancedForm]);
+
+  // 处理选项卡变更
+  const handleTabChange = (activeKey: string) => {
+    setActiveTab(activeKey as TabKey);
+    
+    // 如果切换到选项管理标签，加载选项数据
+    if (activeKey === 'options' && !optionsLoaded) {
+      loadAllOptions();
+    }
+  };
 
   // Logo 文件上传相关处理
   const handleLogoChange = (info: { fileList: any[] }) => {
@@ -469,108 +489,120 @@ const SystemSettings: React.FC = () => {
     return tab === activeTab;
   };
 
-  return (
-    <div className="system-settings-container">
-      <Typography.Title level={2} className="page-title">系统设置</Typography.Title>
-      <Tabs
-        activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as TabKey)}
-        type="card"
-        className="settings-tabs"
-      >
-        <TabPane 
-          tab={
-            <span className="tab-item">
-              <SettingOutlined />
-              基础设置
-            </span>
-          }
-          key="basic"
-        >
-          {shouldRenderTab('basic') && (
-            <BasicSettingsTab
-              form={basicForm}
-              logoFileList={logoFileList}
-              handleLogoChange={handleLogoChange}
-              beforeUpload={beforeUpload}
-              onSave={handleSaveBasicSettings}
-            />
-          )}
-        </TabPane>
-        
-        <TabPane 
-          tab={
-            <span className="tab-item">
-              <ToolOutlined />
-              高级设置
-            </span>
-          }
-          key="advanced"
-        >
-          {shouldRenderTab('advanced') && (
-            <AdvancedSettingsTab
-              form={advancedForm}
-              onSave={handleSaveAdvancedSettings}
-            />
-          )}
-        </TabPane>
-        
-        <TabPane 
-          tab={
-            <span className="tab-item">
-              <AppstoreOutlined />
-              选项管理
-            </span>
-          }
-          key="options"
-        >
-          {shouldRenderTab('options') && (
-            <OptionsTab
-              courseTypeOptions={courseTypeOptions}
-              paymentMethodOptions={paymentMethodOptions}
-              giftOptions={giftOptions}
-              feeOptions={feeOptions}
-              expireTypeOptions={expireTypeOptions}
-              onAddOption={handleAddOption}
-              onDeleteOption={handleDeleteOption}
-              onUpdateOption={handleUpdateOption}
-              showDeleteConfirm={showDeleteConfirm}
-              loading={loading}
-              closeAddForm={closeAddForm}
-              closeEditForm={closeEditForm}
-            />
-          )}
-        </TabPane>
-        
-        <TabPane 
-          tab={
-            <span className="tab-item">
-              <SafetyCertificateOutlined />
-              备份恢复
-            </span>
-          }
-          key="backup"
-        >
-          {shouldRenderTab('backup') && (
-            <BackupTab
-              backupList={backupList}
-              onCreateBackup={handleCreateBackup}
-              onRestoreBackup={handleRestoreBackup}
-              onDeleteBackup={handleDeleteBackup}
-              onDownloadBackup={handleDownloadBackup}
-              onUploadBackup={handleUploadBackup}
-            />
-          )}
-        </TabPane>
-      </Tabs>
+  // 定义各个选项卡的内容
+  const items = [
+    {
+      key: 'basic',
+      label: (
+        <span className="tab-label">
+          <SettingOutlined />
+          基础设置
+        </span>
+      ),
+      children: shouldRenderTab('basic') ? (
+        <BasicSettingsTab 
+          form={basicForm} 
+          onSave={handleSaveBasicSettings}
+          logoFileList={logoFileList}
+          handleLogoChange={handleLogoChange}
+          beforeUpload={beforeUpload}
+          themes={SYSTEM_THEMES}
+          languages={SYSTEM_LANGUAGES}
+        />
+      ) : null
+    },
+    {
+      key: 'advanced',
+      label: (
+        <span className="tab-label">
+          <ToolOutlined />
+          高级设置
+        </span>
+      ),
+      children: shouldRenderTab('advanced') ? (
+        <AdvancedSettingsTab 
+          form={advancedForm} 
+          onSave={handleSaveAdvancedSettings}
+        />
+      ) : null
+    },
+    {
+      key: 'options',
+      label: (
+        <span className="tab-label">
+          <AppstoreOutlined />
+          选项管理
+        </span>
+      ),
+      children: shouldRenderTab('options') ? (
+        <Spin spinning={
+          loading['COURSE_TYPE'] || 
+          loading['PAYMENT_TYPE'] || 
+          loading['GIFT_ITEM'] || 
+          loading['HANDLING_FEE_TYPE'] || 
+          loading['VALIDITY_PERIOD']
+        } tip="正在加载选项数据...">
+          <OptionsTab
+            courseTypeOptions={courseTypeOptions}
+            paymentMethodOptions={paymentMethodOptions}
+            giftOptions={giftOptions}
+            feeOptions={feeOptions}
+            expireTypeOptions={expireTypeOptions}
+            onAddOption={handleAddOption}
+            onDeleteOption={(type, id) => handleDeleteOption(type, id)}
+            onUpdateOption={handleUpdateOption}
+            showDeleteConfirm={showDeleteConfirm}
+            loading={loading}
+            closeAddForm={closeAddForm}
+            closeEditForm={closeEditForm}
+          />
+        </Spin>
+      ) : null
+    },
+    {
+      key: 'backup',
+      label: (
+        <span className="tab-label">
+          <SafetyCertificateOutlined />
+          备份恢复
+        </span>
+      ),
+      children: shouldRenderTab('backup') ? (
+        <BackupTab
+          backupList={backupList}
+          onCreateBackup={handleCreateBackup}
+          onRestoreBackup={handleRestoreBackup}
+          onDeleteBackup={handleDeleteBackup}
+          onDownloadBackup={handleDownloadBackup}
+          onUploadBackup={handleUploadBackup}
+        />
+      ) : null
+    }
+  ];
 
-      {/* 删除确认模态框 */}
-      <ConstantDeleteModal
-        visible={deleteModalVisible}
-        title={itemToDelete?.name || ''}
-        onConfirm={confirmDelete}
-        onCancel={cancelDelete}
-      />
+  return (
+    <div className="system-settings">
+      <Card className="system-settings-card">
+        <div className="settings-header">
+          <Title level={4} className="settings-title">系统设置</Title>
+        </div>
+        
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          items={items}
+          destroyInactiveTabPane
+          className="settings-tabs"
+          type="card"
+        />
+        
+        <ConstantDeleteModal
+          visible={deleteModalVisible}
+          title={itemToDelete?.name || ''}
+          onCancel={cancelDelete}
+          onConfirm={confirmDelete}
+        />
+      </Card>
     </div>
   );
 };

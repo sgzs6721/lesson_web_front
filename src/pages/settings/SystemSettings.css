@@ -5,42 +5,120 @@
 
 .system-settings-card {
   margin-top: -12px;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  border: none;
 }
 
 .settings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
   padding: 0 0 16px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .settings-title {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
+  color: #262626;
 }
 
-.system-settings .ant-tabs {
-  background-color: #fff;
-  padding: 16px 0;
+/* 重新设计的选项卡样式 */
+.system-settings .settings-tabs .ant-tabs-nav {
+  margin-bottom: 24px;
+  background-color: #ffffff;
+  padding: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.system-settings .settings-tabs .ant-tabs-nav::before {
+  display: none;
 }
 
 .system-settings .settings-tabs .ant-tabs-tab {
-  margin: 0 8px 0 0;
-  padding: 12px 16px;
-  transition: all 0.3s ease;
-  border-radius: 6px 6px 0 0;
-  border: 1px solid #f0f0f0;
-  border-bottom: none;
+  margin: 0;
+  padding: 12px 24px;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  border-radius: 6px;
+  border: none !important;
+  color: #595959;
+  font-weight: 500;
+  background: transparent;
+  position: relative;
 }
 
+.system-settings .settings-tabs .ant-tabs-tab:hover {
+  color: #1677ff;
+  background: rgba(22, 119, 255, 0.04);
+}
+
+.system-settings .settings-tabs .ant-tabs-tab + .ant-tabs-tab {
+  margin-left: 4px;
+}
+
+/* 不同选项卡的不同颜色 - 使用更浅的颜色和渐变效果 */
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active {
+  background: linear-gradient(135deg, rgba(22, 119, 255, 0.08) 0%, rgba(22, 119, 255, 0.15) 100%) !important;
+  color: #1677ff !important;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.1);
+  border-bottom: 2px solid #1677ff !important;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active {
+  background: linear-gradient(135deg, rgba(82, 196, 26, 0.08) 0%, rgba(82, 196, 26, 0.15) 100%) !important;
+  color: #52c41a !important;
+  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.1);
+  border-bottom: 2px solid #52c41a !important;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active {
+  background: linear-gradient(135deg, rgba(114, 46, 209, 0.08) 0%, rgba(114, 46, 209, 0.15) 100%) !important;
+  color: #722ed1 !important;
+  box-shadow: 0 2px 8px rgba(114, 46, 209, 0.1);
+  border-bottom: 2px solid #722ed1 !important;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active {
+  background: linear-gradient(135deg, rgba(250, 140, 22, 0.08) 0%, rgba(250, 140, 22, 0.15) 100%) !important;
+  color: #fa8c16 !important;
+  box-shadow: 0 2px 8px rgba(250, 140, 22, 0.1);
+  border-bottom: 2px solid #fa8c16 !important;
+}
+
+/* 保证Tab按钮文字颜色可见 */
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #1677ff !important;
+  font-weight: 500;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #52c41a !important;
+  font-weight: 500;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #722ed1 !important;
+  font-weight: 500;
+}
+
+.system-settings .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #fa8c16 !important;
+  font-weight: 500;
+}
+
+/* 统一的Tab样式 - 这里为了保险还是保留一个通用样式 */
 .system-settings .settings-tabs .ant-tabs-tab-active {
-  background: linear-gradient(to bottom, #f5f7fa, #ffffff);
-  border-color: #1890ff;
-  border-top: 3px solid #1890ff;
+  font-weight: 500;
+}
+
+.system-settings .settings-tabs .ant-tabs-ink-bar {
+  display: none;
 }
 
 .system-settings .tab-label {
@@ -51,7 +129,7 @@
 }
 
 .system-settings .ant-tabs-content {
-  padding: 20px 0;
+  padding: 16px 0;
 }
 
 .system-settings .ant-form-item-label > label {
@@ -86,8 +164,8 @@
 }
 
 .system-settings .option-input:focus {
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
   outline: none;
 }
 
@@ -103,17 +181,18 @@
 
 .system-settings .ant-btn {
   border-radius: 6px;
+  font-weight: 500;
 }
 
 .system-settings .ant-btn-primary {
-  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  background: #1677ff;
   border: none;
-  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
 }
 
 .system-settings .ant-btn-primary:hover {
-  background: linear-gradient(135deg, #40a9ff 0%, #096dd9 100%);
-  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.4);
+  background: #4096ff;
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
 }
 
 .system-settings .ant-form {
@@ -132,6 +211,10 @@
   
   .system-settings-card {
     margin-top: -8px;
+  }
+  
+  .system-settings .settings-tabs .ant-tabs-tab {
+    padding: 10px 16px;
   }
 }
 

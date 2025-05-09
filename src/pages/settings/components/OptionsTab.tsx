@@ -1,6 +1,6 @@
 import React from 'react';
-import { Tabs, Divider, Typography } from 'antd';
-import { BookOutlined, DollarOutlined, GiftOutlined, PercentageOutlined } from '@ant-design/icons';
+import { Tabs, Divider, Typography, Button } from 'antd';
+import { BookOutlined, DollarOutlined, GiftOutlined, PercentageOutlined, PlusOutlined } from '@ant-design/icons';
 import { IOptionItem } from '../types';
 import OptionListComponent from './OptionListComponent';
 import './OptionsTab.css';

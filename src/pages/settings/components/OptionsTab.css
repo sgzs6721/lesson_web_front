@@ -2,19 +2,24 @@
 .settings-vertical-tabs {
   height: 100%;
   width: 100% !important;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
 }
 
 .settings-vertical-tabs .ant-tabs-nav {
-  width: 170px;
-  background-color: #f6f8fc;
+  width: 180px;
+  background-color: #ffffff;
   border-right: 1px solid rgba(240, 240, 240, 0.8);
-  min-width: 160px !important;
+  min-width: 180px !important;
   flex-shrink: 0;
 }
 
 .settings-vertical-tabs .ant-tabs-tab {
   margin: 0 !important;
-  padding: 16px 24px;
+  padding: 14px 24px;
   height: 52px;
   display: flex;
   align-items: center;
@@ -23,14 +28,18 @@
   position: relative;
   border: none !important;
   background-color: transparent !important;
+  margin: 4px 8px !important;
+  border-radius: 6px !important;
 }
 
 .settings-vertical-tabs .ant-tabs-tab-active {
-  background-color: rgba(107, 154, 238, 0.1) !important;
+  background: linear-gradient(135deg, rgba(22, 119, 255, 0.05) 0%, rgba(22, 119, 255, 0.1) 100%) !important;
+  box-shadow: 0 2px 6px rgba(22, 119, 255, 0.08);
 }
 
 .settings-vertical-tabs .ant-tabs-tab:hover {
-  color: #6b9aee;
+  color: #1677ff;
+  background: linear-gradient(135deg, rgba(22, 119, 255, 0.02) 0%, rgba(22, 119, 255, 0.05) 100%) !important;
 }
 
 .settings-vertical-tabs .ant-tabs-ink-bar {
@@ -39,15 +48,15 @@
 
 .settings-vertical-tabs .ant-tabs-tab .tab-item {
   font-size: 14px;
-  color: #909090;
+  color: #606060;
   transition: all 0.3s;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .settings-vertical-tabs .ant-tabs-tab-active .tab-item {
-  color: #6b9aee;
+  color: #1677ff;
   font-weight: 500;
 }
 
@@ -55,41 +64,11 @@
   font-size: 16px;
 }
 
-/* 选项卡左侧边框 */
-.settings-vertical-tabs .ant-tabs-tab:first-child {
-  border-top-left-radius: 4px;
-}
-
-.settings-vertical-tabs .ant-tabs-tab:last-child {
-  border-bottom-left-radius: 4px;
-}
-
 /* 左侧边栏整体样式 */
-.settings-vertical-tabs .ant-tabs-nav {
-  background-color: #f6f8fc;
-  border-right: 1px solid rgba(240, 240, 240, 0.8);
-}
-
 .settings-vertical-tabs .ant-tabs-content {
   padding: 0;
   width: 100% !important;
   height: 100%;
-}
-
-/* 左侧边栏选中项样式 */
-.settings-vertical-tabs .ant-tabs-tab-active {
-  position: relative;
-  z-index: 2;
-}
-
-.settings-vertical-tabs .ant-tabs-tab-active::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: 2px;
-  background-color: #fff;
 }
 
 /* 激活蓝色指示器 */
@@ -97,11 +76,35 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  height: 100%;
+  top: 10px;
+  bottom: 10px;
   width: 3px;
-  background-color: #6b9aee;
+  height: calc(100% - 20px);
+  background: linear-gradient(to bottom, #4096ff, #1677ff);
+  border-radius: 0 3px 3px 0;
   display: block;
+}
+
+/* 红框内高亮区域 - 支付相关Tab样式 */
+.settings-vertical-tabs .ant-tabs-tab:nth-child(2) {
+  position: relative;
+  background: linear-gradient(135deg, rgba(64, 150, 255, 0.02) 0%, rgba(64, 150, 255, 0.05) 100%) !important;
+  border-left: 3px solid #1677ff !important;
+  padding-left: 21px !important;
+}
+
+.settings-vertical-tabs .ant-tabs-tab:nth-child(2) .tab-item {
+  color: #1677ff;
+  font-weight: 500;
+}
+
+.settings-vertical-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.05) 0%, rgba(24, 144, 255, 0.1) 100%) !important;
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.1);
+}
+
+.settings-vertical-tabs .ant-tabs-tab:nth-child(2):hover {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.08) 0%, rgba(24, 144, 255, 0.12) 100%) !important;
 }
 
 /* 选项卡内容样式 */
@@ -125,7 +128,7 @@
 /* 选项内容区域 */
 .option-section {
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
   padding: 0 0 16px 0;
   background: transparent;
   border-radius: 0;
@@ -141,15 +144,15 @@
 
 /* 空状态提示 */
 .ant-empty {
-  margin: 20px 0;
+  margin: 32px 0;
 }
 
 .ant-empty-image {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .ant-empty-description {
-  color: #909090;
+  color: #8c8c8c;
   font-size: 14px;
 }
 
@@ -158,7 +161,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   width: 100% !important;
   padding-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
@@ -166,8 +169,8 @@
 
 .option-header .ant-typography {
   font-size: 16px;
-  font-weight: 500;
-  color: #606060;
+  font-weight: 600;
+  color: #262626;
   margin: 0;
   display: flex;
   align-items: center;
@@ -177,33 +180,37 @@
 /* 卡片样式 */
 .option-card {
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   overflow: hidden;
   border: 1px solid #f0f0f0;
-  background-color: #fcfcfc;
+  background-color: #ffffff;
   height: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .option-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(107, 154, 238, 0.08);
-  border-color: rgba(107, 154, 238, 0.3);
+  border-color: rgba(22, 119, 255, 0.2);
 }
 
-/* 添加按钮样式 */
-.option-list-container .ant-btn-primary {
-  height: 32px;
-  line-height: 32px;
-  padding: 0 16px;
-  background: linear-gradient(135deg, #78a6f5 0%, #6b9aee 100%);
-  border: none;
-  box-shadow: 0 2px 6px rgba(107, 154, 238, 0.2);
+/* 添加按钮样式 - 更浅的蓝色 */
+.option-list-container .add-button.ant-btn {
+  background-color: #1677ff;
+  border-color: #1677ff;
+  box-shadow: 0 2px 6px rgba(22, 119, 255, 0.2);
+  font-weight: 500;
+  height: 36px;
+  border-radius: 6px;
+  color: white !important;
 }
 
-.option-list-container .ant-btn-primary:hover {
-  background: linear-gradient(135deg, #6b9aee 0%, #5c8bdf 100%);
-  box-shadow: 0 4px 8px rgba(107, 154, 238, 0.3);
-  transform: translateY(-1px);
+.option-list-container .add-button.ant-btn:hover,
+.option-list-container .add-button.ant-btn:focus {
+  background-color: #4096ff;
+  border-color: #4096ff;
+  box-shadow: 0 4px 10px rgba(22, 119, 255, 0.25);
+  color: white !important;
 }
 
 /* 减少Divider的边距 */
@@ -281,11 +288,164 @@
   box-shadow: 0 6px 16px rgba(107, 154, 238, 0.08);
 }
 
-.ant-btn-primary {
-  background: linear-gradient(135deg, #78a6f5 0%, #6b9aee 100%);
-  border: none;
+/* 添加关键帧覆盖 */
+@keyframes none {
+  from { opacity: 1; }
+  to { opacity: 1; }
+}
+
+/* 全局稳定样式 */
+.option-list-container *,
+.option-list-container *::before,
+.option-list-container *::after {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+/* 针对特定按钮样式 */
+.option-header button.add-button.ant-btn {
+  position: static !important;
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.option-header button.add-button.ant-btn:hover {
+  position: static !important;
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 添加按钮样式修复 - 解决hover闪烁问题 */
+.option-list-container .ant-btn {
+  position: static !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  will-change: auto !important;
+  backface-visibility: visible !important;
+}
+
+.option-list-container .ant-btn:hover,
+.option-list-container .ant-btn:focus {
+  position: static !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  backface-visibility: visible !important;
+}
+
+.option-list-container .ant-btn-primary {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.option-list-container .ant-btn-primary:hover,
+.option-list-container .ant-btn-primary:focus {
+  background-color: #40a9ff !important;
+  border-color: #40a9ff !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* 特定的添加按钮样式 */
+.option-list-container .add-button {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 32px !important;
+  padding: 0 15px !important;
+}
+
+.option-list-container .add-button:hover,
+.option-list-container .add-button:focus {
+  border-color: transparent !important;
+}
+
+/* 表单内按钮样式 */
+.option-list-container .form-button {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 32px !important;
+  padding: 0 15px !important;
+}
+
+.option-list-container .form-button:hover,
+.option-list-container .form-button:focus {
+  border-color: #d9d9d9 !important;
+}
+
+.option-list-container .form-button[type="primary"]:hover,
+.option-list-container .form-button[type="primary"]:focus {
+  border-color: transparent !important;
+}
+
+/* 添加蓝色竖线样式 */
+.option-list-container .option-item-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  height: 30px;
+  background-color: #2468E8;
+  border-radius: 0;
+}
+
+/* 颜色指示条样式，与图片中的卡片样式一致 */
+.option-card-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  height: 30px !important;
+  background-color: #1677FF;
+  border-radius: 0;
+  margin: 0;
+}
+
+/* 操作按钮样式 */
+.option-list-container .action-button {
+  background: transparent !important;
+  border: none !important;
+}
+
+.option-list-container .action-button:hover,
+.option-list-container .action-button:focus {
+  background: transparent !important;
+  opacity: 0.85 !important;
+}
+
+.option-list-container .action-button[disabled] {
+  background: transparent !important;
+  border: none !important;
 }
 
 .ant-divider {
   border-top-color: #f0f0f0;
+}
+
+/* 特定的添加按钮纯色样式 */
+.add-button.ant-btn-primary {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+}
+
+.add-button.ant-btn-primary:hover,
+.add-button.ant-btn-primary:focus {
+  background-color: #40a9ff !important;
+  border-color: #40a9ff !important;
 } 

@@ -25,68 +25,75 @@ const columnStyle: React.CSSProperties = {
 };
 
 // 课程类型颜色映射
-const colorMapping: Record<string, string> = {
-  '大课': 'amber',    // 暖色调
-  '一对一': 'indigo',  // 深蓝紫色
-  '小班': 'cyan',     // 青色
-  '体育类': 'teal',    // 水鸭色
-  '艺术类': 'purple', // 紫色
-  '学术类': 'blue',    // 蓝色
-  // 其他可能的课程类型
-  '英语': 'green',
-  '数学': 'orange',
-  '音乐': 'pink',
-  '绘画': 'teal',
-  '舞蹈': 'pink',
-  '体育': 'blue'
+const courseTypeColors: Record<string, string> = {
+  '一对一': '#4F46E5', // 深蓝色
+  '一对二': '#6366F1', // 靛蓝色
+  '大课': '#F97316',  // 橙色
+  '小班': '#06B6D4',  // 青色
+  '体育类': '#14B8A6', // 水鸭绿
+  '艺术类': '#A855F7', // 紫色
+  '学术类': '#3B82F6', // 蓝色
 };
 
-// 颜色边框映射
-const borderColorMapping: Record<string, string> = {
-  'amber': '#F59E0B',     // 更饱和的琥珀色
-  'indigo': '#6366F1',    // 更柔和的靛蓝色
-  'cyan': '#06B6D4',      // 鲜艳的青色
-  'teal': '#14B8A6',      // 清新的水鸭绿
-  'purple': '#A855F7',    // 优雅的紫色
-  'blue': '#3B82F6',      // 亮丽的蓝色
-  'green': '#10B981',     // 青翠的绿色
-  'orange': '#FB923C',    // 柔和的橙色
-  'pink': '#EC4899',      // 时尚的粉色
-  'gray': '#6B7280',      // 中性灰色
-  '大课': '#F97316',      // 明亮的橙色
-  '一对一': '#4F46E5'     // 高贵的深蓝色
+// 课程类型显示配色
+const colorMap: Record<string, { border: string; bg: string; text: string }> = {
+  '一对一': { border: '#4F46E5', bg: '#E0E7FF', text: '#4338CA' },
+  '一对二': { border: '#6366F1', bg: '#E0E7FF', text: '#4338CA' },
+  '大课': { border: '#F97316', bg: '#FFF7ED', text: '#C2410C' },
+  '小班': { border: '#06B6D4', bg: '#CFFAFE', text: '#0E7490' },
+  '体育类': { border: '#14B8A6', bg: '#CCFBF1', text: '#0F766E' },
+  '艺术类': { border: '#A855F7', bg: '#F3E8FF', text: '#7E22CE' },
+  '学术类': { border: '#3B82F6', bg: '#DBEAFE', text: '#1D4ED8' },
 };
 
-// 背景色映射
-const bgColorMapping: Record<string, string> = {
-  'amber': '#FEF3C7',     // 淡雅的琥珀背景
-  'indigo': '#E0E7FF',    // 柔和的靛蓝背景
-  'cyan': '#CFFAFE',      // 清爽的青色背景
-  'teal': '#CCFBF1',      // 恬静的水鸭绿背景
-  'purple': '#F3E8FF',    // 淡雅的紫色背景
-  'blue': '#DBEAFE',      // 舒适的蓝色背景
-  'green': '#D1FAE5',     // 轻柔的绿色背景
-  'orange': '#FFEDD5',    // 温暖的橙色背景
-  'pink': '#FCE7F3',      // 柔美的粉色背景
-  'gray': '#F3F4F6',      // 简约的灰色背景
-  '大课': '#FFF7ED',      // 温暖的橙色背景
-  '一对一': '#EEF2FF'     // 静谧的蓝色背景
+// 定义课程类型标签的样式函数
+const getCourseTypeTagStyle = (courseTypeName?: string): React.CSSProperties => {
+  const defaultStyle = { 
+    border: '#ffd591', 
+    bg: '#fffbeb', 
+    text: '#92400e' 
+  };
+  
+  const style = courseTypeName ? (colorMap[courseTypeName] || defaultStyle) : defaultStyle;
+  
+  return {
+    minWidth: '65px',
+    textAlign: 'center' as const,
+    padding: '1px 8px',
+    margin: 0,
+    borderRadius: '2px',
+    fontWeight: 400,
+    fontSize: '12px',
+    border: '1px solid',
+    borderColor: `${style.border}33`, // 设置较浅的边框色
+    backgroundColor: style.bg,
+    color: style.text
+  };
 };
 
-// 文字颜色映射
-const textColorMapping: Record<string, string> = {
-  'amber': '#B45309',     // 深邃的琥珀色
-  'indigo': '#4338CA',    // 深沉的靛蓝色
-  'cyan': '#0E7490',      // 沉稳的青色
-  'teal': '#0F766E',      // 深沉的水鸭绿
-  'purple': '#7E22CE',    // 高贵的紫色
-  'blue': '#1D4ED8',      // 经典的蓝色
-  'green': '#047857',     // 深邃的绿色
-  'orange': '#C2410C',    // 热情的橙色
-  'pink': '#BE185D',      // 浓郁的粉色
-  'gray': '#4B5563',      // 沉稳的灰色
-  '大课': '#C2410C',      // 深邃的橙色
-  '一对一': '#3730A3'     // 高贵的深蓝色
+// 定义课程卡片中的类型指示器样式
+const renderCourseTypeIndicator = (courseTypeName?: string, status?: string): React.CSSProperties => {
+  const statusUpperCase = (status || '').toUpperCase();
+  
+  // 根据状态和课程类型决定颜色
+  let color;
+  if (statusUpperCase === 'EXPIRED') {
+    color = '#ff4d4f'; // 过期课程显示红色
+  } else if (courseTypeName && courseTypeColors[courseTypeName]) {
+    color = courseTypeColors[courseTypeName];
+  } else {
+    color = '#1677FF'; // 默认蓝色
+  }
+  
+  return {
+    position: 'absolute' as const,
+    left: 0,
+    top: 0,
+    height: '30px', // 只在第一行显示，高度设为30px
+    width: '4px',
+    backgroundColor: color,
+    borderRadius: '0 2px 2px 0'
+  };
 };
 
 // 课程类型渲染函数 - 调整颜色和样式
@@ -97,17 +104,10 @@ const renderCourseType = (text: string | undefined) => {
     </FixedWidthTag>
   );
 
-  const color = colorMapping[text] || 'gray'; // 未匹配的使用灰色
-
   return (
-    <FixedWidthTag
-      color={color}
-      width={70}
-      variant="filled" // 使用填充样式，但颜色已调整
-      style={{ fontWeight: 400 }} // 可以调整字重等
-    >
+    <Tag style={getCourseTypeTagStyle(text)}>
       {text}
-    </FixedWidthTag>
+    </Tag>
   );
 };
 
@@ -324,23 +324,8 @@ export const getStudentColumns = (
                   position: 'relative',
                   columnGap: '10px', // 减少列间距
               }}>
-                  {/* 单独的短竖线元素 */}
-                  <div style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: '4px',
-                    height: '60%',
-                    backgroundColor:
-                      statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
-                      course.courseTypeName === '大课' ? borderColorMapping['大课'] :
-                      course.courseTypeName === '一对一' ? borderColorMapping['一对一'] :
-                      (colorMapping[course.courseTypeName || ''] ?
-                        borderColorMapping[colorMapping[course.courseTypeName || '']] || '#faad14' :
-                        '#faad14'),
-                    borderRadius: '0 2px 2px 0',
-                  }}></div>
+                  {/* 左侧的课程类型颜色条，只在左侧显示 */}
+                  <div style={renderCourseTypeIndicator(course.courseTypeName, course.status)}></div>
 
                   {/* 左侧空间，仅作为间隔 */}
                   <div></div>
@@ -366,20 +351,7 @@ export const getStudentColumns = (
                     justifySelf: 'center'
                   }}>
                     <Tag
-                      style={{
-                        minWidth: '65px',
-                        textAlign: 'center',
-                        padding: '1px 8px',
-                        margin: 0,
-                        borderRadius: '2px',
-                        fontWeight: 400,
-                        fontSize: '12px',
-                        border: '1px solid',
-                        borderColor: colorMapping[course.courseTypeName || ''] ?
-                          `${borderColorMapping[colorMapping[course.courseTypeName || '']]}33` : '#ffd591',
-                        backgroundColor: bgColorMapping[colorMapping[course.courseTypeName || ''] || 'amber'] || '#fffbeb',
-                        color: textColorMapping[colorMapping[course.courseTypeName || ''] || 'amber'] || '#92400e'
-                      }}
+                      style={getCourseTypeTagStyle(course.courseTypeName)}
                     >
                       {course.courseTypeName || '未知'}
                     </Tag>

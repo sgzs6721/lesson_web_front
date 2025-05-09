@@ -13,6 +13,8 @@ interface IBasicSettingsTabProps {
   handleLogoChange: (info: { fileList: UploadFile[] }) => void;
   beforeUpload: (file: File) => boolean;
   onSave: (values: IBasicSettings) => void;
+  themes?: any[];
+  languages?: any[];
 }
 
 const BasicSettingsTab: React.FC<IBasicSettingsTabProps> = ({
