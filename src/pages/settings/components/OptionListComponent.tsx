@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Typography, Form, message, Spin, Row, Col, Space, Card, Empty, Switch, Modal } from 'antd';
+import { Button, Input, Typography, Form, message, Spin, Row, Col, Space, Card, Empty, Switch, Modal, InputNumber } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, CheckOutlined, CloseOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { IOptionListProps, IOptionItem } from '../types';
 
@@ -28,7 +28,7 @@ const localSpinStyle = `
 
 const OptionListComponent: React.FC<IOptionListProps> = ({
   type,
-  options,
+  options = [],
   title,
   addButtonText,
   onAdd,
@@ -49,6 +49,9 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
     enabled: true,
     description: ''
   });
+
+  // 确保 options 总是一个数组
+  const safeOptions = Array.isArray(options) ? options : [];
 
   // 监听 loading 和 closeForm 属性的变化
   useEffect(() => {
@@ -87,6 +90,15 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
     if (!newOption.name.trim() || !newOption.value.trim()) {
       message.error('显示文本和枚举值不能为空');
       return;
+    }
+
+    // 为有效期时长类型添加验证
+    if (type === 'VALIDITY_PERIOD') {
+      const nameValue = Number(newOption.name);
+      if (isNaN(nameValue) || !Number.isInteger(nameValue) || nameValue < 1) {
+        message.error('有效期时长的显示文本必须是大于等于1的整数');
+        return;
+      }
     }
 
     setAddLoading(true);
@@ -131,6 +143,15 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
       return;
     }
 
+    // 为有效期时长类型添加验证
+    if (type === 'VALIDITY_PERIOD') {
+      const nameValue = Number(newOption.name);
+      if (isNaN(nameValue) || !Number.isInteger(nameValue) || nameValue < 1) {
+        message.error('有效期时长的显示文本必须是大于等于1的整数');
+        return;
+      }
+    }
+
     setEditLoadingId(id);
     try {
     onUpdate(id, {
@@ -173,19 +194,30 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
       </div>
 
         {/* 编辑表单优先显示在最上方 */}
-        {isInlineEditing && editingItemId && options.find(item => item.id === editingItemId) && (
+        {isInlineEditing && editingItemId && safeOptions.find(item => item.id === editingItemId) && (
           <div className="adding-card" style={{ width: '100%', marginBottom: '24px', background: '#f8faff', border: '1px dashed #1677FF', borderRadius: '8px', padding: '16px', position: 'relative' }}>
             <Spin spinning={editLoadingId === editingItemId} tip="保存中..." wrapperClassName="local-spin">
               <Form layout="horizontal">
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto', marginRight: '16px' }}>
                     <span style={{ marginRight: '8px', whiteSpace: 'nowrap' }}>显示文本:</span>
-                    <Input
-                      placeholder="请输入显示文本"
-                      value={newOption.name}
-                      onChange={(e) => setNewOption({...newOption, name: e.target.value})}
-                      style={{ width: '180px' }}
-                    />
+                    {type === 'VALIDITY_PERIOD' ? (
+                      <InputNumber
+                        placeholder="请输入大于等于1的整数"
+                        min={1}
+                        precision={0}
+                        value={newOption.name === '' ? undefined : Number(newOption.name)}
+                        onChange={(value) => setNewOption({...newOption, name: value ? value.toString() : ''})}
+                        style={{ width: '180px' }}
+                      />
+                    ) : (
+                      <Input
+                        placeholder="请输入显示文本"
+                        value={newOption.name}
+                        onChange={(e) => setNewOption({...newOption, name: e.target.value})}
+                        style={{ width: '180px' }}
+                      />
+                    )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto', marginRight: '16px' }}>
                     <span style={{ marginRight: '8px', whiteSpace: 'nowrap' }}>枚举值:</span>
@@ -244,11 +276,22 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
               <Row gutter={[16, 8]} align="middle">
                 <Col xs={24} sm={8} md={6} lg={6}>
                   <Form.Item style={{ marginBottom: 8 }} label="显示文本">
-                    <Input
-                      placeholder="请输入显示文本"
-                      value={newOption.name}
-                      onChange={(e) => setNewOption({...newOption, name: e.target.value})}
-                    />
+                    {type === 'VALIDITY_PERIOD' ? (
+                      <InputNumber
+                        placeholder="请输入大于等于1的整数"
+                        min={1}
+                        precision={0}
+                        value={newOption.name === '' ? undefined : Number(newOption.name)}
+                        onChange={(value) => setNewOption({...newOption, name: value ? value.toString() : ''})}
+                        style={{ width: '100%' }}
+                      />
+                    ) : (
+                      <Input
+                        placeholder="请输入显示文本"
+                        value={newOption.name}
+                        onChange={(e) => setNewOption({...newOption, name: e.target.value})}
+                      />
+                    )}
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={8} md={6} lg={6}>
@@ -269,16 +312,17 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                     />
                   </Form.Item>
                 </Col>
-                <Col xs={24} sm={8} md={4} lg={3}>
+                <Col xs={24} sm={6} md={4} lg={3}>
                   <Form.Item style={{ marginBottom: 8 }} label="是否启用">
                     <Switch
                       checked={newOption.enabled}
                       onChange={(checked) => setNewOption({...newOption, enabled: checked})}
-                      defaultChecked
                     />
                   </Form.Item>
                 </Col>
-                <Col xs={24} sm={8} md={24} lg={24} style={{ textAlign: 'center', marginTop: 8 }}>
+              </Row>
+              <Row>
+                <Col span={24} style={{ textAlign: 'center', marginTop: '8px' }}>
                   <Space>
                     <Button 
                       type="primary" 
@@ -304,7 +348,7 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
         )}
         {/* 卡片列表内容保持不变 */}
         {(
-          options.length === 0 && !loading && !isAddingNew && !isInlineEditing ? (
+          safeOptions.length === 0 && !loading && !isAddingNew && !isInlineEditing ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={<span>暂无数据，请点击添加按钮创建</span>}
@@ -312,7 +356,7 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
           />
         ) : (
           <Row gutter={[16, 16]} style={{ width: '100%', margin: '0' }}>
-            {options.map((item) => (
+            {safeOptions.map((item) => (
               <Col xs={24} sm={12} md={8} lg={6} key={item.id} style={{ padding: '0 8px 16px 8px' }}>
                   <Spin spinning={editLoadingId === item.id} tip="更新中...">
                   <div style={{ 

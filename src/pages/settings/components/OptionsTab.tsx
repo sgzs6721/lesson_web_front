@@ -12,6 +12,7 @@ interface OptionsTabProps {
   paymentMethodOptions: IOptionItem[];
   giftOptions: IOptionItem[];
   feeOptions: IOptionItem[];
+  expireTypeOptions: IOptionItem[];
   onAddOption: (type: string, option: IOptionItem) => void;
   onDeleteOption: (type: string, id: string) => void;
   onUpdateOption: (id: string, option: IOptionItem) => void;
@@ -26,6 +27,7 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
   paymentMethodOptions,
   giftOptions,
   feeOptions,
+  expireTypeOptions,
   onAddOption,
   onDeleteOption,
   onUpdateOption,
@@ -77,6 +79,20 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
             onUpdate={(id, option) => handleUpdateOption(id, option)}
             loading={loading['COURSE_TYPE']}
             closeForm={closeAddForm['COURSE_TYPE'] || closeEditForm['COURSE_TYPE']}
+          />
+          
+          <Divider />
+          
+          <OptionListComponent
+            type="VALIDITY_PERIOD"
+            options={expireTypeOptions}
+            title="有效期时长（月）"
+            addButtonText="添加"
+            onAdd={(option) => handleAddOption('VALIDITY_PERIOD', option)}
+            onDelete={(id, name) => handleDeleteOption('VALIDITY_PERIOD', id, name)}
+            onUpdate={(id, option) => handleUpdateOption(id, option)}
+            loading={loading['VALIDITY_PERIOD']}
+            closeForm={closeAddForm['VALIDITY_PERIOD'] || closeEditForm['VALIDITY_PERIOD']}
           />
         </div>
       )

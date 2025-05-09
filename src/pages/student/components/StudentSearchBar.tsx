@@ -185,13 +185,23 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
         <Col>
           <Form.Item style={{ margin: 0 }}>
             <Space>
-              <Button type="primary" icon={<SearchOutlined />} onClick={onSearch}>
+              <Button 
+                type="primary" 
+                icon={<SearchOutlined />} 
+                onClick={onSearch}
+              >
                 查询
               </Button>
-              <Button icon={<ReloadOutlined />} onClick={onReset}>
+              <Button 
+                icon={<ReloadOutlined />} 
+                onClick={onReset}
+              >
                 重置
               </Button>
-              <Button icon={<ExportOutlined />} onClick={onExport}>
+              <Button 
+                icon={<ExportOutlined />} 
+                onClick={onExport}
+              >
                 导出
               </Button>
             </Space>

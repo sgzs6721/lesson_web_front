@@ -56,6 +56,7 @@ const SystemSettings: React.FC = () => {
   const [paymentMethodOptions, setPaymentMethodOptions] = useState<IOptionItem[]>([]);
   const [giftOptions, setGiftOptions] = useState<IOptionItem[]>([]);
   const [feeOptions, setFeeOptions] = useState<IOptionItem[]>([]);
+  const [expireTypeOptions, setExpireTypeOptions] = useState<IOptionItem[]>([]);
   const [backupList, setBackupList] = useState<IBackupItem[]>([]);
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -86,6 +87,9 @@ const SystemSettings: React.FC = () => {
           break;
         case 'HANDLING_FEE_TYPE':
           setFeeOptions(options);
+          break;
+        case 'VALIDITY_PERIOD':
+          setExpireTypeOptions(options);
           break;
       }
     } catch (error) {
@@ -125,6 +129,7 @@ const SystemSettings: React.FC = () => {
     setPaymentMethodOptions([]);
     setGiftOptions([]);
     setFeeOptions([]);
+    setExpireTypeOptions([]);
 
     // 初始化备份列表
     setBackupList([
@@ -147,6 +152,7 @@ const SystemSettings: React.FC = () => {
     loadOptions('PAYMENT_TYPE');
     loadOptions('GIFT_ITEM');
     loadOptions('HANDLING_FEE_TYPE');
+    loadOptions('VALIDITY_PERIOD');
   }, [basicForm, advancedForm]);
 
   // Logo 文件上传相关处理
@@ -205,6 +211,9 @@ const SystemSettings: React.FC = () => {
             break;
           case 'HANDLING_FEE_TYPE':
             setFeeOptions(prev => [...prev, newOption]);
+            break;
+          case 'VALIDITY_PERIOD':
+            setExpireTypeOptions(prev => [...prev, newOption]);
             break;
         }
         
@@ -265,6 +274,9 @@ const SystemSettings: React.FC = () => {
       case 'HANDLING_FEE_TYPE':
         optionsList = feeOptions;
         break;
+      case 'VALIDITY_PERIOD':
+        optionsList = expireTypeOptions;
+        break;
     }
     
     const targetOption = optionsList.find(item => item.id === id);
@@ -294,6 +306,9 @@ const SystemSettings: React.FC = () => {
           case 'HANDLING_FEE_TYPE':
             setFeeOptions(prev => prev.filter(item => item.id !== id));
             break;
+          case 'VALIDITY_PERIOD':
+            setExpireTypeOptions(prev => prev.filter(item => item.id !== id));
+            break;
         }
       }
       
@@ -314,6 +329,9 @@ const SystemSettings: React.FC = () => {
     if (courseTypeOptions.some(item => item.id === id)) {
       apiType = 'COURSE_TYPE';
       type = 'courseType';
+    } else if (expireTypeOptions.some(item => item.id === id)) {
+      apiType = 'VALIDITY_PERIOD';
+      type = 'expireType';
     } else if (paymentMethodOptions.some(item => item.id === id)) {
       apiType = 'PAYMENT_TYPE';
       type = 'paymentMethod';
@@ -364,6 +382,9 @@ const SystemSettings: React.FC = () => {
           case 'HANDLING_FEE_TYPE':
             setFeeOptions(updateState);
             break;
+          case 'VALIDITY_PERIOD':
+            setExpireTypeOptions(updateState);
+            break;
         }
         
         // API调用成功，设置closeForm为true
@@ -387,6 +408,7 @@ const SystemSettings: React.FC = () => {
       case 'paymentMethod': return 'PAYMENT_TYPE';
       case 'gift': return 'GIFT_ITEM';
       case 'fee': return 'HANDLING_FEE_TYPE';
+      case 'expireType': return 'VALIDITY_PERIOD';
       default: return type.toUpperCase();
     }
   };
@@ -398,6 +420,8 @@ const SystemSettings: React.FC = () => {
       case 'paymentMethod': return '支付类型';
       case 'gift': return '赠品';
       case 'fee': return '手续费';
+      case 'expireType': 
+      case 'VALIDITY_PERIOD': return '有效期时长';
       default: return '选项';
     }
   };
@@ -506,6 +530,7 @@ const SystemSettings: React.FC = () => {
               paymentMethodOptions={paymentMethodOptions}
               giftOptions={giftOptions}
               feeOptions={feeOptions}
+              expireTypeOptions={expireTypeOptions}
               onAddOption={handleAddOption}
               onDeleteOption={handleDeleteOption}
               onUpdateOption={handleUpdateOption}

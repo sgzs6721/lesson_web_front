@@ -32,6 +32,7 @@ const SystemSettings: React.FC = () => {
   const [paymentMethodOptions, setPaymentMethodOptions] = useState<IOptionItem[]>([]);
   const [giftOptions, setGiftOptions] = useState<IOptionItem[]>([]);
   const [feeOptions, setFeeOptions] = useState<IOptionItem[]>([]);
+  const [expireTypeOptions, setExpireTypeOptions] = useState<IOptionItem[]>([]);
   const [backupList, setBackupList] = useState<IBackupItem[]>([]);
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   
@@ -120,6 +121,10 @@ const SystemSettings: React.FC = () => {
       case 'courseType':
         setCourseTypeOptions([...courseTypeOptions, newOption]);
         break;
+      case 'expireType':
+      case 'VALIDITY_PERIOD':
+        setExpireTypeOptions([...expireTypeOptions, newOption]);
+        break;
       case 'paymentMethod':
         setPaymentMethodOptions([...paymentMethodOptions, newOption]);
         break;
@@ -134,6 +139,7 @@ const SystemSettings: React.FC = () => {
     }
     message.success(`添加${
       type === 'courseType' ? '课程类型' : 
+      type === 'expireType' || type === 'VALIDITY_PERIOD' ? '有效期类型' :
       type === 'paymentMethod' ? '支付类型' : 
       type === 'gift' ? '赠品' : 
       type === 'fee' ? '手续费' :
@@ -168,6 +174,10 @@ const SystemSettings: React.FC = () => {
       case 'courseType':
         setCourseTypeOptions(courseTypeOptions.filter(item => item.id !== id));
         break;
+      case 'expireType':
+      case 'VALIDITY_PERIOD':
+        setExpireTypeOptions(expireTypeOptions.filter(item => item.id !== id));
+        break;
       case 'paymentMethod':
         setPaymentMethodOptions(paymentMethodOptions.filter(item => item.id !== id));
         break;
@@ -182,6 +192,7 @@ const SystemSettings: React.FC = () => {
     }
     message.success(`删除${
       type === 'courseType' ? '课程类型' : 
+      type === 'expireType' || type === 'VALIDITY_PERIOD' ? '有效期类型' :
       type === 'paymentMethod' ? '支付类型' : 
       type === 'gift' ? '赠品' : 
       type === 'fee' ? '手续费' :
@@ -194,6 +205,8 @@ const SystemSettings: React.FC = () => {
     
     if (courseTypeOptions.some(item => item.id === id)) {
       type = 'courseType';
+    } else if (expireTypeOptions.some(item => item.id === id)) {
+      type = 'expireType';
     } else if (paymentMethodOptions.some(item => item.id === id)) {
       type = 'paymentMethod';
     } else if (giftOptions.some(item => item.id === id)) {
@@ -210,6 +223,10 @@ const SystemSettings: React.FC = () => {
       case 'courseType':
         setCourseTypeOptions(courseTypeOptions.map(item => (item.id === id ? { ...item, ...option } : item)));
         break;
+      case 'expireType':
+      case 'VALIDITY_PERIOD':
+        setExpireTypeOptions(expireTypeOptions.map(item => (item.id === id ? { ...item, ...option } : item)));
+        break;
       case 'paymentMethod':
         setPaymentMethodOptions(paymentMethodOptions.map(item => (item.id === id ? { ...item, ...option } : item)));
         break;
@@ -224,6 +241,7 @@ const SystemSettings: React.FC = () => {
     }
     message.success(`更新${
       type === 'courseType' ? '课程类型' : 
+      type === 'expireType' || type === 'VALIDITY_PERIOD' ? '有效期类型' :
       type === 'paymentMethod' ? '支付类型' : 
       type === 'gift' ? '赠品' : 
       type === 'fee' ? '手续费' :
@@ -332,6 +350,7 @@ const SystemSettings: React.FC = () => {
             paymentMethodOptions={paymentMethodOptions}
             giftOptions={giftOptions}
             feeOptions={feeOptions}
+            expireTypeOptions={expireTypeOptions}
             onAddOption={handleAddOption}
             onDeleteOption={handleDeleteOption}
             onUpdateOption={handleUpdateOption}

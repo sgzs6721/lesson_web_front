@@ -14,7 +14,8 @@ let mockConstants: Record<string, Constant[]> = {
   'COURSE_TYPE': [],
   'PAYMENT_TYPE': [],
   'GIFT_ITEM': [],
-  'HANDLING_FEE_TYPE': []
+  'HANDLING_FEE_TYPE': [],
+  'VALIDITY_PERIOD': []
 };
 
 // 常量相关接口
