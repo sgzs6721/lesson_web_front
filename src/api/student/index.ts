@@ -42,6 +42,7 @@ const STUDENT_API_PATHS = {
   PAYMENT_RECORDS: (studentId: string) => `/lesson/api/student/${studentId}/payment-records`,
   PAYMENT: '/lesson/api/student/payment',
   REFUND: '/lesson/api/student/refund',
+  TRANSFER_WITHIN_COURSE: '/lesson/api/student/transfer-within-course',
 };
 
 // 修正 API 路径
@@ -177,7 +178,37 @@ const buildQueryString = (params: StudentSearchParams): string => {
 };
 
 // 学生相关接口
+// 转班请求接口
+interface TransferWithinCourseRequest {
+  studentId: number;
+  courseId?: number;
+  sourceCourseId: number;
+  targetCourseId: number;
+  transferHours: number;
+  compensationFee?: number;
+  transferCause: string;
+  campusId?: number;
+}
+
 export const student = {
+  // 转班API
+  transferWithinCourse: async (data: TransferWithinCourseRequest): Promise<any> => {
+    console.log('调用转班API，请求数据:', data);
+
+    try {
+      const response = await request(STUDENT_API_PATHS.TRANSFER_WITHIN_COURSE, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+
+      console.log('转班API响应:', response);
+      return response;
+    } catch (error) {
+      console.error('转班API调用失败:', error);
+      throw error;
+    }
+  },
+
   // 获取学生列表
   getList: async (params?: StudentSearchParams): Promise<PaginatedResponse<Student>> => {
     if (USE_MOCK) {
@@ -227,18 +258,18 @@ export const student = {
 
     try {
       console.log(`获取学生详情，学生ID: ${id}`);
-      
+
       const response = await request(`/lesson/api/student/detail?id=${id}`, {
         method: 'GET'
       });
-      
+
       console.log('学生详情API响应:', response);
-      
+
       if (response.code !== 200) {
         console.error(`获取学生详情失败: ${response.message}`);
         throw new Error(`获取学生详情失败: ${response.message || '未知错误'}`);
       }
-      
+
       return convertDtoToStudent(response.data);
     } catch (error) {
       console.error(`获取学生详情失败:`, error);
@@ -269,14 +300,14 @@ export const student = {
     if (!payload.studentInfo || !payload.courseInfoList) {
       throw new Error('学员信息或课程信息不能为空');
     }
-    
+
     // 确保有校区ID
     const currentCampusId = localStorage.getItem('currentCampusId');
     if (!currentCampusId) {
       message.warning('请先选择校区');
       throw new Error('未选择校区，无法创建学员');
     }
-    
+
     // 添加校区ID到学员信息中，如果没有的话
     if (!payload.studentInfo.campusId) {
       payload.studentInfo.campusId = Number(currentCampusId);
@@ -305,16 +336,16 @@ export const student = {
         // 将courseInfoList转换为courses数组
         const courses = payload.courseInfoList.map(courseInfo => {
           console.log('处理课程信息:', courseInfo);
-          
+
           // 查找课程名称 - 从原始表单数据提取
           let courseItemName = '';
-          
+
           // 1. 从表单数据直接提取课程名称
           if (courseInfo.courseName) {
             courseItemName = courseInfo.courseName;
             console.log('使用提供的课程名称:', courseItemName);
-          } 
-          
+          }
+
           // 2. 如果表单没有课程名称，但有courseId，尝试构建一个名称
           if (!courseItemName && courseInfo.courseId) {
             // 尝试使用课程ID查找或构建课程名称
@@ -329,13 +360,13 @@ export const student = {
               console.log('构建课程名称:', courseItemName);
             }
           }
-          
+
           // 3. 检查name字段（可能是旧版本API使用的格式）
           if (!courseItemName && courseInfo.name) {
             courseItemName = courseInfo.name;
             console.log('使用name字段作为课程名称:', courseItemName);
           }
-          
+
           // 最后保障：如果仍然没有课程名称，使用一个默认值
           if (!courseItemName) {
             courseItemName = '未命名课程';
@@ -344,7 +375,7 @@ export const student = {
 
           // 查找课程类型名称
           let courseItemType = '大课'; // 默认类型
-          
+
           // 按优先级提取课程类型
           if (courseInfo.courseTypeName) {
             courseItemType = courseInfo.courseTypeName;
@@ -356,10 +387,10 @@ export const student = {
             courseItemType = courseInfo.courseType;
             console.log('使用courseType字段:', courseItemType);
           }
-          
+
           // 提取教练信息
           let coachItemName = '';
-          
+
           // 按优先级提取教练名称
           if (courseInfo.coachName) {
             coachItemName = courseInfo.coachName;
@@ -371,20 +402,20 @@ export const student = {
             coachItemName = courseInfo.originalCoachName;
             console.log('使用originalCoachName:', coachItemName);
           }
-          
+
           // 如果没有教练信息，使用默认值
           if (!coachItemName) {
             coachItemName = '待定';
             console.log('使用默认教练名称:', coachItemName);
           }
-          
+
           console.log("课程信息最终处理结果:", {
             courseId: courseInfo.courseId,
             courseName: courseItemName,
             courseType: courseItemType,
             coachName: coachItemName
           });
-          
+
           // 返回的必须符合前端 CourseInfo 结构，但不需要所有字段
           return {
             studentCourseId: 0, // 默认填充必需字段
@@ -407,18 +438,18 @@ export const student = {
 
         // 获取第一个课程信息
         const primaryCourseInfo = payload.courseInfoList[0] || {};
-        const courseName = primaryCourseInfo.courseName || 
-                         primaryCourseInfo.originalCourseName || 
+        const courseName = primaryCourseInfo.courseName ||
+                         primaryCourseInfo.originalCourseName ||
                          (courses[0] ? courses[0].courseName : '');
-        
-        const courseTypeName = primaryCourseInfo.courseTypeName || 
-                             primaryCourseInfo.type || 
-                             primaryCourseInfo.courseType || 
+
+        const courseTypeName = primaryCourseInfo.courseTypeName ||
+                             primaryCourseInfo.type ||
+                             primaryCourseInfo.courseType ||
                              (courses[0] ? courses[0].courseTypeName : '大课');
-        
-        const coachName = primaryCourseInfo.coachName || 
-                        primaryCourseInfo.coach || 
-                        primaryCourseInfo.originalCoachName || 
+
+        const coachName = primaryCourseInfo.coachName ||
+                        primaryCourseInfo.coach ||
+                        primaryCourseInfo.originalCoachName ||
                         (courses[0] ? courses[0].coachName : '待定');
 
         console.log('创建学员数据时使用的课程和教练信息:', {
@@ -471,9 +502,9 @@ export const student = {
   },
 
   // 更新学员及课程
-  updateWithCourse: async (payload: { 
-    studentId: number; 
-    studentInfo: any; 
+  updateWithCourse: async (payload: {
+    studentId: number;
+    studentInfo: any;
     courseInfoList: Array<{
       courseId: number;
       startDate: string;
@@ -633,16 +664,16 @@ export const student = {
     // MOCK data can be added here if needed
     if (USE_MOCK) {
         console.warn('Mock data for getAttendanceList not implemented yet.');
-        return { list: [], total: 0, pageNum: 1, pageSize: 10, pages: 0 }; 
+        return { list: [], total: 0, pageNum: 1, pageSize: 10, pages: 0 };
     }
-    
+
     // 从 localStorage 获取 campusId，如果 params 中没有提供
     const campusId = params.campusId || Number(localStorage.getItem('currentCampusId'));
     if (!campusId) {
       console.error('获取打卡记录失败: 缺少校区 ID');
       throw new Error('缺少校区 ID');
     }
-    
+
     const requestBody = {
       ...params,
       campusId: campusId
@@ -659,7 +690,7 @@ export const student = {
 
     if (response.code === 200 && response.data) {
       // API 返回的数据结构已经是 PaginatedResponse<AttendanceRecordDTO>
-      return response.data; 
+      return response.data;
     } else {
       console.error('获取打卡记录列表失败:', response.message);
       throw new Error(response.message || '获取打卡记录列表失败');

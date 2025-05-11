@@ -178,6 +178,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         onCancel={ui.transferClass.handleCancel}
         onOk={ui.transferClass.handleSubmit}
         courseList={filteredCourseList}
+        loading={ui.transferClass.loading} // 传递loading状态
       />
 
       {/* 快速添加学员模态框 */}
@@ -198,7 +199,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
           onOk={handleAttendanceOk}
         />
       )}
-      
+
       {/* 学员详情模态框 */}
       <StudentDetailsModal
         visible={detailsVisible}
@@ -209,4 +210,4 @@ const StudentModals: React.FC<StudentModalsProps> = ({
   );
 };
 
-export default StudentModals; 
+export default StudentModals;

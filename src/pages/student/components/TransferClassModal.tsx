@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Modal, 
-  Form, 
-  Input, 
-  Select, 
-  InputNumber, 
-  Row, 
-  Col, 
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  InputNumber,
+  Row,
+  Col,
   DatePicker,
   Divider
 } from 'antd';
@@ -28,6 +28,7 @@ interface TransferClassModalProps {
   onCancel: () => void;
   onOk: () => void;
   courseList?: SimpleCourse[];
+  loading?: boolean; // 添加loading属性
 }
 
 const TransferClassModal: React.FC<TransferClassModalProps> = ({
@@ -37,7 +38,8 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
   studentCourses,
   onCancel,
   onOk,
-  courseList
+  courseList,
+  loading // 接收loading属性
 }) => {
   // 添加状态跟踪最大可转课时
   const [maxTransferHours, setMaxTransferHours] = React.useState(0);
@@ -84,25 +86,45 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
         setMaxTransferHours(refundHours);
         // 确保转班课时设置为剩余课时
         console.log('设置转班课时为:', refundHours);
+
+        // 强制设置转班课时为剩余课时
         form.setFieldsValue({
           transferClassHours: refundHours
         });
-        
+
         // 二次确认设置成功
         setTimeout(() => {
           const currentTransferHours = form.getFieldValue('transferClassHours');
           console.log('设置后的转班课时:', currentTransferHours);
+
+          // 如果设置不成功，再次尝试设置
+          if (currentTransferHours !== refundHours) {
+            console.log('转班课时设置不成功，再次尝试设置');
+            form.setFieldsValue({
+              transferClassHours: refundHours
+            });
+          }
         }, 100);
       }
     }
   }, [formInitialized, form]);
+
+  // 监听maxTransferHours变化，自动更新转班课时
+  React.useEffect(() => {
+    if (maxTransferHours > 0 && formInitialized) {
+      console.log('检测到最大可转课时变化，更新转班课时为:', maxTransferHours);
+      form.setFieldsValue({
+        transferClassHours: maxTransferHours
+      });
+    }
+  }, [maxTransferHours, formInitialized, form]);
 
   // 监听student和studentCourses变化，更新最大可转课时
   React.useEffect(() => {
     if (visible && student && studentCourses.length > 0) {
       let remainingHours = 0;
       const defaultCourse = studentCourses[0];
-      
+
       // 尝试从学生课程中获取剩余课时
       if (student.courses && student.courses.length > 0) {
         const coursesInfo = student.courses.find(c => String(c.courseId) === String(defaultCourse.id));
@@ -111,7 +133,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
           console.log('从课程信息中获取最大可转课时:', remainingHours);
         }
       }
-      
+
       // 从课程概要中获取
       if (remainingHours === 0 && defaultCourse.remainingClasses) {
         const parts = defaultCourse.remainingClasses.split('/');
@@ -120,7 +142,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
           console.log('从课程概要中获取最大可转课时:', remainingHours);
         }
       }
-      
+
       // 从学生对象获取
       if (remainingHours === 0 && student.remainingClasses) {
         const parts = student.remainingClasses.split('/');
@@ -129,13 +151,18 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
           console.log('从学生对象中获取最大可转课时:', remainingHours);
         }
       }
-      
+
       if (remainingHours > 0) {
         console.log('设置最大可转课时为:', remainingHours);
         setMaxTransferHours(remainingHours);
+
+        // 直接更新表单中的转班课时值
+        form.setFieldsValue({
+          transferClassHours: remainingHours
+        });
       }
     }
-  }, [visible, student, studentCourses]);
+  }, [visible, student, studentCourses, form]);
 
   // 当模态框可见且学生信息存在时，确保表单中的学生姓名和ID被正确设置
   React.useEffect(() => {
@@ -143,7 +170,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
       // 获取课程信息
       if (studentCourses && studentCourses.length > 0) {
         const defaultCourse = studentCourses[0];
-        
+
         // 获取剩余课时
         let remainingHours = 0;
         if (student.courses && student.courses.length > 0) {
@@ -152,7 +179,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             remainingHours = coursesInfo.remainingHours;
           }
         }
-        
+
         // 如果没有找到精确课时，从课程概要中获取
         if (remainingHours === 0 && defaultCourse.remainingClasses) {
           const parts = defaultCourse.remainingClasses.split('/');
@@ -160,7 +187,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             remainingHours = Number(parts[0]);
           }
         }
-        
+
         // 如果仍未找到，尝试从学生对象直接获取
         if (remainingHours === 0 && student.remainingClasses) {
           const parts = student.remainingClasses.split('/');
@@ -168,10 +195,10 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             remainingHours = Number(parts[0]);
           }
         }
-        
+
         // 获取有效期信息
         let expireDate = null;
-        
+
         // 尝试从defaultCourse获取有效期
         if (defaultCourse.expireDate) {
           console.log('从defaultCourse获取有效期:', defaultCourse.expireDate);
@@ -185,7 +212,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             console.error('解析defaultCourse.expireDate失败:', error);
           }
         }
-        
+
         // 尝试从student.courses获取有效期
         if (!expireDate && student.courses && student.courses.length > 0) {
           const coursesInfo = student.courses.find(c => String(c.courseId) === String(defaultCourse.id));
@@ -202,7 +229,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             }
           }
         }
-        
+
         // 如果仍未找到，尝试从student对象直接获取
         if (!expireDate && student.expireDate) {
           console.log('从student.expireDate获取有效期:', student.expireDate);
@@ -216,7 +243,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             console.error('解析student.expireDate失败:', error);
           }
         }
-                
+
         // 设置表单值
         const values: Record<string, any> = {
           studentName: student.name,
@@ -225,21 +252,22 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
           _courseId: defaultCourse.id, // 隐藏字段保存课程ID
           refundClassHours: remainingHours,
           operationType: 'transferClass',
+          // 确保转班课时默认为剩余课时
           transferClassHours: remainingHours > 0 ? remainingHours : 1
         };
-        
+
         // 如果有有效期选项，设置默认值
         if (validityPeriodOptions.length > 0) {
           // 默认选择第一个有效期选项
           values.validityPeriodId = validityPeriodOptions[0].id;
         }
-        
+
         // 如果有有效的过期日期，设置validUntil字段
         if (expireDate && expireDate.isValid()) {
           //values.validUntil = expireDate;
           // 不再设置validUntil，由用户从下拉框中选择
         }
-        
+
         console.log('设置转班表单值:', values);
         form.setFieldsValue(values);
         setFormInitialized(true);
@@ -261,27 +289,50 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
         console.log('确认提交按钮点击');
         // 设置提交中状态
         setSubmitLoading(true);
-        // 在调用onOk之前，确保operationType字段被正确设置
-        form.setFieldsValue({ operationType: 'transferClass' });
-        // 调用提交方法
-        onOk();
-        // 延迟关闭loading状态
+
+        // 获取当前转班课时
+        const transferHours = form.getFieldValue('transferClassHours');
+        console.log('当前转班课时:', transferHours, '最大可转课时:', maxTransferHours);
+
+        // 确保转班课时不超过最大可转课时
+        if (transferHours > maxTransferHours) {
+          console.log('转班课时超过最大可转课时，自动调整为最大可转课时');
+          form.setFieldsValue({
+            transferClassHours: maxTransferHours,
+            operationType: 'transferClass'
+          });
+        } else {
+          // 在调用onOk之前，确保operationType字段被正确设置
+          form.setFieldsValue({ operationType: 'transferClass' });
+        }
+
+        try {
+          // 调用提交方法
+          onOk();
+        } catch (error) {
+          // 如果提交过程中出错，重置按钮状态
+          console.error('提交过程中出错:', error);
+          setSubmitLoading(false);
+        }
+
+        // 添加一个安全机制：如果5秒后按钮仍然处于加载状态，强制重置
+        // 这是为了防止某些情况下loading状态没有被正确重置
         setTimeout(() => {
           setSubmitLoading(false);
-        }, 2000);
+        }, 5000);
       }}
       onCancel={onCancel}
       width={800}
       okText="确认提交"
       cancelText="取消"
-      confirmLoading={submitLoading}
+      confirmLoading={loading !== undefined ? loading : submitLoading}
       okButtonProps={{
         style: {},
         className: 'no-hover-button'
       }}
     >
       <Divider style={{ margin: '0 0 24px 0' }} />
-      
+
       <Form
         form={form}
         layout="vertical"
@@ -290,12 +341,12 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
         <Form.Item name="operationType" hidden>
           <Input type="hidden" />
         </Form.Item>
-        
+
         {/* 隐藏字段保存原课程ID */}
         <Form.Item name="_courseId" hidden>
           <Input type="hidden" />
         </Form.Item>
-        
+
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
@@ -314,7 +365,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
-        
+
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
@@ -333,9 +384,9 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
-        
+
         <Divider />
-        
+
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
@@ -345,12 +396,15 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             >
               <Select
                 showSearch
-                placeholder="请选择转班目标课程" 
+                placeholder="请选择转班目标课程"
                 optionFilterProp="children"
-                filterOption={(input, option) => 
+                filterOption={(input, option) =>
                   (option?.children as unknown as string).toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 style={{ width: '100%' }}
+                dropdownStyle={{ zIndex: 1060 }}
+                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
+                listHeight={300}
               >
                 {courseList?.map(course => (
                   <Option key={course.id} value={course.id}>
@@ -363,8 +417,18 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
           <Col span={12}>
             <Form.Item
               name="transferClassHours"
-              label="转班课时"
-              rules={[{ required: true, message: '请输入转班课时' }]}
+              label={<span>转班课时 <span style={{ color: '#999', fontSize: '12px' }}>(剩余课时: {maxTransferHours})</span></span>}
+              rules={[
+                { required: true, message: '请输入转班课时' },
+                {
+                  validator: (_, value) => {
+                    if (value > maxTransferHours) {
+                      return Promise.reject(`转班课时不能超过剩余课时 ${maxTransferHours}`);
+                    }
+                    return Promise.resolve();
+                  }
+                }
+              ]}
             >
               <div className="input-with-unit-wrapper">
                 <InputNumber
@@ -379,7 +443,7 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
-        
+
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
@@ -408,6 +472,24 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
               </div>
             </Form.Item>
           </Col>
+          <Col span={12}>
+            <Form.Item
+              name="priceDifference"
+              label="补差价"
+              initialValue={0}
+              tooltip="正数表示学员需要补差价，负数表示需要退还差价"
+            >
+              <div className="input-with-unit-wrapper">
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="请输入补差价金额"
+                  precision={2}
+                  className="select-with-unit"
+                />
+                <div className="input-unit">元</div>
+              </div>
+            </Form.Item>
+          </Col>
         </Row>
 
         <Form.Item
@@ -422,4 +504,4 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
   );
 };
 
-export default TransferClassModal; 
+export default TransferClassModal;

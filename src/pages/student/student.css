@@ -212,6 +212,7 @@
 .input-with-unit-wrapper .select-with-unit .ant-select-selector,
 .input-with-unit-wrapper .select-with-unit.ant-input-number {
   padding-right: 45px !important;
+  width: 100% !important;
 }
 
 .input-with-unit-wrapper .input-unit {
@@ -231,4 +232,27 @@
   border-left: 1px solid #d9d9d9;
   pointer-events: none;
   z-index: 1;
+}
+
+/* 修复下拉框样式 */
+.ant-select {
+  width: 100% !important;
+}
+
+.ant-select-selector {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.ant-select-dropdown {
+  min-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 确保下拉选项文本不换行 */
+.ant-select-item-option-content {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
