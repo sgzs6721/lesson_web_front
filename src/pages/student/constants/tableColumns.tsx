@@ -48,33 +48,70 @@ const colorMap: Record<string, { border: string; bg: string; text: string }> = {
 
 // 定义课程类型标签的样式函数
 const getCourseTypeTagStyle = (courseTypeName?: string): React.CSSProperties => {
-  const defaultStyle = { 
-    border: '#ffd591', 
-    bg: '#fffbeb', 
-    text: '#92400e' 
+  const defaultStyle = {
+    border: '#ffd591',
+    bg: '#fffbeb',
+    text: '#92400e'
   };
-  
+
   const style = courseTypeName ? (colorMap[courseTypeName] || defaultStyle) : defaultStyle;
-  
+
+  // 根据课程类型设置不同的样式
+  let customStyle: React.CSSProperties = {};
+
+  if (courseTypeName === '一对一') {
+    // 一对一使用淡蓝色
+    customStyle = {
+      backgroundColor: '#E6F7FF',
+      color: '#1890FF',
+      border: '1px solid #91D5FF'
+    };
+  } else if (courseTypeName === '一对二') {
+    // 一对二使用淡绿色
+    customStyle = {
+      backgroundColor: '#F6FFED',
+      color: '#52C41A',
+      border: '1px solid #B7EB8F'
+    };
+  } else if (courseTypeName === '大课') {
+    // 大课使用淡橙色
+    customStyle = {
+      backgroundColor: '#FFF7E6',
+      color: '#FA8C16',
+      border: '1px solid #FFD591'
+    };
+  } else if (courseTypeName === '小班') {
+    // 小班使用淡紫色
+    customStyle = {
+      backgroundColor: '#F9F0FF',
+      color: '#722ED1',
+      border: '1px solid #D3ADF7'
+    };
+  } else {
+    // 其他课程类型使用浅色背景
+    customStyle = {
+      backgroundColor: style.bg,
+      color: style.text,
+      border: `1px solid ${style.border}33`
+    };
+  }
+
   return {
     minWidth: '65px',
     textAlign: 'center' as const,
-    padding: '1px 8px',
+    padding: '2px 8px',
     margin: 0,
-    borderRadius: '2px',
-    fontWeight: 400,
+    borderRadius: '4px',
+    fontWeight: 500,
     fontSize: '12px',
-    border: '1px solid',
-    borderColor: `${style.border}33`, // 设置较浅的边框色
-    backgroundColor: style.bg,
-    color: style.text
+    ...customStyle
   };
 };
 
 // 定义课程卡片中的类型指示器样式
 const renderCourseTypeIndicator = (courseTypeName?: string, status?: string): React.CSSProperties => {
   const statusUpperCase = (status || '').toUpperCase();
-  
+
   // 根据状态和课程类型决定颜色
   let color;
   if (statusUpperCase === 'EXPIRED') {
@@ -84,12 +121,13 @@ const renderCourseTypeIndicator = (courseTypeName?: string, status?: string): Re
   } else {
     color = '#1677FF'; // 默认蓝色
   }
-  
+
   return {
     position: 'absolute' as const,
     left: 0,
-    top: 0,
-    height: '30px', // 只在第一行显示，高度设为30px
+    top: '50%',
+    transform: 'translateY(-50%)',
+    height: '20px', // 减小高度为20px
     width: '4px',
     backgroundColor: color,
     borderRadius: '0 2px 2px 0'
