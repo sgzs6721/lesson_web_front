@@ -153,15 +153,12 @@ export const useStudentUI = (
       studentCourses: transferProps.studentCourses,
       searchResults: transferProps.searchResults,
       searchLoading: transferProps.searchLoading,
-      quickAddVisible: transferProps.quickAddVisible,
       availableStudents: transferProps.availableStudents,
       handleTransfer: transferProps.handleTransfer,
       handleCancel: transferProps.handleCancel,
-      handleQuickAddShow: transferProps.handleQuickAddShow,
-      handleQuickAddCancel: transferProps.handleQuickAddCancel,
-      handleAddStudent: transferProps.handleAddStudent,
       handleSearch: transferProps.handleSearch,
-      handleSubmit: transferProps.handleSubmit
+      handleSubmit: transferProps.handleSubmit,
+      handleAddStudent: transferProps.handleAddStudent
     },
     
     // 转班相关
