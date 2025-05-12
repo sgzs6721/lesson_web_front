@@ -452,7 +452,7 @@ const StudentManagement: React.FC = () => {
             onClassRecord={(record) => ui.classRecord.showClassRecordModal(record as any)}
             onPayment={(record) => ui.payment.showPaymentModal(record as any)}
             onRefund={(record) => ui.refund.handleRefund(record as any)}
-            onTransfer={(record) => ui.transfer.handleTransfer(record as any)}
+            onTransfer={(record) => ui.transfer.handleTransfer(record as any, record.selectedCourseId)}
             onTransferClass={(record) => ui.transferClass.handleTransferClass(record as any)}
             onDelete={(record) => ui.deleteConfirm.showDeleteConfirm(record)}
             onAttendance={handleAttendance}

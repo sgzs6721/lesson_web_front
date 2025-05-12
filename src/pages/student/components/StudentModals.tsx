@@ -154,18 +154,18 @@ const StudentModals: React.FC<StudentModalsProps> = ({
       <TransferModal
         visible={ui.transfer.visible}
         form={ui.transfer.form}
-        student={ui.transfer.currentStudent as any}
+        student={ui.transfer.currentStudent}
         studentCourses={ui.transfer.studentCourses}
         transferStudentSearchResults={ui.transfer.searchResults}
         isSearchingTransferStudent={ui.transfer.searchLoading}
-        selectedTransferStudent={ui.transfer.currentStudent}
+        selectedTransferStudent={null}
+        selectedCourseId={ui.transfer.currentStudent?.selectedCourseId}
+        selectedCourseName={ui.transfer.currentStudent?.selectedCourseName}
         onCancel={ui.transfer.handleCancel}
         onOk={ui.transfer.handleSubmit}
         onSearchTransferStudent={ui.transfer.handleSearch}
-        onSelectTransferStudent={(student) => console.log('选择转入学员:', student)}
+        onSelectTransferStudent={() => {}}
         students={df.data.students as UiStudent[]}
-        isQuickAddStudentModalVisible={ui.transfer.quickAddVisible}
-        showQuickAddStudentModal={ui.transfer.handleQuickAddShow}
         courseList={filteredCourseList}
       />
 
@@ -179,14 +179,6 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         onOk={ui.transferClass.handleSubmit}
         courseList={filteredCourseList}
         loading={ui.transferClass.loading} // 传递loading状态
-      />
-
-      {/* 快速添加学员模态框 */}
-      <QuickAddStudentModal
-        visible={ui.transfer.quickAddVisible}
-        form={Form.useForm()[0]} // 使用新的表单实例
-        onOk={() => console.log('添加新学员')}
-        onCancel={ui.transfer.handleQuickAddCancel}
       />
 
       {/* 学员打卡模态框 */}

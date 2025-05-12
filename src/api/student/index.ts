@@ -43,6 +43,7 @@ const STUDENT_API_PATHS = {
   PAYMENT: '/lesson/api/student/payment',
   REFUND: '/lesson/api/student/refund',
   TRANSFER_WITHIN_COURSE: '/lesson/api/student/transfer-within-course',
+  TRANSFER_COURSE: '/lesson/api/student/transfer-course',
 };
 
 // 修正 API 路径
@@ -178,6 +179,20 @@ const buildQueryString = (params: StudentSearchParams): string => {
 };
 
 // 学生相关接口
+// 转课请求接口
+interface TransferCourseRequest {
+  studentId: number;
+  targetStudentId: number;
+  courseId: number;
+  targetCourseId: number;
+  transferHours: number;
+  validUntil?: string;
+  validityPeriod?: number;
+  compensationFee?: number;
+  transferCause: string;
+  campusId?: number;
+}
+
 // 转班请求接口
 interface TransferWithinCourseRequest {
   studentId: number;
@@ -185,12 +200,33 @@ interface TransferWithinCourseRequest {
   sourceCourseId: number;
   targetCourseId: number;
   transferHours: number;
+  validityPeriod?: number;
   compensationFee?: number;
   transferCause: string;
   campusId?: number;
 }
 
 export const student = {
+  // 转课API
+  transferCourse: async (data: TransferCourseRequest): Promise<any> => {
+    console.log('调用转课API，请求数据:', data);
+
+    try {
+      const response = await request(STUDENT_API_PATHS.TRANSFER_COURSE, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+
+      console.log('转课API响应:', response);
+      message.success('转课成功');
+      return response;
+    } catch (error) {
+      console.error('转课API调用失败:', error);
+      message.error('转课失败: ' + (error instanceof Error ? error.message : '未知错误'));
+      throw error;
+    }
+  },
+
   // 转班API
   transferWithinCourse: async (data: TransferWithinCourseRequest): Promise<any> => {
     console.log('调用转班API，请求数据:', data);

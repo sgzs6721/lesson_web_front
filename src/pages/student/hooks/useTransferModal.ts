@@ -4,6 +4,9 @@ import { Student, CourseSummary } from '../types/student';
 import { getStudentAllCourses } from '../utils/student';
 import { SimpleCourse } from '@/api/course/types';
 import dayjs from 'dayjs';
+import { message } from 'antd';
+import { API } from '@/api';
+import { Constant } from '@/api/constants/types';
 
 /**
  * 转课模态框钩子
@@ -30,10 +33,22 @@ export default function useTransferModal(
   const [searchResults, setSearchResults] = useState<Student[]>([]);
   // 搜索加载状态
   const [searchLoading, setSearchLoading] = useState(false);
-  // 快速添加学生模态框可见状态
-  const [quickAddVisible, setQuickAddVisible] = useState(false);
   // 搜索文本
   const [searchText, setSearchText] = useState('');
+  // 添加有效期选项状态
+  const [validityPeriodOptions, setValidityPeriodOptions] = useState<Constant[]>([]);
+
+  // 加载有效期类型选项
+  const fetchValidityPeriodOptions = async () => {
+    try {
+      console.log('获取有效期选项');
+      const data = await API.constants.getList('VALIDITY_PERIOD');
+      console.log('获取到有效期选项:', data);
+      setValidityPeriodOptions(data);
+    } catch (error) {
+      console.error('获取有效期类型选项失败:', error);
+    }
+  };
 
   // 合并学生列表和搜索结果，确保不重复
   const availableStudents = useMemo(() => {
@@ -59,8 +74,14 @@ export default function useTransferModal(
   }, [currentStudent, searchResults, studentList]);
 
   // 处理展示转课模态框
-  const handleTransfer = (student: Student) => {
-    console.log('处理转课操作，学生:', student.name);
+  const handleTransfer = (student: Student, selectedCourseId?: string) => {
+    console.log('处理转课操作，学生:', student.name, '指定课程ID:', selectedCourseId, '类型:', typeof selectedCourseId);
+    
+    // 检查是否存在selectedCourseName（从tableColumns.tsx传递）
+    const selectedCourseName = (student as any).selectedCourseName;
+    if (selectedCourseName) {
+      console.log('获取到课程名称:', selectedCourseName);
+    }
     
     // 重置表单
     form.resetFields();
@@ -73,11 +94,32 @@ export default function useTransferModal(
       // 只显示已报名的课程
       course => course.status !== '未报名'
     );
+    console.log('学生所有课程:', JSON.stringify(courses, null, 2));
     setStudentCourses(courses);
     
-    // 获取第一个课程作为默认值
-    const defaultCourse = courses.length > 0 ? courses[0] : null;
-    const courseName = defaultCourse ? defaultCourse.name : '';
+    // 获取要转出的课程 - 如果有指定selectedCourseId，优先使用该课程
+    const defaultCourse = selectedCourseId 
+      ? courses.find(course => {
+          const courseIdMatches = String(course.id) === String(selectedCourseId);
+          console.log(`比较课程ID: ${course.id} (${typeof course.id}) 与 ${selectedCourseId} (${typeof selectedCourseId}): ${courseIdMatches}`);
+          console.log('课程完整信息:', JSON.stringify(course, null, 2));
+          return courseIdMatches;
+        }) 
+      : (courses.length > 0 ? courses[0] : null);
+      
+    console.log('选择的课程:', defaultCourse ? JSON.stringify(defaultCourse, null, 2) : '未找到匹配课程');
+    
+    // 确保有课程被选中
+    if (!defaultCourse && courses.length > 0) {
+      console.log('未找到匹配课程ID，使用第一个可用课程:', courses[0]);
+    } else if (!defaultCourse) {
+      console.error('无法找到有效的课程进行转课操作!');
+      message.error('无法找到有效的课程进行转课操作');
+      return;
+    }
+    
+    // 如果有selectedCourseName，可能是从表格中直接选择的特定课程
+    const courseName = selectedCourseName || (defaultCourse ? defaultCourse.name : '');
     const courseId = defaultCourse ? defaultCourse.id : '';
     
     // 获取剩余课时数
@@ -93,7 +135,14 @@ export default function useTransferModal(
       // 尝试从courses数组中获取精确的剩余课时
       if (student.courses && student.courses.length > 0) {
         console.log('尝试从student.courses中获取剩余课时，courses=', student.courses);
-        const coursesInfo = student.courses.find(c => String(c.courseId) === String(defaultCourse.id));
+        
+        // 使用String转换确保类型匹配
+        const coursesInfo = student.courses.find(c => {
+          const courseIdMatches = String(c.courseId) === String(defaultCourse.id);
+          console.log(`比较课程信息: ${c.courseId} (${typeof c.courseId}) 与 ${defaultCourse.id} (${typeof defaultCourse.id}): ${courseIdMatches}`);
+          return courseIdMatches;
+        });
+        
         if (coursesInfo && coursesInfo.remainingHours !== undefined) {
           remainingHours = coursesInfo.remainingHours;
           console.log('从学生courses数组中获取剩余课时:', remainingHours);
@@ -133,6 +182,8 @@ export default function useTransferModal(
       }
     }
     
+    console.log('最终确定的转课课时数:', remainingHours);
+    
     // 准备表单值
     const formValues: any = {
       studentId: student.id,
@@ -162,6 +213,9 @@ export default function useTransferModal(
     // 重置搜索结果
     setSearchResults([]);
     
+    // 获取有效期选项
+    fetchValidityPeriodOptions();
+    
     // 打开模态框
     setVisible(true);
   };
@@ -176,22 +230,11 @@ export default function useTransferModal(
     form.resetFields();
   };
 
-  // 打开快速添加学生模态框
-  const handleQuickAddShow = () => {
-    setQuickAddVisible(true);
-  };
-
-  // 关闭快速添加学生模态框
-  const handleQuickAddCancel = () => {
-    setQuickAddVisible(false);
-  };
-
   // 处理添加新学生
   const handleAddStudent = (student: Student) => {
     if (onAddStudent) {
       onAddStudent(student);
     }
-    setQuickAddVisible(false);
     
     // 将新添加的学生添加到搜索结果中
     setSearchResults(prev => {
@@ -254,17 +297,61 @@ export default function useTransferModal(
       
       console.log('提交转课表单:', values);
       
-      // 这里可以添加实际提交到后端的逻辑
-      
-      // 关闭模态框
-      handleCancel();
-      
-      // 如果提供了刷新回调，调用它
-      if (onRefresh) {
-        onRefresh();
+      // 调用转课API
+      try {
+        // 获取当前校区ID
+        const campusId = localStorage.getItem('currentCampusId');
+        
+        // 解析有效期时长
+        let validityPeriod: number | undefined;
+        if (values.validityPeriodId) {
+          // 检查是否是数字字符串，如果是则转换为数字
+          if (!isNaN(Number(values.validityPeriodId))) {
+            validityPeriod = Number(values.validityPeriodId);
+          } else {
+            // 如果不是数字，尝试从常量选项中获取数值
+            const option = validityPeriodOptions.find(opt => opt.id === values.validityPeriodId);
+            if (option && !isNaN(Number(option.constantValue))) {
+              validityPeriod = Number(option.constantValue);
+            }
+          }
+        }
+        
+        console.log('解析的有效期时长:', validityPeriod);
+        
+        // 构建转课请求参数
+        const transferData = {
+          studentId: Number(currentStudent?.id),
+          targetStudentId: Number(values.targetStudentId),
+          courseId: Number(values._courseId), // 原课程ID
+          targetCourseId: Number(values.toCourseId), // 目标课程ID
+          transferHours: Number(values.transferClassHours), // 转课课时
+          compensationFee: Number(values.priceDifference || 0), // 价格差额
+          transferCause: values.reason, // 转课原因
+          campusId: campusId ? Number(campusId) : undefined,
+          validUntil: values.validUntil ? values.validUntil.format('YYYY-MM-DD') : undefined,
+          validityPeriod: validityPeriod // 添加有效期时长参数
+        };
+        
+        console.log('转课请求数据:', transferData);
+        
+        // 提交转课请求
+        await API.student.transferCourse(transferData);
+        
+        // 关闭模态框
+        handleCancel();
+        
+        // 如果提供了刷新回调，调用它
+        if (onRefresh) {
+          onRefresh();
+        }
+      } catch (error) {
+        console.error('转课请求失败:', error);
+        // API.student.transferCourse中已经有错误处理，这里不需要额外显示错误消息
       }
     } catch (error) {
       console.error('表单验证失败:', error);
+      message.error('请检查表单填写是否完整');
     }
   };
 
@@ -275,12 +362,9 @@ export default function useTransferModal(
     studentCourses,
     searchResults,
     searchLoading,
-    quickAddVisible,
     availableStudents,
     handleTransfer,
     handleCancel,
-    handleQuickAddShow,
-    handleQuickAddCancel,
     handleAddStudent,
     handleSearch,
     handleSubmit,

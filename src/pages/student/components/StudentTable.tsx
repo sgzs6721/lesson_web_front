@@ -22,7 +22,7 @@ interface StudentTableProps {
   onClassRecord: (student: Student) => void;
   onPayment?: (student: Student) => void;
   onRefund?: (student: Student) => void;
-  onTransfer?: (student: Student) => void;
+  onTransfer?: (student: Student & { selectedCourseId?: string }) => void;
   onTransferClass?: (student: Student) => void;
   onDelete?: (student: Student) => void;
   onAttendance?: (student: Student & { selectedCourseIdForAttendance?: number | string }) => void;

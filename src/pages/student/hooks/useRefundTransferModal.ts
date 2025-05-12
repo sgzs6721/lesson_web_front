@@ -49,17 +49,6 @@ export const useRefundTransferModal = (
   const [selectedTransferStudent, setSelectedTransferStudent] = useState<Student | null>(null);
   const [transferStudentSearchText, setTransferStudentSearchText] = useState<string>('');
 
-  // 新增：快速添加学员模态框状态
-  const [isQuickAddStudentModalVisible, setIsQuickAddStudentModalVisible] = useState(false);
-  const [quickAddStudentForm] = Form.useForm();
-
-  // 同样为quickAddStudentForm添加清理
-  useEffect(() => {
-    return () => {
-      quickAddStudentForm.resetFields();
-    };
-  }, [quickAddStudentForm]);
-
   // 重置表单和状态
   const resetFormAndState = () => {
     refundTransferForm.resetFields();
@@ -704,86 +693,21 @@ export const useRefundTransferModal = (
     // 表单值的设置应在组件中完成，例如在 Select 的 onChange 中
   };
 
-  // 新增：显示快速添加学员模态框
-  const showQuickAddStudentModal = () => {
-    quickAddStudentForm.resetFields();
-    setIsQuickAddStudentModalVisible(true);
-  };
-
-  // 新增：处理快速添加学员提交
-  const handleQuickAddStudentOk = () => {
-    quickAddStudentForm.validateFields()
-      .then(values => {
-        if (!onAddStudent) {
-          message.error('添加学员功能未配置');
-          return;
-        }
-
-        // 创建新学员对象
-        const newStudentData: Omit<Student, 'id'> = {
-          name: values.name,
-          gender: values.gender,
-          age: values.age,
-          phone: values.phone,
-          // 设置默认值或空值
-          courseType: '',
-          course: [],
-          coach: '',
-          lastClassDate: '',
-          enrollDate: dayjs().format('YYYY-MM-DD'),
-          expireDate: dayjs().add(1, 'year').format('YYYY-MM-DD'),
-          remainingClasses: '0/0',
-          status: 'normal',
-          payments: [],
-          courseGroups: [],
-          campusId: 1,
-        };
-
-        // 调用外部传入的 addStudent 函数添加学员
-        const newStudent = onAddStudent(newStudentData);
-
-        // 选中新添加的学员并设置到转课表单中
-        setSelectedTransferStudent(newStudent);
-        refundTransferForm.setFieldsValue({
-          targetStudentId: newStudent.id,
-        });
-
-        // 清空搜索结果和搜索文本
-        setTransferStudentSearchResults([]);
-        setTransferStudentSearchText('');
-
-        // 关闭模态框
-        setIsQuickAddStudentModalVisible(false);
-      })
-      .catch(info => {
-        console.log('Validate Failed:', info);
-      });
-  };
-
-  // 新增：处理快速添加学员取消
-  const handleQuickAddStudentCancel = () => {
-    setIsQuickAddStudentModalVisible(false);
-  };
-
   return {
     visible,
     currentStudent,
-    form: refundTransferForm, // 返回表单实例
+    refundTransferForm,
     handleRefund,
     handleTransfer,
     handleTransferClass,
     handleRefundTransferOk,
     handleRefundTransferCancel,
+    
+    // 转课相关
     transferStudentSearchResults,
     isSearchingTransferStudent,
     selectedTransferStudent,
     handleSearchTransferStudent,
     handleSelectTransferStudent,
-    isQuickAddStudentModalVisible,
-    quickAddStudentForm,
-    showQuickAddStudentModal,
-    handleQuickAddStudentOk,
-    handleQuickAddStudentCancel,
-    courseList, // 返回courseList，以便传递给子组件
   };
 };

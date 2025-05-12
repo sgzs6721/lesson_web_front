@@ -85,82 +85,87 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
   // 确保返回的课程对象中id和name正确区分
   const allCourses: CourseSummary[] = [];
 
-  // 1. 从courseGroups中获取课程信息
-  if (student.courseGroups && student.courseGroups.length > 0) {
+  // 1. 首先处理来自API响应的新courses数组，这些信息最准确
+  if (student.courses && student.courses.length > 0) {
+    console.log('从新API courses数组获取课程:', student.courses);
+    
+    student.courses.forEach(course => {
+      // 确保courseId是字符串类型
+      const courseId = String(course.courseId);
+      
+      allCourses.push({
+        id: courseId, // 确保这里是课程ID的字符串形式
+        name: course.courseName || `课程${courseId}`, // 确保课程名称有值
+        type: course.courseTypeName || '',
+        coach: course.coachName || '',
+        status: mapCourseStatusToText(course.status),
+        enrollDate: course.enrollmentDate || student.enrollDate || '',
+        expireDate: course.endDate || '',
+        remainingClasses: course.remainingHours !== undefined ? `${course.remainingHours}/${course.totalHours || 0}` : (student.remainingClasses || '0/0')
+      });
+    });
+  }
+  
+  // 2. 如果新API没有返回课程，尝试从courseGroups中获取课程信息
+  if (allCourses.length === 0 && student.courseGroups && student.courseGroups.length > 0) {
     student.courseGroups.forEach((group) => {
-      const courseId = group.courses && group.courses.length > 0 ? group.courses[0] : '';
+      const courseId = group.courses && group.courses.length > 0 ? String(group.courses[0]) : '';
+      if (!courseId) return; // 跳过没有课程ID的组
       
       // 查找对应的课程名称，如果不存在则使用"课程+ID"的形式
       let courseName = '';
       if (courseOptions && courseOptions.length > 0) {
-        const courseOption = courseOptions.find(opt => String(opt.value) === String(courseId));
-        courseName = courseOption ? courseOption.label : `${courseId}`;
+        const courseOption = courseOptions.find(opt => String(opt.value) === courseId);
+        courseName = courseOption ? courseOption.label : `课程${courseId}`;
       } else {
-        courseName = `${courseId}`;
+        courseName = `课程${courseId}`;
       }
       
       console.log('从课程组获取课程:', {courseId, courseName});
       
       allCourses.push({
-        id: courseId, // 确保这里是课程ID
+        id: courseId, // 确保这里是课程ID的字符串形式
         name: courseName, // 确保这里是课程名称
-        type: group.courseType,
-        coach: group.coach,
+        type: group.courseType || '',
+        coach: group.coach || '',
         status: mapCourseStatusToText(group.status),
-        enrollDate: group.enrollDate,
-        expireDate: group.expireDate,
-        remainingClasses: student.remainingClasses
+        enrollDate: group.enrollDate || '',
+        expireDate: group.expireDate || '',
+        remainingClasses: student.remainingClasses || '0/0'
       });
     });
   }
   
-  // 2. 从新API响应的courses数组中获取课程信息
-  if (student.courses && student.courses.length > 0) {
-    console.log('从新API courses数组获取课程:', student.courses);
-    
-    student.courses.forEach(course => {
+  // 3. 如果前两种方法都没找到课程，从主课程字段获取课程信息
+  if (allCourses.length === 0 && student.course) {
+    const courseId = Array.isArray(student.course) ? String(student.course[0]) : String(student.course);
+    if (courseId) {
+      // 查找对应的课程名称，如果不存在则使用"课程+ID"的形式
+      let courseName = '';
+      if (courseOptions && courseOptions.length > 0) {
+        const courseOption = courseOptions.find(opt => String(opt.value) === courseId);
+        courseName = courseOption ? courseOption.label : `课程${courseId}`;
+      } else {
+        courseName = `课程${courseId}`;
+      }
+      
+      console.log('从主课程获取课程:', {courseId, courseName});
+      
       allCourses.push({
-        id: String(course.courseId),
-        name: course.courseName,
-        type: course.courseTypeName,
-        coach: course.coachName,
-        status: mapCourseStatusToText(course.status),
-        enrollDate: course.enrollmentDate || student.enrollDate,
-        expireDate: course.endDate || '',
-        remainingClasses: course.remainingHours !== undefined ? `${course.remainingHours}/${course.totalHours}` : student.remainingClasses
+        id: courseId, // 确保这是课程ID的字符串形式
+        name: courseName, // 确保这是课程名称
+        type: student.courseType || '',
+        coach: student.coach || '',
+        status: mapCourseStatusToText(student.status),
+        enrollDate: student.enrollDate || '',
+        expireDate: student.expireDate || '',
+        remainingClasses: student.remainingClasses || '0/0'
       });
-    });
-  }
-  
-  // 3. 从主课程字段获取课程信息
-  if (student.course && allCourses.length === 0) {
-    const courseId = Array.isArray(student.course) ? student.course[0] : student.course;
-    
-    // 查找对应的课程名称，如果不存在则使用"课程+ID"的形式
-    let courseName = '';
-    if (courseOptions && courseOptions.length > 0) {
-      const courseOption = courseOptions.find(opt => String(opt.value) === String(courseId));
-      courseName = courseOption ? courseOption.label : `${courseId}`;
-    } else {
-      courseName = `${courseId}`;
     }
-    
-    console.log('从主课程获取课程:', {courseId, courseName});
-    
-    allCourses.push({
-      id: courseId, // 确保这是课程ID
-      name: courseName, // 确保这是课程名称
-      type: student.courseType || '',
-      coach: student.coach,
-      status: mapCourseStatusToText(student.status),
-      enrollDate: student.enrollDate,
-      expireDate: student.expireDate || '',
-      remainingClasses: student.remainingClasses
-    });
   }
   
   // 4. 如果学员有courseId但没有关联课程，添加一个默认课程
-  if (student.courseId && allCourses.length === 0) {
+  if (allCourses.length === 0 && student.courseId) {
     console.log('学员有courseId但没有课程记录，添加默认课程:', student.courseId);
     
     // 确保courseId是字符串类型
@@ -170,20 +175,20 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
     let courseName = '';
     if (courseOptions && courseOptions.length > 0) {
       const courseOption = courseOptions.find(opt => String(opt.value) === courseId);
-      courseName = courseOption ? courseOption.label : `${courseId}`;
+      courseName = courseOption ? courseOption.label : `课程${courseId}`;
     } else {
-      courseName = `${courseId}`;
+      courseName = `课程${courseId}`;
     }
     
     allCourses.push({
-      id: courseId, // 确保这是课程ID
+      id: courseId, // 确保这是课程ID的字符串形式
       name: courseName, // 确保这是课程名称
       type: student.courseType || '',
       coach: student.coach || '',
       status: mapCourseStatusToText(student.status),
       enrollDate: student.enrollDate || '',
       expireDate: student.expireDate || '',
-      remainingClasses: student.remainingClasses
+      remainingClasses: student.remainingClasses || '0/0'
     });
   }
   
@@ -216,7 +221,7 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
       status: mapCourseStatusToText(student.status),
       enrollDate: student.enrollDate || '',
       expireDate: student.expireDate || '',
-      remainingClasses: student.remainingClasses
+      remainingClasses: student.remainingClasses || '0/0'
     });
   }
   
@@ -224,6 +229,13 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
     console.error('无法为学生获取课程信息，详细学生数据:', student);
   } else {
     console.log('最终返回课程列表:', allCourses);
+    
+    // 检查是否有重复的课程ID，如果有则打印警告
+    const courseIds = allCourses.map(course => course.id);
+    const uniqueIds = new Set(courseIds);
+    if (courseIds.length !== uniqueIds.size) {
+      console.warn('警告：有重复的课程ID!', courseIds);
+    }
   }
   
   return allCourses;
