@@ -154,6 +154,8 @@ export const useStudentUI = (
       searchResults: transferProps.searchResults,
       searchLoading: transferProps.searchLoading,
       availableStudents: transferProps.availableStudents,
+      loading: transferProps.loading,
+      setLoading: transferProps.setLoading,
       handleTransfer: transferProps.handleTransfer,
       handleCancel: transferProps.handleCancel,
       handleSearch: transferProps.handleSearch,
@@ -168,6 +170,8 @@ export const useStudentUI = (
       currentStudent: transferClassProps.currentStudent,
       studentCourses: transferClassProps.studentCourses,
       courseList: transferClassProps.courseList,
+      loading: transferClassProps.loading,
+      setLoading: transferClassProps.setLoading,
       handleTransferClass: transferClassProps.handleTransferClass,
       handleCancel: transferClassProps.handleCancel,
       handleSubmit: transferClassProps.handleSubmit

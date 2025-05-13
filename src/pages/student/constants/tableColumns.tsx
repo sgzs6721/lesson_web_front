@@ -360,7 +360,25 @@ export const getStudentColumns = (
                 key: 'transferClass',
                 label: '转班',
                 icon: <SyncOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#52c41a' }} />,
-                onClick: () => !isGraduated && remainingHours > 0 && onTransferClass(record),
+                onClick: () => {
+                  if (!isGraduated && remainingHours > 0) {
+                    // 调试信息，打印当前课程
+                    console.log(`点击转班按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${course.courseName}`);
+                    
+                    // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
+                    const courseInfoForTransfer = {
+                      ...record,
+                      selectedCourseId: course.courseId ? String(course.courseId) : undefined,
+                      selectedCourseName: course.courseName // 添加课程名称
+                    };
+                    
+                    // 打印完整的传递信息
+                    console.log('转班 - 传递的完整信息:', courseInfoForTransfer);
+                    
+                    // 调用转班方法
+                    onTransferClass(courseInfoForTransfer as any);
+                  }
+                },
                 disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用转班
                 style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },

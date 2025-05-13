@@ -62,11 +62,14 @@ export default function useTransferClassModal(
     if (currentStudent && courseList) {
       console.log('[TransferClassModal] 当前学员:', currentStudent);
       const currentCourseIdNorm = normalizeCourseId(originalCourseId); // 使用 state 中的 originalCourseId
-      // 过滤掉原课程，并且只保留状态为PUBLISHED的课程
-      const filteredCourses = courseList.filter(course =>
-        String(course.id) !== String(currentCourseIdNorm) &&
-        (course.status === 'PUBLISHED' || course.status === '1')
-      );
+      console.log('[TransferClassModal] 原课程ID:', currentCourseIdNorm);
+      
+      // 只过滤未发布的课程，保留原课程但会在UI中禁用
+      const filteredCourses = courseList.filter(course => {
+        const isPublished = course.status === 'PUBLISHED' || course.status === '1';
+        return isPublished; // 保留所有已发布课程，包括原课程
+      });
+      
       setAvailableCourses(filteredCourses);
       console.log('[TransferClassModal] 可选目标课程:', filteredCourses);
     }
@@ -74,6 +77,17 @@ export default function useTransferClassModal(
 
   const handleTransferClass = (student: Student) => {
     console.log('处理转班操作，学生:', student.name);
+    console.log('传入的学生对象:', student);
+    
+    // 检查是否存在selectedCourseId（从tableColumns.tsx传递）
+    const selectedCourseId = (student as any).selectedCourseId;
+    const selectedCourseName = (student as any).selectedCourseName;
+    if (selectedCourseId) {
+      console.log('获取到指定课程ID:', selectedCourseId, '类型:', typeof selectedCourseId);
+    }
+    if (selectedCourseName) {
+      console.log('获取到课程名称:', selectedCourseName);
+    }
 
     // 重置表单
     form.resetFields();
@@ -86,11 +100,32 @@ export default function useTransferClassModal(
       // 只显示已报名的课程
       course => course.status !== '未报名'
     );
+    console.log('学生所有课程:', JSON.stringify(courses, null, 2));
     setStudentCourses(courses);
 
-    // 获取第一个课程作为默认值
-    const defaultCourse = courses.length > 0 ? courses[0] : null;
-    const courseName = defaultCourse ? defaultCourse.name : '';
+    // 根据selectedCourseId找到对应的课程，如果没有则使用第一个课程
+    const defaultCourse = selectedCourseId 
+      ? courses.find(course => {
+          const courseIdMatches = String(course.id) === String(selectedCourseId);
+          console.log(`比较课程ID: ${course.id} (${typeof course.id}) 与 ${selectedCourseId} (${typeof selectedCourseId}): ${courseIdMatches}`);
+          console.log('课程完整信息:', JSON.stringify(course, null, 2));
+          return courseIdMatches;
+        }) 
+      : (courses.length > 0 ? courses[0] : null);
+      
+    console.log('选择的课程:', defaultCourse ? JSON.stringify(defaultCourse, null, 2) : '未找到匹配课程');
+    
+    // 确保有课程被选中
+    if (!defaultCourse && courses.length > 0) {
+      console.log('未找到匹配课程ID，使用第一个可用课程:', courses[0]);
+    } else if (!defaultCourse) {
+      console.error('无法找到有效的课程进行转班操作!');
+      message.error('无法找到有效的课程进行转班操作');
+      return;
+    }
+    
+    // 如果有selectedCourseName，可能是从表格中直接选择的特定课程
+    const courseName = selectedCourseName || (defaultCourse ? defaultCourse.name : '');
     const courseId = defaultCourse ? defaultCourse.id : '';
 
     // 更新原始课程ID状态
@@ -195,6 +230,32 @@ export default function useTransferClassModal(
 
   const handleSubmit = async () => {
     console.log('提交转班表单');
+    
+    // 添加显示和隐藏蒙板的函数
+    const showSpin = () => {
+      const spinElement = document.querySelector('.ant-modal-content .ant-spin');
+      if (spinElement) {
+        // 添加spinning类，显示蒙板
+        spinElement.classList.add('ant-spin-spinning');
+        const spinContainers = document.querySelectorAll('.ant-spin-container');
+        spinContainers.forEach(container => {
+          container.classList.add('ant-spin-blur');
+        });
+      }
+    };
+    
+    const hideSpin = () => {
+      const spinElement = document.querySelector('.ant-modal-content .ant-spin');
+      if (spinElement) {
+        // 移除spinning类，隐藏蒙板
+        spinElement.classList.remove('ant-spin-spinning');
+        const spinContainers = document.querySelectorAll('.ant-spin-container');
+        spinContainers.forEach(container => {
+          container.classList.remove('ant-spin-blur');
+        });
+      }
+    };
+    
     try {
       // 验证表单
       const values = await form.validateFields();
@@ -250,11 +311,37 @@ export default function useTransferClassModal(
       console.log('转班请求数据:', transferData);
 
       try {
+        // 显示loading消息，使用messageKey使后续能够关闭它
+        const messageKey = 'transfer_loading';
+        message.loading({ content: '转班处理中...', key: messageKey, duration: 0 });
+        
+        // 显示蒙板
+        showSpin();
+        
         // 调用转班API
         const response = await API.student.transferWithinCourse(transferData);
-        console.log('转班成功:', response);
-        message.success('转班成功');
-
+        console.log('转班API返回数据:', response);
+        
+        // 检查返回的状态码
+        if (response && response.code && response.code !== 200) {
+          // 返回状态码不是200，表示有问题
+          // 关闭加载指示器，显示错误消息
+          message.error({ content: response.message || '转班失败，请稍后重试', key: messageKey });
+          
+          // 隐藏蒙板
+          hideSpin();
+          
+          // 不关闭模态框，让用户可以修改和重试
+          setLoading(false);
+          return;
+        }
+        
+        // 处理成功，关闭加载指示器并显示成功消息
+        message.success({ content: '转班成功', key: messageKey });
+        
+        // 隐藏蒙板
+        hideSpin();
+        
         // 关闭模态框
         handleCancel();
 
@@ -264,8 +351,17 @@ export default function useTransferClassModal(
         }
       } catch (apiError: any) {
         console.error('转班API调用失败:', apiError);
-        message.error(`转班失败: ${apiError?.message || '请稍后重试'}`);
+        
+        // 关闭loading消息，显示错误消息
+        const errorMessage = apiError?.response?.data?.message || apiError?.message || '请稍后重试';
+        message.error({ content: `转班失败: ${errorMessage}`, key: 'transfer_loading' });
+        
+        // 隐藏蒙板
+        hideSpin();
+        // 明确在此处设置loading为false，确保按钮状态恢复
+        setLoading(false);
       } finally {
+        // finally块中的调用保持不变，作为最终保障
         setLoading(false);
       }
     } catch (error) {
@@ -282,6 +378,7 @@ export default function useTransferClassModal(
     studentCourses,
     courseList,
     loading, // 导出loading状态
+    setLoading, // 导出setLoading函数
     handleTransferClass,
     handleCancel,
     handleSubmit

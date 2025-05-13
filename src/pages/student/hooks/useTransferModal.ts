@@ -37,6 +37,8 @@ export default function useTransferModal(
   const [searchText, setSearchText] = useState('');
   // 添加有效期选项状态
   const [validityPeriodOptions, setValidityPeriodOptions] = useState<Constant[]>([]);
+  // 控制模态框提交按钮和Spin的loading状态
+  const [loading, setLoading] = useState(false);
 
   // 加载有效期类型选项
   const fetchValidityPeriodOptions = async () => {
@@ -285,7 +287,6 @@ export default function useTransferModal(
       
       // 确保不能选择自己作为转入学员
       if (values.targetStudentId === currentStudent?.id) {
-        // 如果选择了自己，显示错误并阻止提交
         form.setFields([
           {
             name: 'targetStudentId',
@@ -296,20 +297,18 @@ export default function useTransferModal(
       }
       
       console.log('提交转课表单:', values);
+      setLoading(true); // 开始加载
+      const messageKey = 'transfer_course_loading';
+      message.loading({ content: '转课处理中...', key: messageKey, duration: 0 });
+      showSpin(); // 显示蒙板
       
-      // 调用转课API
       try {
-        // 获取当前校区ID
         const campusId = localStorage.getItem('currentCampusId');
-        
-        // 解析有效期时长
         let validityPeriod: number | undefined;
         if (values.validityPeriodId) {
-          // 检查是否是数字字符串，如果是则转换为数字
           if (!isNaN(Number(values.validityPeriodId))) {
             validityPeriod = Number(values.validityPeriodId);
           } else {
-            // 如果不是数字，尝试从常量选项中获取数值
             const option = validityPeriodOptions.find(opt => opt.id === values.validityPeriodId);
             if (option && !isNaN(Number(option.constantValue))) {
               validityPeriod = Number(option.constantValue);
@@ -317,41 +316,72 @@ export default function useTransferModal(
           }
         }
         
-        console.log('解析的有效期时长:', validityPeriod);
-        
-        // 构建转课请求参数
         const transferData = {
           studentId: Number(currentStudent?.id),
           targetStudentId: Number(values.targetStudentId),
-          courseId: Number(values._courseId), // 原课程ID
-          targetCourseId: Number(values.toCourseId), // 目标课程ID
-          transferHours: Number(values.transferClassHours), // 转课课时
-          compensationFee: Number(values.priceDifference || 0), // 价格差额
-          transferCause: values.reason, // 转课原因
+          courseId: Number(values._courseId),
+          targetCourseId: Number(values.toCourseId),
+          transferHours: Number(values.transferClassHours),
+          compensationFee: Number(values.priceDifference || 0),
+          transferCause: values.reason,
           campusId: campusId ? Number(campusId) : undefined,
           validUntil: values.validUntil ? values.validUntil.format('YYYY-MM-DD') : undefined,
-          validityPeriod: validityPeriod // 添加有效期时长参数
+          validityPeriod: validityPeriod
         };
         
         console.log('转课请求数据:', transferData);
+        const response = await API.student.transferCourse(transferData);
+        console.log('转课API响应:', response);
+
+        if (response && response.code && response.code !== 200) {
+          message.error({ content: response.message || '转课失败，请稍后重试', key: messageKey });
+          hideSpin(); // 隐藏蒙板
+          setLoading(false); // 结束加载
+          return;
+        }
         
-        // 提交转课请求
-        await API.student.transferCourse(transferData);
-        
-        // 关闭模态框
+        message.destroy(messageKey); // 仅销毁loading提示
+        hideSpin(); // 隐藏蒙板
         handleCancel();
-        
-        // 如果提供了刷新回调，调用它
         if (onRefresh) {
           onRefresh();
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('转课请求失败:', error);
-        // API.student.transferCourse中已经有错误处理，这里不需要额外显示错误消息
+        const errorMessage = error?.response?.data?.message || error?.message || '请稍后重试';
+        message.destroy(messageKey); // 确保销毁 loading 提示
+        hideSpin(); // 隐藏蒙板
+        // 不在这里处理 message.error，错误会向上抛出由父组件处理
+      } finally {
+        setLoading(false); // 确保最终结束加载
       }
     } catch (error) {
       console.error('表单验证失败:', error);
       message.error('请检查表单填写是否完整');
+      // setLoading(false); // 表单验证失败不需要全局loading，按钮自带的loading即可
+    }
+  };
+
+  // 添加显示和隐藏蒙板的函数
+  const showSpin = () => {
+    const spinElement = document.querySelector('.ant-modal-content .ant-spin');
+    if (spinElement) {
+      spinElement.classList.add('ant-spin-spinning');
+      const spinContainers = document.querySelectorAll('.ant-spin-container');
+      spinContainers.forEach(container => {
+        container.classList.add('ant-spin-blur');
+      });
+    }
+  };
+  
+  const hideSpin = () => {
+    const spinElement = document.querySelector('.ant-modal-content .ant-spin');
+    if (spinElement) {
+      spinElement.classList.remove('ant-spin-spinning');
+      const spinContainers = document.querySelectorAll('.ant-spin-container');
+      spinContainers.forEach(container => {
+        container.classList.remove('ant-spin-blur');
+      });
     }
   };
 
@@ -368,6 +398,10 @@ export default function useTransferModal(
     handleAddStudent,
     handleSearch,
     handleSubmit,
-    courseList
+    courseList,
+    loading,
+    setLoading,
+    showSpin,
+    hideSpin
   };
 } 

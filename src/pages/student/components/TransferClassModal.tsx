@@ -8,7 +8,8 @@ import {
   Row,
   Col,
   DatePicker,
-  Divider
+  Divider,
+  Spin
 } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { Student, CourseSummary } from '../types/student';
@@ -25,10 +26,13 @@ interface TransferClassModalProps {
   form: FormInstance;
   student: Student | null;
   studentCourses: CourseSummary[];
+  selectedCourseId?: string;
+  selectedCourseName?: string;
   onCancel: () => void;
   onOk: () => void;
+  setLoading: (loading: boolean) => void;
   courseList?: SimpleCourse[];
-  loading?: boolean; // 添加loading属性
+  loading?: boolean;
 }
 
 const TransferClassModal: React.FC<TransferClassModalProps> = ({
@@ -36,21 +40,24 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
   form,
   student,
   studentCourses,
+  selectedCourseId,
+  selectedCourseName,
   onCancel,
   onOk,
+  setLoading,
   courseList,
-  loading // 接收loading属性
+  loading
 }) => {
   // 添加状态跟踪最大可转课时
   const [maxTransferHours, setMaxTransferHours] = React.useState(0);
   // 在表单字段值变化时触发回调
   const [formInitialized, setFormInitialized] = React.useState(false);
-  // 添加提交loading状态
-  const [submitLoading, setSubmitLoading] = React.useState(false);
   // 添加有效期类型选项状态
   const [validityPeriodOptions, setValidityPeriodOptions] = useState<Constant[]>([]);
   // 添加加载有效期类型的状态
   const [loadingValidityPeriod, setLoadingValidityPeriod] = useState(false);
+  // 添加可选目标课程状态
+  const [availableCourses, setAvailableCourses] = useState<SimpleCourse[]>([]);
 
   React.useEffect(() => {
     if (visible) {
@@ -167,22 +174,44 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
   // 当模态框可见且学生信息存在时，确保表单中的学生姓名和ID被正确设置
   React.useEffect(() => {
     if (visible && student) {
+      console.log('TransferClassModal初始化 - 学生:', student.name, 'selectedCourseId:', selectedCourseId, '类型:', typeof selectedCourseId);
+      console.log('selectedCourseName:', selectedCourseName);
+      console.log('当前学生所有课程:', JSON.stringify(studentCourses, null, 2));
+      
       // 获取课程信息
       if (studentCourses && studentCourses.length > 0) {
-        const defaultCourse = studentCourses[0];
+        // 根据selectedCourseId找到对应的课程，如果没有则使用第一个课程
+        const defaultCourse = selectedCourseId 
+          ? studentCourses.find(course => {
+              const courseIdMatches = String(course.id) === String(selectedCourseId);
+              console.log(`匹配课程ID: ${course.id}(${typeof course.id}) vs ${selectedCourseId}(${typeof selectedCourseId}) = ${courseIdMatches}`);
+              console.log(`课程名称: ${course.name}`);
+              return courseIdMatches;
+            })
+          : undefined;
+      
+        // 如果没有找到匹配的课程，使用第一个可用课程
+        const selectedCourse = defaultCourse || studentCourses[0];
+        
+        console.log('最终选择的课程:', selectedCourse ? JSON.stringify(selectedCourse, null, 2) : '无可用课程');
+        
+        if (!selectedCourse) {
+          console.error('无法找到有效的课程进行转班操作!');
+          return;
+        }
 
         // 获取剩余课时
         let remainingHours = 0;
         if (student.courses && student.courses.length > 0) {
-          const coursesInfo = student.courses.find(c => String(c.courseId) === String(defaultCourse.id));
+          const coursesInfo = student.courses.find(c => String(c.courseId) === String(selectedCourse.id));
           if (coursesInfo && coursesInfo.remainingHours !== undefined) {
             remainingHours = coursesInfo.remainingHours;
           }
         }
 
         // 如果没有找到精确课时，从课程概要中获取
-        if (remainingHours === 0 && defaultCourse.remainingClasses) {
-          const parts = defaultCourse.remainingClasses.split('/');
+        if (remainingHours === 0 && selectedCourse.remainingClasses) {
+          const parts = selectedCourse.remainingClasses.split('/');
           if (parts.length > 0 && !isNaN(Number(parts[0]))) {
             remainingHours = Number(parts[0]);
           }
@@ -199,23 +228,23 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
         // 获取有效期信息
         let expireDate = null;
 
-        // 尝试从defaultCourse获取有效期
-        if (defaultCourse.expireDate) {
-          console.log('从defaultCourse获取有效期:', defaultCourse.expireDate);
+        // 尝试从selectedCourse获取有效期
+        if (selectedCourse.expireDate) {
+          console.log('从selectedCourse获取有效期:', selectedCourse.expireDate);
           try {
-            expireDate = defaultCourse.expireDate ? dayjs(defaultCourse.expireDate) : null;
+            expireDate = selectedCourse.expireDate ? dayjs(selectedCourse.expireDate) : null;
             if (expireDate && !expireDate.isValid()) {
-              console.log('无效的日期格式:', defaultCourse.expireDate);
+              console.log('无效的日期格式:', selectedCourse.expireDate);
               expireDate = null;
             }
           } catch (error) {
-            console.error('解析defaultCourse.expireDate失败:', error);
+            console.error('解析selectedCourse.expireDate失败:', error);
           }
         }
 
         // 尝试从student.courses获取有效期
         if (!expireDate && student.courses && student.courses.length > 0) {
-          const coursesInfo = student.courses.find(c => String(c.courseId) === String(defaultCourse.id));
+          const coursesInfo = student.courses.find(c => String(c.courseId) === String(selectedCourse.id));
           if (coursesInfo && coursesInfo.endDate) {
             console.log('从coursesInfo.endDate获取有效期:', coursesInfo.endDate);
             try {
@@ -248,8 +277,9 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
         const values: Record<string, any> = {
           studentName: student.name,
           studentId: student.id,
-          fromCourseId: defaultCourse.name, // 使用课程名称
-          _courseId: defaultCourse.id, // 隐藏字段保存课程ID
+          // 优先使用selectedCourseName，其次使用课程实际名称
+          fromCourseId: selectedCourseName || selectedCourse.name,
+          _courseId: selectedCourse.id,
           refundClassHours: remainingHours,
           operationType: 'transferClass',
           // 确保转班课时默认为剩余课时
@@ -281,14 +311,22 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
     }
   }, [visible, student, studentCourses, form, validityPeriodOptions]);
 
+  // 当表单初始化后，更新可选目标课程列表
+  React.useEffect(() => {
+    if (visible && courseList && formInitialized) {
+      // 直接使用完整的课程列表，在渲染时禁用原课程
+      setAvailableCourses(courseList);
+    }
+  }, [visible, courseList, formInitialized]);
+
   return (
     <Modal
       title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>转班</span>}
       open={visible}
       onOk={() => {
         console.log('确认提交按钮点击');
-        // 设置提交中状态
-        setSubmitLoading(true);
+        // 在调用onOk之前，显式设置loading为true
+        setLoading(true);
 
         // 获取当前转班课时
         const transferHours = form.getFieldValue('transferClassHours');
@@ -312,194 +350,200 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
         } catch (error) {
           // 如果提交过程中出错，重置按钮状态
           console.error('提交过程中出错:', error);
-          setSubmitLoading(false);
         }
-
-        // 添加一个安全机制：如果5秒后按钮仍然处于加载状态，强制重置
-        // 这是为了防止某些情况下loading状态没有被正确重置
-        setTimeout(() => {
-          setSubmitLoading(false);
-        }, 5000);
       }}
       onCancel={onCancel}
       width={800}
       okText="确认提交"
       cancelText="取消"
-      confirmLoading={loading !== undefined ? loading : submitLoading}
+      confirmLoading={!!loading}
       okButtonProps={{
         style: {},
         className: 'no-hover-button'
       }}
     >
-      <Divider style={{ margin: '0 0 24px 0' }} />
+      <Spin spinning={!!loading}>
+        <Divider style={{ margin: '0 0 24px 0' }} />
 
-      <Form
-        form={form}
-        layout="vertical"
-      >
-        {/* 隐藏字段 - 操作类型 */}
-        <Form.Item name="operationType" hidden>
-          <Input type="hidden" />
-        </Form.Item>
+        <Form
+          form={form}
+          layout="vertical"
+        >
+          {/* 隐藏字段 - 操作类型 */}
+          <Form.Item name="operationType" hidden>
+            <Input type="hidden" />
+          </Form.Item>
 
-        {/* 隐藏字段保存原课程ID */}
-        <Form.Item name="_courseId" hidden>
-          <Input type="hidden" />
-        </Form.Item>
+          {/* 隐藏字段保存原课程ID */}
+          <Form.Item name="_courseId" hidden>
+            <Input type="hidden" />
+          </Form.Item>
 
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="studentName"
-              label="转出学员"
-            >
-              <Input disabled />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="studentId"
-              label="学员ID"
-            >
-              <Input disabled />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="fromCourseId"
-              label="原课程"
-            >
-              <Input disabled />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="refundClassHours"
-              label="剩余课时"
-            >
-              <InputNumber disabled style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Divider />
-
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="toCourseId"
-              label="转入课程"
-              rules={[{ required: true, message: '请选择转班目标课程' }]}
-            >
-              <Select
-                showSearch
-                placeholder="请选择转班目标课程"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  (option?.children as unknown as string).toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                style={{ width: '100%' }}
-                dropdownStyle={{ zIndex: 1060 }}
-                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
-                listHeight={300}
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="studentName"
+                label="转出学员"
               >
-                {courseList?.map(course => (
-                  <Option key={course.id} value={course.id}>
-                    {course.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="transferClassHours"
-              label={<span>转班课时 <span style={{ color: '#999', fontSize: '12px' }}>(剩余课时: {maxTransferHours})</span></span>}
-              rules={[
-                { required: true, message: '请输入转班课时' },
-                {
-                  validator: (_, value) => {
-                    if (value > maxTransferHours) {
-                      return Promise.reject(`转班课时不能超过剩余课时 ${maxTransferHours}`);
-                    }
-                    return Promise.resolve();
-                  }
-                }
-              ]}
-            >
-              <div className="input-with-unit-wrapper">
-                <InputNumber
-                  min={1}
-                  max={maxTransferHours}
-                  style={{ width: '100%' }}
-                  disabled={maxTransferHours <= 0}
-                  className="select-with-unit"
-                />
-                <div className="input-unit">课时</div>
-              </div>
-            </Form.Item>
-          </Col>
-        </Row>
+                <Input disabled />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="studentId"
+                label="学员ID"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="validityPeriodId"
-              label="有效期时长"
-              rules={[{ required: true, message: '请选择有效期时长' }]}
-            >
-              <div className="input-with-unit-wrapper">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="fromCourseId"
+                label="原课程"
+              >
+                <Input disabled />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="refundClassHours"
+                label="剩余课时"
+              >
+                <InputNumber disabled style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Divider />
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="toCourseId"
+                label="转入课程"
+                rules={[{ required: true, message: '请选择转班目标课程' }]}
+              >
                 <Select
-                  placeholder="请选择有效期时长"
-                  loading={loadingValidityPeriod}
+                  showSearch
+                  placeholder="请选择转班目标课程"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.children as unknown as string).toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
                   style={{ width: '100%' }}
                   dropdownStyle={{ zIndex: 1060 }}
                   getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
                   listHeight={300}
-                  suffixIcon={<div style={{ width: '30px' }}></div>}
-                  className="select-with-unit"
                 >
-                  {validityPeriodOptions.map(option => (
-                    <Option key={option.id} value={option.id}>
-                      {option.constantValue}
-                    </Option>
-                  ))}
+                  {availableCourses.map(course => {
+                    // 获取原课程ID
+                    const originalCourseId = form.getFieldValue('_courseId');
+                    // 检查当前课程是否与原课程相同
+                    const isSameAsCurrent = String(course.id) === String(originalCourseId);
+                    
+                    return (
+                      <Option 
+                        key={course.id} 
+                        value={course.id}
+                        disabled={isSameAsCurrent} // 如果是相同课程则禁用
+                      >
+                        {isSameAsCurrent ? `${course.name} (当前课程)` : course.name}
+                      </Option>
+                    );
+                  })}
                 </Select>
-                <div className="input-unit">月</div>
-              </div>
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="priceDifference"
-              label="补差价"
-              initialValue={0}
-              tooltip="正数表示学员需要补差价，负数表示需要退还差价"
-            >
-              <div className="input-with-unit-wrapper">
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder="请输入补差价金额"
-                  precision={2}
-                  className="select-with-unit"
-                />
-                <div className="input-unit">元</div>
-              </div>
-            </Form.Item>
-          </Col>
-        </Row>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="transferClassHours"
+                label={<span>转班课时 <span style={{ color: '#999', fontSize: '12px' }}>(剩余课时: {maxTransferHours})</span></span>}
+                rules={[
+                  { required: true, message: '请输入转班课时' },
+                  {
+                    validator: (_, value) => {
+                      if (value > maxTransferHours) {
+                        return Promise.reject(`转班课时不能超过剩余课时 ${maxTransferHours}`);
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
+              >
+                <div className="input-with-unit-wrapper">
+                  <InputNumber
+                    min={1}
+                    max={maxTransferHours}
+                    style={{ width: '100%' }}
+                    disabled={maxTransferHours <= 0}
+                    className="select-with-unit"
+                  />
+                  <div className="input-unit">课时</div>
+                </div>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Form.Item
-          name="reason"
-          label="转班原因"
-          rules={[{ required: true, message: '请输入转班原因' }]}
-        >
-          <TextArea rows={4} placeholder="请输入转班原因" />
-        </Form.Item>
-      </Form>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="validityPeriodId"
+                label="有效期时长"
+                rules={[{ required: true, message: '请选择有效期时长' }]}
+              >
+                <div className="input-with-unit-wrapper">
+                  <Select
+                    placeholder="请选择有效期时长"
+                    loading={loadingValidityPeriod}
+                    style={{ width: '100%' }}
+                    dropdownStyle={{ zIndex: 1060 }}
+                    getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
+                    listHeight={300}
+                    suffixIcon={<div style={{ width: '30px' }}></div>}
+                    className="select-with-unit"
+                  >
+                    {validityPeriodOptions.map(option => (
+                      <Option key={option.id} value={option.id}>
+                        {option.constantValue}
+                      </Option>
+                    ))}
+                  </Select>
+                  <div className="input-unit">月</div>
+                </div>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="priceDifference"
+                label="补差价"
+                initialValue={0}
+                tooltip="正数表示学员需要补差价，负数表示需要退还差价"
+              >
+                <div className="input-with-unit-wrapper">
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    placeholder="请输入补差价金额"
+                    precision={2}
+                    className="select-with-unit"
+                  />
+                  <div className="input-unit">元</div>
+                </div>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="reason"
+            label="转班原因"
+            rules={[{ required: true, message: '请输入转班原因' }]}
+          >
+            <TextArea rows={4} placeholder="请输入转班原因" />
+          </Form.Item>
+        </Form>
+      </Spin>
     </Modal>
   );
 };

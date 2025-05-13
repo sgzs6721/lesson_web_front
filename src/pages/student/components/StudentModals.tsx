@@ -167,6 +167,8 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         onSelectTransferStudent={() => {}}
         students={df.data.students as UiStudent[]}
         courseList={filteredCourseList}
+        loading={ui.transfer.loading}
+        setLoading={ui.transfer.setLoading}
       />
 
       {/* 转班模态框 */}
@@ -175,10 +177,13 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         form={ui.transferClass.form}
         student={ui.transferClass.currentStudent as any}
         studentCourses={ui.transferClass.studentCourses}
+        selectedCourseId={ui.transferClass.currentStudent?.selectedCourseId}
+        selectedCourseName={ui.transferClass.currentStudent?.selectedCourseName}
         onCancel={ui.transferClass.handleCancel}
         onOk={ui.transferClass.handleSubmit}
+        setLoading={ui.transferClass.setLoading}
         courseList={filteredCourseList}
-        loading={ui.transferClass.loading} // 传递loading状态
+        loading={ui.transferClass.loading}
       />
 
       {/* 学员打卡模态框 */}
