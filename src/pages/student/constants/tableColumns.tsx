@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Tag, Button, Dropdown, Popconfirm, Space, Divider } from 'antd';
+import React from 'react';
+import { Tag, Button, Dropdown, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   EditOutlined,
@@ -9,14 +9,12 @@ import {
   TransactionOutlined,
   SyncOutlined,
   DeleteOutlined,
-  DownOutlined,
   CheckCircleOutlined,
   InfoCircleOutlined,
   MoreOutlined
 } from '@ant-design/icons';
 import { Student, CourseInfo } from '@/pages/student/types/student';
 import dayjs from 'dayjs';
-import { courseTypeOptions } from './options';
 import FixedWidthTag from '../components/FixedWidthTag';
 
 // 表头居中样式
@@ -134,7 +132,9 @@ const renderCourseTypeIndicator = (courseTypeName?: string, status?: string): Re
   };
 };
 
+// 注意: 此函数已不再使用，但保留作为参考
 // 课程类型渲染函数 - 调整颜色和样式
+/*
 const renderCourseType = (text: string | undefined) => {
   if (!text) return (
     <FixedWidthTag color="gray" width={70} variant="outlined">
@@ -148,6 +148,7 @@ const renderCourseType = (text: string | undefined) => {
     </Tag>
   );
 };
+*/
 
 // 生成学员表格列定义
 export const getStudentColumns = (
@@ -231,7 +232,7 @@ export const getStudentColumns = (
     title: '课程信息',
     key: 'courseInfo',
     align: 'left',
-    width: 800, // Keep width
+    width: 800, // Keep width for large screens
     onHeaderCell: () => ({
       style: { ...columnStyle, whiteSpace: 'nowrap' },
     }),
@@ -242,6 +243,7 @@ export const getStudentColumns = (
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span className="scroll-indicator">← 左右滑动查看更多 →</span>
           {record.courses.map((course: CourseInfo & { courseTypeName?: string }, index: number) => {
             // 获取课时
             const remainingHours = course.remainingHours ?? 0;
@@ -338,17 +340,17 @@ export const getStudentColumns = (
                   if (!isGraduated && remainingHours > 0) {
                     // 调试信息，打印当前课程
                     console.log(`点击转课按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${course.courseName}`);
-                    
+
                     // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
                     const courseInfoForTransfer = {
                       ...record,
                       selectedCourseId: course.courseId ? String(course.courseId) : undefined,
                       selectedCourseName: course.courseName // 添加课程名称
                     };
-                    
+
                     // 打印完整的传递信息
                     console.log('转课 - 传递的完整信息:', courseInfoForTransfer);
-                    
+
                     // 调用转课方法
                     onTransfer(courseInfoForTransfer as any);
                   }
@@ -364,17 +366,17 @@ export const getStudentColumns = (
                   if (!isGraduated && remainingHours > 0) {
                     // 调试信息，打印当前课程
                     console.log(`点击转班按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${course.courseName}`);
-                    
+
                     // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
                     const courseInfoForTransfer = {
                       ...record,
                       selectedCourseId: course.courseId ? String(course.courseId) : undefined,
                       selectedCourseName: course.courseName // 添加课程名称
                     };
-                    
+
                     // 打印完整的传递信息
                     console.log('转班 - 传递的完整信息:', courseInfoForTransfer);
-                    
+
                     // 调用转班方法
                     onTransferClass(courseInfoForTransfer as any);
                   }
@@ -385,7 +387,10 @@ export const getStudentColumns = (
             ];
 
             return (
-              <div key={`${record.id}-course-${course.studentCourseId || course.courseId || index}`} style={{
+              <div
+                key={`${record.id}-course-${course.studentCourseId || course.courseId || index}`}
+                className="course-info-grid"
+                style={{
                   display: 'grid',
                   gridTemplateColumns: '30px 100px 80px 80px 90px 120px 80px auto', // 重新调整列宽
                   alignItems: 'center',

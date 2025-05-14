@@ -104,6 +104,11 @@
   color: #40a9ff;
 }
 
+/* 滚动提示样式 - 默认隐藏 */
+.student-table-container .scroll-indicator {
+  display: none;
+}
+
 /* 居中表格样式 */
 .centered-table .ant-table-thead > tr > th {
   text-align: center !important;
@@ -188,6 +193,7 @@
   .student-table-container [data-row-key] > td > div {
     max-width: 100%;
     overflow-x: auto;
+    padding-bottom: 5px; /* 添加底部间距，确保滚动条不会被遮挡 */
   }
 
   /* 确保表格可以水平滚动 */
@@ -200,6 +206,24 @@
     display: flex;
     flex-wrap: nowrap;
     justify-content: center;
+  }
+
+  /* 课程信息网格容器样式 - 确保可以水平滚动 */
+  .student-table-container .course-info-grid {
+    min-width: 800px; /* 确保内容不会被压缩 */
+    overflow-x: auto;
+    display: inline-block;
+    width: 100%;
+  }
+
+  /* 添加滚动提示样式 */
+  .student-table-container .scroll-indicator {
+    display: block;
+    text-align: center;
+    color: #1890ff;
+    font-size: 12px;
+    margin-top: 2px;
+    opacity: 0.7;
   }
 }
 
