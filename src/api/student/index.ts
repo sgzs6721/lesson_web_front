@@ -170,7 +170,7 @@ const buildQueryString = (params: StudentSearchParams): string => {
   if (params.campusId) queryParams.push(`campusId=${params.campusId}`);
   if (params.enrollDateStart) queryParams.push(`enrollDateStart=${params.enrollDateStart}`);
   if (params.enrollDateEnd) queryParams.push(`enrollDateEnd=${params.enrollDateEnd}`);
-  if (params.pageNum) queryParams.push(`page=${params.pageNum}`);
+  if (params.pageNum) queryParams.push(`pageNum=${params.pageNum}`);
   if (params.pageSize) queryParams.push(`pageSize=${params.pageSize}`);
   if (params.sortField) queryParams.push(`sortField=${params.sortField}`);
   if (params.sortOrder) queryParams.push(`sortOrder=${params.sortOrder}`);
