@@ -13,6 +13,41 @@
 
 .student-table-container {
   margin-top: 16px;
+  width: 100%;
+  overflow-x: auto; /* 允许容器水平滚动 */
+  /* 确保表格布局合理 */
+  table-layout: fixed;
+}
+
+/* 确保表格单元格内容不换行 */
+.student-table-container .ant-table-cell {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* 调整课程信息单元格的内边距，消除顶部间距 */
+.student-table-container .course-info-column.ant-table-cell {
+  padding-top: 4px !important; /* 保留适当的顶部内边距 */
+  padding-bottom: 4px !important; /* 保留适当的底部内边距 */
+  vertical-align: middle !important;
+}
+
+/* 确保表格行不换行 */
+.student-table-row {
+  white-space: nowrap !important;
+}
+
+/* 确保表格头部不换行 */
+.student-table-container .ant-table-thead th {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* 确保表格内容区域可以水平滚动 */
+.student-table-container .ant-table-body {
+  overflow-x: auto !important;
 }
 
 .student-form-item {
@@ -67,7 +102,11 @@
 
 .student-action-buttons {
   display: flex;
-  gap: 8px;
+  justify-content: space-between; /* 均匀分布 */
+  align-items: center;
+  width: 100%;
+  min-width: 135px; /* 增加最小宽度 */
+  padding: 0 5px; /* 添加内边距 */
 }
 
 /* 打卡模态框样式 */
@@ -94,6 +133,67 @@
 
 .student-table-container .ant-table-tbody > tr > td {
   text-align: center;
+}
+
+/* 固定操作列样式 - 全局应用 */
+.student-table-container .ant-table-thead > tr > th.ant-table-cell-fix-right,
+.student-table-container .ant-table-tbody > tr > td.ant-table-cell-fix-right {
+  position: sticky !important;
+  right: 0 !important;
+  z-index: 2 !important;
+}
+
+/* 确保表头固定列背景色正确 */
+.student-table-container .ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background-color: #f5f5f5 !important; /* 设置为与其他表头一致的背景色 */
+}
+
+/* 确保表格内容固定列背景色正确 */
+.student-table-container .ant-table-tbody > tr > td.ant-table-cell-fix-right {
+  background-color: transparent !important; /* 改为透明背景 */
+  transition: background-color 0.3s ease; /* 添加过渡效果 */
+}
+
+/* 固定列hover效果 */
+.student-table-container .ant-table-tbody > tr > td.ant-table-cell-fix-right:hover {
+  background-color: #f5f5f5 !important; /* hover时显示灰色背景 */
+}
+
+/* 确保斑马纹行的固定列背景色正确 */
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(even) > td.ant-table-cell-fix-right {
+  background-color: transparent !important; /* 改为透明背景 */
+}
+
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(odd) > td.ant-table-cell-fix-right {
+  background-color: transparent !important; /* 改为透明背景 */
+}
+
+/* 斑马纹行的固定列hover效果 */
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(even) > td.ant-table-cell-fix-right:hover,
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(odd) > td.ant-table-cell-fix-right:hover {
+  background-color: #f5f5f5 !important; /* hover时显示灰色背景 */
+}
+
+/* 确保操作列按钮容器有足够空间 */
+.student-table-container .ant-table-tbody > tr > td.operation-column {
+  min-width: 140px !important; /* 增加最小宽度 */
+  background-color: transparent !important; /* 移除默认背景色 */
+  transition: background-color 0.3s ease; /* 添加过渡效果 */
+}
+
+/* 操作列hover效果 - 响应式 */
+.student-table-container .ant-table-tbody > tr > td:last-child:hover,
+.student-table-container .ant-table-tbody > tr > td.operation-column:hover,
+.student-table-container .ant-table-tbody > tr > td.ant-table-cell-fix-right:hover {
+  background-color: #f5f5f5 !important; /* hover时显示灰色背景 */
+}
+
+/* 确保奇偶行操作列的hover效果 */
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(odd) > td.operation-column:hover,
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(even) > td.operation-column:hover,
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(odd) > td.ant-table-cell-fix-right.operation-column:hover,
+.student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(even) > td.ant-table-cell-fix-right.operation-column:hover {
+  background-color: #f5f5f5 !important; /* hover时显示灰色背景 */
 }
 
 .student-table-container .ant-btn-link {
@@ -157,63 +257,132 @@
 }
 */
 
+/* 课程信息列滚动容器 */
+.course-info-scroll-container {
+  width: fit-content !important; /* 改为自适应内容宽度 */
+  overflow-x: auto;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important; /* 课程块之间的间距改为8px，与课程块和表格边框的距离一致 */
+  padding: 8px 0 !important; /* 调整为与表格单元格一致的上下内边距 */
+  position: relative; /* 为固定定位的子元素提供参考 */
+}
+
+/* 课程信息列样式 */
+.course-info-column {
+  overflow-x: auto !important;
+  position: relative; /* 为固定定位的子元素提供参考 */
+  padding: 0; /* 重置内边距 */
+}
+
+/* 课程信息网格布局 */
+.course-info-grid {
+  display: grid;
+  grid-template-columns: 4px 2fr 1fr 1fr 1.2fr 1fr 1.5fr !important; /* 与组件保持一致的分配比例 */
+  column-gap: 8px !important; /* 与组件保持一致的列间距 */
+  align-items: center;
+  width: 100% !important; /* 确保占满整个列宽 */
+  min-width: 100% !important; /* 确保占满最小宽度 */
+  padding: 4px 8px !important; /* 与组件保持一致的内边距 */
+  border-radius: 4px;
+  box-sizing: border-box; /* 确保padding不会影响总宽度 */
+}
+
+/* 操作列样式 */
+.operation-column {
+  z-index: 10 !important;
+  position: sticky !important;
+  right: 0 !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  /* 移除背景色设置，使用全局设置 */
+}
+
 /* 响应式表格样式 - 适配小屏幕 */
 @media screen and (max-width: 1200px) {
-  /* 确保表格内容不会溢出 */
+  /* 确保表格可以水平滚动 */
   .student-table-container .ant-table {
     width: 100%;
     overflow-x: auto;
   }
 
+  /* 确保课程信息单元格在小屏幕上也没有顶部内边距 */
+  .student-table-container .course-info-column.ant-table-cell {
+    padding-top: 4px !important; /* 保留适当的顶部内边距 */
+    padding-bottom: 4px !important; /* 保留适当的底部内边距 */
+    vertical-align: middle !important;
+  }
+
+  /* 确保操作列在小屏幕上正确显示 */
+  .operation-column {
+    position: sticky !important;
+    right: 0 !important;
+    z-index: 20 !important;
+    /* 背景色由全局样式设置 */
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05) !important; /* 轻微阴影效果 */
+  }
+
   /* 确保操作列按钮在小屏幕上正确显示 */
-  .student-table-container .ant-table-tbody > tr > td:last-child {
+  .student-table-container .ant-table-tbody > tr > td:last-child,
+  .student-table-container .ant-table-thead > tr > th:last-child {
     white-space: nowrap;
-    min-width: 110px;
+    min-width: 140px; /* 增加最小宽度 */
     position: sticky;
     right: 0;
     z-index: 2;
+    background-color: transparent !important; /* 移除默认背景色 */
+    transition: background-color 0.3s ease; /* 添加过渡效果 */
   }
 
-  /* 确保操作列背景色与行背景色一致 */
+  /* 操作列hover效果 - 响应式 */
+  .student-table-container .ant-table-tbody > tr > td:last-child:hover,
+  .student-table-container .ant-table-tbody > tr > td.operation-column:hover,
+  .student-table-container .ant-table-tbody > tr > td.ant-table-cell-fix-right:hover {
+    background-color: #f5f5f5 !important; /* hover时显示灰色背景 */
+  }
+
+  /* 确保操作列背景色与行背景色一致 - 移除这些设置，使用透明背景 */
   .student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(odd) > td:last-child {
-    background-color: #fff;
+    background-color: transparent !important; /* 改为透明背景 */
   }
 
   .student-table-container .ant-table-tbody > tr.ant-table-row:nth-child(even) > td:last-child {
-    background-color: #fafafa;
+    background-color: transparent !important; /* 改为透明背景 */
   }
 
   /* 确保课程信息列在小屏幕上可以水平滚动 */
-  .student-table-container [data-row-key] > td {
-    max-width: 100%;
-    overflow: visible;
+  .student-table-container .course-info-column {
+    overflow-x: auto !important;
   }
 
   /* 课程信息内容容器样式 */
-  .student-table-container [data-row-key] > td > div {
+  .student-table-container .course-info-column > div {
     max-width: 100%;
     overflow-x: auto;
     padding-bottom: 5px; /* 添加底部间距，确保滚动条不会被遮挡 */
   }
 
-  /* 确保表格可以水平滚动 */
-  .student-table-container .ant-table-container {
-    overflow-x: auto;
+  /* 确保表格内容可以水平滚动 */
+  .student-table-container .ant-table-body {
+    overflow-x: auto !important;
   }
 
   /* 确保操作按钮在小屏幕上不会换行 */
   .student-action-buttons {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: center;
+    min-width: 135px;
+    gap: 0; /* 移除间距，使用外边距控制 */
   }
 
   /* 课程信息网格容器样式 - 确保可以水平滚动 */
   .student-table-container .course-info-grid {
-    min-width: 800px; /* 确保内容不会被压缩 */
-    overflow-x: auto;
-    display: inline-block;
-    width: 100%;
+    min-width: 610px; /* 增加最小宽度，与组件中的设置保持一致 */
+    width: 100% !important; /* 占满列宽 */
+    display: grid; /* 保持网格布局 */
+    position: relative; /* 为固定定位的子元素提供参考 */
+    margin-right: 0; /* 移除右侧间距 */
+    margin-top: 0 !important; /* 清除顶部间距，由容器的gap和padding控制 */
+    margin-bottom: 0 !important; /* 清除底部间距，由容器的gap和padding控制 */
+    padding: 4px 6px !important; /* 统一内边距为4px 6px，覆盖基础样式 */
   }
 
   /* 添加滚动提示样式 */
@@ -224,6 +393,11 @@
     font-size: 12px;
     margin-top: 2px;
     opacity: 0.7;
+  }
+
+  /* 缩小按钮在小屏幕下的间距 */
+  .action-button {
+    margin: 0 1px !important; /* 减小外边距 */
   }
 }
 
@@ -279,4 +453,72 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+
+/* 垂直布局的操作按钮容器 */
+.student-action-buttons-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  background-color: transparent !important;
+}
+
+/* 垂直布局按钮的悬停效果 */
+.student-action-buttons-vertical .ant-btn {
+  transition: all 0.3s;
+  width: 32px;
+  height: 32px;
+}
+
+.student-action-buttons-vertical .ant-btn:hover {
+  transform: scale(1.2);
+}
+
+/* 单个操作按钮样式 */
+.action-button {
+  padding: 0 !important;
+  width: 32px !important; /* 增加按钮宽度 */
+  height: 32px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  border-radius: 50% !important;
+  transition: all 0.3s;
+  background-color: transparent !important; /* 确保初始状态透明 */
+  margin: 0 2px !important; /* 添加左右外边距 */
+}
+
+.action-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.05) !important; /* 悬停时略微加深 */
+}
+
+/* 表头样式统一 */
+.student-table-container .ant-table-thead > tr > th {
+  background-color: #f5f5f5 !important;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.3s ease;
+  padding: 16px 8px;
+  text-align: center;
+}
+
+/* 最高优先级操作列hover效果 - 确保生效 */
+.student-table-container .ant-table-tbody > tr:hover > td.operation-column,
+.student-table-container .ant-table-tbody > tr:hover > td.ant-table-cell-fix-right.operation-column,
+.student-table-container .ant-table-tbody > tr:hover > td:last-child,
+.student-table-container .ant-table-tbody > tr:hover > td.ant-table-cell-fix-right:last-child {
+  background-color: #f5f5f5 !important;
+}
+
+/* 统一所有单元格的hover背景色 */
+.student-table-container .ant-table-tbody > tr:hover > td,
+.student-table-container .ant-table-tbody > tr.ant-table-row-hover > td,
+.student-table-container .ant-table-tbody > tr:hover > td.ant-table-cell-fix-right,
+.student-table-container .ant-table-tbody > tr.ant-table-row-hover > td.ant-table-cell-fix-right {
+  background-color: #f5f5f5 !important;
 }

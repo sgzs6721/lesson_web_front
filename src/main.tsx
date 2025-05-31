@@ -18,6 +18,9 @@ import localeData from 'dayjs/plugin/localeData';
 import weekday from 'dayjs/plugin/weekday';
 import 'dayjs/locale/zh-cn';
 
+// 导入stagewise工具栏
+import { initStagewiseToolbar } from '@/utils/stagewise';
+
 // 扩展dayjs插件
 dayjs.extend(customParseFormat);
 dayjs.extend(isSameOrBefore);
@@ -38,3 +41,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </Provider>
   </React.StrictMode>
 );
+
+// 初始化stagewise工具栏（仅在开发模式下）
+initStagewiseToolbar();

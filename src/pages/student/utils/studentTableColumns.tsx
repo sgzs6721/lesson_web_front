@@ -29,6 +29,10 @@ export const getStudentColumns = (
       dataIndex: 'studentId',
       key: 'studentId',
       width: 100,
+      render: (value: number, record: Student) => {
+        // 优先显示 studentId，如果不存在则显示 id
+        return record.studentId || record.id || '-';
+      },
     },
     {
       title: '年龄',

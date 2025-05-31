@@ -1,7 +1,7 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: 
+globs: 
+alwaysApply: true
 ---
 # TypeScript使用规范
 
@@ -648,6 +648,6 @@ async function createStudent(student: CreateStudentRequest): Promise<Student> {
 
 ## 参考资源
 
-- [TypeScript官方文档](https://www.typescriptlang.org/docs/)
-- [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/)
-- [React TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)
+- [TypeScript官方文档](mdc:https:/www.typescriptlang.org/docs)
+- [TypeScript Deep Dive](mdc:https:/basarat.gitbook.io/typescript)
+- [React TypeScript Cheatsheet](mdc:https:/react-typescript-cheatsheet.netlify.app)

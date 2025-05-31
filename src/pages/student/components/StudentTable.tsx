@@ -86,7 +86,7 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
       pagination.onChange(current, size);
     }
   };
-  
+
   // 彻底禁用表格的onChange事件处理
   const handleTableChange = useCallback(() => {
     // 什么都不做，彻底禁用表格的默认onChange行为
@@ -98,13 +98,15 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
       <Table
         columns={columns}
         dataSource={data}
-        rowKey="id" 
+        rowKey="id"
         loading={loading}
         onChange={handleTableChange} // 使用空函数拦截表格变化事件
         pagination={customPagination} // 使用自定义分页配置
         locale={{
           emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" />
         }}
+        scroll={{ x: 'max-content' }} // 改为自适应内容宽度，而不是固定宽度
+        rowClassName={() => 'student-table-row'} // 添加行类名，用于CSS选择器
       />
     </div>
   );
