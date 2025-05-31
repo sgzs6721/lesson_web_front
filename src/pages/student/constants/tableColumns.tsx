@@ -53,7 +53,6 @@ const getCourseTypeTagStyle = (type: string) => {
   
   return {
     display: 'inline-block',
-    minWidth: '55px', // 适中的最小宽度
     padding: '2px 6px', // 合理的内边距
     backgroundColor: colorSet.background,
     color: colorSet.color,
@@ -125,6 +124,9 @@ export const getStudentColumns = (
     key: 'studentId',
     width: '8%', // 增加ID列宽度
     align: 'center' as const,
+    onHeaderCell: () => ({
+      style: { ...columnStyle, whiteSpace: 'nowrap', padding: '8px 8px' },
+    }),
     render: (value: number, record: Student) => {
       // 优先显示 studentId，如果不存在则显示 id
       return record.studentId || record.id || '-';
@@ -141,6 +143,9 @@ export const getStudentColumns = (
     key: 'name',
     width: '11%', // 增加姓名列宽度
     align: 'center' as const,
+    onHeaderCell: () => ({
+      style: { ...columnStyle, whiteSpace: 'nowrap', padding: '8px 8px' },
+    }),
     sorter: (a: any, b: any) => a.name.localeCompare(b.name),
   },
   {
@@ -149,6 +154,9 @@ export const getStudentColumns = (
     key: 'age',
     width: '6%', // 增加年龄列宽度
     align: 'center' as const,
+    onHeaderCell: () => ({
+      style: { ...columnStyle, whiteSpace: 'nowrap', padding: '8px 8px' },
+    }),
     sorter: (a: any, b: any) => (a.age || 0) - (b.age || 0),
   },
   {
@@ -157,6 +165,9 @@ export const getStudentColumns = (
     key: 'phone',
     width: '13%', // 增加电话列宽度
     align: 'center' as const,
+    onHeaderCell: () => ({
+      style: { ...columnStyle, whiteSpace: 'nowrap', padding: '8px 8px' },
+    }),
   },
   {
     title: '课程信息',
@@ -312,194 +323,169 @@ export const getStudentColumns = (
                 key={`${record.id}-course-${course.studentCourseId || course.courseId || index}`}
                 className="course-info-grid"
                 style={{
-                  display: 'flex',
                   alignItems: 'center',
                   backgroundColor: isDisabled ? '#fdfdfd' : '#fafafa',
                   width: '100%',
-                  padding: '4px 15px', // 左右padding一致
+                  padding: '4px 8px',
                   borderRadius: '4px',
                   opacity: statusUpperCase === 'EXPIRED' ? 1 : (isDisabled ? 0.7 : 1),
                   border: statusUpperCase === 'EXPIRED' ? '1px solid #ffccc7' : '1px solid #f0f0f0',
                   position: 'relative',
-                  marginBottom: index < (record.courses?.length || 0) - 1 ? '4px' : '0', // 除最后一行外都添加4px底部间距
+                  marginBottom: index < (record.courses?.length || 0) - 1 ? '4px' : '0',
                 }}>
-                  {/* 左侧的课程类型颜色条 */}
-                  <div style={{
-                    width: '4px',
-                    height: '20px', // 明确设置高度
-                    backgroundColor: (() => {
-                      const statusUpperCase = (course.status || '').toUpperCase();
-                      if (statusUpperCase === 'EXPIRED') {
-                        return '#ff4d4f'; // 过期课程显示红色
-                      } else if (course.courseTypeName && courseTypeColors[course.courseTypeName]) {
-                        return courseTypeColors[course.courseTypeName];
-                      } else {
-                        return '#1677FF'; // 默认蓝色
-                      }
-                    })(),
-                    borderRadius: '2px',
-                    marginRight: '15px',
-                    flexShrink: 0
-                  }}></div>
-
-                  {/* 课程名称 */}
-                  <div style={{
-                    width: '120px',
-                    margin: 0,
-                    padding: '0',
-                    color: 'rgba(0, 0, 0, 0.85)',
-                    fontWeight: 500,
+                {/* 左侧的课程状态竖线 */}
+                <div style={{ 
+                  width: '4px',
+                  height: '20px',
+                  backgroundColor: (() => {
+                    const statusUpperCase = (course.status || '').toUpperCase();
+                    if (statusUpperCase === 'EXPIRED') {
+                      return '#ff4d4f';
+                    } else if (course.courseTypeName && courseTypeColors[course.courseTypeName]) {
+                      return courseTypeColors[course.courseTypeName];
+                    } else {
+                      return '#1677FF';
+                    }
+                  })(),
+                  borderRadius: '2px',
+                  justifySelf: 'center'
+                }}></div>
+                
+                {/* 课程名称 - 左对齐，通过CSS控制 */}
+                <div style={{ 
+                  color: 'rgba(0, 0, 0, 0.85)',
+                  fontWeight: 500,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: '22px',
+                }} title={course.courseName}>
+                  {course.courseName || '-'}
+                </div>
+                
+                {/* 课程类型 - 居中对齐，通过CSS控制 */}
+                <div>
+                  <Tag
+                    style={{
+                      ...getCourseTypeTagStyle(course.courseTypeName || '未知'),
+                      height: '22px',
+                      lineHeight: '18px',
+                    }}
+                  >
+                    {course.courseTypeName || '未知'}
+                  </Tag>
+                </div>
+                
+                {/* 教练 - 居中对齐，通过CSS控制 */}
+                <div style={{
+                    color: 'rgba(0, 0, 0, 0.65)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    textAlign: 'center',
                     lineHeight: '22px',
-                    marginRight: '15px',
-                    flexShrink: 0
-                  }} title={course.courseName}>
-                    {course.courseName || '-'}
-                  </div>
-
-                  {/* 课程类型 */}
-                  <div style={{
-                    width: '70px',
-                    textAlign: 'center',
-                    marginRight: '15px',
-                    flexShrink: 0
-                  }}>
+                }}>
+                  {course.coachName || '-'}
+                </div>
+                
+                {/* 课时 - 居中对齐，通过CSS控制 */}
+                <div style={{
+                    color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
+                    textDecoration: isDisabled ? 'line-through' : 'none',
+                    fontWeight: remainingHours <= 5 ? 'bold' : 'normal',
+                    whiteSpace: 'nowrap',
+                    lineHeight: '22px',
+                }}>
+                  {`${remainingHours ?? 0}/${course.totalHours ?? 0}课时`}
+                </div>
+                
+                {/* 状态 - 居中对齐，通过CSS控制 */}
+                <div>
+                  <Tooltip title={`有效期至: ${course.endDate ? dayjs(course.endDate).format('YYYY-MM-DD') : '未设置'}`}>
                     <Tag
                       style={{
-                        ...getCourseTypeTagStyle(course.courseTypeName || '未知'),
-                        height: '22px', // 统一高度
-                        lineHeight: '18px', // 调整行高使文字居中
+                        height: '22px',
+                        textAlign: 'center',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 0,
+                        padding: '0 4px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        borderRadius: '4px',
+                        lineHeight: '1',
+                        backgroundColor: statusUpperCase === 'EXPIRED' || statusUpperCase === 'GRADUATED' || statusUpperCase === 'REFUNDED' ? '#fff' :
+                                        (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#f6ffed' : '#f9f0ff'),
+                        color: statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
+                              (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#52c41a' :
+                              (statusUpperCase === 'GRADUATED' ? '#1890ff' : '#722ed1')),
+                        border: `1px solid ${statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
+                                (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#52c41a' :
+                                (statusUpperCase === 'GRADUATED' ? '#1890ff' : '#722ed1'))}`,
+                        opacity: isDisabled ? 0.7 : 1
                       }}
                     >
-                      {course.courseTypeName || '未知'}
+                      {statusText}
                     </Tag>
-                  </div>
-
-                  {/* 教练 */}
-                  <div style={{
-                      width: '70px',
-                      color: 'rgba(0, 0, 0, 0.65)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      textAlign: 'center',
-                      marginRight: '15px',
-                      flexShrink: 0
-                  }}>
-                    {course.coachName || '-'}
-                  </div>
-
-                  {/* 课时 */}
-                  <div style={{
-                      width: '80px',
-                      color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
-                      textDecoration: isDisabled ? 'line-through' : 'none',
-                      fontWeight: remainingHours <= 5 ? 'bold' : 'normal',
-                      textAlign: 'center',
-                      whiteSpace: 'nowrap',
-                      marginRight: '15px',
-                      flexShrink: 0
-                  }}>
-                    {`${remainingHours ?? 0}/${course.totalHours ?? 0}课时`}
-                  </div>
-
-                  {/* 状态 */}
-                  <div style={{
-                    width: '70px',
-                    textAlign: 'center',
-                    marginRight: '15px',
-                    flexShrink: 0
-                  }}>
-                    <Tooltip title={`有效期至: ${course.endDate ? dayjs(course.endDate).format('YYYY-MM-DD') : '未设置'}`}>
-                      <Tag
-                        style={{
-                          width: '70px',
-                          height: '22px', // 与课程类型标签相同高度
-                          textAlign: 'center',
-                          display: 'inline-flex', // 使用flex进行垂直居中
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: 0,
-                          padding: '0 4px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          borderRadius: '4px',
-                          lineHeight: '1',
-                          backgroundColor: statusUpperCase === 'EXPIRED' || statusUpperCase === 'GRADUATED' || statusUpperCase === 'REFUNDED' ? '#fff' :
-                                          (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#f6ffed' : '#f9f0ff'),
-                          color: statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
-                                (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#52c41a' :
-                                (statusUpperCase === 'GRADUATED' ? '#1890ff' : '#722ed1')),
-                          border: `1px solid ${statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
-                                  (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#52c41a' :
-                                  (statusUpperCase === 'GRADUATED' ? '#1890ff' : '#722ed1'))}`,
-                          opacity: isDisabled ? 0.7 : 1
-                        }}
-                      >
-                        {statusText}
-                      </Tag>
-                    </Tooltip>
-                  </div>
-
-                  {/* 操作按钮组 */}
-                  <div style={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    flexShrink: 0,
-                    marginLeft: 'auto' // 推到最右边，与右边距保持一致
-                  }}>
-                    {/* 打卡按钮 */}
-                    <Button
-                      type="link"
-                      icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
-                      size="small"
-                      onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
-                      disabled={isDisabled}
-                      style={{ padding: '0', margin: '0' }}
-                      title={getAttendanceDisabledReason()}
-                    />
-
-                    {/* 课程记录按钮 */}
-                    <Button
-                      type="link"
-                      icon={<FileTextOutlined style={{ color: '#1890ff' }} />}
-                      size="small"
-                      onClick={() => onClassRecord(record)}
-                      style={{ padding: '0', margin: '0' }}
-                      title="课程记录"
-                    />
-
-                    {/* 缴费按钮 */}
-                    <Button
-                      type="link"
-                      icon={<DollarOutlined style={{ color: '#fa8c16' }} />}
-                      size="small"
-                      onClick={() => onPayment(record)}
-                      style={{ padding: '0', margin: '0' }}
-                      title="缴费"
-                    />
-
-                    {/* 更多操作 */}
-                    {remainingMenuItems.length > 0 && (
-                      <Dropdown
-                        menu={{ items: remainingMenuItems }}
-                        trigger={['hover']}
-                        placement="bottomRight"
-                      >
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<MoreOutlined />}
-                          style={{ padding: '0', margin: '0' }}
-                        />
-                      </Dropdown>
-                    )}
-                  </div>
+                  </Tooltip>
                 </div>
+                
+                {/* 操作按钮组 - 居中对齐，通过CSS控制 */}
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}>
+                  {/* 打卡按钮 */}
+                  <Button 
+                    type="link"
+                    icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
+                    size="small"
+                    onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
+                    disabled={isDisabled}
+                    style={{ padding: '0', margin: '0' }}
+                    title={getAttendanceDisabledReason()}
+                  />
+
+                  {/* 课程记录按钮 */}
+                  <Button 
+                    type="link"
+                    icon={<FileTextOutlined style={{ color: '#1890ff' }} />}
+                    size="small"
+                    onClick={() => onClassRecord(record)}
+                    style={{ padding: '0', margin: '0' }}
+                    title="课程记录"
+                  />
+
+                  {/* 缴费按钮 */}
+                  <Button 
+                    type="link"
+                    icon={<DollarOutlined style={{ color: '#fa8c16' }} />}
+                    size="small"
+                    onClick={() => onPayment(record)}
+                    style={{ padding: '0', margin: '0' }}
+                    title="缴费"
+                  />
+
+                  {/* 更多操作 */}
+                  {remainingMenuItems.length > 0 && (
+                    <Dropdown
+                      menu={{ items: remainingMenuItems }}
+                      trigger={['click']}
+                      placement="bottomRight"
+                    >
+                      <Button 
+                        type="link"
+                        icon={<MoreOutlined style={{ color: '#666' }} />}
+                        size="small"
+                        style={{ padding: '0', margin: '0' }}
+                        title="更多操作"
+                      />
+                    </Dropdown>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>

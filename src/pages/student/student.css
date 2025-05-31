@@ -278,14 +278,45 @@
 /* 课程信息网格布局 */
 .course-info-grid {
   display: grid;
-  grid-template-columns: 4px 2fr 1fr 1fr 1.2fr 1fr 1.5fr !important; /* 与组件保持一致的分配比例 */
-  column-gap: 8px !important; /* 与组件保持一致的列间距 */
+  grid-template-columns: 4px 110px 80px 80px 85px 80px 1fr !important; /* 重新设计列宽：竖线+课程名称+课程类型+教练+课时+状态+操作按钮 */
+  column-gap: 16px !important; /* 统一16px间距 */
   align-items: center;
-  width: 100% !important; /* 确保占满整个列宽 */
-  min-width: 100% !important; /* 确保占满最小宽度 */
-  padding: 4px 8px !important; /* 与组件保持一致的内边距 */
+  width: 100% !important;
+  min-width: 100% !important;
+  padding: 4px 8px !important;
   border-radius: 4px;
-  box-sizing: border-box; /* 确保padding不会影响总宽度 */
+  box-sizing: border-box !important;
+}
+
+/* 课程名称列左对齐样式 */
+.course-info-grid > div:nth-child(2) {
+  text-align: left !important;
+  padding-left: 8px !important; /* 增加左边距，与竖线保持合适距离 */
+}
+
+/* 课程类型列居中 */
+.course-info-grid > div:nth-child(3) {
+  text-align: center !important;
+}
+
+/* 教练列居中 */
+.course-info-grid > div:nth-child(4) {
+  text-align: center !important;
+}
+
+/* 课时列居中 */
+.course-info-grid > div:nth-child(5) {
+  text-align: center !important;
+}
+
+/* 状态列居中 */
+.course-info-grid > div:nth-child(6) {
+  text-align: center !important;
+}
+
+/* 操作按钮列居中 */
+.course-info-grid > div:nth-child(7) {
+  text-align: center !important;
 }
 
 /* 操作列样式 */
@@ -375,14 +406,16 @@
 
   /* 课程信息网格容器样式 - 确保可以水平滚动 */
   .student-table-container .course-info-grid {
-    min-width: 610px; /* 增加最小宽度，与组件中的设置保持一致 */
-    width: 100% !important; /* 占满列宽 */
-    display: grid; /* 保持网格布局 */
-    position: relative; /* 为固定定位的子元素提供参考 */
-    margin-right: 0; /* 移除右侧间距 */
-    margin-top: 0 !important; /* 清除顶部间距，由容器的gap和padding控制 */
-    margin-bottom: 0 !important; /* 清除底部间距，由容器的gap和padding控制 */
-    padding: 4px 6px !important; /* 统一内边距为4px 6px，覆盖基础样式 */
+    min-width: 600px; /* 调整最小宽度适应新布局 */
+    width: 100% !important;
+    display: grid;
+    grid-template-columns: 4px 110px 80px 80px 85px 80px 1fr !important; /* 与基础样式保持一致 */
+    column-gap: 16px !important; /* 与基础样式保持一致 */
+    position: relative;
+    margin-right: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 4px 8px !important;
   }
 
   /* 添加滚动提示样式 */
