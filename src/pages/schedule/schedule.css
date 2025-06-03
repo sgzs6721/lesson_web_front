@@ -1,5 +1,243 @@
+/* 课表视图整体容器 */
+.schedule-view {
+  padding: 0 4px;
+}
+
+.schedule-card {
+  margin-top: -12px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
+.schedule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 图例样式 - 移除边框和标题 */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.legend-item:hover {
+  background-color: #e9ecef;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item.active {
+  background-color: #1890ff;
+  color: white;
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.legend-item.active:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.legend-item span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.legend-item.active span {
+  color: white;
+  font-weight: 600;
+}
+
+/* 课表容器 */
+.schedule-container {
+  overflow-x: auto;
+  border: 1px solid #e6f7ff;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+/* 课表网格 */
+.schedule {
+  display: grid;
+  grid-template-columns: 120px repeat(7, 1fr);
+  min-width: 1000px;
+  background-color: white;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.schedule-header {
+  background-color: #f0f8ff;
+  border: 1px solid #d6f3ff;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1890ff;
+}
+
+.schedule-time {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 13px;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-cell {
+  border: 1px solid #e9ecef;
+  padding: 8px;
+  min-height: 80px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.schedule-cell:hover {
+  background-color: #f8f9fa;
+}
+
+/* 学生/课程信息样式 */
+.student-info {
+  background-color: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+}
+
+.student-info:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.student-info .name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.student-info .details {
+  color: #7f8c8d;
+  font-size: 11px;
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+
+.student-info .course-info {
+  color: #3498db;
+  font-weight: 500;
+}
+
+.student-info .description {
+  color: #95a5a6;
+  font-style: italic;
+}
+
+/* 空状态样式 */
+.schedule-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #95a5a6;
+  font-size: 16px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .schedule-view {
+    padding: 0;
+  }
+
+  .schedule-card {
+    margin-top: -8px;
+  }
+  
+  .schedule {
+    grid-template-columns: 100px repeat(7, 120px);
+  }
+  
+  .schedule-header,
+  .schedule-time {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .schedule-cell {
+    padding: 6px;
+    min-height: 60px;
+  }
+  
+  .student-info {
+    padding: 6px;
+    font-size: 11px;
+  }
+  
+  .student-info .name {
+    font-size: 12px;
+  }
+  
+  .student-info .details {
+    font-size: 10px;
+  }
+}
+
+.page-container {
+  padding: 0 4px;
+}
+
 .schedule-view-container {
-  padding: 20px;
+  padding: 0;
+  background: none;
+}
+
+.schedule-card {
+  margin-top: -12px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 16px;
+}
+
+.schedule-content {
+  padding: 16px 0 0 0;
 }
 
 .page-header {
@@ -35,53 +273,6 @@
   padding-left: 16px;
 }
 
-.schedule-container {
-  overflow-x: auto;
-  margin: 0 -24px;
-  padding: 0 24px;
-}
-
-.schedule {
-  display: grid;
-  grid-template-columns: 120px repeat(7, 1fr);
-  gap: 5px;
-  min-width: 1000px;
-}
-
-.schedule-header {
-  background-color: #f8f9fa;
-  color: #34495e;
-  padding: 12px;
-  text-align: center;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-}
-
-.schedule-time {
-  background-color: #f8f9fa;
-  padding: 10px;
-  text-align: center;
-  border-radius: 4px;
-  font-weight: 600;
-  white-space: nowrap;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  border: 1px solid #eee;
-}
-
-.schedule-cell {
-  border: 1px solid #eee;
-  padding: 10px;
-  min-height: 120px;
-}
-
-.schedule-cell:hover {
-  background-color: #f8f9fa;
-}
-
 .schedule-cell.draggable .student-info {
   cursor: grab;
 }
@@ -101,18 +292,6 @@
 .schedule-cell.drop-target {
   background-color: rgba(52, 152, 219, 0.1);
   border: 2px dashed #3498db;
-}
-
-.student-info {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  border-radius: 3px;
-  margin: 4px 0;
-  font-size: 12px;
-  box-sizing: border-box;
-  text-align: center;
-  opacity: 0.8;
 }
 
 .student-group {
@@ -159,40 +338,6 @@
   font-style: italic;
 }
 
-.legend-section {
-  margin-bottom: 20px;
-}
-
-.legend {
-  display: flex;
-  gap: 10px;
-  margin: 0;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  padding: 0;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 4px;
-  background-color: #f5f5f5;
-  transition: all 0.2s;
-}
-
-.legend-item:hover {
-  background-color: #e6e6e6;
-}
-
-.legend-color {
-  width: 14px;
-  height: 14px;
-  margin-right: 6px;
-  border-radius: 2px;
-}
-
 .change-item {
   border: 1px solid #eee;
   border-radius: 6px;
@@ -234,13 +379,6 @@
 .student-info.coach-wang { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
 .student-info.coach-zhang { background-color: rgba(46, 204, 113, 0.1); color: #2ecc71; }
 .student-info.coach-liu { background-color: rgba(243, 156, 18, 0.1); color: #f39c12; }
-
-/* 教练图例样式 */
-.legend-item.active {
-  background-color: #f0f0f0;
-  font-weight: 500;
-  border-color: #d9d9d9;
-}
 
 /* 过滤器表单样式 */
 .filter-form {
@@ -304,13 +442,6 @@
   border-radius: 4px;
   display: flex;
   align-items: center;
-  font-size: 14px;
-}
-
-.legend-title {
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #333;
   font-size: 14px;
 }
 

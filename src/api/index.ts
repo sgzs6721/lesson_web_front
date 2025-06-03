@@ -6,6 +6,7 @@ import { campus } from './campus';
 import { user } from './user';
 import { coach } from './coach';
 import { constants } from './constants';
+import { schedule } from './schedule';
 
 // 导出所有接口
 export const API = {
@@ -16,5 +17,6 @@ export const API = {
   campus,
   user,
   coach,
-  constants
+  constants,
+  schedule
 };

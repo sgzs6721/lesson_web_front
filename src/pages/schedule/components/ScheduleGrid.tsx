@@ -1,152 +1,134 @@
 import React from 'react';
-import { ScheduleCell, Student } from '../types/schedule';
+import { FixedScheduleData, ScheduleCourseInfo } from '@/api/schedule/types';
 
 interface ScheduleGridProps {
-  cells: ScheduleCell[];
-  isEditMode: boolean;
-  onDragStart: (e: React.DragEvent, student: Student, cellId: string) => void;
-  onDragOver: (e: React.DragEvent, cellId: string) => void;
-  onDrop: (e: React.DragEvent, targetCellId: string) => void;
+  scheduleData: FixedScheduleData | null;
+  selectedCoach: string | null;
 }
 
-const ScheduleGrid: React.FC<ScheduleGridProps> = ({
-  cells,
-  isEditMode,
-  onDragStart,
-  onDragOver,
-  onDrop,
-}) => {
-  const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-  const timeSlots = ['9:00-10:00', '10:00-11:00', '14:00-15:00', '15:00-16:00', '16:00-17:00', '17:00-18:00'];
-
-  // 对同一单元格中的学生按照分组进行处理
-  const renderStudents = (cell: ScheduleCell) => {
-    // 从学生列表中提取所有的分组
-    const groups: { [key: string]: Student[] } = {};
-    const noGroupStudents: Student[] = [];
-
-    cell.students.forEach(student => {
-      if (student.groupId) {
-        if (!groups[student.groupId]) {
-          groups[student.groupId] = [];
+const generateCoachColors = (scheduleData: FixedScheduleData): { [key: string]: string } => {
+  if (!scheduleData || !scheduleData.schedule) return {};
+  
+  const coachNames = new Set<string>();
+  Object.values(scheduleData.schedule).forEach(timeSlot => {
+    Object.values(timeSlot).forEach(daySchedules => {
+      daySchedules.forEach((course: ScheduleCourseInfo) => {
+        if (course.coachName) {
+          coachNames.add(course.coachName);
         }
-        groups[student.groupId].push(student);
-      } else {
-        noGroupStudents.push(student);
-      }
+      });
     });
+  });
 
+  const colors = [
+    '#e74c3c', // 红色
+    '#3498db', // 蓝色  
+    '#2ecc71', // 绿色
+    '#f39c12', // 橙色
+    '#9b59b6', // 紫色
+    '#e67e22', // 橙红色
+    '#1abc9c', // 青色
+    '#34495e', // 深灰色
+  ];
+
+  const colorMap: { [key: string]: string } = {};
+  Array.from(coachNames).forEach((coachName, index) => {
+    colorMap[coachName] = colors[index % colors.length];
+  });
+
+  return colorMap;
+};
+
+const ScheduleGrid: React.FC<ScheduleGridProps> = ({ scheduleData, selectedCoach }) => {
+  if (!scheduleData || !scheduleData.timeSlots || !scheduleData.days) {
     return (
-      <>
-        {/* 渲染分组的学生 */}
-        {Object.entries(groups).map(([groupId, students]) => {
-          // 只有当分组中有多个学生时才使用分组样式
-          if (students.length > 1) {
-            // 对组中的第一个学生使用 onDragStart
-            const firstStudent = students[0];
-            return (
-              <div 
-                key={groupId} 
-                className={`student-group coach-${cell.coachId}`} 
-                draggable={isEditMode}
-                onDragStart={isEditMode ? (e) => onDragStart(e, firstStudent, cell.id) : undefined}
-              >
-                {students.map((student, index) => (
-                  <div
-                    key={student.id}
-                    className={`student-info ${index === 0 ? 'group-first' : index === students.length - 1 ? 'group-last' : 'group-middle'}`}
-                  >
-                    <div className="name">{student.name}</div>
-                    <div className="details">
-                      剩余课时: {student.remainingClasses}/{student.totalClasses} | 单价: ¥{student.pricePerClass}
-                    </div>
-                    <div className="details course-info">
-                      {student.courseTypeName} | {student.courseName}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          } else {
-            // 单个学生的分组仍然当做普通学生处理
-            return students.map(student => (
-              <div
-                key={student.id}
-                className={`student-info coach-${cell.coachId}`}
-                draggable={isEditMode}
-                onDragStart={isEditMode ? (e) => onDragStart(e, student, cell.id) : undefined}
-              >
-                <div className="name">{student.name}</div>
-                <div className="details">
-                  剩余课时: {student.remainingClasses}/{student.totalClasses} | 单价: ¥{student.pricePerClass}
-                </div>
-                <div className="details course-info">
-                  {student.courseTypeName} | {student.courseName}
-                </div>
-              </div>
-            ));
-          }
-        })}
+      <div className="schedule-placeholder">
+        暂无课表数据
+      </div>
+    );
+  }
 
-        {/* 渲染没有分组的学生 */}
-        {noGroupStudents.map(student => (
-          <div
-            key={student.id}
-            className={`student-info coach-${cell.coachId}`}
-            draggable={isEditMode}
-            onDragStart={isEditMode ? (e) => onDragStart(e, student, cell.id) : undefined}
-          >
-            <div className="name">{student.name}</div>
-            <div className="details">
-              剩余课时: {student.remainingClasses}/{student.totalClasses} | 单价: ¥{student.pricePerClass}
-            </div>
-            <div className="details course-info">
-              {student.courseTypeName} | {student.courseName}
-            </div>
+  const coachColors = generateCoachColors(scheduleData);
+
+  const renderCourseInfo = (course: ScheduleCourseInfo) => {
+    const coachColor = coachColors[course.coachName] || '#95a5a6';
+    
+    return (
+      <div 
+        key={`${course.coachName}-${course.courseName}`}
+        className="student-info"
+        style={{
+          backgroundColor: `${coachColor}15`,
+          borderLeft: `4px solid ${coachColor}`,
+        }}
+      >
+        <div className="name">{course.courseName}</div>
+        <div className="details">
+          <div className="course-info">教练: {course.coachName}</div>
+          <div className="description">{course.description}</div>
+          <div style={{ marginTop: 4, color: '#666', fontSize: '11px' }}>
+            剩余: {course.remainHours}/{course.totalHours}课时
           </div>
-        ))}
-      </>
+          <div style={{ color: '#666', fontSize: '11px' }}>
+            单价: ¥{course.unitPrice}
+          </div>
+        </div>
+      </div>
     );
   };
 
   return (
-    <div className="schedule">
-      {/* 表头 */}
-      <div className="schedule-header">时间段</div>
-      {weekdays.map(weekday => (
-        <div key={weekday} className="schedule-header">
-          {weekday}
-        </div>
-      ))}
-
-      {/* 课表内容 */}
-      {timeSlots.map(timeSlot => (
-        <React.Fragment key={timeSlot}>
-          <div className="schedule-time">{timeSlot}</div>
-          {weekdays.map(weekday => {
-            const cell = cells.find(
-              c => c.timeSlot === timeSlot && c.weekday === weekday
-            );
-            return (
-              <div
-                key={`${timeSlot}-${weekday}`}
-                className={`schedule-cell ${isEditMode ? 'draggable' : ''}`}
-                data-cell-id={cell?.id}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  if (cell) onDragOver(e, cell.id);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (cell) onDrop(e, cell.id);
-                }}
-              >
-                {cell && renderStudents(cell)}
-              </div>
-            );
-          })}
-        </React.Fragment>
-      ))}
+    <div className="schedule-container">
+      <div className="schedule">
+        {/* 左上角空白格子 */}
+        <div className="schedule-header"></div>
+        
+        {/* 星期几标题行 */}
+        {scheduleData.days.map(day => (
+          <div key={day} className="schedule-header">
+            {day}
+          </div>
+        ))}
+        
+        {/* 时间段和课程内容 */}
+        {scheduleData.timeSlots.map(timeSlot => (
+          <React.Fragment key={timeSlot}>
+            {/* 时间段标题 */}
+            <div className="schedule-time">
+              {timeSlot}
+            </div>
+            
+            {/* 每天的课程安排 */}
+            {scheduleData.days.map(day => {
+              const coursesForDay = scheduleData.schedule[timeSlot]?.[day] || [];
+              
+              // 根据选中的教练过滤课程
+              const filteredCourses = selectedCoach 
+                ? coursesForDay.filter((course: ScheduleCourseInfo) => course.coachName === selectedCoach)
+                : coursesForDay;
+              
+              return (
+                <div key={`${timeSlot}-${day}`} className="schedule-cell">
+                  {filteredCourses.length > 0 ? (
+                    filteredCourses.map((course: ScheduleCourseInfo, index: number) => 
+                      renderCourseInfo(course)
+                    )
+                  ) : (
+                    <div style={{ 
+                      color: '#ccc', 
+                      textAlign: 'center', 
+                      padding: '20px 0',
+                      fontSize: '12px'
+                    }}>
+                      {selectedCoach ? '无此教练课程' : '空闲'}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
     </div>
   );
 };
