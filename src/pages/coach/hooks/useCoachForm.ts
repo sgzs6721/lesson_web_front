@@ -389,9 +389,9 @@ export const useCoachForm = (
       })
       .catch(info => {
         console.error('Form validation failed:', info);
+        // 验证失败时重置loading状态
+        setLoading(false);
       })
-      // 注意：我们不在这里清除 loading 状态
-      // loading 状态将在 API 调用成功或失败后的回调函数中清除
   };
 
   // 处理模态框取消

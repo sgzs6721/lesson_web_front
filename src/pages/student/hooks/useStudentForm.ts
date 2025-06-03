@@ -410,7 +410,6 @@ export const useStudentForm = (
 
       } else {
         // --- 添加逻辑 --- 
-        // 构建创建的 payload (courseInfoList 需要包含 coachName)
         // 重新构建 courseInfoList 以包含 coachName
         const courseInfoListForCreate = courseGroups.map(group => {
           let scheduleData: any[] = [];
@@ -426,11 +425,38 @@ export const useStudentForm = (
             : null;
           const courseIdNum = safeProcessCourseId(group.courses[0]);
 
+          // 获取真实的课程信息
+          let courseName = '';
+          let courseTypeName = '';
+          let coachName = group.coach || '';
+
+          if (courseObj) {
+            courseName = courseObj.name;
+            courseTypeName = courseObj.typeName || '';
+            console.log('从课程对象获取信息:', {
+              courseId: courseIdNum,
+              courseName,
+              courseTypeName
+            });
+          } else {
+            // 如果找不到课程对象，使用group中的信息
+            courseName = group.courseType || `课程${courseIdNum}`;
+            courseTypeName = group.courseType || '大课';
+            console.log('使用group信息构建:', {
+              courseId: courseIdNum,
+              courseName,
+              courseTypeName
+            });
+          }
+
           return {
             courseId: typeof courseIdNum === 'number' ? courseIdNum : 0,
+            courseName: courseName, // 添加真实课程名称
+            courseTypeName: courseTypeName, // 添加真实课程类型名称
             enrollDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
             fixedScheduleTimes: scheduleData, 
-            coachName: group.coach || '' // !! 为创建操作添加 coachName !!
+            coachName: coachName, // 使用真实教练名称
+            status: 'STUDYING' // 设置默认状态
           };
         });
 

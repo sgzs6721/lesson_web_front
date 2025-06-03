@@ -368,7 +368,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               >
                 {courseList && courseList.length > 0 ? (
                   courseList
-                    .filter(course => course.status === 'PUBLISHED' || course.status === '1')
                     .map(course => {
                     // 获取已选课程ID列表，排除当前正在编辑的课程组
                     const selectedCourseIds = getSelectedCourseIds(currentEditingGroupIndex !== null ? currentEditingGroupIndex : undefined);
@@ -708,7 +707,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               >
                 {courseList && courseList.length > 0 ? (
                   courseList
-                    .filter(course => course.status === 'PUBLISHED' || course.status === '1')
                     .map(course => {
                     // 获取已选课程ID列表，排除当前正在编辑的课程组
                     const selectedCourseIds = getSelectedCourseIds(currentEditingGroupIndex !== null ? currentEditingGroupIndex : undefined);

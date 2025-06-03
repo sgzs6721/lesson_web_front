@@ -3,6 +3,7 @@ import { message } from 'antd';
 import { Course, CourseSearchParams, CourseType, CourseStatus } from '../types/course';
 import { course as courseAPI } from '@/api/course';
 import { CourseCreateRequest, CourseUpdateRequest } from '@/api/course/types';
+import { CoachSimple } from '@/api/coach/types';
 import { constants } from '@/api/constants';
 import { getTypeNameById } from '../constants/courseOptions';
 
@@ -15,17 +16,29 @@ export const useCourseData = () => {
   const [loading, setLoading] = useState(false);
 
   // 添加课程
-  const addCourse = async (values: CourseCreateRequest) => {
+  const addCourse = async (values: CourseCreateRequest, coaches: CoachSimple[] = []) => {
     setLoading(true);
     try {
-      // 调用API添加课程
-      const courseId = await courseAPI.add(values);
+      // 确保有校区ID
+      const campusId = values.campusId || Number(localStorage.getItem('currentCampusId') || '1');
+      
+      // 准备创建请求数据，确保包含所有必需字段
+      const createData: CourseCreateRequest = {
+        ...values,
+        campusId: campusId // 确保campusId不为null
+      };
 
-      // 对于教练信息，直接使用 ID 和简单名称，不再获取完整信息
-      const coaches = values.coachIds ? values.coachIds.map((id: any) => {
+      console.log('提交到API的创建数据:', createData);
+      
+      // 调用API添加课程
+      const courseId = await courseAPI.add(createData);
+
+      // 对于教练信息，从教练列表中获取真实姓名
+      const courseCoaches = values.coachIds ? values.coachIds.map((id: any) => {
+        const coach = coaches.find(c => c.id === Number(id));
         return {
           id: Number(id),
-          name: `教练${id}` // 使用简单名称
+          name: coach ? coach.name : `教练${id}` // 优先使用真实姓名，找不到时使用简单名称
         };
       }) : [];
 
@@ -44,12 +57,12 @@ export const useCourseData = () => {
         consumedHours: 0, // 新课程消耗课时为0
         price: values.price,
         coachFee: 0, // 设置默认的教练费用
-        campusId: values.campusId,
+        campusId: campusId, // 使用确保有值的campusId
         institutionId: 1, // 默认机构ID
         description: values.description || '',
         createdTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
-        coaches: coaches
+        coaches: courseCoaches
       };
 
       // 更新本地状态
@@ -68,13 +81,17 @@ export const useCourseData = () => {
   };
 
   // 更新课程
-  const updateCourse = async (id: string, values: Omit<CourseUpdateRequest, 'id'>) => {
+  const updateCourse = async (id: string, values: Omit<CourseUpdateRequest, 'id'>, coaches: CoachSimple[] = []) => {
     setLoading(true);
     try {
-      // 准备更新请求数据
+      // 确保有校区ID
+      const campusId = values.campusId || Number(localStorage.getItem('currentCampusId') || '1');
+      
+      // 准备更新请求数据，确保包含所有必需字段
       const updateData: CourseUpdateRequest = {
         id,
-        ...values
+        ...values,
+        campusId: campusId // 确保campusId不为null
       };
 
       console.log('提交到API的更新数据:', updateData);
@@ -104,17 +121,18 @@ export const useCourseData = () => {
         console.log('类型ID未变化，保持原类型名称:', typeName);
       }
 
-      // 使用提交的表单值更新课程，不再获取远程数据
+      // 使用提交的表单值更新课程，从教练列表中获取真实姓名
       const coachesWithNames = values.coachIds ? values.coachIds.map((id: any) => {
-        // 尝试保留原教练名称
+        // 先尝试从原教练信息中获取
         const originalCoach = originalCourse.coaches?.find(coach => coach.id === Number(id));
         if (originalCoach?.name) {
           return originalCoach;
         }
-        // 如果找不到原教练名称，使用简单名称
+        // 如果找不到，从教练列表中查找
+        const coach = coaches.find(c => c.id === Number(id));
         return {
           id: Number(id),
-          name: `教练${id}` // 简单名称
+          name: coach ? coach.name : `教练${id}` // 优先使用真实姓名
         };
       }) : (originalCourse.coaches || []);
 
@@ -131,6 +149,7 @@ export const useCourseData = () => {
         unitHours: values.unitHours || originalCourse.unitHours,
         totalHours: values.unitHours || originalCourse.unitHours, // 与单课时相同
         price: values.price || originalCourse.price,
+        campusId: campusId, // 更新校区ID
         description: values.description !== undefined ? values.description : originalCourse.description,
         updateTime: new Date().toISOString(),
         coaches: coachesWithNames

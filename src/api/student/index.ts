@@ -369,80 +369,85 @@ export const student = {
         // 创建基本学员对象
         const studentId = typeof response.data === 'string' ? parseInt(response.data) : response.data;
 
+        // 获取课程列表以查找真实课程信息
+        let courseList: any[] = [];
+        try {
+          const courseListResponse = await request('/api/course/simple-list', {
+            method: 'GET'
+          });
+          if (courseListResponse.code === 200 && courseListResponse.data) {
+            courseList = courseListResponse.data;
+          }
+        } catch (error) {
+          console.warn('获取课程列表失败，将使用表单数据:', error);
+        }
+
         // 将courseInfoList转换为courses数组
         const courses = payload.courseInfoList.map(courseInfo => {
           console.log('处理课程信息:', courseInfo);
 
-          // 查找课程名称 - 从原始表单数据提取
+          // 查找真实的课程信息
           let courseItemName = '';
+          let courseItemType = '';
+          let coachItemName = courseInfo.coachName || '';
 
-          // 1. 从表单数据直接提取课程名称
-          if (courseInfo.courseName) {
-            courseItemName = courseInfo.courseName;
-            console.log('使用提供的课程名称:', courseItemName);
-          }
-
-          // 2. 如果表单没有课程名称，但有courseId，尝试构建一个名称
-          if (!courseItemName && courseInfo.courseId) {
-            // 尝试使用课程ID查找或构建课程名称
-            if (courseInfo.originalCourseName) {
-              courseItemName = courseInfo.originalCourseName;
-              console.log('使用原始课程名称:', courseItemName);
-            } else if (typeof courseInfo.courseId === 'string' && courseInfo.courseId.toString().includes('课程')) {
-              courseItemName = courseInfo.courseId.toString();
-              console.log('使用课程ID作为名称:', courseItemName);
+          // 1. 如果有courseId，从课程列表中查找真实的课程信息
+          if (courseInfo.courseId && courseList.length > 0) {
+            const foundCourse = courseList.find(course => 
+              String(course.id) === String(courseInfo.courseId) || 
+              course.id === courseInfo.courseId
+            );
+            
+            if (foundCourse) {
+              courseItemName = foundCourse.name;
+              courseItemType = foundCourse.type || foundCourse.typeName || '';
+              console.log('从课程列表找到真实课程信息:', {
+                courseId: courseInfo.courseId,
+                courseName: courseItemName,
+                courseType: courseItemType
+              });
             } else {
-              courseItemName = `课程${courseInfo.courseId}`;
-              console.log('构建课程名称:', courseItemName);
+              console.log('在课程列表中未找到课程ID:', courseInfo.courseId);
             }
           }
 
-          // 3. 检查name字段（可能是旧版本API使用的格式）
-          if (!courseItemName && courseInfo.name) {
-            courseItemName = courseInfo.name;
-            console.log('使用name字段作为课程名称:', courseItemName);
-          }
-
-          // 最后保障：如果仍然没有课程名称，使用一个默认值
+          // 2. 如果从课程列表未找到，尝试从表单数据中获取
           if (!courseItemName) {
-            courseItemName = '未命名课程';
-            console.log('使用默认课程名称:', courseItemName);
+            if (courseInfo.courseName) {
+              courseItemName = courseInfo.courseName;
+              console.log('使用表单提供的课程名称:', courseItemName);
+            } else if (courseInfo.originalCourseName) {
+              courseItemName = courseInfo.originalCourseName;
+              console.log('使用原始课程名称:', courseItemName);
+            } else {
+              // 最后的兜底方案
+              courseItemName = `课程${courseInfo.courseId}`;
+              console.log('使用兜底课程名称:', courseItemName);
+            }
           }
 
-          // 查找课程类型名称
-          let courseItemType = '大课'; // 默认类型
-
-          // 按优先级提取课程类型
-          if (courseInfo.courseTypeName) {
-            courseItemType = courseInfo.courseTypeName;
-            console.log('使用courseTypeName:', courseItemType);
-          } else if (courseInfo.type) {
-            courseItemType = courseInfo.type;
-            console.log('使用type字段:', courseItemType);
-          } else if (courseInfo.courseType) {
-            courseItemType = courseInfo.courseType;
-            console.log('使用courseType字段:', courseItemType);
+          // 3. 获取课程类型
+          if (!courseItemType) {
+            if (courseInfo.courseTypeName) {
+              courseItemType = courseInfo.courseTypeName;
+            } else if (courseInfo.type) {
+              courseItemType = courseInfo.type;
+            } else if (courseInfo.courseType) {
+              courseItemType = courseInfo.courseType;
+            } else {
+              courseItemType = '大课'; // 默认类型
+            }
           }
 
-          // 提取教练信息
-          let coachItemName = '';
-
-          // 按优先级提取教练名称
-          if (courseInfo.coachName) {
-            coachItemName = courseInfo.coachName;
-            console.log('使用coachName:', coachItemName);
-          } else if (courseInfo.coach) {
-            coachItemName = courseInfo.coach;
-            console.log('使用coach字段:', coachItemName);
-          } else if (courseInfo.originalCoachName) {
-            coachItemName = courseInfo.originalCoachName;
-            console.log('使用originalCoachName:', coachItemName);
-          }
-
-          // 如果没有教练信息，使用默认值
+          // 4. 获取教练名称
           if (!coachItemName) {
-            coachItemName = '待定';
-            console.log('使用默认教练名称:', coachItemName);
+            if (courseInfo.coach) {
+              coachItemName = courseInfo.coach;
+            } else if (courseInfo.originalCoachName) {
+              coachItemName = courseInfo.originalCoachName;
+            } else {
+              coachItemName = '待定';
+            }
           }
 
           console.log("课程信息最终处理结果:", {
@@ -463,7 +468,7 @@ export const student = {
             coachName: coachItemName,
             consumedHours: 0, // 默认填充必需字段
             totalHours: courseInfo.totalHours || 0,
-            status: courseInfo.status || undefined, // 如果 courseInfo.status 未定义，则设为 undefined
+            status: courseInfo.status || 'STUDYING',
             startDate: courseInfo.startDate || courseInfo.enrollDate,
             endDate: courseInfo.endDate,
             remainingHours: courseInfo.remainingHours || 0,
@@ -472,28 +477,21 @@ export const student = {
           };
         });
 
-        // 获取第一个课程信息
+        // 获取第一个课程信息用于学员基本信息
         const primaryCourseInfo = payload.courseInfoList[0] || {};
-        const courseName = primaryCourseInfo.courseName ||
-                         primaryCourseInfo.originalCourseName ||
-                         (courses[0] ? courses[0].courseName : '');
-
-        const courseTypeName = primaryCourseInfo.courseTypeName ||
-                             primaryCourseInfo.type ||
-                             primaryCourseInfo.courseType ||
-                             (courses[0] ? courses[0].courseTypeName : '大课');
-
-        const coachName = primaryCourseInfo.coachName ||
-                        primaryCourseInfo.coach ||
-                        primaryCourseInfo.originalCoachName ||
-                        (courses[0] ? courses[0].coachName : '待定');
+        const primaryCourse = courses[0];
+        
+        // 使用真实的课程信息
+        const courseName = primaryCourse ? primaryCourse.courseName : '';
+        const courseTypeName = primaryCourse ? primaryCourse.courseTypeName : '';
+        const coachName = primaryCourse ? primaryCourse.coachName : '';
 
         console.log('创建学员数据时使用的课程和教练信息:', {
           primaryCourseInfo,
           courseName,
           courseTypeName,
           coachName,
-          fromCourses: courses[0]
+          fromCourses: primaryCourse
         });
 
         // 使用类型断言确保类型兼容性

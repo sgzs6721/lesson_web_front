@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+修改后要用npm run build进行验证，但不要用npm run dev

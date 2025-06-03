@@ -21,6 +21,26 @@
   margin-bottom: 16px !important;
 }
 
+/* 表单验证错误样式增强 */
+.ant-form-item-has-error .ant-input,
+.ant-form-item-has-error .ant-input:focus,
+.ant-form-item-has-error .ant-input-focused {
+  border-color: #ff4d4f !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
+}
+
+.ant-form-item-explain-error {
+  font-size: 12px !important;
+  color: #ff4d4f !important;
+  margin-top: 4px !important;
+}
+
+/* 必填字段标识 */
+.ant-form-item-required::before {
+  color: #ff4d4f !important;
+  font-size: 14px !important;
+}
+
 /* 内容包装器样式 */
 .coach-modal-content-wrapper {
   position: relative !important;

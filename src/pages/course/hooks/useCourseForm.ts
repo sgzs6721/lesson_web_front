@@ -4,9 +4,9 @@ import { Course } from '../types/course';
 import { CoachSimple } from '@/api/coach/types';
 
 export const useCourseForm = (
-  onAddCourse: (values: any) => Promise<any>,
-  onUpdateCourse: (id: string, values: any) => Promise<any>,
-  _coaches: CoachSimple[] = [] // Renamed to _coaches to indicate it's not used
+  onAddCourse: (values: any, coaches: CoachSimple[]) => Promise<any>,
+  onUpdateCourse: (id: string, values: any, coaches: CoachSimple[]) => Promise<any>,
+  coaches: CoachSimple[] = []
 ) => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(false);
@@ -47,68 +47,37 @@ export const useCourseForm = (
   // 提交表单
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields();
       setLoading(true);
+      const values = await form.validateFields();
+      
+      console.log('提交表单，表单值:', values);
+      console.log('可用教练列表:', coaches);
 
-      // 打印状态值
-      console.log('提交表单时的状态值:', values.status, '类型:', typeof values.status);
-
-      // 确保教练IDs是数组
-      let coachIds = values.coachIds || [];
-      if (!Array.isArray(coachIds)) {
-        coachIds = [coachIds].filter(Boolean);
+      if (editingCourse) {
+        // 更新操作
+        await onUpdateCourse(editingCourse.id, values, coaches);
+      } else {
+        // 添加操作
+        await onAddCourse(values, coaches);
       }
-      // 确保所有元素都是字符串
-      coachIds = coachIds.map((id: any) => String(id));
-
-      // 确保 typeId 是数字类型
-      const typeId = values.typeId ? Number(values.typeId) : undefined;
-      if (!typeId) {
-        console.error('课程类型 ID 不能为空');
-        throw new Error('课程类型不能为空');
-      }
-
-      console.log('提交的教练IDs:', coachIds);
-      console.log('提交的课程类型 ID (typeId):', typeId);
-
-      // 确保校区ID存在
-      const campusId = values.campusId || Number(localStorage.getItem('currentCampusId') || '1');
-
-      // 确保课程描述为空字符串而不是undefined
-      const description = values.description || '';
-
-      const formData = {
-        ...values,
-        coachIds: coachIds,
-        campusId: campusId,
-        description: description,
-        typeId: typeId // 显式设置 typeId
-      };
-
-      console.log('提交的表单数据:', formData);
-
-      try {
-        if (editingCourse) {
-          await onUpdateCourse(editingCourse.id, formData);
-        } else {
-          await onAddCourse(formData);
-        }
-
-        setVisible(false);
-      } catch (apiError) {
-        console.error('调用API错误:', apiError);
-        // 不关闭模态框，允许用户修改后重试
-      }
+      
+      // 提交成功后关闭模态框
+      setVisible(false);
+      setEditingCourse(null);
+      form.resetFields();
     } catch (error) {
-      console.error('表单验证错误:', error);
+      console.error('表单提交失败:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // 取消表单
+  // 取消操作
   const handleCancel = () => {
     setVisible(false);
+    setEditingCourse(null);
+    form.resetFields();
   };
 
   return {

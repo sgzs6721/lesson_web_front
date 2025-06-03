@@ -9,31 +9,17 @@ const { TextArea } = Input;
 
 // 手机号验证函数
 const validatePhoneNumber = (_: any, value: string) => {
-  if (!value) {
-    return Promise.reject(new Error('请输入联系电话'));
+  // 如果值为空，由required规则处理
+  if (!value || value.trim() === '') {
+    return Promise.resolve();
   }
+
+  // 去除空格和特殊字符
+  const cleanValue = value.replace(/[\s-]/g, '');
 
   // 基本格式检查：11位数字，以1开头
-  if (!/^1\d{10}$/.test(value)) {
-    return Promise.reject(new Error('手机号必须是11位数字且以1开头'));
-  }
-
-  // 运营商前缀检查
-  const validPrefixes = [
-    // 移动
-    '134', '135', '136', '137', '138', '139', '150', '151', '152', '157', '158', '159',
-    '182', '183', '184', '187', '188', '147', '178', '198',
-    // 联通
-    '130', '131', '132', '155', '156', '185', '186', '145', '146', '166', '175', '176',
-    // 电信
-    '133', '153', '180', '181', '189', '177', '173', '199',
-    // 虚拟运营商
-    '170', '171'
-  ];
-
-  const prefix = value.substring(0, 3);
-  if (!validPrefixes.includes(prefix)) {
-    return Promise.reject(new Error('请输入有效的手机号码前缀'));
+  if (!/^1[3-9]\d{9}$/.test(cleanValue)) {
+    return Promise.reject(new Error('请输入正确的11位手机号码'));
   }
 
   return Promise.resolve();
@@ -150,6 +136,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                     name="name"
                     label="姓名"
                     htmlFor="coach_name"
+                    validateTrigger={['onChange', 'onBlur']}
                     rules={[{ required: true, message: '请输入教练姓名' }]}
                   >
                     <Input id="coach_name" prefix={<UserOutlined />} placeholder="请输入教练姓名" />
@@ -186,11 +173,18 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                     name="phone"
                     label="联系电话"
                     htmlFor="coach_phone"
+                    validateTrigger={['onChange', 'onBlur']}
                     rules={[
+                      { required: true, message: '请输入联系电话' },
                       { validator: validatePhoneNumber }
                     ]}
                   >
-                    <Input id="coach_phone" prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
+                    <Input 
+                      id="coach_phone" 
+                      prefix={<PhoneOutlined />} 
+                      placeholder="请输入联系电话" 
+                      maxLength={11}
+                    />
                   </Form.Item>
                 </Col>
               </Row>

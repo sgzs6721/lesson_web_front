@@ -34,63 +34,38 @@ const ScheduleControls: React.FC<ScheduleControlsProps> = ({
   onCourseTypeChange,
   onTypeChange
 }) => {
-  // 创建自定义下拉选项渲染函数，显示教练颜色图例
-  const renderCoachOption = (option: any) => {
-    const { data, value } = option;
-    const isSelected = selectedCoach.includes(value);
-    
-    return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        padding: '8px 12px',
-        borderRadius: '4px',
-        backgroundColor: isSelected ? '#f0f7ff' : 'transparent'
-      }}>
-        {isSelected && <span style={{ color: '#4096ff', fontWeight: 'bold', marginRight: '6px' }}>✓</span>}
-        <span style={{ 
-          display: 'inline-block', 
-          width: '20px', 
-          height: '20px', 
-          backgroundColor: data.color, 
-          marginRight: '8px', 
-          borderRadius: '2px'
-        }} />
-        <span>{data.label}</span>
-      </div>
-    );
-  };
-
-  // 自定义标签渲染，带颜色
+  // 简化的教练标签渲染函数
   const tagRender = (props: any) => {
     const { label, value, closable, onClose } = props;
     const coach = coaches.find(c => c.id === value);
-    const color = coach?.color || '#ccc';
+    const color = coach?.color || '#1890ff';
     
     return (
       <Tag
         closable={closable}
         onClose={onClose}
         style={{ 
+          backgroundColor: `${color}15`,
+          borderColor: `${color}40`,
+          color: color,
+          borderRadius: '4px',
+          margin: '2px 4px 2px 0',
+          fontSize: '12px',
+          lineHeight: '20px',
+          height: '24px',
           display: 'inline-flex',
           alignItems: 'center',
-          padding: '1px 8px',
-          paddingLeft: '4px',
-          backgroundColor: '#f7f9fa',
-          borderColor: '#e9e9e9',
-          color: '#333',
-          margin: '2px',
-          borderRadius: '4px'
+          padding: '0 8px'
         }}
       >
         <span 
           style={{ 
             display: 'inline-block',
-            width: '20px',
-            height: '20px',
+            width: '8px',
+            height: '8px',
             backgroundColor: color,
-            marginRight: '6px',
-            borderRadius: '2px'
+            marginRight: '4px',
+            borderRadius: '50%'
           }}
         />
         {label}
@@ -109,23 +84,30 @@ const ScheduleControls: React.FC<ScheduleControlsProps> = ({
               onChange={onCoachChange}
               allowClear
               mode="multiple"
-              maxTagCount={2}
+              maxTagCount={3}
               tagRender={tagRender}
-              listHeight={270}
-              dropdownStyle={{ padding: '8px 0' }}
-              dropdownMatchSelectWidth={false}
-              dropdownClassName="coach-dropdown"
-              optionLabelProp="label"
-              optionFilterProp="label"
+              style={{ minWidth: '200px' }}
+              dropdownStyle={{ maxHeight: '300px' }}
+              getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
             >
               {coaches.map(coach => (
                 <Select.Option 
                   key={coach.id} 
-                  value={coach.id} 
-                  label={coach.name}
-                  data={coach}
+                  value={coach.id}
                 >
-                  {renderCoachOption({ data: { label: coach.name, color: coach.color }, value: coach.id })}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span 
+                      style={{ 
+                        display: 'inline-block',
+                        width: '12px',
+                        height: '12px',
+                        backgroundColor: coach.color,
+                        marginRight: '8px',
+                        borderRadius: '50%'
+                      }}
+                    />
+                    {coach.name}
+                  </div>
                 </Select.Option>
               ))}
             </Select>
@@ -137,7 +119,10 @@ const ScheduleControls: React.FC<ScheduleControlsProps> = ({
               onChange={onCourseTypeChange}
               allowClear
               mode="multiple"
-              maxTagCount={2}
+              maxTagCount={3}
+              style={{ minWidth: '200px' }}
+              dropdownStyle={{ maxHeight: '300px' }}
+              getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               options={courseTypes.map(type => ({
                 value: type.id,
                 label: type.name
@@ -151,7 +136,10 @@ const ScheduleControls: React.FC<ScheduleControlsProps> = ({
               onChange={onTypeChange}
               allowClear
               mode="multiple"
-              maxTagCount={2}
+              maxTagCount={3}
+              style={{ minWidth: '200px' }}
+              dropdownStyle={{ maxHeight: '300px' }}
+              getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               options={[
                 { value: 'type1', label: '少儿街舞' },
                 { value: 'type2', label: '有氧训练' },
