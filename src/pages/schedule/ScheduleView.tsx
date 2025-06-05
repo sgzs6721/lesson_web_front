@@ -51,14 +51,10 @@ const ScheduleView: React.FC = () => {
   return (
     <div className="schedule-view">
       <Spin spinning={loading}>
-        <Card 
-          className="schedule-card" 
-          title={
-            <Title level={4} style={{ marginBottom: 0, fontSize: 18, fontWeight: 600 }}>
-              固定课表
-            </Title>
-          }
-        >
+        <Card className="schedule-management-card">
+          <Title level={4} style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>
+            固定课表
+          </Title>
           <div className="schedule-content">
             {scheduleData ? (
               <>
