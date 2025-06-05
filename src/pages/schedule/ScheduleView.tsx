@@ -12,7 +12,7 @@ const ScheduleView: React.FC = () => {
   const [scheduleData, setScheduleData] = useState<FixedScheduleData | null>(null);
   const [coachList, setCoachList] = useState<CoachSimpleInfo[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedCoach, setSelectedCoach] = useState<string | null>(null);
+  const [selectedCoach, setSelectedCoach] = useState<number | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -44,8 +44,8 @@ const ScheduleView: React.FC = () => {
     }
   };
 
-  const handleCoachFilter = (coachName: string | null) => {
-    setSelectedCoach(coachName);
+  const handleCoachFilter = (coachId: number | null) => {
+    setSelectedCoach(coachId);
   };
 
   return (
@@ -70,6 +70,7 @@ const ScheduleView: React.FC = () => {
                 <ScheduleGrid 
                   scheduleData={scheduleData} 
                   selectedCoach={selectedCoach}
+                  coachList={coachList}
                 />
               </>
             ) : (

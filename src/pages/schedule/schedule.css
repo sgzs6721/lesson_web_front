@@ -1,17 +1,23 @@
 /* 课表视图整体容器 */
 .schedule-view {
   padding: 0 4px;
+  background-color: #f8f9fa;
 }
 
 .schedule-card {
   margin-top: -12px;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+  background-color: #ffffff;
 }
 
 .schedule-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 16px 0;
 }
 
 /* 图例样式 - 移除边框和标题 */
@@ -21,6 +27,10 @@
   gap: 12px;
   align-items: center;
   margin-bottom: 20px;
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .legend-item {
@@ -29,7 +39,7 @@
   gap: 8px;
   padding: 8px 12px;
   background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -39,14 +49,14 @@
 .legend-item:hover {
   background-color: #e9ecef;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .legend-item.active {
   background-color: #1890ff;
   color: white;
   border-color: #1890ff;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
 }
 
 .legend-item.active:hover {
@@ -65,7 +75,7 @@
 .legend-item span {
   font-size: 14px;
   font-weight: 500;
-  color: #2c3e50;
+  color: #334155;
 }
 
 .legend-item.active span {
@@ -131,19 +141,22 @@
 
 /* 学生/课程信息样式 */
 .student-info {
-  background-color: #fff;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 4px;
-  font-size: 12px;
-  line-height: 1.4;
-  transition: all 0.2s ease;
+  background-color: #fff !important;
+  border: 1px solid #e9ecef !important;
+  border-left: 3px solid #1890ff !important;
+  border-radius: 4px !important;
+  padding: 8px !important;
+  margin-bottom: 4px !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 .student-info:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+  background-color: #f0f9ff !important;
 }
 
 .student-info .name {
@@ -163,11 +176,13 @@
 .student-info .course-info {
   color: #3498db;
   font-weight: 500;
+  margin-top: 2px;
 }
 
 .student-info .description {
   color: #95a5a6;
   font-style: italic;
+  margin-top: 2px;
 }
 
 /* 空状态样式 */
@@ -186,10 +201,17 @@
 @media (max-width: 768px) {
   .schedule-view {
     padding: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8f2ff 100%);
   }
 
   .schedule-card {
     margin-top: -8px;
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  .schedule-content {
+    background: rgba(248, 250, 252, 0.5);
+    padding: 12px;
   }
   
   .schedule {
@@ -223,21 +245,28 @@
 
 .page-container {
   padding: 0 4px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8f2ff 100%);
 }
 
 .schedule-view-container {
   padding: 0;
-  background: none;
+  background: transparent;
 }
 
 .schedule-card {
   margin-top: -12px;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 .schedule-content {
-  padding: 16px 0 0 0;
+  padding: 20px 0 0 0;
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 8px;
+  margin: 16px;
+  padding: 20px;
 }
 
 .page-header {
@@ -245,6 +274,10 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .page-title {
@@ -327,12 +360,6 @@
   margin-bottom: 4px;
 }
 
-.student-info .details {
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;
-}
-
 .student-info .course-info {
   margin-top: 2px;
   font-style: italic;
@@ -374,75 +401,37 @@
   margin-bottom: 5px;
 }
 
-/* 教练颜色样式 */
-.student-info.coach-li { background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; }
-.student-info.coach-wang { background-color: rgba(52, 152, 219, 0.1); color: #3498db; }
-.student-info.coach-zhang { background-color: rgba(46, 204, 113, 0.1); color: #2ecc71; }
-.student-info.coach-liu { background-color: rgba(243, 156, 18, 0.1); color: #f39c12; }
-
-/* 过滤器表单样式 */
-.filter-form {
-  width: 100%;
+/* 教练背景色样式 - 动态生成的类名 */
+.student-info.coach-1 { 
+  background-color: #ffe6e6 !important; 
 }
 
-.filter-group {
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  width: 100%;
+.student-info.coach-2 { 
+  background-color: #e6f4ff !important; 
 }
 
-.filter-group .ant-form-item {
-  flex: 1;
-  min-width: 200px;
-  margin-bottom: 8px;
-  margin-right: 0;
+.student-info.coach-3 { 
+  background-color: #e6ffe6 !important; 
 }
 
-.filter-group .ant-form-item-label {
-  min-width: 42px;
-  white-space: nowrap;
+.student-info.coach-4 { 
+  background-color: #fff7e6 !important; 
 }
 
-.filter-group .ant-select {
-  width: 100%;
-  min-width: 200px;
+.student-info.coach-5 { 
+  background-color: #f6e6ff !important; 
 }
 
-/* 为排课页面的下拉列表设置最大高度并确保滚动，同时控制宽度 */
-.schedule-controls .filter-group .ant-select-dropdown {
-  max-height: 300px !important;
-  overflow-y: auto !important;
-  position: absolute !important; 
-  width: 100% !important; /* 使宽度匹配其定位父级（Form.Item渲染区域）*/
-  min-width: 0 !important; /* 覆盖全局min-width，确保宽度不会异常 */
-  box-sizing: border-box !important; 
-  z-index: 1060 !important; 
+.student-info.coach-6 { 
+  background-color: #e6fff9 !important; 
 }
 
-.drag-ghost {
-  position: absolute;
-  pointer-events: none;
-  z-index: 9999;
-  padding: 5px 10px;
-  background-color: rgba(52, 152, 219, 0.8);
-  color: white;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.student-info.coach-7 { 
+  background-color: #fffce6 !important; 
 }
 
-.filter-indicator {
-  margin: 10px 0;
-  padding: 8px 12px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
+.student-info.coach-8 { 
+  background-color: #f0f0f0 !important; 
 }
 
 /* 样式优化已完成 */ 

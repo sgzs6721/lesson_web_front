@@ -1,25 +1,16 @@
 import React from 'react';
-import { FixedScheduleData, ScheduleCourseInfo } from '@/api/schedule/types';
+import { FixedScheduleData, ScheduleCourseInfo, CoachSimpleInfo } from '@/api/schedule/types';
+import { Tag } from 'antd';
 
 interface ScheduleGridProps {
   scheduleData: FixedScheduleData | null;
-  selectedCoach: string | null;
+  selectedCoach: number | null;
+  coachList: CoachSimpleInfo[];
 }
 
-const generateCoachColors = (scheduleData: FixedScheduleData): { [key: string]: string } => {
-  if (!scheduleData || !scheduleData.schedule) return {};
+const generateCoachColors = (scheduleData: FixedScheduleData, coachList: CoachSimpleInfo[]): { [key: number]: string } => {
+  if (!scheduleData || !scheduleData.schedule || !coachList) return {};
   
-  const coachNames = new Set<string>();
-  Object.values(scheduleData.schedule).forEach(timeSlot => {
-    Object.values(timeSlot).forEach(daySchedules => {
-      daySchedules.forEach((course: ScheduleCourseInfo) => {
-        if (course.coachName) {
-          coachNames.add(course.coachName);
-        }
-      });
-    });
-  });
-
   const colors = [
     '#e74c3c', // 红色
     '#3498db', // 蓝色  
@@ -31,15 +22,15 @@ const generateCoachColors = (scheduleData: FixedScheduleData): { [key: string]: 
     '#34495e', // 深灰色
   ];
 
-  const colorMap: { [key: string]: string } = {};
-  Array.from(coachNames).forEach((coachName, index) => {
-    colorMap[coachName] = colors[index % colors.length];
+  const colorMap: { [key: number]: string } = {};
+  coachList.forEach((coach, index) => {
+    colorMap[coach.id] = colors[index % colors.length];
   });
 
   return colorMap;
 };
 
-const ScheduleGrid: React.FC<ScheduleGridProps> = ({ scheduleData, selectedCoach }) => {
+const ScheduleGrid: React.FC<ScheduleGridProps> = ({ scheduleData, selectedCoach, coachList }) => {
   if (!scheduleData || !scheduleData.timeSlots || !scheduleData.days) {
     return (
       <div className="schedule-placeholder">
@@ -48,30 +39,86 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ scheduleData, selectedCoach
     );
   }
 
-  const coachColors = generateCoachColors(scheduleData);
+  const coachColors = generateCoachColors(scheduleData, coachList);
+
+  // 格式化课时数，小数时显示一位小数，整数时显示整数
+  const formatHours = (hours: string): string => {
+    const num = parseFloat(hours);
+    return num % 1 === 0 ? num.toString() : num.toFixed(1);
+  };
 
   const renderCourseInfo = (course: ScheduleCourseInfo) => {
-    const coachColor = coachColors[course.coachName] || '#95a5a6';
+    const coachColor = coachColors[course.coachId] || '#95a5a6';
+    
+    // 获取教练对应的CSS类名 - 根据实际教练列表动态生成
+    const getCoachClass = (coachId: number) => {
+      const coachIndex = coachList.findIndex(coach => coach.id === coachId);
+      if (coachIndex === -1) return '';
+      
+      // 根据教练在列表中的顺序分配类名
+      const classNames = ['coach-1', 'coach-2', 'coach-3', 'coach-4', 'coach-5', 'coach-6', 'coach-7', 'coach-8'];
+      return classNames[coachIndex % classNames.length];
+    };
+    
+    // 课程类型标签颜色映射 - 动态分配颜色
+    const getTypeTagColor = (type: string) => {
+      const colors = ['orange', 'purple', 'magenta', 'green', 'blue', 'red', 'cyan', 'geekblue'];
+      const hash = type.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return colors[hash % colors.length];
+    };
+    
+    // 处理学生姓名显示
+    const renderStudentNames = () => {
+      const students = course.studentName ? course.studentName.split(',') : [];
+      
+      if (students.length <= 2) {
+        // 1-2个学生，学员名字和标签第一行居中，剩余课时第二行
+        const studentList = students.map(student => student.trim()).join(', ');
+        return (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ color: '#1890ff', fontWeight: 'bold', fontSize: '16px' }}>
+                {studentList}
+              </span>
+              <Tag color={getTypeTagColor(course.courseType)} style={{ margin: 0 }}>{course.courseType}</Tag>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <span style={{ color: '#999', fontSize: '12px' }}>
+                剩余{formatHours(course.remainHours)}/{formatHours(course.totalHours)}课时
+              </span>
+            </div>
+          </div>
+        );
+      } else {
+        // 3个以上学生，用逗号分隔，hover显示详情
+        const studentList = students.map(student => student.trim()).join(', ');
+        const hoverContent = students.map(student => 
+          `${student.trim()} - 剩余${formatHours(course.remainHours)}/${formatHours(course.totalHours)}课时`
+        ).join('\n');
+        
+        return (
+          <div title={hoverContent} style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ color: '#1890ff', fontWeight: 'bold', fontSize: '16px' }}>
+                {studentList}
+              </span>
+              <Tag color={getTypeTagColor(course.courseType)} style={{ margin: 0 }}>{course.courseType}</Tag>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <span style={{ color: '#999', fontSize: '12px' }}>
+                剩余{formatHours(course.remainHours)}/{formatHours(course.totalHours)}课时
+              </span>
+            </div>
+          </div>
+        );
+      }
+    };
     
     return (
-      <div 
-        key={`${course.coachName}-${course.courseName}`}
-        className="student-info"
-        style={{
-          backgroundColor: `${coachColor}15`,
-          borderLeft: `4px solid ${coachColor}`,
-        }}
-      >
-        <div className="name">{course.courseName}</div>
+      <div className={`student-info ${getCoachClass(course.coachId)}`} style={{ borderLeft: `3px solid ${coachColor}` }}>
         <div className="details">
-          <div className="course-info">教练: {course.coachName}</div>
           <div className="description">{course.description}</div>
-          <div style={{ marginTop: 4, color: '#666', fontSize: '11px' }}>
-            剩余: {course.remainHours}/{course.totalHours}课时
-          </div>
-          <div style={{ color: '#666', fontSize: '11px' }}>
-            单价: ¥{course.unitPrice}
-          </div>
+          {renderStudentNames()}
         </div>
       </div>
     );
@@ -102,9 +149,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ scheduleData, selectedCoach
             {scheduleData.days.map(day => {
               const coursesForDay = scheduleData.schedule[timeSlot]?.[day] || [];
               
-              // 根据选中的教练过滤课程
+              // 根据选中的教练ID过滤课程
               const filteredCourses = selectedCoach 
-                ? coursesForDay.filter((course: ScheduleCourseInfo) => course.coachName === selectedCoach)
+                ? coursesForDay.filter((course: ScheduleCourseInfo) => course.coachId === selectedCoach)
                 : coursesForDay;
               
               return (
@@ -120,7 +167,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ scheduleData, selectedCoach
                       padding: '20px 0',
                       fontSize: '12px'
                     }}>
-                      {selectedCoach ? '无此教练课程' : '空闲'}
+                      {selectedCoach ? '暂无' : '空闲'}
                     </div>
                   )}
                 </div>

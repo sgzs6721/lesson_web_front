@@ -2,6 +2,7 @@ import { ApiResponse } from '../types';
 
 // 课表中的课程信息
 export interface ScheduleCourseInfo {
+  coachId: number;
   coachName: string;
   remainHours: string;
   totalHours: string;
@@ -9,6 +10,7 @@ export interface ScheduleCourseInfo {
   courseName: string;
   courseType: string;
   description: string;
+  studentName: string; // 学生姓名，多个学生用逗号分隔
 }
 
 // 固定课表响应数据结构

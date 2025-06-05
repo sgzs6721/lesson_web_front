@@ -3,8 +3,8 @@ import { CoachSimpleInfo } from '@/api/schedule/types';
 
 interface ScheduleLegendProps {
   coaches: CoachSimpleInfo[];
-  selectedCoach: string | null;
-  onCoachSelect: (coachName: string | null) => void;
+  selectedCoach: number | null;
+  onCoachSelect: (coachId: number | null) => void;
 }
 
 const ScheduleLegend: React.FC<ScheduleLegendProps> = ({ coaches, selectedCoach, onCoachSelect }) => {
@@ -22,9 +22,9 @@ const ScheduleLegend: React.FC<ScheduleLegendProps> = ({ coaches, selectedCoach,
     ];
     
     return coaches.reduce((acc, coach, index) => {
-      acc[coach.name] = colors[index % colors.length];
+      acc[coach.id] = colors[index % colors.length];
       return acc;
-    }, {} as Record<string, string>);
+    }, {} as Record<number, string>);
   };
 
   const coachColors = generateCoachColors(coaches);
@@ -51,12 +51,12 @@ const ScheduleLegend: React.FC<ScheduleLegendProps> = ({ coaches, selectedCoach,
       {coaches.map((coach) => (
         <div 
           key={coach.id} 
-          className={`legend-item ${selectedCoach === coach.name ? 'active' : ''}`}
-          onClick={() => onCoachSelect(coach.name)}
+          className={`legend-item ${selectedCoach === coach.id ? 'active' : ''}`}
+          onClick={() => onCoachSelect(coach.id)}
         >
           <div 
             className="legend-color" 
-            style={{ backgroundColor: coachColors[coach.name] }}
+            style={{ backgroundColor: coachColors[coach.id] }}
           />
           <span>{coach.name}</span>
         </div>
