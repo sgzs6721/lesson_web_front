@@ -195,7 +195,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
   return (
     <List
       grid={{
-        gutter: 16,
+        gutter: 0,
         xs: 1,
         sm: 2,
         md: 2,

@@ -211,7 +211,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
           background: 'linear-gradient(135deg, rgba(26, 41, 128, 0.7) 0%, #26d0ce 100%)',
           padding: '12px 16px',
           borderRadius: '8px 8px 0 0',
-          marginBottom: '16px',
+          marginBottom: '0',
           position: 'relative',
           overflow: 'hidden'
         }}>
@@ -257,7 +257,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
             </div>
           )}
         </div>
-        <Descriptions bordered column={2} size="small">
+        <Descriptions bordered column={2} size="small" style={{ marginTop: '0' }}>
           <Descriptions.Item label="教练ID" span={1}>{displayCoach.id || '-'}</Descriptions.Item>
           <Descriptions.Item label="联系电话" span={1}>{displayCoach.phone || '-'}</Descriptions.Item>
 

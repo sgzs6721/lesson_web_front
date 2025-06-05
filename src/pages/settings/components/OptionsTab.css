@@ -289,7 +289,7 @@
 }
 
 /* 添加关键帧覆盖 */
-@keyframes none {
+@keyframes no-animation {
   from { opacity: 1; }
   to { opacity: 1; }
 }
