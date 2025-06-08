@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Input, Form, Select, DatePicker, Button } from 'antd';
+import { Form, Input, Select, DatePicker, Button, Row, Col } from 'antd';
 import { SearchOutlined, ReloadOutlined, ExportOutlined } from '@ant-design/icons';
 import { PaymentSearchParams } from '../types/payment';
 import locale from 'antd/es/date-picker/locale/zh_CN';
@@ -25,135 +25,93 @@ const PaymentSearchBar: React.FC<PaymentSearchBarProps> = ({
   onReset,
   onExport,
   onTextChange,
-  onStatusChange,
   onPaymentTypeChange,
   onPaymentMethodChange,
   onDateRangeChange
 }) => {
   return (
-    <div className="table-toolbar" style={{ marginBottom: '16px' }}>
-      <Row gutter={16} align="middle" style={{ width: '100%' }}>
-        <Col flex="1">
-          <Input
-            placeholder="搜索学员/学员ID/课程"
-            value={params.searchText}
-            onChange={(e) => onTextChange(e.target.value)}
-            style={{ width: '100%' }}
-            prefix={<SearchOutlined />}
-          />
-        </Col>
-        <Col flex="1">
-          <Form.Item style={{ marginBottom: 0 }}>
-            <div className="select-container" style={{ position: 'relative' }}>
-              <div className="select-placeholder" style={{
-                position: 'absolute',
-                left: '11px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'rgba(0, 0, 0, 0.4)',
-                pointerEvents: 'none',
-                display: params.searchPaymentType ? 'none' : 'block',
-                zIndex: 1
-              }}>
-                选择课时类型
-              </div>
-              <Select
-                style={{ width: '100%' }}
-                value={params.searchPaymentType}
-                onChange={(value) => onPaymentTypeChange(value)}
+    <div className="table-toolbar" style={{ marginBottom: '16px', width: '100%' }}>
+      <Form onFinish={onSearch}>
+        <Row gutter={16} align="middle">
+          {/* 搜索框 */}
+          <Col xs={24} sm={12} md={8} lg={5} xl={5}>
+            <Form.Item name="searchText" className="mb-0">
+              <Input
+                placeholder="搜索学员/学员ID/课程"
+                value={params.searchText || ''}
+                onChange={(e) => onTextChange(e.target.value)}
                 allowClear
-                onClear={() => onPaymentTypeChange('')}
-                className="custom-select"
-                popupClassName="custom-select-dropdown"
-                showSearch={false}
-                virtual={false}
-                popupMatchSelectWidth={false}
-                id="courseTypeSelect"
-                notFoundContent={null}
+              />
+            </Form.Item>
+          </Col>
+          
+          {/* 课程类型选择 */}
+          <Col xs={24} sm={12} md={8} lg={4} xl={4}>
+            <Form.Item name="paymentType" className="mb-0">
+              <Select
+                placeholder="选择课程类型"
+                value={params.searchPaymentType || undefined}
+                onChange={(value) => onPaymentTypeChange(value || '')}
+                allowClear
+                style={{ width: '100%' }}
+                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               >
                 <Option value="30次课">30次课</Option>
                 <Option value="50次课">50次课</Option>
                 <Option value="100次课">100次课</Option>
               </Select>
-            </div>
-          </Form.Item>
-        </Col>
-        <Col flex="1">
-          <Form.Item style={{ marginBottom: 0 }}>
-            <div className="select-container" style={{ position: 'relative' }}>
-              <div className="select-placeholder" style={{
-                position: 'absolute',
-                left: '11px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'rgba(0, 0, 0, 0.4)',
-                pointerEvents: 'none',
-                display: params.searchPaymentMethod ? 'none' : 'block',
-                zIndex: 1
-              }}>
-                选择缴费类型
-              </div>
+            </Form.Item>
+          </Col>
+          
+          {/* 缴费类型选择 */}
+          <Col xs={24} sm={12} md={8} lg={4} xl={4}>
+            <Form.Item name="paymentMethod" className="mb-0">
               <Select
-                style={{ width: '100%' }}
-                value={params.searchPaymentMethod}
-                onChange={(value) => onPaymentMethodChange(value)}
+                placeholder="选择缴费类型"
+                value={params.searchPaymentMethod || undefined}
+                onChange={(value) => onPaymentMethodChange(value || '')}
                 allowClear
-                onClear={() => onPaymentMethodChange('')}
-                className="custom-select"
-                popupClassName="custom-select-dropdown"
-                showSearch={false}
-                virtual={false}
-                popupMatchSelectWidth={false}
-                id="paymentTypeSelect"
-                notFoundContent={null}
+                style={{ width: '100%' }}
+                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               >
                 <Option value="新增">新增</Option>
                 <Option value="退费">退费</Option>
                 <Option value="续费">续费</Option>
                 <Option value="补费">补费</Option>
               </Select>
-            </div>
-          </Form.Item>
-        </Col>
-        <Col flex="1.5">
-          <DatePicker.RangePicker
-            value={params.dateRange}
-            onChange={(dates) => onDateRangeChange(dates)}
-            placeholder={['开始日期', '结束日期']}
-            style={{ width: '100%' }}
-            locale={locale}
-            format="YYYY-MM-DD"
-          />
-        </Col>
-        <Col flex="0.7">
-          <Button
-            type="primary"
-            icon={<SearchOutlined />}
-            style={{ width: '100%' }}
-            onClick={onSearch}
-          >
-            查询
-          </Button>
-        </Col>
-        <Col flex="0.7">
-          <Button
-            onClick={onReset}
-            icon={<ReloadOutlined />}
-            style={{ width: '100%' }}
-          >
-            重置
-          </Button>
-        </Col>
-        <Col flex="0.7">
-          <Button
-            icon={<ExportOutlined />}
-            onClick={onExport}
-            style={{ width: '100%' }}
-          >
-            导出
-          </Button>
-        </Col>
-      </Row>
+            </Form.Item>
+          </Col>
+          
+          {/* 日期范围选择器 */}
+          <Col xs={24} sm={12} md={12} lg={5} xl={5}>
+            <Form.Item name="dateRange" className="mb-0">
+              <DatePicker.RangePicker
+                value={params.dateRange}
+                onChange={(dates) => onDateRangeChange(dates)}
+                placeholder={['开始日期', '结束日期']}
+                locale={locale}
+                format="YYYY-MM-DD"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Col>
+          
+          {/* 操作按钮 */}
+          <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+            <Form.Item className="mb-0" style={{ textAlign: 'right' }}>
+              <Button type="primary" htmlType="submit" icon={<SearchOutlined />} style={{ marginRight: 8 }}>
+                查询
+              </Button>
+              <Button onClick={onReset} icon={<ReloadOutlined />} style={{ marginRight: 8 }}>
+                重置
+              </Button>
+              <Button icon={<ExportOutlined />} onClick={onExport}>
+                导出
+              </Button>
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
     </div>
   );
 };

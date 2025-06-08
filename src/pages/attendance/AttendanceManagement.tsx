@@ -51,13 +51,7 @@ const AttendanceManagement: React.FC = () => {
       classTime: apiRecord.classTime || '',
       coachName: apiRecord.coachName || '',
       status: apiRecord.status || '',
-      remarks: [
-        apiRecord.amount, 
-        apiRecord.lessonType, 
-        apiRecord.lessonChange, 
-        apiRecord.paymentType, 
-        apiRecord.payType
-      ].filter(Boolean).join(' | '),
+      remarks: apiRecord.notes,
     };
   };
 

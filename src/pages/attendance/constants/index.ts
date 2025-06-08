@@ -1,7 +1,6 @@
 export const STATUS_TEXT_MAP = {
   present: '已到',
   absent: '缺席',
-  late: '迟到',
   leave: '请假'
 } as const;
 

@@ -1,32 +1,5 @@
 /* 缴费记录页面的Select组件样式 */
 
-/* 强制显示所有选择器的placeholder */
-.ant-select .ant-select-selection-placeholder,
-.ant-select-selector .ant-select-selection-placeholder,
-.ant-select-selection-placeholder,
-.custom-select .ant-select-selection-placeholder,
-.payment-records-container .ant-select-selection-placeholder,
-#courseTypeSelect .ant-select-selection-placeholder,
-#paymentTypeSelect .ant-select-selection-placeholder {
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  color: rgba(0, 0, 0, 0.4) !important;
-  position: absolute !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  left: 11px !important;
-  right: auto !important;
-  transition: none !important;
-  pointer-events: none !important;
-}
-
-/* 确保下拉菜单有足够的宽度 */
-.custom-select-dropdown,
-.ant-select-dropdown {
-  min-width: 120px !important;
-}
-
 /* 修复Select组件和其他表单元素的样式 */
 .ant-select {
   width: 100%;
@@ -37,17 +10,6 @@
   align-items: center !important;
   height: 32px !important;
   padding: 0 11px !important;
-}
-
-/* 特别强调课时类型和缴费类型的选择器 */
-#courseTypeSelect .ant-select-selection-placeholder,
-#paymentTypeSelect .ant-select-selection-placeholder {
-  z-index: 100 !important;
-  font-size: 14px !important;
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  color: rgba(0, 0, 0, 0.4) !important;
 }
 
 .payment-records-container {
@@ -98,4 +60,102 @@
 
 .ant-modal .ant-divider {
   margin-top: 0;
+}
+
+.payment-dropdown {
+  min-width: 200px !important;
+}
+
+/* 统一的间距类 - 与打卡消课页面保持一致 */
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.mb-6 {
+  margin-bottom: 24px !important;
+}
+
+/* 优化过滤栏样式 */
+.table-toolbar {
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+  margin-bottom: 24px;
+}
+
+/* 搜索栏响应式样式 */
+.table-toolbar .ant-input-search {
+  border-radius: 4px;
+}
+
+.table-toolbar .ant-select {
+  border-radius: 4px;
+}
+
+.table-toolbar .ant-picker {
+  border-radius: 4px;
+}
+
+/* 按钮样式优化 */
+.table-toolbar .ant-btn {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.table-toolbar .ant-btn-primary {
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.table-toolbar .ant-btn-primary:hover {
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 表单项样式统一 */
+.table-toolbar .ant-form-item {
+  margin-bottom: 0;
+}
+
+.table-toolbar .ant-form-item-control {
+  line-height: 32px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .table-toolbar {
+    padding: 12px;
+  }
+  
+  .table-toolbar .ant-btn {
+    margin-right: 4px !important;
+    margin-bottom: 8px;
+  }
+  
+  .table-toolbar .ant-btn:last-child {
+    margin-right: 0 !important;
+  }
+}
+
+/* 小屏幕时按钮间距调整 */
+@media (max-width: 576px) {
+  .table-toolbar .ant-btn {
+    width: 100%;
+    margin-right: 0 !important;
+    margin-bottom: 8px;
+  }
+  
+  .table-toolbar .ant-btn:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* 确保表单项间距一致 */
+.table-toolbar .ant-row {
+  width: 100%;
+}
+
+/* 优化下拉菜单宽度 */
+.table-toolbar .ant-select-dropdown {
+  min-width: fit-content !important;
 }
