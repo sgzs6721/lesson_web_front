@@ -178,10 +178,13 @@ const StudentManagement: React.FC = () => {
         // 更新状态 - 统一使用所有课程数据
         setCourseList(courseData);
         
-        // 让筛选框和表单都使用相同的课程数据（所有课程），而不是只显示已发布课程
-        setFilteredCourseList(courseData);
+        // 过滤出已发布的课程用于添加学员时的课程选择
+        const publishedCourses = courseData.filter(course => 
+          course.status === '1' || course.status === 'PUBLISHED'
+        );
+        setFilteredCourseList(publishedCourses);
         
-        console.log("初始化数据加载完成: 课程数量=", courseData.length, "学员数量=", studentData?.length || 0);
+        console.log("初始化数据加载完成: 课程数量=", courseData.length, "已发布课程数量=", publishedCourses.length, "学员数量=", studentData?.length || 0);
         
         // 计算不同状态的学员数量
         if (studentData && Array.isArray(studentData)) {

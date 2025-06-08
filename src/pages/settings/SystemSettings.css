@@ -1,33 +1,30 @@
 /* 系统设置页面样式 */
-.system-settings {
+.settings-management {
   padding: 0 4px;
 }
 
-.system-settings-card {
+.settings-management-card {
   margin-top: -12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  border: none;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
 }
 
 .settings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   padding: 0 0 16px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .settings-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: #262626;
 }
 
 /* 重新设计的选项卡样式 */
-.system-settings .settings-tabs .ant-tabs-nav {
+.settings-management .settings-tabs .ant-tabs-nav {
   margin-bottom: 24px;
   background-color: #ffffff;
   padding: 8px;
@@ -37,11 +34,11 @@
   border: 1px solid #f0f0f0;
 }
 
-.system-settings .settings-tabs .ant-tabs-nav::before {
+.settings-management .settings-tabs .ant-tabs-nav::before {
   display: none;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab {
+.settings-management .settings-tabs .ant-tabs-tab {
   margin: 0;
   padding: 12px 24px;
   transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -53,38 +50,38 @@
   position: relative;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab:hover {
+.settings-management .settings-tabs .ant-tabs-tab:hover {
   color: #1677ff;
   background: rgba(22, 119, 255, 0.04);
 }
 
-.system-settings .settings-tabs .ant-tabs-tab + .ant-tabs-tab {
+.settings-management .settings-tabs .ant-tabs-tab + .ant-tabs-tab {
   margin-left: 4px;
 }
 
 /* 不同选项卡的不同颜色 - 使用更浅的颜色和渐变效果 */
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active {
   background: linear-gradient(135deg, rgba(22, 119, 255, 0.08) 0%, rgba(22, 119, 255, 0.15) 100%) !important;
   color: #1677ff !important;
   box-shadow: 0 2px 8px rgba(22, 119, 255, 0.1);
   border-bottom: 2px solid #1677ff !important;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active {
   background: linear-gradient(135deg, rgba(82, 196, 26, 0.08) 0%, rgba(82, 196, 26, 0.15) 100%) !important;
   color: #52c41a !important;
   box-shadow: 0 2px 8px rgba(82, 196, 26, 0.1);
   border-bottom: 2px solid #52c41a !important;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active {
   background: linear-gradient(135deg, rgba(114, 46, 209, 0.08) 0%, rgba(114, 46, 209, 0.15) 100%) !important;
   color: #722ed1 !important;
   box-shadow: 0 2px 8px rgba(114, 46, 209, 0.1);
   border-bottom: 2px solid #722ed1 !important;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active {
   background: linear-gradient(135deg, rgba(250, 140, 22, 0.08) 0%, rgba(250, 140, 22, 0.15) 100%) !important;
   color: #fa8c16 !important;
   box-shadow: 0 2px 8px rgba(250, 140, 22, 0.1);
@@ -92,56 +89,56 @@
 }
 
 /* 保证Tab按钮文字颜色可见 */
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active .ant-tabs-tab-btn {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #1677ff !important;
   font-weight: 500;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active .ant-tabs-tab-btn {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #52c41a !important;
   font-weight: 500;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active .ant-tabs-tab-btn {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #722ed1 !important;
   font-weight: 500;
 }
 
-.system-settings .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active .ant-tabs-tab-btn {
+.settings-management .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #fa8c16 !important;
   font-weight: 500;
 }
 
 /* 统一的Tab样式 - 这里为了保险还是保留一个通用样式 */
-.system-settings .settings-tabs .ant-tabs-tab-active {
+.settings-management .settings-tabs .ant-tabs-tab-active {
   font-weight: 500;
 }
 
-.system-settings .settings-tabs .ant-tabs-ink-bar {
+.settings-management .settings-tabs .ant-tabs-ink-bar {
   display: none;
 }
 
-.system-settings .tab-label {
+.settings-management .tab-label {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: 500;
 }
 
-.system-settings .ant-tabs-content {
+.settings-management .ant-tabs-content {
   padding: 16px 0;
 }
 
-.system-settings .ant-form-item-label > label {
+.settings-management .ant-form-item-label > label {
   font-weight: 500;
   color: #333;
 }
 
-.system-settings .ant-divider {
+.settings-management .ant-divider {
   margin: 16px 0 24px;
 }
 
-.system-settings .option-list {
+.settings-management .option-list {
   max-height: 300px;
   overflow-y: auto;
   border-radius: 8px;
@@ -149,93 +146,89 @@
   border: 1px solid #f0f0f0;
 }
 
-.system-settings .option-item {
+.settings-management .option-item {
   transition: all 0.3s ease;
   padding: 12px 16px;
 }
 
-.system-settings .option-item:hover {
+.settings-management .option-item:hover {
   background-color: #f5f7fa;
 }
 
-.system-settings .option-input {
+.settings-management .option-input {
   flex: 1;
   transition: all 0.3s ease;
 }
 
-.system-settings .option-input:focus {
+.settings-management .option-input:focus {
   border-color: #1677ff;
   box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
   outline: none;
 }
 
-.system-settings .backup-table th,
-.system-settings .backup-table td {
+.settings-management .backup-table th,
+.settings-management .backup-table td {
   padding: 12px;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.system-settings .backup-table tr:hover {
+.settings-management .backup-table tr:hover {
   background-color: #f5f7fa;
 }
 
-.system-settings .ant-btn {
+.settings-management .ant-btn {
   border-radius: 6px;
   font-weight: 500;
 }
 
-.system-settings .ant-btn-primary {
+.settings-management .ant-btn-primary {
   background: #1677ff;
   border: none;
   box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
 }
 
-.system-settings .ant-btn-primary:hover {
+.settings-management .ant-btn-primary:hover {
   background: #4096ff;
   box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
 }
 
-.system-settings .ant-form {
+.settings-management .ant-form {
   animation: fadeIn 0.5s ease;
-}
-
-.hidden {
-  display: none !important;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .system-settings {
+  .settings-management {
     padding: 0;
   }
-  
-  .system-settings-card {
+
+  .settings-management-card {
     margin-top: -8px;
   }
-  
-  .system-settings .settings-tabs .ant-tabs-tab {
-    padding: 10px 16px;
+
+  .settings-management .settings-tabs .ant-tabs-tab {
+    padding: 8px 16px;
+    font-size: 14px;
   }
 }
 
-/* 动画样式 */
 @keyframes slideIn {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(-20px);
   }
-  to {
+  100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
 @keyframes slideOut {
-  from {
+  0% {
     opacity: 1;
     transform: translateX(0);
   }
-  to {
+  100% {
     opacity: 0;
     transform: translateX(20px);
   }
@@ -244,9 +237,11 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 

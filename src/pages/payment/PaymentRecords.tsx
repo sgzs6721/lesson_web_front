@@ -1,5 +1,6 @@
-import React from 'react';
-import { Typography, Card, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Typography, Card, Button, Table, Input, Select, Row, Col, message, Modal } from 'antd';
+import { PlusOutlined, DownloadOutlined } from '@ant-design/icons';
 import PaymentStatistics from './components/PaymentStatistics';
 import PaymentTable from './components/PaymentTable';
 import PaymentSearchBar from './components/PaymentSearchBar';
@@ -12,6 +13,7 @@ import { usePaymentForm } from './hooks/usePaymentForm';
 import { Payment } from './types/payment';
 import { exportToCSV } from './utils/exportData';
 import './payment.css';
+import './PaymentRecords.css';
 
 const { Title } = Typography;
 
@@ -90,22 +92,29 @@ const PaymentRecords: React.FC = () => {
   };
   
   return (
-    <div className="payment-records-container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>缴费记录</Title>
-      </div>
+    <div className="payment-management">
+      <Card className="payment-management-card">
+        <div className="payment-header">
+          <h1 className="payment-title">支付记录</h1>
+          <div className="payment-actions">
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={handleAdd}
+              className="add-payment-button"
+            >
+              添加收款记录
+            </Button>
+          </div>
+        </div>
 
-      {/* 统计卡片 */}
-      <PaymentStatistics
-        paymentCount={paymentCount}
-        paymentAmount={paymentAmount}
-        refundCount={refundCount}
-        refundAmount={refundAmount}
-      />
-      
-      {/* 主要内容卡片 */}
-      <Card>
-        {/* 搜索栏 */}
+        <PaymentStatistics
+          paymentCount={paymentCount}
+          paymentAmount={paymentAmount}
+          refundCount={refundCount}
+          refundAmount={refundAmount}
+        />
+        
         <PaymentSearchBar
           params={searchParams}
           onSearch={handleSearch}
@@ -118,37 +127,33 @@ const PaymentRecords: React.FC = () => {
           onDateRangeChange={setDateRange}
         />
         
-        {/* 数据表格 */}
         <PaymentTable
           data={data}
           onViewReceipt={handleReceipt}
           onDelete={showDeleteConfirm}
         />
+
+        <PaymentEditModal
+          visible={visible}
+          loading={loading}
+          form={form}
+          editingId={editingId}
+          onCancel={handleCancel}
+          onSubmit={handleSubmit}
+        />
+        
+        <PaymentReceiptModal
+          visible={receiptVisible}
+          payment={currentPayment}
+          onCancel={() => setReceiptVisible(false)}
+        />
+        
+        <PaymentDeleteModal
+          visible={deleteModalVisible}
+          onConfirm={handleDelete}
+          onCancel={handleCancelDelete}
+        />
       </Card>
-      
-      {/* 编辑/添加模态框 */}
-      <PaymentEditModal
-        visible={visible}
-        loading={loading}
-        form={form}
-        editingId={editingId}
-        onCancel={handleCancel}
-        onSubmit={handleSubmit}
-      />
-      
-      {/* 详情模态框 */}
-      <PaymentReceiptModal
-        visible={receiptVisible}
-        payment={currentPayment}
-        onCancel={() => setReceiptVisible(false)}
-      />
-      
-      {/* 删除确认模态框 */}
-      <PaymentDeleteModal
-        visible={deleteModalVisible}
-        onConfirm={handleDelete}
-        onCancel={handleCancelDelete}
-      />
     </div>
   );
 };

@@ -1,0 +1,35 @@
+/* 数据统计页面样式 */
+.statistics-management {
+  padding: 0 4px;
+}
+
+.statistics-management-card {
+  margin-top: -12px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
+.statistics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.statistics-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .statistics-management {
+    padding: 0;
+  }
+
+  .statistics-management-card {
+    margin-top: -8px;
+  }
+} 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Card, Button, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Typography, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import FinanceStatistics from './components/ExpenseStatistics';
 import FinanceTable from './components/ExpenseTable';
@@ -103,74 +103,83 @@ const FinanceManagement: React.FC = () => {
   };
 
   return (
-    <div className="expense-management-container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>收支管理</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddTransaction}>
-          添加收支记录
-        </Button>
-      </div>
+    <div className="expense-management">
+      <Card className="expense-management-card">
+        <div className="expense-header">
+          <h1 className="expense-title">收支管理</h1>
+          <div className="expense-actions">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddTransaction}
+              className="add-expense-button"
+            >
+              添加收支记录
+            </Button>
+          </div>
+        </div>
 
-      {/* 统计卡片 */}
-      <FinanceStatistics
-        totalExpense={totalExpense}
-        totalIncome={totalIncome}
-        salaryExpense={salaryExpense}
-        operationExpense={operationExpense}
-        otherExpense={otherExpense}
-        tuitionIncome={tuitionIncome}
-        trainingIncome={trainingIncome}
-        otherIncome={otherIncome + retailIncome}
-      />
-
-      {/* 主要内容卡片 */}
-      <Card>
-        {/* 搜索栏 */}
-        <FinanceSearchBar
-          params={searchParams}
-          onSearch={handleSearch}
-          onReset={handleReset}
-          onExport={() => exportToCSV(data)}
-          onTextChange={setSearchText}
-          onCategoriesChange={setSearchCategories}
-          onTypeChange={setSearchType}
-          onDateRangeChange={setDateRange}
+        {/* 统计卡片 */}
+        <FinanceStatistics
+          totalExpense={totalExpense}
+          totalIncome={totalIncome}
+          salaryExpense={salaryExpense}
+          operationExpense={operationExpense}
+          otherExpense={otherExpense}
+          tuitionIncome={tuitionIncome}
+          trainingIncome={trainingIncome}
+          otherIncome={otherIncome + retailIncome}
         />
 
-        {/* 数据表格 */}
-        <FinanceTable
-          data={data}
-          onEdit={handleEdit}
-          onDelete={showDeleteConfirm}
-          onViewDetails={showDetails}
+        {/* 主要内容卡片 */}
+        <Card>
+          {/* 搜索栏 */}
+          <FinanceSearchBar
+            params={searchParams}
+            onSearch={handleSearch}
+            onReset={handleReset}
+            onExport={() => exportToCSV(data)}
+            onTextChange={setSearchText}
+            onCategoriesChange={setSearchCategories}
+            onTypeChange={setSearchType}
+            onDateRangeChange={setDateRange}
+          />
+
+          {/* 数据表格 */}
+          <FinanceTable
+            data={data}
+            onEdit={handleEdit}
+            onDelete={showDeleteConfirm}
+            onViewDetails={showDetails}
+          />
+        </Card>
+
+        {/* 编辑/添加模态框 */}
+        <FinanceEditModal
+          visible={visible}
+          loading={loading}
+          form={form}
+          editingId={editingId}
+          type={transactionType}
+          onCancel={handleCancel}
+          onSubmit={handleSubmit}
+          onTypeChange={handleTypeChange}
+        />
+
+        {/* 删除确认模态框 */}
+        <FinanceDeleteModal
+          visible={deleteModalVisible}
+          onConfirm={handleDelete}
+          onCancel={handleCancelDelete}
+        />
+
+        {/* 详情模态框 */}
+        <FinanceDetailsModal
+          visible={detailsModalVisible}
+          record={recordDetails}
+          onCancel={handleCloseDetails}
         />
       </Card>
-
-      {/* 编辑/添加模态框 */}
-      <FinanceEditModal
-        visible={visible}
-        loading={loading}
-        form={form}
-        editingId={editingId}
-        type={transactionType}
-        onCancel={handleCancel}
-        onSubmit={handleSubmit}
-        onTypeChange={handleTypeChange}
-      />
-
-      {/* 删除确认模态框 */}
-      <FinanceDeleteModal
-        visible={deleteModalVisible}
-        onConfirm={handleDelete}
-        onCancel={handleCancelDelete}
-      />
-
-      {/* 详情模态框 */}
-      <FinanceDetailsModal
-        visible={detailsModalVisible}
-        record={recordDetails}
-        onCancel={handleCloseDetails}
-      />
     </div>
   );
 };

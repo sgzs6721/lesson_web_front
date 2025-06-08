@@ -581,10 +581,10 @@ const SystemSettings: React.FC = () => {
   ];
 
   return (
-    <div className="system-settings">
-      <Card className="system-settings-card">
+    <div className="settings-management">
+      <Card className="settings-management-card">
         <div className="settings-header">
-          <Title level={4} className="settings-title">系统设置</Title>
+          <h1 className="settings-title">系统设置</h1>
         </div>
         
         <Tabs

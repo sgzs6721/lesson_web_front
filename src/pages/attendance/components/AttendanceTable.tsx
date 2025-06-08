@@ -1,8 +1,8 @@
 import React from 'react';
-import { Table, Tag, Tooltip } from 'antd';
+import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { AttendanceRecord } from '../types';
-import { STATUS_TEXT_MAP, STATUS_COLOR_MAP } from '../constants';
+import './AttendanceTable.css';
 
 interface AttendanceTableProps {
   loading: boolean;
@@ -23,63 +23,87 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
 }) => {
   const columns: ColumnsType<AttendanceRecord> = [
     {
-      title: '日期',
-      dataIndex: 'date',
-      key: 'date',
-      width: 100,
-    },
-    {
       title: '学员',
       dataIndex: 'studentName',
       key: 'studentName',
-      width: 100,
+      width: 120,
+      align: 'center',
     },
     {
       title: '课程',
       dataIndex: 'courseName',
       key: 'courseName',
       width: 150,
+      align: 'center',
+      render: (text) => (
+        <Tag 
+          color="blue" 
+          className="course-tag"
+        >
+          {text || '-'}
+        </Tag>
+      ),
     },
     {
       title: '教练',
       dataIndex: 'coachName',
       key: 'coachName',
       width: 100,
+      align: 'center',
+    },
+    {
+      title: '日期',
+      dataIndex: 'date',
+      key: 'date',
+      width: 100,
+      align: 'center',
     },
     {
       title: '上课时间',
+      dataIndex: 'classTime',
       key: 'classTime',
-      width: 150,
-      render: (_, record) => `${record.startTime}-${record.endTime}`,
+      width: 120,
+      align: 'center',
     },
     {
       title: '打卡时间',
+      dataIndex: 'checkTime',
       key: 'checkTime',
-      width: 150,
-      render: (_, record) => {
-        if (!record.checkInTime && !record.checkOutTime) return '-';
-        return (
-          <Tooltip title={`签到: ${record.checkInTime || '-'} | 签退: ${record.checkOutTime || '-'}`}>
-            <span>{record.checkInTime || '-'} / {record.checkOutTime || '-'}</span>
-          </Tooltip>
-        );
-      },
+      width: 120,
+      align: 'center',
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      width: 100,
-      render: (status: AttendanceRecord['status']) => (
-        <Tag color={STATUS_COLOR_MAP[status]}>
-          {STATUS_TEXT_MAP[status]}
-        </Tag>
-      ),
+      width: 80,
+      align: 'center',
+    },
+    {
+      title: '备注',
+      dataIndex: 'remarks',
+      key: 'remarks',
+      width: 200,
+      align: 'center',
+      render: (text) => {
+        if (!text) return '-';
+        const parts = text.split(' | ');
+        return (
+          <div>
+            {parts.map((part: string, index: number) => (
+              <div key={index} style={{ fontSize: '12px', color: '#666' }}>
+                {part}
+              </div>
+            ))}
+          </div>
+        );
+      },
     },
   ];
 
   return (
     <Table<AttendanceRecord>
+      className="attendance-table"
       columns={columns}
       dataSource={data}
       rowKey="id"

@@ -1,13 +1,11 @@
 /* 课表视图整体容器 */
 .schedule-view {
   padding: 0 4px;
-  background-color: #f8f9fa;
 }
 
-.schedule-card {
+.schedule-management-card {
   margin-top: -12px;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
-  background-color: #ffffff;
 }
 
 .schedule-content {
@@ -27,10 +25,6 @@
   gap: 12px;
   align-items: center;
   margin-bottom: 20px;
-  background-color: #ffffff;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .legend-item {

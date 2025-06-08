@@ -1,213 +1,222 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Typography, Space } from 'antd';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Card, Typography, Space, message } from 'antd';
 import dayjs from 'dayjs';
 import type { AttendanceRecord, FilterParams, AttendanceStatistics } from './types';
 import StatisticsCard from './components/StatisticsCard';
 import FilterForm from './components/FilterForm';
 import AttendanceTable from './components/AttendanceTable';
 import { COURSE_OPTIONS, CAMPUS_OPTIONS } from './constants';
+import { getAttendanceStatistics, getAttendanceList } from '@/api/attendance';
+import type { AttendanceListRequest, AttendanceRecordItem } from '@/api/attendance';
+import type { AttendanceStatRequest } from './types';
+import './AttendanceManagement.css';
 
 const { Title } = Typography;
 
 const AttendanceManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
-  const [filteredData, setFilteredData] = useState<AttendanceRecord[]>([]);
+  const [statistics, setStatistics] = useState<AttendanceStatistics>({
+    total: 0,
+    present: 0,
+    absent: 0,
+    late: 0,
+    leave: 0,
+    presentRate: 0,
+    absentRate: 0,
+    lateRate: 0,
+    leaveRate: 0,
+  });
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [filterParams, setFilterParams] = useState<FilterParams>({
-    searchText: '',
-    selectedCourse: '',
-    selectedCampus: '',
-    selectedStatus: '',
-    dateRange: null,
-    currentPage: 1,
-    pageSize: 10,
-  });
+  const [searchText, setSearchText] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
-  useEffect(() => {
-    fetchAttendanceData();
-  }, [currentPage, pageSize]);
+  // 使用ref来避免重复调用
+  const isInitialMount = useRef(true);
+  const lastFetchParams = useRef<string>('');
 
-  useEffect(() => {
-    filterData();
-  }, [attendanceData, filterParams]);
+  // 将API返回的记录转换为本地格式
+  const transformApiRecord = (apiRecord: AttendanceRecordItem, index: number): AttendanceRecord => {
+    return {
+      id: `${apiRecord.date}-${apiRecord.studentName || apiRecord.student || 'unknown'}-${index}`,
+      date: apiRecord.date || '',
+      studentName: apiRecord.studentName || apiRecord.student || '',
+      courseName: apiRecord.courseName || apiRecord.course || '',
+      checkTime: apiRecord.checkTime || '',
+      classTime: apiRecord.classTime || '',
+      coachName: apiRecord.coachName || '',
+      status: apiRecord.status || '',
+      remarks: [
+        apiRecord.amount, 
+        apiRecord.lessonType, 
+        apiRecord.lessonChange, 
+        apiRecord.paymentType, 
+        apiRecord.payType
+      ].filter(Boolean).join(' | '),
+    };
+  };
 
-  // 模拟获取考勤数据
-  const fetchAttendanceData = async () => {
-    setLoading(true);
+  // 构建请求参数
+  const buildRequestParams = useCallback(() => {
+    const campusId = Number(localStorage.getItem('currentCampusId')) || 1;
+    
+    const listParams: AttendanceListRequest = {
+      pageNum: currentPage,
+      pageSize: pageSize,
+      campusId,
+    };
+
+    const statParams: AttendanceStatRequest = {
+      pageNum: currentPage,
+      pageSize: pageSize,
+      campusId,
+    };
+
+    if (searchText) {
+      listParams.keyword = searchText;
+      statParams.keyword = searchText;
+    }
+    if (selectedCourse) {
+      listParams.courseId = Number(selectedCourse);
+      statParams.courseId = Number(selectedCourse);
+    }
+    if (selectedStatus) {
+      listParams.status = selectedStatus;
+      statParams.status = selectedStatus;
+    }
+    if (dateRange) {
+      listParams.startDate = dateRange[0];
+      listParams.endDate = dateRange[1];
+      statParams.startDate = dateRange[0];
+      statParams.endDate = dateRange[1];
+    }
+
+    return { listParams, statParams };
+  }, [currentPage, pageSize, searchText, selectedCourse, selectedStatus, dateRange]);
+
+  // 获取数据的函数
+  const fetchData = useCallback(async () => {
+    const { listParams, statParams } = buildRequestParams();
+    
+    // 生成参数的唯一标识，避免相同参数重复请求
+    const paramsKey = JSON.stringify({ listParams, statParams });
+    if (lastFetchParams.current === paramsKey && !isInitialMount.current) {
+      return;
+    }
+    lastFetchParams.current = paramsKey;
+
+    console.log('开始获取考勤数据，参数:', { listParams, statParams });
+
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      setStatisticsLoading(true);
 
-      // 生成测试数据
-      const today = dayjs();
-      const mockData: AttendanceRecord[] = [];
+      // 并行请求两个API
+      const [listResponse, statResponse] = await Promise.all([
+        getAttendanceList(listParams),
+        getAttendanceStatistics(statParams)
+      ]);
 
-      for (let i = 0; i < 100; i++) {
-        const date = today.subtract(i % 30, 'day');
-        const courseIndex = i % 5;
-        const campusIndex = i % 5;
-        const status = i % 10 === 0 ? 'absent' : i % 7 === 0 ? 'late' : i % 11 === 0 ? 'leave' : 'present';
-        
-        // 生成打卡时间
-        let checkInTime;
-        let checkOutTime;
-        
-        if (status === 'present') {
-          checkInTime = '08:55';
-          checkOutTime = '10:25';
-        } else if (status === 'late') {
-          checkInTime = '09:15';
-          checkOutTime = '10:25';
-        } else if (status === 'leave') {
-          checkInTime = undefined;
-          checkOutTime = undefined;
-        } else {
-          checkInTime = undefined;
-          checkOutTime = undefined;
-        }
+      // 处理列表数据
+      const transformedData = listResponse.list.map((apiRecord, index) => 
+        transformApiRecord(apiRecord, index)
+      );
+      setAttendanceData(transformedData);
+      setTotal(listResponse.total);
 
-        mockData.push({
-          id: `A${10000 + i}`,
-          studentId: `S${20000 + (i % 50)}`,
-          studentName: `学员${(i % 50) + 1}`,
-          courseId: COURSE_OPTIONS[courseIndex].value,
-          courseName: COURSE_OPTIONS[courseIndex].label,
-          coachId: `coach${(i % 5) + 1}`,
-          coachName: `教练${(i % 5) + 1}`,
-          campusId: CAMPUS_OPTIONS[campusIndex].value,
-          campusName: CAMPUS_OPTIONS[campusIndex].label,
-          scheduleId: `SCH${30000 + i}`,
-          date: date.format('YYYY-MM-DD'),
-          startTime: '09:00',
-          endTime: '10:30',
-          status,
-          checkInTime,
-          checkOutTime,
-          remarks: status === 'leave' ? '家长请假' : status === 'absent' ? '未到课' : undefined,
-        });
-      }
+      // 处理统计数据
+      const stats = {
+        total: statResponse.studentCount || 0,
+        present: statResponse.totalAttendance || 0,
+        absent: 0,
+        late: 0,
+        leave: statResponse.totalLeave || 0,
+        presentRate: statResponse.attendanceRate || 0,
+        absentRate: 0,
+        lateRate: 0,
+        leaveRate: 0,
+      };
+      setStatistics(stats);
 
-      setAttendanceData(mockData);
-      setTotal(mockData.length);
+      console.log('考勤数据获取成功');
     } catch (error) {
-      console.error('Failed to fetch attendance data', error);
+      console.error('获取考勤数据失败:', error);
+      message.error('获取考勤数据失败');
+      setAttendanceData([]);
+      setTotal(0);
+      setStatistics({
+        total: 0,
+        present: 0,
+        absent: 0,
+        late: 0,
+        leave: 0,
+        presentRate: 0,
+        absentRate: 0,
+        lateRate: 0,
+        leaveRate: 0,
+      });
     } finally {
       setLoading(false);
+      setStatisticsLoading(false);
+      isInitialMount.current = false;
     }
-  };
+  }, [buildRequestParams]);
 
-  // 过滤数据
-  const filterData = () => {
-    let filtered = [...attendanceData];
-    
-    if (filterParams.searchText) {
-      filtered = filtered.filter(
-        record => 
-          record.studentName.includes(filterParams.searchText) || 
-          record.studentId.includes(filterParams.searchText) ||
-          record.courseName.includes(filterParams.searchText)
-      );
-    }
-    
-    if (filterParams.selectedCourse) {
-      filtered = filtered.filter(record => record.courseId === filterParams.selectedCourse);
-    }
-    
-    if (filterParams.selectedCampus) {
-      filtered = filtered.filter(record => record.campusId === filterParams.selectedCampus);
-    }
-    
-    if (filterParams.selectedStatus) {
-      filtered = filtered.filter(record => record.status === filterParams.selectedStatus);
-    }
-    
-    if (filterParams.dateRange) {
-      const [startDate, endDate] = filterParams.dateRange;
-      filtered = filtered.filter(record => 
-        record.date >= startDate && record.date <= endDate
-      );
-    }
-    
-    // 分页
-    const start = (currentPage - 1) * pageSize;
-    const end = start + pageSize;
-    const paginatedData = filtered.slice(start, end);
-    
-    setFilteredData(paginatedData);
-    setTotal(filtered.length);
-  };
-
-  // 获取考勤统计信息
-  const getStatistics = (): AttendanceStatistics => {
-    const total = attendanceData.length;
-    const present = attendanceData.filter(record => record.status === 'present').length;
-    const absent = attendanceData.filter(record => record.status === 'absent').length;
-    const late = attendanceData.filter(record => record.status === 'late').length;
-    const leave = attendanceData.filter(record => record.status === 'leave').length;
-    
-    const presentRate = total > 0 ? Math.round((present / total) * 100) : 0;
-    const absentRate = total > 0 ? Math.round((absent / total) * 100) : 0;
-    const lateRate = total > 0 ? Math.round((late / total) * 100) : 0;
-    const leaveRate = total > 0 ? Math.round((leave / total) * 100) : 0;
-    
-    return { total, present, absent, late, leave, presentRate, absentRate, lateRate, leaveRate };
-  };
+  // 只在依赖项变化时调用
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleFilter = (values: FilterParams) => {
-    setFilterParams({
-      ...values,
-      currentPage: 1,
-      pageSize,
-    });
+    setSearchText(values.searchText);
+    setSelectedCourse(values.selectedCourse);
+    setSelectedStatus(values.selectedStatus);
+    setDateRange(values.dateRange);
     setCurrentPage(1);
   };
 
   const handleReset = () => {
-    setFilterParams({
-      searchText: '',
-      selectedCourse: '',
-      selectedCampus: '',
-      selectedStatus: '',
-      dateRange: null,
-      currentPage: 1,
-      pageSize,
-    });
+    setSearchText('');
+    setSelectedCourse('');
+    setSelectedStatus('');
+    setDateRange(null);
     setCurrentPage(1);
   };
 
   const handlePageChange = (page: number, size: number) => {
     setCurrentPage(page);
     setPageSize(size);
-    setFilterParams(prev => ({
-      ...prev,
-      currentPage: page,
-      pageSize: size,
-    }));
-  };
-
-  const cardStyle = {
-    marginTop: '24px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
   };
 
   return (
-    <div className="p-4">
-      <Title level={4} className="mb-4">打卡消课记录</Title>
-      <StatisticsCard statistics={getStatistics()} />
-      <Card style={cardStyle}>
-        <FilterForm onFilter={handleFilter} onReset={handleReset} />
-        <AttendanceTable
-          loading={loading}
-          data={filteredData}
-          total={total}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-        />
+    <div className="attendance-management">
+      <Card className="attendance-management-card">
+        <div className="attendance-header">
+          <Title level={4} className="attendance-title">考勤管理</Title>
+        </div>
+        
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <StatisticsCard statistics={statistics} loading={statisticsLoading} />
+          
+          <FilterForm
+            onFilter={handleFilter}
+            onReset={handleReset}
+          />
+          
+          <AttendanceTable
+            loading={loading}
+            data={attendanceData}
+            total={total}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+          />
+        </Space>
       </Card>
     </div>
   );

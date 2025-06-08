@@ -1,0 +1,51 @@
+/* 收支管理页面样式 */
+.expense-management {
+  padding: 0 4px;
+}
+
+.expense-management-card {
+  margin-top: -12px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
+.expense-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.expense-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.expense-actions {
+  display: flex;
+  align-items: center;
+}
+
+.add-expense-button {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  padding: 0 16px;
+  height: 32px;
+}
+
+.add-expense-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .expense-management {
+    padding: 0;
+  }
+
+  .expense-management-card {
+    margin-top: -8px;
+  }
+} 

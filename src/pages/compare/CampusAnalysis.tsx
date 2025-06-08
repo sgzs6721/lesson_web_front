@@ -10,6 +10,7 @@ import { useCampusData } from './hooks';
 import './compare.css';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import dayjs from 'dayjs';
+import './CampusAnalysis.css';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -48,97 +49,56 @@ const CampusAnalysis: React.FC = () => {
   const radioButtonStyle = { fontWeight: 'normal' };
   
   return (
-    <div className="campus-analysis-container">
-      <div style={{ marginBottom: 24 }}>
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Row gutter={24} align="middle">
-              <Col>
-                <Title level={3} style={{ margin: 0 }}>校区对比分析</Title>
-              </Col>
-              <Col style={{ marginLeft: 16 }}>
-                <RangePicker 
-                  locale={locale}
-                  value={dateRange}
-                  onChange={handleDateChange}
-                  allowClear={false}
-                  style={{ width: 270 }}
-                  placeholder={['开始日期', '结束日期']}
-                />
-              </Col>
-            </Row>
+    <div className="campus-management">
+      <Card className="campus-management-card">
+        <div className="campus-header">
+          <h1 className="campus-title">校区分析</h1>
+          <div className="campus-actions">
+            <DatePicker.RangePicker
+              value={dateRange}
+              onChange={handleDateChange}
+              placeholder={['开始日期', '结束日期']}
+            />
+          </div>
+        </div>
+
+        <Row gutter={[16, 16]}>
+          <Col span={24}>
+            <Card title="校区数据概览">
+              <OrganizationStats campusData={campusData} />
+            </Card>
           </Col>
         </Row>
-      </div>
 
-      {/* 机构总数据展示 */}
-      <OrganizationStats campusData={campusData} />
-      
-      {/* 校区核心指标对比 */}
-      <Card 
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>校区核心指标对比</span>
-            <Radio.Group value={comparisonMetric} onChange={e => setComparisonMetric(e.target.value)}>
-              <Radio.Button value="revenue" style={radioButtonStyle}>收入</Radio.Button>
-              <Radio.Button value="profit" style={radioButtonStyle}>利润</Radio.Button>
-              <Radio.Button value="students" style={radioButtonStyle}>学员数</Radio.Button>
-              <Radio.Button value="coaches" style={radioButtonStyle}>教练数</Radio.Button>
-            </Radio.Group>
-          </div>
-        } 
-        className="chart-card"
-      >
-        <div className="chart-container">
-          <CampusComparisonChart 
-            data={campusData} 
-            metric={comparisonMetric} 
-          />
-        </div>
-      </Card>
-      
-      {/* 增长趋势对比 */}
-      <Card 
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>校区增长趋势对比</span>
-            <Radio.Group value={trendMetric} onChange={e => setTrendMetric(e.target.value)}>
-              <Radio.Button value="students" style={radioButtonStyle}>学员数</Radio.Button>
-              <Radio.Button value="revenue" style={radioButtonStyle}>收入</Radio.Button>
-              <Radio.Button value="profit" style={radioButtonStyle}>利润</Radio.Button>
-            </Radio.Group>
-          </div>
-        } 
-        className="chart-card"
-      >
-        <div className="chart-container">
-          <CampusGrowthChart 
-            data={campusData} 
-            metric={trendMetric} 
-          />
-        </div>
-      </Card>
-      
-      {/* 教练绩效对比 */}
-      <Card 
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>各校区教练绩效对比</span>
-            <Radio.Group value={coachMetric} onChange={e => setCoachMetric(e.target.value)}>
-              <Radio.Button value="lessons" style={radioButtonStyle}>平均课时量</Radio.Button>
-              <Radio.Button value="students" style={radioButtonStyle}>平均学员数</Radio.Button>
-              <Radio.Button value="salary" style={radioButtonStyle}>平均工资</Radio.Button>
-            </Radio.Group>
-          </div>
-        } 
-        className="chart-card"
-      >
-        <div className="chart-container">
-          <CoachPerformanceChart 
-            data={campusData} 
-            metric={coachMetric} 
-          />
-        </div>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={12}>
+            <Card title="校区对比分析">
+              <CampusComparisonChart 
+                data={campusData} 
+                metric={comparisonMetric} 
+              />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card title="校区发展趋势">
+              <CampusGrowthChart 
+                data={campusData} 
+                metric={trendMetric} 
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={24}>
+            <Card title="教练绩效分析">
+              <CoachPerformanceChart 
+                data={campusData} 
+                metric={coachMetric} 
+              />
+            </Card>
+          </Col>
+        </Row>
       </Card>
     </div>
   );
