@@ -92,18 +92,19 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       },
     },
     {
-      title: '备注',
-      dataIndex: 'remarks',
-      key: 'remarks',
-      width: 120,
-      ellipsis: true,
-    },
-    {
       title: '操作时间',
       dataIndex: 'checkTime',
       key: 'checkTime',
       width: 180,
       render: (text: string) => text ? new Date(text).toLocaleString('sv-SE') : '-',
+    },
+    {
+      title: '备注',
+      dataIndex: 'remarks',
+      key: 'remarks',
+      width: 120,
+      ellipsis: true,
+      render: (text: string) => text || '-',
     },
   ];
 

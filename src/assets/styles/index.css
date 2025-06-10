@@ -1624,3 +1624,12 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.ant-table-cell {
+  white-space: normal !important;
+}
+
+.page-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
