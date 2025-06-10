@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Button, Spin, Space } from 'antd';
+import React, { useState, CSSProperties } from 'react';
+import { Button, Spin, Space, Row, Col, Card, Statistic } from 'antd';
 import ReactECharts from 'echarts-for-react';
+import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 
 interface CoachAnalysisProps {
   data: any;
@@ -19,7 +20,6 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
     );
   }
 
-  // 示例数据
   const coachData = data || {
     totalCoaches: 42,
     averageLessons: 82.5,
@@ -29,6 +29,38 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
     lessonGrowth: 5.3,
     salaryGrowth: 6.2,
     retentionGrowth: 3.1
+  };
+
+  const cardStyle: CSSProperties = {
+    textAlign: 'center' as const,
+    height: '100%',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+  };
+
+  const renderStatisticCard = (title: string, value: number, growth: number, color: string, prefix?: React.ReactNode, suffix?: React.ReactNode) => {
+    const isUp = growth >= 0;
+    return (
+      <Col span={6}>
+        <Card style={{ ...cardStyle, borderTop: `4px solid ${color}` }}>
+          <Statistic
+            title={title}
+            value={value}
+            precision={2}
+            prefix={prefix}
+            valueStyle={{ color: color, fontSize: '24px', fontWeight: 600 }}
+            suffix={
+              <>
+                {suffix}
+                <span style={{ color: isUp ? '#52c41a' : '#f5222d', fontSize: '14px', marginLeft: '8px' }}>
+                  {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />} {Math.abs(growth)}%
+                </span>
+              </>
+            }
+          />
+        </Card>
+      </Col>
+    );
   };
 
   // 教练课时统计数据
@@ -56,40 +88,12 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
         <div className="section-header">
           <div className="section-title">教练绩效指标</div>
         </div>
-        <div className="stats-cards">
-          <div className="stat-card" style={{ borderTop: '4px solid #3498db' }}>
-            <div className="stat-title">教练总数</div>
-            <div className="stat-value">{coachData.totalCoaches}</div>
-            <div className="stat-trend">
-              <span className="trend-up">↑ {coachData.coachGrowth}%</span>
-              <span>较上期</span>
-            </div>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #f39c12' }}>
-            <div className="stat-title">月平均课时量</div>
-            <div className="stat-value">{coachData.averageLessons}</div>
-            <div className="stat-trend">
-              <span className="trend-up">↑ {coachData.lessonGrowth}%</span>
-              <span>较上期</span>
-            </div>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #e74c3c' }}>
-            <div className="stat-title">月平均工资</div>
-            <div className="stat-value">{coachData.averageSalary ? coachData.averageSalary.toLocaleString() : '8,500'}</div>
-            <div className="stat-trend">
-              <span className="trend-up">↑ {coachData.salaryGrowth || 6.2}%</span>
-              <span>较上期</span>
-            </div>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #1abc9c' }}>
-            <div className="stat-title">学员留存贡献率</div>
-            <div className="stat-value">{coachData.retentionRate}%</div>
-            <div className="stat-trend">
-              <span className="trend-up">↑ {coachData.retentionGrowth}%</span>
-              <span>较上期</span>
-            </div>
-          </div>
-        </div>
+        <Row gutter={[16, 16]}>
+          {renderStatisticCard('教练总数', coachData.totalCoaches, coachData.coachGrowth, '#3498db')}
+          {renderStatisticCard('月平均课时量', coachData.averageLessons, coachData.lessonGrowth, '#f39c12')}
+          {renderStatisticCard('月平均工资', coachData.averageSalary, coachData.salaryGrowth, '#e74c3c', '¥')}
+          {renderStatisticCard('学员留存贡献率', coachData.retentionRate, coachData.retentionGrowth, '#1abc9c', undefined, '%')}
+        </Row>
       </div>
 
       {/* 教练课时统计 */}

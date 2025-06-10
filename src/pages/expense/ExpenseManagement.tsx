@@ -105,8 +105,11 @@ const FinanceManagement: React.FC = () => {
   return (
     <div className="expense-management">
       <Card className="expense-management-card">
-        <div className="expense-header">
-          <h1 className="expense-title">收支管理</h1>
+        <div 
+          className="expense-header"
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}
+        >
+          <Title level={4} className="expense-title" style={{ margin: 0 }}>收支管理</Title>
           <div className="expense-actions">
             <Button
               type="primary"

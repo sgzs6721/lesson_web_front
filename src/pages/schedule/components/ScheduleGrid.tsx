@@ -158,7 +158,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ scheduleData, selectedCoach
                 <div key={`${timeSlot}-${day}`} className="schedule-cell">
                   {filteredCourses.length > 0 ? (
                     filteredCourses.map((course: ScheduleCourseInfo, index: number) => 
-                      renderCourseInfo(course)
+                      <div key={`${course.description}-${index}`}>
+                        {renderCourseInfo(course)}
+                      </div>
                     )
                   ) : (
                     <div style={{ 

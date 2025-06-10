@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Button, Spin, Row, Col } from 'antd';
+import React, { useState, CSSProperties } from 'react';
+import { Button, Spin, Row, Col, Card, Statistic } from 'antd';
 import ReactECharts from 'echarts-for-react';
+import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 
 interface StudentAnalysisProps {
   data: any;
@@ -20,7 +21,6 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
     );
   }
 
-  // 示例数据
   const studentData = data || {
     totalStudents: 1284,
     newStudents: 68,
@@ -28,6 +28,34 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
     studentGrowth: 12.5,
     newGrowth: 15.3,
     lostGrowth: -5.2
+  };
+
+  const cardStyle: CSSProperties = {
+    textAlign: 'center' as const,
+    height: '100%',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+  };
+
+  const renderStatisticCard = (title: string, value: number, growth: number, color: string) => {
+    const isUp = growth >= 0;
+    return (
+      <Col span={8}>
+        <Card style={{ ...cardStyle, borderTop: `4px solid ${color}` }}>
+          <Statistic
+            title={title}
+            value={value}
+            precision={0}
+            valueStyle={{ color: color, fontSize: '24px', fontWeight: 600 }}
+            suffix={
+              <span style={{ color: isUp ? '#52c41a' : '#f5222d', fontSize: '14px', marginLeft: '8px' }}>
+                {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />} {Math.abs(growth)}%
+              </span>
+            }
+          />
+        </Card>
+      </Col>
+    );
   };
 
   // 学员增长趋势数据
@@ -78,8 +106,6 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
     months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
     amounts: [32, 28, 38, 26, 42, 36, 30, 46, 38, 50, 48, 56]
   };
-
-
 
   // 处理时间范围变更
   const handleStudentTimeframeChange = (value: string) => {
@@ -133,32 +159,11 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
             </Button>
           </div>
         </div>
-        <div className="stats-cards">
-          <div className="stat-card" style={{ borderTop: '4px solid #3498db' }}>
-            <div className="stat-title">总学员数</div>
-            <div className="stat-value">{studentData.totalStudents.toLocaleString()}</div>
-            <div className="stat-trend">
-              <span className="trend-up">↑ {studentData.studentGrowth}%</span>
-              <span>较上期</span>
-            </div>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #2ecc71' }}>
-            <div className="stat-title">新增学员数</div>
-            <div className="stat-value">{studentData.newStudents.toLocaleString()}</div>
-            <div className="stat-trend">
-              <span className="trend-up">↑ {studentData.newGrowth}%</span>
-              <span>较上期</span>
-            </div>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #e74c3c' }}>
-            <div className="stat-title">流失学员数</div>
-            <div className="stat-value">{studentData.lostStudents.toLocaleString()}</div>
-            <div className="stat-trend">
-              <span className="trend-down">↓ {Math.abs(studentData.lostGrowth)}%</span>
-              <span>较上期</span>
-            </div>
-          </div>
-        </div>
+        <Row gutter={[16, 16]}>
+          {renderStatisticCard('总学员数', studentData.totalStudents, studentData.studentGrowth, '#3498db')}
+          {renderStatisticCard('新增学员数', studentData.newStudents, studentData.newGrowth, '#2ecc71')}
+          {renderStatisticCard('流失学员数', studentData.lostStudents, studentData.lostGrowth, '#e74c3c')}
+        </Row>
       </div>
 
       {/* 学员增长趋势 */}

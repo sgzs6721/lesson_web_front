@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Row, Col, Statistic, Spin } from 'antd';
-import { CheckCircleOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, TeamOutlined, UserOutlined, StopOutlined } from '@ant-design/icons';
 import type { AttendanceStatistics } from '../types';
 
 interface StatisticsCardProps {
@@ -17,14 +17,15 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'center' as const,
+    border: '1px solid #f0f0f0'
   };
 
   return (
-    <div className="mb-8">
+    <div>
       <Spin spinning={loading}>
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={6}>
-            <Card style={cardStyle} bordered={true}>
+          <Col flex={1}>
+            <Card style={cardStyle} bordered={false}>
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1890ff' }}>打卡学员</span>}
                 value={statistics.total}
@@ -33,8 +34,8 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card style={cardStyle} bordered={true}>
+          <Col flex={1}>
+            <Card style={cardStyle} bordered={false}>
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#52c41a' }}>总打卡数</span>}
                 value={statistics.present}
@@ -43,8 +44,8 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card style={cardStyle} bordered={true}>
+          <Col flex={1}>
+            <Card style={cardStyle} bordered={false}>
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#722ed1' }}>总请假数</span>}
                 value={statistics.leave}
@@ -53,8 +54,18 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card style={cardStyle} bordered={true}>
+          <Col flex={1}>
+            <Card style={cardStyle} bordered={false}>
+              <Statistic
+                title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#f5222d' }}>总缺勤数</span>}
+                value={statistics.absent}
+                valueStyle={{ color: '#f5222d', fontSize: '28px', fontWeight: 'bold' }}
+                prefix={<StopOutlined style={{ color: '#f5222d' }} />}
+              />
+            </Card>
+          </Col>
+          <Col flex={1}>
+            <Card style={cardStyle} bordered={false}>
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#fa8c16' }}>出勤率</span>}
                 value={statistics.presentRate}

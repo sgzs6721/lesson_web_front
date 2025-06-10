@@ -2,7 +2,21 @@ import React from 'react';
 import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { AttendanceRecord } from '../types';
+import { STATUS_TEXT_MAP, STATUS_COLOR_MAP } from '../constants';
 import './AttendanceTable.css';
+
+const PRESET_COLORS = [
+  'magenta', 'red', 'volcano', 'orange', 'gold',
+  'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'
+];
+
+const getColorForText = (text: string) => {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = text.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return PRESET_COLORS[Math.abs(hash) % PRESET_COLORS.length];
+};
 
 interface AttendanceTableProps {
   loading: boolean;
@@ -33,16 +47,16 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       title: '课程',
       dataIndex: 'courseName',
       key: 'courseName',
-      width: 150,
+      width: 140,
       align: 'center',
-      render: (text) => (
-        <Tag 
-          color="blue" 
-          className="course-tag"
+      render: (text: string) => text ? (
+        <Tag
+          color={getColorForText(text)}
+          style={{ width: '120px', textAlign: 'center' }}
         >
-          {text || '-'}
+          {text}
         </Tag>
-      ),
+      ) : '-',
     },
     {
       title: '教练',
@@ -66,38 +80,30 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       align: 'center',
     },
     {
-      title: '打卡时间',
-      dataIndex: 'checkTime',
-      key: 'checkTime',
-      width: 120,
-      align: 'center',
-    },
-    {
-      title: '状态',
+      title: '类型',
       dataIndex: 'status',
       key: 'status',
       width: 80,
       align: 'center',
+      render: (status: string) => {
+        const color = STATUS_COLOR_MAP[status] || 'default';
+        const text = STATUS_TEXT_MAP[status] || status;
+        return <Tag color={color}>{text}</Tag>;
+      },
     },
     {
       title: '备注',
       dataIndex: 'remarks',
       key: 'remarks',
-      width: 200,
-      align: 'center',
-      render: (text) => {
-        if (!text) return '-';
-        const parts = text.split(' | ');
-        return (
-          <div>
-            {parts.map((part: string, index: number) => (
-              <div key={index} style={{ fontSize: '12px', color: '#666' }}>
-                {part}
-              </div>
-            ))}
-          </div>
-        );
-      },
+      width: 120,
+      ellipsis: true,
+    },
+    {
+      title: '操作时间',
+      dataIndex: 'checkTime',
+      key: 'checkTime',
+      width: 180,
+      render: (text: string) => text ? new Date(text).toLocaleString('sv-SE') : '-',
     },
   ];
 

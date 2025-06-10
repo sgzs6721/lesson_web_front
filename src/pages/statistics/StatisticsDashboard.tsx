@@ -40,7 +40,7 @@ const StatisticsDashboard: React.FC = () => {
     <div className="statistics-management">
       <Card className="statistics-management-card">
         <div className="statistics-header">
-          <h1 className="statistics-title">数据统计</h1>
+          <Title level={4} className="statistics-title">数据统计</Title>
         </div>
 
         <Tabs

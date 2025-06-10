@@ -7,6 +7,8 @@ import FilterForm from './components/FilterForm';
 import AttendanceTable from './components/AttendanceTable';
 import { COURSE_OPTIONS, CAMPUS_OPTIONS } from './constants';
 import { getAttendanceStatistics, getAttendanceList } from '@/api/attendance';
+import { getCourseSimpleList } from '@/api/course';
+import type { SimpleCourse } from '@/api/course/types';
 import type { AttendanceListRequest, AttendanceRecordItem } from '@/api/attendance';
 import type { AttendanceStatRequest } from './types';
 import './AttendanceManagement.css';
@@ -17,6 +19,7 @@ const AttendanceManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
+  const [courses, setCourses] = useState<SimpleCourse[]>([]);
   const [statistics, setStatistics] = useState<AttendanceStatistics>({
     total: 0,
     present: 0,
@@ -36,6 +39,19 @@ const AttendanceManagement: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
+  // 获取课程列表
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const courseList = await getCourseSimpleList();
+        setCourses(courseList.map(c => ({ ...c, value: c.id, label: c.name })));
+      } catch (error) {
+        message.error('获取课程列表失败');
+      }
+    };
+    fetchCourses();
+  }, []);
+
   // 使用ref来避免重复调用
   const isInitialMount = useRef(true);
   const lastFetchParams = useRef<string>('');
@@ -50,7 +66,7 @@ const AttendanceManagement: React.FC = () => {
       checkTime: apiRecord.checkTime || '',
       classTime: apiRecord.classTime || '',
       coachName: apiRecord.coachName || '',
-      status: apiRecord.status || '',
+      status: apiRecord.type || '',
       remarks: apiRecord.notes,
     };
   };
@@ -194,23 +210,24 @@ const AttendanceManagement: React.FC = () => {
           <Title level={4} className="attendance-title">考勤管理</Title>
         </div>
         
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <StatisticsCard statistics={statistics} loading={statisticsLoading} />
-          
+        <div style={{ marginBottom: '8px' }}>
           <FilterForm
             onFilter={handleFilter}
             onReset={handleReset}
+            courses={courses}
           />
-          
-          <AttendanceTable
-            loading={loading}
-            data={attendanceData}
-            total={total}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-          />
-        </Space>
+        </div>
+        <div style={{ marginBottom: '24px' }}>
+          <StatisticsCard statistics={statistics} loading={statisticsLoading} />
+        </div>
+        <AttendanceTable
+          loading={loading}
+          data={attendanceData}
+          total={total}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+        />
       </Card>
     </div>
   );
