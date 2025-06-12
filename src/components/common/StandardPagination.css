@@ -1,0 +1,143 @@
+.standard-pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.pagination-left {
+  /* 左侧为空，不需要样式 */
+}
+
+.pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+}
+
+.pagination-total {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+  line-height: 32px;
+  white-space: nowrap;
+}
+
+.pagination-size-selector {
+  width: 120px !important;
+  height: 32px !important;
+}
+
+.pagination-size-selector .ant-select-selector {
+  height: 32px !important;
+  line-height: 30px !important;
+}
+
+.pagination-size-selector .ant-select-selection-item {
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: nowrap !important;
+}
+
+/* 强制修复下拉选项宽度与选择框一致 */
+.pagination-size-dropdown {
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+}
+
+.pagination-size-dropdown .rc-virtual-list {
+  width: 120px !important;
+  max-width: 120px !important;
+}
+
+.pagination-size-dropdown .rc-virtual-list-holder {
+  width: 120px !important;
+  max-width: 120px !important;
+}
+
+.pagination-size-dropdown .rc-virtual-list-holder-inner {
+  width: 120px !important;
+  max-width: 120px !important;
+}
+
+.pagination-size-dropdown .ant-select-item {
+  width: 120px !important;
+  max-width: 120px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  height: 32px !important;
+}
+
+.pagination-size-dropdown .ant-select-item-option-content {
+  width: 120px !important;
+  max-width: 120px !important;
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: nowrap !important;
+}
+
+/* 更强力的居中样式 */
+.pagination-size-dropdown .ant-select-item .ant-select-item-option-content {
+  text-align: center !important;
+  width: 100% !important;
+  display: block !important;
+  line-height: 32px !important;
+}
+
+/* 终极居中解决方案 */
+.pagination-size-dropdown .ant-select-item * {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.pagination-size-dropdown .ant-select-item {
+  position: relative !important;
+}
+
+.pagination-size-dropdown .ant-select-item-option-content::before {
+  content: '' !important;
+  display: block !important;
+  width: 100% !important;
+  height: 0 !important;
+}
+
+/* 强制文字居中显示 */
+.pagination-size-dropdown .ant-select-item-option-content {
+  position: relative !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+/* 强制覆盖所有可能的宽度设置 */
+.pagination-size-dropdown,
+.pagination-size-dropdown * {
+  max-width: 120px !important;
+}
+
+.pagination-right .ant-pagination {
+  margin: 0;
+}
+
+/* 确保分页按钮高度一致 */
+.pagination-right .ant-pagination-item,
+.pagination-right .ant-pagination-prev,
+.pagination-right .ant-pagination-next {
+  height: 32px;
+  line-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} 

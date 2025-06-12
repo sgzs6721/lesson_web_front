@@ -18,13 +18,14 @@ export const useClassRecordModal = () => {
   const [loading, setLoading] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [records, setRecords] = useState<UIAttendanceRecord[]>([]);
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
+  const [pagination, setPagination] = useState<{
+    current: number;
+    pageSize: number;
+    total: number;
+  }>({
     current: 1,
     pageSize: 10,
-    total: 0,
-    showSizeChanger: false, // 根据需要设置
-    showQuickJumper: true, // 根据需要设置
-    showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条 / 共 ${total} 条`, // 确保 showTotal 存在
+    total: 0
   });
   const [courseSummaries, setCourseSummaries] = useState<{ courseName: string; count: number }[]>([]); // 新增：课程统计状态
 
@@ -82,21 +83,19 @@ export const useClassRecordModal = () => {
 
         setRecords(uiRecords); // 设置排序后的记录
         setPagination(prev => ({
-          ...prev,
           current: response.pageNum ?? prev.current ?? 1,
           pageSize: response.pageSize ?? prev.pageSize ?? 10,
           total: response.total ?? 0,
-          // 确保 showTotal 在更新时也被保留 (通过 ...prev 实现)
         }));
       } else {
         setRecords([]);
-        setPagination(prev => ({ ...prev, total: 0, current: 1 })); // 保留 showTotal
+        setPagination(prev => ({ total: 0, current: 1, pageSize: prev.pageSize }));
       }
     } catch (error) {
       console.error('获取课程记录失败:', error);
       message.error('获取课程记录失败');
       setRecords([]);
-      setPagination(prev => ({ ...prev, total: 0, current: 1 }));
+      setPagination(prev => ({ total: 0, current: 1, pageSize: prev.pageSize }));
     } finally {
       setLoading(false);
     }
@@ -113,7 +112,7 @@ export const useClassRecordModal = () => {
     setCurrentStudent(student);
     setVisible(true);
     // 重置分页到第一页并获取数据
-    setPagination(prev => ({ ...prev, current: 1 }));
+    setPagination(prev => ({ current: 1, total: prev.total, pageSize: prev.pageSize }));
     fetchRecords(studentId, 1, pagination.pageSize || 10);
   }, [fetchRecords, pagination.pageSize]);
 
@@ -123,7 +122,7 @@ export const useClassRecordModal = () => {
     setCurrentStudent(null);
     setRecords([]);
     setCourseSummaries([]); // 重置统计
-    setPagination(prev => ({ ...prev, current: 1, total: 0 }));
+    setPagination(prev => ({ current: 1, total: 0, pageSize: prev.pageSize }));
   }, []);
 
   // 处理表格分页变化

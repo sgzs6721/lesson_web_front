@@ -245,7 +245,6 @@ const CoachManagement: React.FC = () => {
           <CoachCardView
             data={coaches.map(coach => coachDetailCache[coach.id] || coach)} // 优先使用缓存中的详情数据
             loading={loading}
-            pagination={paginationConfig}
             onEdit={handleEdit}
             onDelete={showDeleteConfirm}
             onViewDetail={showDetail}

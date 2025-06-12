@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, Table, Empty, Tag } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { Student, UIAttendanceRecord } from '../types/student'; // 使用正确的相对路径
+import StandardPagination from '@/components/common/StandardPagination';
 import '../student.css';
 
 // 辅助函数：根据文本生成 Antd Tag 颜色
@@ -42,7 +43,11 @@ interface ClassRecordModalProps {
   student: Student | null;
   records: UIAttendanceRecord[]; // 使用新的 UI 记录类型
   loading: boolean;
-  pagination: TablePaginationConfig; // 使用 antd 的分页配置类型
+  pagination: {
+    current: number;
+    pageSize: number;
+    total: number;
+  };
   courseSummaries: { courseName: string; count: number }[]; // 新增 prop
   onCancel: () => void;
   onTableChange: (pagination: TablePaginationConfig) => void; // 表格变化回调
@@ -146,14 +151,27 @@ const ClassRecordModal: React.FC<ClassRecordModalProps> = ({
         columns={columns}
         dataSource={records}
         loading={loading}
-        pagination={pagination} // 使用包含 showTotal 的 pagination
-        onChange={onTableChange}
+        pagination={false}
         rowKey="key"
         scroll={{ y: 350 }} // 稍微减小滚动高度，为统计信息留出空间
         locale={{
           emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无上课记录" />
         }}
         size="small"
+      />
+      
+      <StandardPagination
+        current={pagination.current}
+        pageSize={pagination.pageSize}
+        total={pagination.total}
+        onChange={(page, pageSize) => {
+          onTableChange({
+            current: page,
+            pageSize: pageSize,
+            total: pagination.total
+          });
+        }}
+        totalText="条记录"
       />
     </Modal>
   );

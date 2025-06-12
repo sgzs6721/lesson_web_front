@@ -1,105 +1,193 @@
-import { useState } from 'react';
-import { Payment, PaymentSearchParams } from '../types/payment';
-import { mockData } from '../constants/mockData';
-import dayjs from 'dayjs';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { message } from 'antd';
-import { generatePaymentId } from '../utils/formatters';
+import dayjs from 'dayjs';
+import { Payment, PaymentSearchParams, PaymentStatistics, PaymentFilterParams } from '../types/payment';
+import { getPaymentStatistics, getPaymentList, PaymentRecordItem } from '@/api/payment';
 
 export const usePaymentData = () => {
-  const [data, setData] = useState<Payment[]>(mockData);
-  
-  const addPayment = (values: Omit<Payment, 'id' | 'date' | 'operator'> & { date: dayjs.Dayjs }) => {
-    const newPayment: Payment = {
-      id: generatePaymentId(data.length),
-      ...values,
-      date: values.date.format('YYYY-MM-DD'),
-      operator: '当前用户'
+  const [data, setData] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
+  const [statistics, setStatistics] = useState<PaymentStatistics>({
+    paymentCount: 0,
+    paymentTotal: 0,
+    refundCount: 0,
+    refundTotal: 0,
+  });
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useState<PaymentSearchParams>({
+    searchText: '',
+    searchStatus: '',
+    searchPaymentType: '',
+    searchPaymentMethod: '',
+    selectedCourse: '',
+    dateRange: null,
+  });
+
+  // 防重复请求
+  const lastFetchParams = useRef<string>('');
+  const isLoadingRef = useRef(false);
+
+  // 将API返回的记录转换为本地格式
+  const transformApiRecord = (apiRecord: PaymentRecordItem, index: number): Payment => {
+    return {
+      id: `payment-${apiRecord.date}-${index}`,
+      date: apiRecord.date || '',
+      studentName: apiRecord.student || '',
+      studentId: '', // API中没有返回，设为空
+      course: apiRecord.course || '',
+      amount: parseFloat(apiRecord.amount || '0'),
+      paymentType: apiRecord.paymentType || '',
+      paymentMethod: apiRecord.payType || '',
+      status: (apiRecord.payType || '') as any,
+      remark: '',
+      operator: '系统',
+      lessonType: apiRecord.lessonType,
+      lessonChange: apiRecord.lessonChange,
+      payType: apiRecord.payType,
     };
-    setData([...data, newPayment]);
-    message.success('付款记录添加成功');
-    return newPayment;
   };
-  
-  const updatePayment = (id: string, values: Omit<Payment, 'id' | 'date'> & { date: dayjs.Dayjs }) => {
-    setData(data.map(item =>
-      item.id === id ?
-      { ...item, ...values, date: values.date.format('YYYY-MM-DD') } :
-      item
-    ));
-    message.success('付款记录更新成功');
-  };
+
+  // 获取数据的函数
+  const fetchData = useCallback(async () => {
+    const campusId = Number(localStorage.getItem('currentCampusId')) || 1;
+    
+    const params: PaymentFilterParams = {
+      pageNum: currentPage,
+      pageSize: pageSize,
+      campusId,
+    };
+
+    if (searchParams.searchText) {
+      params.keyword = searchParams.searchText;
+    }
+    if (searchParams.selectedCourse) {
+      params.courseId = Number(searchParams.selectedCourse);
+    }
+    if (searchParams.searchPaymentType) {
+      params.lessonType = searchParams.searchPaymentType;
+    }
+    if (searchParams.searchPaymentMethod) {
+      params.paymentType = searchParams.searchPaymentMethod;
+    }
+    if (searchParams.dateRange?.[0] && searchParams.dateRange?.[1]) {
+      params.startDate = searchParams.dateRange[0].format('YYYY-MM-DD');
+      params.endDate = searchParams.dateRange[1].format('YYYY-MM-DD');
+    }
+    
+    // 生成参数的唯一标识，避免相同参数重复请求
+    const paramsKey = JSON.stringify(params);
+    if (lastFetchParams.current === paramsKey || isLoadingRef.current) {
+      return;
+    }
+    lastFetchParams.current = paramsKey;
+    isLoadingRef.current = true;
+
+    console.log('开始获取缴费数据，参数:', params);
+
+    try {
+      setLoading(true);
+      setStatisticsLoading(true);
+
+      // 并行请求两个API
+      const [listResponse, statResponse] = await Promise.all([
+        getPaymentList(params),
+        getPaymentStatistics(params)
+      ]);
+
+      // 处理列表数据
+      const transformedData = listResponse.list.map((apiRecord, index) => 
+        transformApiRecord(apiRecord, index)
+      );
+      
+      // 批量更新状态
+      setData(transformedData);
+      setTotal(listResponse.total);
+      setStatistics({
+        paymentCount: statResponse.paymentCount || 0,
+        paymentTotal: statResponse.paymentTotal || 0,
+        refundCount: statResponse.refundCount || 0,
+        refundTotal: statResponse.refundTotal || 0,
+      });
+
+      console.log('缴费数据获取成功');
+    } catch (error) {
+      console.error('获取缴费数据失败:', error);
+      message.error('获取缴费数据失败');
+      setData([]);
+      setTotal(0);
+      setStatistics({
+        paymentCount: 0,
+        paymentTotal: 0,
+        refundCount: 0,
+        refundTotal: 0,
+      });
+    } finally {
+      setLoading(false);
+      setStatisticsLoading(false);
+      isLoadingRef.current = false;
+    }
+  }, [currentPage, pageSize, searchParams]);
+
+  // 只在依赖项变化时调用
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, pageSize, searchParams]);
   
   const deletePayment = (id: string) => {
     setData(data.filter(item => item.id !== id));
     message.success('删除成功');
   };
   
-  const filterData = (params: PaymentSearchParams) => {
-    let filteredData = mockData;
-    const { searchText, searchStatus, searchPaymentType, searchPaymentMethod, dateRange } = params;
-
-    if (searchText) {
-      filteredData = filteredData.filter(
-        item => item.studentName.includes(searchText) ||
-               item.studentId.includes(searchText) ||
-               item.course.includes(searchText) ||
-               item.id.includes(searchText)
-      );
+  const filterData = useCallback((params: PaymentSearchParams) => {
+    // 使用React 18的自动批处理，同时更新多个状态
+    setSearchParams(params);
+    if (currentPage !== 1) {
+      setCurrentPage(1); // 重置到第一页
     }
-
-    if (searchStatus) {
-      filteredData = filteredData.filter(item => item.status === searchStatus);
+  }, [currentPage]);
+  
+  const resetData = useCallback(() => {
+    const defaultParams = {
+      searchText: '',
+      searchStatus: '',
+      searchPaymentType: '',
+      searchPaymentMethod: '',
+      selectedCourse: '',
+      dateRange: null,
+    };
+    setSearchParams(defaultParams);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
     }
+  }, [currentPage]);
 
-    if (searchPaymentType) {
-      filteredData = filteredData.filter(item => item.paymentType === searchPaymentType);
+  const handlePageChange = useCallback((page: number, size: number) => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
     }
-
-    if (searchPaymentMethod) {
-      filteredData = filteredData.filter(item => item.paymentMethod === searchPaymentMethod);
+    if (size !== pageSize) {
+      setPageSize(size);
     }
-
-    if (dateRange && dateRange[0] && dateRange[1]) {
-      const startDate = dateRange[0].format('YYYY-MM-DD');
-      const endDate = dateRange[1].format('YYYY-MM-DD');
-      filteredData = filteredData.filter(
-        item => item.date >= startDate && item.date <= endDate
-      );
-    }
-
-    setData(filteredData);
-  };
-  
-  const resetData = () => {
-    setData(mockData);
-  };
-  
-  // 计算统计数据
-  const payments = data.filter(item => item.paymentType === '缴费');
-  const refunds = data.filter(item => item.paymentType === '退费');
-  
-  // 缴费次数
-  const paymentCount = payments.length;
-  
-  // 缴费金额
-  const paymentAmount = payments.reduce((sum, item) => sum + item.amount, 0);
-  
-  // 退费次数
-  const refundCount = refunds.length;
-  
-  // 退费金额
-  const refundAmount = refunds.reduce((sum, item) => sum + item.amount, 0);
+  }, [currentPage, pageSize]);
   
   return {
     data,
-    addPayment,
-    updatePayment,
+    loading,
+    statisticsLoading,
+    statistics,
+    total,
+    currentPage,
+    pageSize,
     deletePayment,
     filterData,
     resetData,
-    paymentCount,
-    paymentAmount,
-    refundCount,
-    refundAmount
+    handlePageChange,
+    paymentCount: statistics.paymentCount,
+    paymentAmount: statistics.paymentTotal,
+    refundCount: statistics.refundCount,
+    refundAmount: statistics.refundTotal
   };
 }; 

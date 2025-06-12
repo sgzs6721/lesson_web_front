@@ -10,7 +10,7 @@ import './CoachCardView.css';
 interface CoachCardViewProps {
   data: Coach[];
   loading: boolean;
-  pagination: {
+  pagination?: {
     current: number;
     pageSize: number;
     total: number;
@@ -195,7 +195,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
   return (
     <List
       grid={{
-        gutter: 0,
+        gutter: 24,
         xs: 1,
         sm: 2,
         md: 2,
@@ -205,12 +205,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
       }}
       dataSource={data}
       loading={loading}
-      pagination={{
-        ...pagination,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: total => `共 ${total} 条记录`,
-      }}
+      pagination={false}
       renderItem={(coach) => (
         <List.Item>
           <Card

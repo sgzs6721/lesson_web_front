@@ -3,6 +3,7 @@ import { Card, Table, Typography, Button, Space, Tag } from 'antd';
 import { BuildOutlined, PlusOutlined } from '@ant-design/icons';
 import { Campus } from '@/api/campus/types';
 import { useNavigate } from '@/router/hooks';
+import StandardPagination from '@/components/common/StandardPagination';
 
 const { Title } = Typography;
 
@@ -116,18 +117,23 @@ const CampusList: React.FC<CampusListProps> = ({ campusList, total }) => {
           </Button>
         </div>
       ) : (
-        <Table
-          dataSource={campusList}
-          columns={columns}
-          rowKey="id"
-          pagination={{
-            total: total,
-            pageSize: 5,
-            showSizeChanger: false,
-            showTotal: (t) => `共 ${t} 个校区`
-          }}
-          size="small"
-        />
+        <>
+          <Table
+            dataSource={campusList}
+            columns={columns}
+            rowKey="id"
+            pagination={false}
+            size="small"
+          />
+          <StandardPagination
+            current={1}
+            pageSize={5}
+            total={total}
+            onChange={() => {}}
+            totalText="个校区"
+            showSizeChanger={false}
+          />
+        </>
       )}
     </Card>
   );

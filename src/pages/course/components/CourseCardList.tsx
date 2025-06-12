@@ -54,27 +54,7 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
         }}
         dataSource={data}
         loading={loading}
-        pagination={total > 0 ? {
-          current: currentPage,
-          pageSize: pageSize,
-          total: total,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: total => `共 ${total} 条记录`,
-          onChange: onPageChange,
-          locale: {
-            items_per_page: '条/页',
-            jump_to: '跳至',
-            jump_to_confirm: '确定',
-            page: '页',
-            prev_page: '上一页',
-            next_page: '下一页',
-            prev_5: '向前 5 页',
-            next_5: '向后 5 页',
-            prev_3: '向前 3 页',
-            next_3: '向后 3 页'
-          }
-        } : false}
+        pagination={false}
         renderItem={item => (
           <List.Item>
             <Card
@@ -183,18 +163,18 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                 <div className="course-stats">
                   <div className="stat-item">
                     <TeamOutlined style={{ fontSize: '14px', color: '#722ed1', marginRight: '8px' }} />
-                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify' }}>教练</div>
+                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify', whiteSpace: 'nowrap' }}>教练</div>
                     <div style={{ margin: '0 8px 0 8px' }}>：</div>
-                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px' }}>
+                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       <span style={{ color: '#1890ff', fontWeight: 500 }}>{getCoachNames(item.coaches)}</span>
                     </div>
                   </div>
                   
                   <div className="stat-item">
                     <BookOutlined style={{ fontSize: '14px', color: '#52c41a', marginRight: '8px' }} />
-                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify' }}>总课时</div>
+                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify', whiteSpace: 'nowrap' }}>总课时</div>
                     <div style={{ margin: '0 8px 0 8px' }}>：</div>
-                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px' }}>
+                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px', whiteSpace: 'nowrap' }}>
                       <span style={{ fontWeight: 600, color: '#52c41a' }}>{item.totalHours}</span>
                       <span style={{ fontSize: '12px', marginLeft: '4px', color: '#595959' }}>小时</span>
                     </div>
@@ -202,9 +182,9 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                   
                   <div className="stat-item">
                     <ClockCircleOutlined style={{ fontSize: '14px', color: '#fa8c16', marginRight: '8px' }} />
-                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify' }}>已销课时</div>
+                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify', whiteSpace: 'nowrap' }}>已销课时</div>
                     <div style={{ margin: '0 8px 0 8px' }}>：</div>
-                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px' }}>
+                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px', whiteSpace: 'nowrap' }}>
                       <span style={{ fontWeight: 600, color: '#fa8c16' }}>{item.consumedHours || 0}</span>
                       <span style={{ fontSize: '12px', marginLeft: '4px', color: '#595959' }}>小时</span>
                     </div>
@@ -212,9 +192,9 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                   
                   <div className="stat-item">
                     <DollarOutlined style={{ fontSize: '14px', color: '#f5222d', marginRight: '8px' }} />
-                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify' }}>课时费</div>
+                    <div style={{ fontWeight: 500, width: '60px', textAlign: 'justify', textAlignLast: 'justify', whiteSpace: 'nowrap' }}>课时费</div>
                     <div style={{ margin: '0 8px 0 8px' }}>：</div>
-                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px' }}>
+                    <div style={{ flex: 1, textAlign: 'right', paddingRight: '24px', whiteSpace: 'nowrap' }}>
                       <span style={{ fontWeight: 600, color: '#f5222d' }}>¥ {item.price}</span>
                     </div>
                   </div>
@@ -317,6 +297,8 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
           padding: 6px 0;
           font-size: 14px;
           color: #595959;
+          white-space: nowrap;
+          min-width: 0;
         }
         `}
       </style>

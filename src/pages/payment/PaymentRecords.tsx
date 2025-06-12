@@ -1,31 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Card, Button, Table, Input, Select, Row, Col, message, Modal } from 'antd';
-import { PlusOutlined, DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined } from '@ant-design/icons';
 import PaymentStatistics from './components/PaymentStatistics';
 import PaymentTable from './components/PaymentTable';
 import PaymentSearchBar from './components/PaymentSearchBar';
-import PaymentEditModal from './components/PaymentEditModal';
 import PaymentReceiptModal from './components/PaymentReceiptModal';
 import PaymentDeleteModal from './components/PaymentDeleteModal';
 import { usePaymentData } from './hooks/usePaymentData';
 import { usePaymentSearch } from './hooks/usePaymentSearch';
-import { usePaymentForm } from './hooks/usePaymentForm';
 import { Payment } from './types/payment';
 import { exportToCSV } from './utils/exportData';
+import { getCourseSimpleList } from '@/api/course';
+import type { SimpleCourse } from '@/api/course/types';
 import './payment.css';
 import './PaymentRecords.css';
 
 const { Title } = Typography;
 
 const PaymentRecords: React.FC = () => {
+  // 课程列表状态
+  const [courses, setCourses] = useState<SimpleCourse[]>([]);
+
   // 使用数据管理钩子
   const {
     data,
-    addPayment,
-    updatePayment,
+    loading,
+    statisticsLoading,
+    statistics,
+    total,
+    currentPage,
+    pageSize,
     deletePayment,
     filterData,
     resetData,
+    handlePageChange,
     paymentCount,
     paymentAmount,
     refundCount,
@@ -37,24 +45,12 @@ const PaymentRecords: React.FC = () => {
     searchParams,
     setSearchText,
     setSearchStatus,
-    setSearchPaymentType,
     setSearchPaymentMethod,
+    setSelectedCourse,
     setDateRange,
     handleSearch,
     handleReset
   } = usePaymentSearch(filterData);
-  
-  // 使用表单管理钩子
-  const {
-    form,
-    visible,
-    editingId,
-    loading,
-    handleAdd,
-    handleEdit,
-    handleSubmit,
-    handleCancel
-  } = usePaymentForm(addPayment, updatePayment);
   
   // 详情模态框状态
   const [receiptVisible, setReceiptVisible] = React.useState(false);
@@ -63,6 +59,19 @@ const PaymentRecords: React.FC = () => {
   // 删除确认模态框状态
   const [deleteModalVisible, setDeleteModalVisible] = React.useState(false);
   const [recordToDelete, setRecordToDelete] = React.useState<string | null>(null);
+
+  // 获取课程列表
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const courseList = await getCourseSimpleList();
+        setCourses(courseList);
+      } catch (error) {
+        message.error('获取课程列表失败');
+      }
+    };
+    fetchCourses();
+  }, []);
   
   // 处理查看详情
   const handleReceipt = (record: Payment) => {
@@ -96,50 +105,38 @@ const PaymentRecords: React.FC = () => {
       <Card className="payment-management-card">
         <div className="payment-header">
           <h1 className="payment-title">缴费记录</h1>
-          <div className="payment-actions">
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
-              onClick={handleAdd}
-              className="add-payment-button"
-            >
-              添加收款记录
-            </Button>
-          </div>
         </div>
+
+        <PaymentSearchBar
+          params={searchParams}
+          courses={courses}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          onExport={() => exportToCSV(data)}
+          onTextChange={setSearchText}
+          onStatusChange={setSearchStatus}
+          onPaymentMethodChange={setSearchPaymentMethod}
+          onCourseChange={setSelectedCourse}
+          onDateRangeChange={setDateRange}
+        />
 
         <PaymentStatistics
           paymentCount={paymentCount}
           paymentAmount={paymentAmount}
           refundCount={refundCount}
           refundAmount={refundAmount}
-        />
-        
-        <PaymentSearchBar
-          params={searchParams}
-          onSearch={handleSearch}
-          onReset={handleReset}
-          onExport={() => exportToCSV(data)}
-          onTextChange={setSearchText}
-          onStatusChange={setSearchStatus}
-          onPaymentTypeChange={setSearchPaymentType}
-          onPaymentMethodChange={setSearchPaymentMethod}
-          onDateRangeChange={setDateRange}
+          loading={statisticsLoading}
         />
         
         <PaymentTable
           data={data}
+          loading={loading}
+          total={total}
+          currentPage={currentPage}
+          pageSize={pageSize}
           onViewReceipt={handleReceipt}
           onDelete={showDeleteConfirm}
-        />
-
-        <PaymentEditModal
-          visible={visible}
-          loading={loading}
-          form={form}
-          editingId={editingId}
-          onCancel={handleCancel}
-          onSubmit={handleSubmit}
+          onPageChange={handlePageChange}
         />
         
         <PaymentReceiptModal

@@ -207,7 +207,7 @@ const AttendanceManagement: React.FC = () => {
     <div className="attendance-management">
       <Card className="attendance-management-card">
         <div className="attendance-header">
-          <Title level={4} className="page-title">考勤管理</Title>
+          <Title level={4} className="page-title">出勤记录</Title>
         </div>
         
         <div style={{ marginBottom: '8px' }}>

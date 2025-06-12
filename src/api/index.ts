@@ -7,6 +7,7 @@ import { user } from './user';
 import { coach } from './coach';
 import { constants } from './constants';
 import { schedule } from './schedule';
+import { payment } from './payment';
 
 // 导出所有接口
 export const API = {
@@ -18,5 +19,6 @@ export const API = {
   user,
   coach,
   constants,
-  schedule
+  schedule,
+  payment
 };

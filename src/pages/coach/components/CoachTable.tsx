@@ -6,6 +6,7 @@ import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { CoachGender } from '../../../api/coach/types';
+import StandardPagination from '@/components/common/StandardPagination';
 
 interface CoachTableProps {
   data: Coach[];
@@ -381,18 +382,22 @@ const CoachTable: React.FC<CoachTableProps> = ({
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      rowKey="id"
-      loading={loading}
-      pagination={{
-        ...pagination,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: total => `共 ${total} 条记录`,
-      }}
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey="id"
+        loading={loading}
+        pagination={false}
+      />
+      <StandardPagination
+        current={pagination.current}
+        pageSize={pagination.pageSize}
+        total={pagination.total}
+        onChange={pagination.onChange}
+        totalText="个教练"
+      />
+    </>
   );
 };
 

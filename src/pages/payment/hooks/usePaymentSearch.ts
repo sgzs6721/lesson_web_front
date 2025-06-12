@@ -7,6 +7,7 @@ export const usePaymentSearch = (onSearch: (params: PaymentSearchParams) => void
   const [searchStatus, setSearchStatus] = useState<string>('');
   const [searchPaymentType, setSearchPaymentType] = useState<string>('');
   const [searchPaymentMethod, setSearchPaymentMethod] = useState<string>('');
+  const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   
   const handleSearch = () => {
@@ -15,6 +16,7 @@ export const usePaymentSearch = (onSearch: (params: PaymentSearchParams) => void
       searchStatus,
       searchPaymentType,
       searchPaymentMethod,
+      selectedCourse,
       dateRange
     };
     onSearch(params);
@@ -25,6 +27,7 @@ export const usePaymentSearch = (onSearch: (params: PaymentSearchParams) => void
     setSearchStatus('');
     setSearchPaymentType('');
     setSearchPaymentMethod('');
+    setSelectedCourse('');
     setDateRange(null);
     
     // 重置后自动搜索
@@ -33,6 +36,7 @@ export const usePaymentSearch = (onSearch: (params: PaymentSearchParams) => void
       searchStatus: '',
       searchPaymentType: '',
       searchPaymentMethod: '',
+      selectedCourse: '',
       dateRange: null
     });
   };
@@ -43,12 +47,14 @@ export const usePaymentSearch = (onSearch: (params: PaymentSearchParams) => void
       searchStatus,
       searchPaymentType,
       searchPaymentMethod,
+      selectedCourse,
       dateRange
     },
     setSearchText,
     setSearchStatus,
     setSearchPaymentType,
     setSearchPaymentMethod,
+    setSelectedCourse,
     setDateRange,
     handleSearch,
     handleReset

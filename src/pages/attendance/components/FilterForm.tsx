@@ -84,40 +84,47 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, courses }) =
 
   return (
     <Form form={form} onFinish={handleFinish} onReset={handleReset}>
-      <Row gutter={[16, 8]} align="bottom">
-        <Col flex="1 1 200px">
-          <Form.Item label="搜索" name="search">
-            <Input placeholder="学员姓名/ID/课程" />
+      <Row gutter={[16, 8]} align="middle" style={{ width: '100%' }}>
+        <Col flex="2" style={{ minWidth: '180px' }}>
+          <Form.Item name="search" className="mb-0">
+            <Input placeholder="学员姓名/ID/课程" allowClear />
           </Form.Item>
         </Col>
-        <Col flex="1 1 200px">
-          <Form.Item label="选择课程" name="courseId">
+        <Col flex="2" style={{ minWidth: '160px' }}>
+          <Form.Item name="courseId" className="mb-0">
             <Select
               placeholder="选择课程"
               options={courseOptions}
               allowClear
+              style={{ width: '100%' }}
               getPopupContainer={trigger => trigger.parentElement}
             />
           </Form.Item>
         </Col>
-        <Col flex="1 1 150px">
-          <Form.Item label="出勤状态" name="status">
+        <Col flex="1" style={{ minWidth: '130px' }}>
+          <Form.Item name="status" className="mb-0">
             <Select
               placeholder="出勤状态"
               options={statusOptions}
               allowClear
+              style={{ width: '100%' }}
               getPopupContainer={trigger => trigger.parentElement}
             />
           </Form.Item>
         </Col>
-        <Col flex="1 1 280px">
-          <Form.Item label="日期范围" name="dateRange">
-            <DatePicker.RangePicker style={{ width: '100%' }} />
+        <Col flex="2" style={{ minWidth: '240px' }}>
+          <Form.Item name="dateRange" className="mb-0">
+            <DatePicker.RangePicker 
+              style={{ width: '100%' }} 
+              placeholder={['开始日期', '结束日期']}
+              locale={locale}
+              format="YYYY-MM-DD"
+            />
           </Form.Item>
         </Col>
-        <Col>
-          <Form.Item label=" " colon={false}>
-            <Space size="large">
+        <Col flex="1" style={{ minWidth: '160px', marginLeft: '16px' }}>
+          <Form.Item className="mb-0">
+            <Space size="middle" style={{ width: '100%', justifyContent: 'flex-end' }}>
               <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
                 搜索
               </Button>

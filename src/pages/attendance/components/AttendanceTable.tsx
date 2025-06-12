@@ -3,6 +3,7 @@ import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { AttendanceRecord } from '../types';
 import { STATUS_TEXT_MAP, STATUS_COLOR_MAP } from '../constants';
+import StandardPagination from '@/components/common/StandardPagination';
 import './AttendanceTable.css';
 
 const PRESET_COLORS = [
@@ -109,30 +110,23 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   ];
 
   return (
-    <Table<AttendanceRecord>
-      className="attendance-table"
-      columns={columns}
-      dataSource={data}
-      rowKey="id"
-      loading={loading}
-      pagination={{
-        current: currentPage,
-        pageSize: pageSize,
-        total: total,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total) => `共 ${total} 条记录`,
-        locale: {
-          items_per_page: '条/页',
-          jump_to: '跳至',
-          jump_to_confirm: '确定',
-          page: '页',
-        },
-      }}
-      onChange={(pagination) => {
-        onPageChange(pagination.current || 1, pagination.pageSize || 10);
-      }}
-    />
+    <>
+      <Table<AttendanceRecord>
+        className="attendance-table"
+        columns={columns}
+        dataSource={data}
+        rowKey="id"
+        loading={loading}
+        pagination={false}
+      />
+      <StandardPagination
+        current={currentPage}
+        pageSize={pageSize}
+        total={total}
+        onChange={onPageChange}
+        totalText="条考勤记录"
+      />
+    </>
   );
 };
 

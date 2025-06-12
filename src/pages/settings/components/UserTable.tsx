@@ -3,6 +3,7 @@ import { Table, Button, Tooltip, Space, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { User } from '../types/user';
 import { roleOptions, campusOptions } from '../constants/userOptions';
+import StandardPagination from '@/components/common/StandardPagination';
 
 interface UserTableProps {
   users: User[];
@@ -235,21 +236,22 @@ const UserTable: React.FC<UserTableProps> = ({
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={users}
-      rowKey="id"
-      loading={loading}
-      pagination={{
-        current: currentPage,
-        pageSize: pageSize,
-        total: total,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: total => `共 ${total} 条记录`,
-        onChange: onPageChange
-      }}
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={users}
+        rowKey="id"
+        loading={loading}
+        pagination={false}
+      />
+      <StandardPagination
+        current={currentPage}
+        pageSize={pageSize}
+        total={total}
+        onChange={onPageChange}
+        totalText="个用户"
+      />
+    </>
   );
 };
 

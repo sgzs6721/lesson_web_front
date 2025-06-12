@@ -109,12 +109,7 @@ const StudentContent: React.FC<StudentContentProps> = ({
           current: currentPage,
           pageSize: pageSize,
           total: totalStudents,
-          onChange: onPageChange,
-          showSizeChanger: false,
-          showQuickJumper: true,
-          size: 'small',
-          showTotal: (total) => `共 ${total} 条`,
-          style: { marginTop: '16px', textAlign: 'right' }
+          onChange: onPageChange
         }}
         onEdit={onEdit}
         onClassRecord={onClassRecord}
