@@ -21,9 +21,8 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
   };
 
   return (
-    <div>
-      <Spin spinning={loading}>
-        <Row gutter={[16, 16]}>
+    <Spin spinning={loading}>
+      <Row gutter={16} style={{ marginBottom: 24 }}>
           <Col flex={1}>
             <Card style={cardStyle} bordered={false}>
               <Statistic
@@ -77,7 +76,6 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
           </Col>
         </Row>
       </Spin>
-    </div>
   );
 };
 

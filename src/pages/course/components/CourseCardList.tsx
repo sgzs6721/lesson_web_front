@@ -212,28 +212,7 @@ const CourseCardList: React.FC<CourseCardListProps> = ({
                   更新时间: {dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')}
                 </div>
                 
-                {item.description && (
-                  <div style={{ marginTop: '12px', marginBottom: '12px' }}>
-                    <div style={{ 
-                      fontWeight: 600, 
-                      fontSize: '14px', 
-                      color: '#8c8c8c',
-                      marginBottom: '6px'
-                    }}>
-                      课程描述：
-                    </div>
-                    <Paragraph 
-                      ellipsis={{ rows: 2 }} 
-                      style={{ 
-                        fontSize: '13px',
-                        color: '#8c8c8c',
-                        margin: 0
-                      }}
-                    >
-                      {item.description}
-                    </Paragraph>
-                  </div>
-                )}
+
                 
                 <div style={{ 
                   fontSize: '12px', 

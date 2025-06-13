@@ -142,7 +142,7 @@ const PaymentSearchBar: React.FC<PaymentSearchBarProps> = ({
                 placeholder={['开始日期', '结束日期']}
                 locale={locale}
                 format="YYYY-MM-DD"
-                style={{ width: '100%' }}
+                style={{ width: '100%', textAlign: 'center' }}
               />
             </Form.Item>
           </Col>
@@ -150,7 +150,7 @@ const PaymentSearchBar: React.FC<PaymentSearchBarProps> = ({
           {/* 操作按钮 */}
           <Col flex="2" style={{ minWidth: '200px' }}>
             <Form.Item className="mb-0">
-              <Space size="small" style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Space size={12} style={{ width: '100%', justifyContent: 'flex-end' }}>
                 <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
                   查询
                 </Button>

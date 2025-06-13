@@ -83,46 +83,47 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, courses }) =
   }));
 
   return (
-    <Form form={form} onFinish={handleFinish} onReset={handleReset}>
-      <Row gutter={[16, 8]} align="middle" style={{ width: '100%' }}>
-        <Col flex="2" style={{ minWidth: '180px' }}>
+    <div className="attendance-table-toolbar">
+      <Form form={form} onFinish={handleFinish} onReset={handleReset}>
+      <Row gutter={[12, 8]} align="middle" style={{ width: '100%', display: 'flex' }}>
+        <Col span={5}>
           <Form.Item name="search" className="mb-0">
             <Input placeholder="学员姓名/ID/课程" allowClear />
           </Form.Item>
         </Col>
-        <Col flex="2" style={{ minWidth: '160px' }}>
+        <Col span={4}>
           <Form.Item name="courseId" className="mb-0">
             <Select
               placeholder="选择课程"
               options={courseOptions}
               allowClear
               style={{ width: '100%' }}
-              getPopupContainer={trigger => trigger.parentElement}
+              getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
             />
           </Form.Item>
         </Col>
-        <Col flex="1" style={{ minWidth: '130px' }}>
+        <Col span={4}>
           <Form.Item name="status" className="mb-0">
             <Select
               placeholder="出勤状态"
               options={statusOptions}
               allowClear
               style={{ width: '100%' }}
-              getPopupContainer={trigger => trigger.parentElement}
+              getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
             />
           </Form.Item>
         </Col>
-        <Col flex="2" style={{ minWidth: '240px' }}>
+        <Col span={7}>
           <Form.Item name="dateRange" className="mb-0">
             <DatePicker.RangePicker 
-              style={{ width: '100%' }} 
+              style={{ width: '100%', textAlign: 'center' }} 
               placeholder={['开始日期', '结束日期']}
               locale={locale}
               format="YYYY-MM-DD"
             />
           </Form.Item>
         </Col>
-        <Col flex="1" style={{ minWidth: '160px', marginLeft: '16px' }}>
+        <Col span={4}>
           <Form.Item className="mb-0">
             <Space size="middle" style={{ width: '100%', justifyContent: 'flex-end' }}>
               <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
@@ -136,6 +137,7 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, courses }) =
         </Col>
       </Row>
     </Form>
+  </div>
   );
 };
 

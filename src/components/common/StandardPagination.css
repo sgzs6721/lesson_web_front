@@ -30,6 +30,10 @@
 }
 
 .pagination-size-selector .ant-select-selector {
+  width: 120px !important;
+}
+
+.pagination-size-selector .ant-select-selector {
   height: 32px !important;
   line-height: 30px !important;
 }

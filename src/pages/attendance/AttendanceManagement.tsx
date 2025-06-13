@@ -12,6 +12,7 @@ import type { SimpleCourse } from '@/api/course/types';
 import type { AttendanceListRequest, AttendanceRecordItem } from '@/api/attendance';
 import type { AttendanceStatRequest } from './types';
 import './AttendanceManagement.css';
+import './components/FilterForm.css';
 
 const { Title } = Typography;
 
@@ -210,16 +211,12 @@ const AttendanceManagement: React.FC = () => {
           <Title level={4} className="page-title">出勤记录</Title>
         </div>
         
-        <div style={{ marginBottom: '8px' }}>
-          <FilterForm
-            onFilter={handleFilter}
-            onReset={handleReset}
-            courses={courses}
-          />
-        </div>
-        <div style={{ marginBottom: '24px' }}>
-          <StatisticsCard statistics={statistics} loading={statisticsLoading} />
-        </div>
+        <FilterForm
+          onFilter={handleFilter}
+          onReset={handleReset}
+          courses={courses}
+        />
+        <StatisticsCard statistics={statistics} loading={statisticsLoading} />
         <AttendanceTable
           loading={loading}
           data={attendanceData}

@@ -20,17 +20,9 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.payment-title {
-  margin: 0 !important;
-  font-size: 18px;
-  font-weight: 600;
-  color: #262626;
-}
 
-/* 搜索栏样式 */
-.table-toolbar {
-  margin-bottom: 16px;
-}
+
+/* 搜索栏样式 - 已在payment.css中定义 */
 
 /* 响应式布局 */
 @media (max-width: 1200px) {

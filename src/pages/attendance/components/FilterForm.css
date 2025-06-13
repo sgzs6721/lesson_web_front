@@ -1,0 +1,53 @@
+.attendance-table-toolbar {
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+/* 表单项样式统一 */
+.attendance-table-toolbar .ant-form-item {
+  margin-bottom: 0;
+}
+
+.attendance-table-toolbar .ant-form-item-control {
+  line-height: 32px;
+}
+
+/* 搜索栏响应式样式 */
+.attendance-table-toolbar .ant-input-search {
+  border-radius: 4px;
+}
+
+.attendance-table-toolbar .ant-select {
+  border-radius: 4px;
+}
+
+.attendance-table-toolbar .ant-picker {
+  border-radius: 4px;
+}
+
+.attendance-table-toolbar .ant-picker-input input {
+  text-align: center;
+}
+
+.attendance-table-toolbar .ant-picker-range .ant-picker-input input {
+  text-align: center;
+}
+
+/* 按钮样式优化 */
+.attendance-table-toolbar .ant-btn {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.attendance-table-toolbar .ant-btn-primary {
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.attendance-table-toolbar .ant-btn-primary:hover {
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  transform: translateY(-1px);
+} 

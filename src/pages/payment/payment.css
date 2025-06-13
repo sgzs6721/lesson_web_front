@@ -97,6 +97,14 @@
   border-radius: 4px;
 }
 
+.table-toolbar .ant-picker-input input {
+  text-align: center;
+}
+
+.table-toolbar .ant-picker-range .ant-picker-input input {
+  text-align: center;
+}
+
 /* 按钮样式优化 */
 .table-toolbar .ant-btn {
   border-radius: 4px;

@@ -104,7 +104,7 @@ const PaymentRecords: React.FC = () => {
     <div className="payment-management">
       <Card className="payment-management-card">
         <div className="payment-header">
-          <h1 className="payment-title">缴费记录</h1>
+          <Title level={4} className="page-title">缴费记录</Title>
         </div>
 
         <PaymentSearchBar
