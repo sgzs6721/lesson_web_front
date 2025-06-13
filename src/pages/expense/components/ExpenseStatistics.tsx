@@ -45,7 +45,7 @@ const FinanceStatistics: React.FC<FinanceStatisticsProps> = ({
   return (
     <>
       {/* 所有统计数据放在一起，每行4个卡片 */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         {/* 第一行：支出相关 */}
         <Col span={6}>
           <Card style={expenseCardStyle}>

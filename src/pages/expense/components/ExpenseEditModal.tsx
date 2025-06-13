@@ -119,10 +119,10 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
         >
           <Select
             placeholder="请选择类别"
-            className="custom-select"
-            popupClassName="custom-select-dropdown"
             showSearch={false}
             virtual={false}
+            dropdownMatchSelectWidth={true}
+            getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
           >
             {getCategoryOptions()}
           </Select>

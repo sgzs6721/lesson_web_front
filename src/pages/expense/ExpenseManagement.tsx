@@ -40,6 +40,7 @@ const FinanceManagement: React.FC = () => {
   const {
     searchParams,
     setSearchText,
+    setSelectedItem,
     setSearchCategories,
     setSearchType,
     setDateRange,
@@ -109,7 +110,7 @@ const FinanceManagement: React.FC = () => {
           className="expense-header"
           style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}
         >
-          <Title level={4} className="expense-title" style={{ margin: 0 }}>收支管理</Title>
+          <Title level={4} className="page-title">收支管理</Title>
           <div className="expense-actions">
             <Button
               type="primary"
@@ -121,6 +122,19 @@ const FinanceManagement: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        {/* 搜索栏 */}
+        <FinanceSearchBar
+          params={searchParams}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          onExport={() => exportToCSV(data)}
+          onTextChange={setSearchText}
+          onItemChange={setSelectedItem}
+          onCategoriesChange={setSearchCategories}
+          onTypeChange={setSearchType}
+          onDateRangeChange={setDateRange}
+        />
 
         {/* 统计卡片 */}
         <FinanceStatistics
@@ -134,28 +148,13 @@ const FinanceManagement: React.FC = () => {
           otherIncome={otherIncome + retailIncome}
         />
 
-        {/* 主要内容卡片 */}
-        <Card>
-          {/* 搜索栏 */}
-          <FinanceSearchBar
-            params={searchParams}
-            onSearch={handleSearch}
-            onReset={handleReset}
-            onExport={() => exportToCSV(data)}
-            onTextChange={setSearchText}
-            onCategoriesChange={setSearchCategories}
-            onTypeChange={setSearchType}
-            onDateRangeChange={setDateRange}
-          />
-
-          {/* 数据表格 */}
-          <FinanceTable
-            data={data}
-            onEdit={handleEdit}
-            onDelete={showDeleteConfirm}
-            onViewDetails={showDetails}
-          />
-        </Card>
+        {/* 数据表格 */}
+        <FinanceTable
+          data={data}
+          onEdit={handleEdit}
+          onDelete={showDeleteConfirm}
+          onViewDetails={showDetails}
+        />
 
         {/* 编辑/添加模态框 */}
         <FinanceEditModal

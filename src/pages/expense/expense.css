@@ -48,9 +48,31 @@
   color: rgba(0, 0, 0, 0.4) !important;
 }
 
+/* 收支管理页面样式 */
+.expense-management {
+  padding: 0 4px;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.expense-management-card {
+  margin-top: -12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
 /* 收支管理界面容器 */
 .expense-management-container {
   padding: 24px;
+}
+
+/* 日期选择器文字居中 */
+.table-toolbar .ant-picker-input input {
+  text-align: center;
+}
+
+.table-toolbar .ant-picker-range .ant-picker-input input {
+  text-align: center;
 }
 
 /* 解决收支管理页面模态框中分隔线重复的问题 */
@@ -60,4 +82,27 @@
 
 .ant-modal .ant-divider {
   margin-top: 0;
+}
+
+/* 响应式布局 */
+@media (max-width: 1200px) {
+  .table-toolbar .ant-row {
+    flex-wrap: wrap !important;
+  }
+  
+  .table-toolbar .ant-col {
+    min-width: auto !important;
+    margin-bottom: 8px;
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .expense-management {
+    padding: 0;
+  }
+
+  .expense-management-card {
+    margin-top: -8px;
+  }
 } 

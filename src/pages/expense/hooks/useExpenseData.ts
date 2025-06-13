@@ -37,7 +37,7 @@ export const useFinanceData = () => {
   
   const filterData = (params: ExpenseSearchParams) => {
     let filteredData = mockData;
-    const { searchText, searchCategories, dateRange, type } = params;
+    const { searchText, selectedItem, searchCategories, dateRange, type } = params;
 
     if (searchText) {
       filteredData = filteredData.filter(
@@ -45,6 +45,10 @@ export const useFinanceData = () => {
                item.remark.includes(searchText) ||
                item.id.includes(searchText)
       );
+    }
+
+    if (selectedItem) {
+      filteredData = filteredData.filter(item => item.item === selectedItem);
     }
 
     if (searchCategories && searchCategories.length > 0) {

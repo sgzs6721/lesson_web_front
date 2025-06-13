@@ -13,6 +13,7 @@ export interface Expense {
 
 export type ExpenseSearchParams = {
   searchText: string;
+  selectedItem: string;
   searchCategories: string[];
   dateRange: [Dayjs | null, Dayjs | null] | null;
   type?: 'income' | 'expense' | null;

@@ -14,7 +14,6 @@ export const getTableColumns = (
     title: '日期',
     dataIndex: 'date',
     key: 'date',
-    sorter: (a, b) => a.date.localeCompare(b.date),
     align: 'center',
   },
   {
@@ -26,11 +25,6 @@ export const getTableColumns = (
       const color = type === 'income' ? 'green' : 'red';
       return <Tag color={color}>{TRANSACTION_TYPE_LABEL[type]}</Tag>;
     },
-    filters: [
-      { text: '收入', value: 'income' },
-      { text: '支出', value: 'expense' },
-    ],
-    onFilter: (value, record) => record.type === value,
   },
   {
     title: '项目',
@@ -42,7 +36,6 @@ export const getTableColumns = (
     title: '金额 (¥)',
     dataIndex: 'amount',
     key: 'amount',
-    sorter: (a, b) => a.amount - b.amount,
     render: (amount, record) => {
       const style = { color: record.type === 'income' ? '#3f8600' : '#cf1322' };
       return <span style={style}>{`¥${amount.toLocaleString('zh-CN')}`}</span>;
