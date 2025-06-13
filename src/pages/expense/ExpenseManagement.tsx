@@ -40,7 +40,6 @@ const FinanceManagement: React.FC = () => {
   const {
     searchParams,
     setSearchText,
-    setSelectedItem,
     setSearchCategories,
     setSearchType,
     setDateRange,
@@ -130,7 +129,6 @@ const FinanceManagement: React.FC = () => {
           onReset={handleReset}
           onExport={() => exportToCSV(data)}
           onTextChange={setSearchText}
-          onItemChange={setSelectedItem}
           onCategoriesChange={setSearchCategories}
           onTypeChange={setSearchType}
           onDateRangeChange={setDateRange}

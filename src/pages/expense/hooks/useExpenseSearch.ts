@@ -3,16 +3,14 @@ import dayjs from 'dayjs';
 import { ExpenseSearchParams } from '../types/expense';
 
 export const useExpenseSearch = (onSearch: (params: ExpenseSearchParams) => void) => {
-  const [searchText, setSearchText] = useState('');
-  const [selectedItem, setSelectedItem] = useState('');
+  const [text, setText] = useState('');
   const [searchCategories, setSearchCategories] = useState<string[]>([]);
   const [searchType, setSearchType] = useState<'income' | 'expense' | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   
   const handleSearch = () => {
     const params: ExpenseSearchParams = {
-      searchText,
-      selectedItem,
+      text,
       searchCategories,
       dateRange,
       type: searchType
@@ -21,16 +19,13 @@ export const useExpenseSearch = (onSearch: (params: ExpenseSearchParams) => void
   };
   
   const handleReset = () => {
-    setSearchText('');
-    setSelectedItem('');
+    setText('');
     setSearchCategories([]);
     setSearchType(null);
     setDateRange(null);
     
-    // 重置后自动搜索
     onSearch({
-      searchText: '',
-      selectedItem: '',
+      text: '',
       searchCategories: [],
       dateRange: null,
       type: null
@@ -39,14 +34,12 @@ export const useExpenseSearch = (onSearch: (params: ExpenseSearchParams) => void
   
   return {
     searchParams: {
-      searchText,
-      selectedItem,
+      text,
       searchCategories,
       dateRange,
       type: searchType
     },
-    setSearchText,
-    setSelectedItem,
+    setSearchText: setText,
     setSearchCategories,
     setSearchType,
     setDateRange,

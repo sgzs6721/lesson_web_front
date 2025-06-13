@@ -33,6 +33,7 @@ const SystemSettings: React.FC = () => {
   const [giftOptions, setGiftOptions] = useState<IOptionItem[]>([]);
   const [feeOptions, setFeeOptions] = useState<IOptionItem[]>([]);
   const [expireTypeOptions, setExpireTypeOptions] = useState<IOptionItem[]>([]);
+  const [expenseTypeOptions, setExpenseTypeOptions] = useState<IOptionItem[]>([]);
   const [backupList, setBackupList] = useState<IBackupItem[]>([]);
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   
@@ -111,7 +112,7 @@ const SystemSettings: React.FC = () => {
   };
 
   // 选项管理相关处理
-  const handleAddOption = (type: string, option: IOptionItem) => {
+  const handleAddOption = async (type: string, option: IOptionItem) => {
     const newOption = {
       ...option,
       id: uuidv4()
@@ -199,7 +200,7 @@ const SystemSettings: React.FC = () => {
       ''}选项成功`);
   };
 
-  const handleUpdateOption = (id: string, option: IOptionItem) => {
+  const handleUpdateOption = async (id: string, option: IOptionItem) => {
     // 通过 id 查找对应的选项类型
     let type: string;
     
@@ -351,10 +352,13 @@ const SystemSettings: React.FC = () => {
             giftOptions={giftOptions}
             feeOptions={feeOptions}
             expireTypeOptions={expireTypeOptions}
+            expenseTypeOptions={expenseTypeOptions}
+            loading={{}}
             onAddOption={handleAddOption}
-            onDeleteOption={handleDeleteOption}
             onUpdateOption={handleUpdateOption}
             showDeleteConfirm={showDeleteConfirm}
+            closeAddForm={{}}
+            closeEditForm={{}}
           />
         </div>
       )

@@ -15,13 +15,19 @@ let mockConstants: Record<string, Constant[]> = {
   'PAYMENT_TYPE': [],
   'GIFT_ITEM': [],
   'HANDLING_FEE_TYPE': [],
-  'VALIDITY_PERIOD': []
+  'VALIDITY_PERIOD': [],
+  'EXPENSE_TYPE': []
 };
 
 // 常量相关接口
 export const constants = {
   // 获取常量列表
   getList: async (type: string): Promise<Constant[]> => {
+    if (type === 'EXPENSE_TYPE') {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return mockConstants['EXPENSE_TYPE'] || [];
+    }
+
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 300));
       return mockConstants[type] || [];
@@ -50,6 +56,17 @@ export const constants = {
 
   // 新增常量
   save: async (constant: Omit<Constant, 'id'>): Promise<Constant | null> => {
+    if (constant.type === 'EXPENSE_TYPE') {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const newId = Math.max(...(mockConstants['EXPENSE_TYPE'] || []).map(c => c.id || 0), 0) + 1;
+      const newConstant = { ...constant, id: newId };
+      if (!mockConstants['EXPENSE_TYPE']) {
+        mockConstants['EXPENSE_TYPE'] = [];
+      }
+      mockConstants['EXPENSE_TYPE'].push(newConstant);
+      return newConstant;
+    }
+
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 300));
       
@@ -92,6 +109,19 @@ export const constants = {
 
   // 更新常量
   update: async (constant: Constant): Promise<boolean> => {
+    if (constant.type === 'EXPENSE_TYPE') {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      if (!mockConstants['EXPENSE_TYPE']) {
+        return false;
+      }
+      const index = mockConstants['EXPENSE_TYPE'].findIndex(c => c.id === constant.id);
+      if (index === -1) {
+        return false;
+      }
+      mockConstants['EXPENSE_TYPE'][index] = constant;
+      return true;
+    }
+
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 300));
       
@@ -135,6 +165,13 @@ export const constants = {
 
   // 删除常量
   delete: async (id: number): Promise<boolean> => {
+    const expenseIndex = (mockConstants['EXPENSE_TYPE'] || []).findIndex(c => c.id === id);
+    if (expenseIndex !== -1) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      mockConstants['EXPENSE_TYPE'].splice(expenseIndex, 1);
+      return true;
+    }
+
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 300));
       

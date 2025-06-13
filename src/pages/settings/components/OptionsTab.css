@@ -85,28 +85,6 @@
   display: block;
 }
 
-/* 红框内高亮区域 - 支付相关Tab样式 */
-.settings-vertical-tabs .ant-tabs-tab:nth-child(2) {
-  position: relative;
-  background: linear-gradient(135deg, rgba(64, 150, 255, 0.02) 0%, rgba(64, 150, 255, 0.05) 100%) !important;
-  border-left: 3px solid #1677ff !important;
-  padding-left: 21px !important;
-}
-
-.settings-vertical-tabs .ant-tabs-tab:nth-child(2) .tab-item {
-  color: #1677ff;
-  font-weight: 500;
-}
-
-.settings-vertical-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active {
-  background: linear-gradient(135deg, rgba(24, 144, 255, 0.05) 0%, rgba(24, 144, 255, 0.1) 100%) !important;
-  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.1);
-}
-
-.settings-vertical-tabs .ant-tabs-tab:nth-child(2):hover {
-  background: linear-gradient(135deg, rgba(24, 144, 255, 0.08) 0%, rgba(24, 144, 255, 0.12) 100%) !important;
-}
-
 /* 选项卡内容样式 */
 .options-tab {
   padding-top: 0;

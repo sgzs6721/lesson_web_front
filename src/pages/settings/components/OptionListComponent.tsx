@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Typography, Form, message, Spin, Row, Col, Space, Card, Empty, Switch, Modal, InputNumber } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, CheckOutlined, CloseOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { IOptionListProps, IOptionItem } from '../types';
+import { IOptionListProps, IOptionItem, IFormField } from '../types';
 import './cards.css';
 
 const { Title, Text } = Typography;
@@ -51,7 +51,8 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
   onDelete,
   onUpdate,
   loading = false,
-  closeForm = false
+  closeForm = false,
+  formFields = []
 }) => {
 
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -201,6 +202,84 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
     onDelete(id, name);
   };
 
+  const renderForm = (isEdit: boolean) => {
+    const handleSubmit = () => {
+      if (isEdit) {
+        saveInlineEdit(editingItemId!);
+      } else {
+        saveNewOption();
+      }
+    };
+
+    const handleCancel = () => {
+      if (isEdit) {
+        cancelInlineEdit();
+      } else {
+        cancelAddingNew();
+      }
+    };
+
+    const loadingState = isEdit ? (editLoadingId === editingItemId) : addLoading;
+
+    return (
+      <div className="adding-card" style={{ width: '100%', marginBottom: '24px', background: '#f8faff', border: '1px dashed #1677FF', borderRadius: '8px', padding: '16px', position: 'relative' }}>
+        <Spin spinning={loadingState} tip={isEdit ? "保存中..." : "添加中..."} wrapperClassName="local-spin">
+          <Form layout="inline" onFinish={handleSubmit}>
+            <Row gutter={[16, 16]} align="middle" style={{width: '100%'}}>
+                <Col>
+                    <Form.Item label="显示文本" required>
+                        <Input
+                          placeholder="请输入显示文本"
+                          value={newOption.name}
+                          onChange={(e) => setNewOption({ ...newOption, name: e.target.value })}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col>
+                    <Form.Item label="枚举值" required>
+                        <Input
+                          placeholder="请输入枚举值"
+                          value={newOption.value}
+                          onChange={(e) => setNewOption({ ...newOption, value: e.target.value })}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col>
+                    <Form.Item label="描述">
+                        <Input
+                          placeholder="请输入描述信息（选填）"
+                          value={newOption.description}
+                          onChange={(e) => setNewOption({ ...newOption, description: e.target.value })}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col>
+                    <Form.Item label="是否启用">
+                        <Switch
+                            checked={newOption.enabled}
+                            onChange={(checked) => setNewOption({ ...newOption, enabled: checked })}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col flex="auto" style={{ textAlign: 'center' }}>
+                  <Form.Item>
+                    <Space>
+                      <Button type="primary" htmlType="submit" icon={<CheckOutlined />} disabled={loadingState}>
+                        确认
+                      </Button>
+                      <Button icon={<CloseOutlined />} onClick={handleCancel} disabled={loadingState}>
+                        取消
+                      </Button>
+                    </Space>
+                  </Form.Item>
+                </Col>
+            </Row>
+          </Form>
+        </Spin>
+      </div>
+    );
+  };
+
   return (
     <div className="option-list-container" style={{ width: '100%' }}>
       {/* 添加内联样式标签 */}
@@ -232,171 +311,10 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
       </div>
 
         {/* 编辑表单优先显示在最上方 */}
-        {isInlineEditing && editingItemId && safeOptions.find(item => item.id === editingItemId) && (
-          <div className="adding-card" style={{ width: '100%', marginBottom: '24px', background: '#f8faff', border: '1px dashed #1677FF', borderRadius: '8px', padding: '16px', position: 'relative' }}>
-            <Spin spinning={editLoadingId === editingItemId} tip="保存中..." wrapperClassName="local-spin">
-              <Form layout="horizontal">
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto', marginRight: '16px' }}>
-                    <span style={{ marginRight: '8px', whiteSpace: 'nowrap' }}>显示文本:</span>
-                    {type === 'VALIDITY_PERIOD' ? (
-                      <InputNumber
-                        placeholder="请输入大于等于1的整数"
-                        min={1}
-                        precision={0}
-                        value={newOption.name === '' ? undefined : Number(newOption.name)}
-                        onChange={(value) => setNewOption({...newOption, name: value ? value.toString() : ''})}
-                        style={{ width: '180px' }}
-                      />
-                    ) : (
-                      <Input
-                        placeholder="请输入显示文本"
-                        value={newOption.name}
-                        onChange={(e) => setNewOption({...newOption, name: e.target.value})}
-                        style={{ width: '180px' }}
-                      />
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto', marginRight: '16px' }}>
-                    <span style={{ marginRight: '8px', whiteSpace: 'nowrap' }}>枚举值:</span>
-                    <Input
-                      placeholder="请输入枚举值"
-                      value={newOption.value}
-                      onChange={(e) => setNewOption({...newOption, value: e.target.value})}
-                      style={{ width: '180px' }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', flex: '1', marginRight: '16px' }}>
-                    <span style={{ marginRight: '8px', whiteSpace: 'nowrap' }}>描述:</span>
-                    <Input
-                      placeholder="请输入描述信息（选填）"
-                      value={newOption.description}
-                      onChange={(e) => setNewOption({...newOption, description: e.target.value})}
-                      style={{ flex: '1' }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
-                    <span style={{ marginRight: '8px', whiteSpace: 'nowrap' }}>是否启用:</span>
-                    <Switch
-                      checked={newOption.enabled}
-                      onChange={(checked) => setNewOption({...newOption, enabled: checked})}
-                    />
-                  </div>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  marginTop: '16px',
-                  position: 'static'
-                }}>
-                  <Space style={{ position: 'static' }}>
-                    <Button 
-                      type="primary" 
-                      className="form-button"
-                      icon={<CheckOutlined />} 
-                      onClick={() => saveInlineEdit(editingItemId)}
-                      disabled={editLoadingId === editingItemId}
-                    >
-                      确认
-                    </Button>
-                    <Button 
-                      className="form-button"
-                      icon={<CloseOutlined />} 
-                      onClick={cancelInlineEdit}
-                      disabled={editLoadingId === editingItemId}
-                    >
-                      取消
-                    </Button>
-                  </Space>
-                </div>
-              </Form>
-            </Spin>
-          </div>
-        )}
+        {isInlineEditing && editingItemId && renderForm(true)}
         {/* 新增表单也放在上方，风格统一 */}
-        {isAddingNew && (
-          <div className="adding-card" style={{ width: '100%', marginBottom: '24px', background: '#f8faff', border: '1px dashed #1677FF', borderRadius: '8px', padding: '16px', position: 'relative' }}>
-            <Spin spinning={addLoading} tip="添加中..." wrapperClassName="local-spin">
-            <Form layout="horizontal">
-              <Row gutter={[16, 8]} align="middle">
-                <Col xs={24} sm={8} md={6} lg={6}>
-                  <Form.Item style={{ marginBottom: 8 }} label="显示文本">
-                    {type === 'VALIDITY_PERIOD' ? (
-                      <InputNumber
-                        placeholder="请输入大于等于1的整数"
-                        min={1}
-                        precision={0}
-                        value={newOption.name === '' ? undefined : Number(newOption.name)}
-                        onChange={(value) => setNewOption({...newOption, name: value ? value.toString() : ''})}
-                        style={{ width: '100%' }}
-                      />
-                    ) : (
-                      <Input
-                        placeholder="请输入显示文本"
-                        value={newOption.name}
-                        onChange={(e) => setNewOption({...newOption, name: e.target.value})}
-                      />
-                    )}
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={8} md={6} lg={6}>
-                  <Form.Item style={{ marginBottom: 8 }} label="枚举值">
-                    <Input
-                      placeholder="请输入枚举值"
-                      value={newOption.value}
-                      onChange={(e) => setNewOption({...newOption, value: e.target.value})}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={16} md={8} lg={9}>
-                  <Form.Item style={{ marginBottom: 8 }} label="描述">
-                    <Input
-                      placeholder="请输入描述信息（选填）"
-                      value={newOption.description}
-                      onChange={(e) => setNewOption({...newOption, description: e.target.value})}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={6} md={4} lg={3}>
-                  <Form.Item style={{ marginBottom: 8 }} label="是否启用">
-                    <Switch
-                      checked={newOption.enabled}
-                      onChange={(checked) => setNewOption({...newOption, enabled: checked})}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24} style={{ 
-                  textAlign: 'center', 
-                  marginTop: '8px',
-                  position: 'static'
-                }}>
-                  <Space style={{ position: 'static' }}>
-                    <Button 
-                      type="primary" 
-                      className="form-button"
-                      icon={<CheckOutlined />} 
-                      onClick={saveNewOption}
-                      disabled={addLoading}
-                    >
-                      确认
-                    </Button>
-                    <Button 
-                      className="form-button"
-                      icon={<CloseOutlined />} 
-                      onClick={cancelAddingNew}
-                      disabled={addLoading}
-                    >
-                      取消
-                    </Button>
-                  </Space>
-                </Col>
-              </Row>
-            </Form>
-            </Spin>
-          </div>
-        )}
+        {isAddingNew && renderForm(false)}
+        
         {/* 卡片列表内容保持不变 */}
         {safeOptions.length === 0 && !loading && !isAddingNew && !isInlineEditing ? (
           <Empty

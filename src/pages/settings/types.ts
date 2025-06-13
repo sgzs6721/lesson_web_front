@@ -44,21 +44,29 @@ export interface IOptionItem {
   id: string;
   name: string;
   value: string;
-  enabled?: boolean;
   description?: string;
+  enabled?: boolean;
   status?: number;
+}
+
+export interface IFormField {
+  name: string;
+  label: string;
+  required: boolean;
+  message: string;
 }
 
 export interface IOptionListProps {
   type: string;
-  options: IOptionItem[];
-  title: string;
-  addButtonText: string;
+  options?: IOptionItem[];
+  title?: string;
+  addButtonText?: string;
   onAdd: (option: IOptionItem) => void;
   onDelete: (id: string, name: string) => void;
   onUpdate: (id: string, option: IOptionItem) => void;
   loading?: boolean;
   closeForm?: boolean;
+  formFields: IFormField[];
 }
 
 // 备份记录类型

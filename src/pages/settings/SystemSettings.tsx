@@ -57,6 +57,7 @@ const SystemSettings: React.FC = () => {
   const [giftOptions, setGiftOptions] = useState<IOptionItem[]>([]);
   const [feeOptions, setFeeOptions] = useState<IOptionItem[]>([]);
   const [expireTypeOptions, setExpireTypeOptions] = useState<IOptionItem[]>([]);
+  const [expenseTypeOptions, setExpenseTypeOptions] = useState<IOptionItem[]>([]);
   const [backupList, setBackupList] = useState<IBackupItem[]>([]);
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -93,6 +94,9 @@ const SystemSettings: React.FC = () => {
         case 'VALIDITY_PERIOD':
           setExpireTypeOptions(options);
           break;
+        case 'EXPENSE_TYPE':
+          setExpenseTypeOptions(options);
+          break;
       }
     } catch (error) {
       console.error(`加载${type}选项失败:`, error);
@@ -111,6 +115,7 @@ const SystemSettings: React.FC = () => {
     loadOptions('GIFT_ITEM');
     loadOptions('HANDLING_FEE_TYPE');
     loadOptions('VALIDITY_PERIOD');
+    loadOptions('EXPENSE_TYPE');
     setOptionsLoaded(true);
   };
 
@@ -144,6 +149,7 @@ const SystemSettings: React.FC = () => {
     setGiftOptions([]);
     setFeeOptions([]);
     setExpireTypeOptions([]);
+    setExpenseTypeOptions([]);
 
     // 初始化备份列表
     setBackupList([
@@ -205,7 +211,7 @@ const SystemSettings: React.FC = () => {
   };
 
   // 选项管理相关处理
-  const handleAddOption = async (type: string, option: IOptionItem) => {
+  const handleAddOption = async (type: string, option: IOptionItem): Promise<void> => {
     const apiType = getApiType(type);
     setLoading(prev => ({ ...prev, [apiType]: true }));
     setCloseAddForm(prev => ({ ...prev, [apiType]: false }));
@@ -234,6 +240,9 @@ const SystemSettings: React.FC = () => {
             break;
           case 'VALIDITY_PERIOD':
             setExpireTypeOptions(prev => [...prev, newOption]);
+            break;
+          case 'EXPENSE_TYPE':
+            setExpenseTypeOptions(prev => [...prev, newOption]);
             break;
         }
         
@@ -297,6 +306,9 @@ const SystemSettings: React.FC = () => {
       case 'VALIDITY_PERIOD':
         optionsList = expireTypeOptions;
         break;
+      case 'EXPENSE_TYPE':
+        optionsList = expenseTypeOptions;
+        break;
     }
     
     const targetOption = optionsList.find(item => item.id === id);
@@ -329,6 +341,9 @@ const SystemSettings: React.FC = () => {
           case 'VALIDITY_PERIOD':
             setExpireTypeOptions(prev => prev.filter(item => item.id !== id));
             break;
+          case 'EXPENSE_TYPE':
+            setExpenseTypeOptions(prev => prev.filter(item => item.id !== id));
+            break;
         }
       }
       
@@ -340,84 +355,73 @@ const SystemSettings: React.FC = () => {
     }
   };
 
-  const handleUpdateOption = async (id: string, option: IOptionItem) => {
+  const handleUpdateOption = async (id: string, option: IOptionItem): Promise<void> => {
     // 通过 id 在各个选项中查找来确定类型
-    let apiType: string;
-    let type: string;
-    
-    // 在各个选项中查找匹配的 id
+    let apiType: string | undefined;
+
     if (courseTypeOptions.some(item => item.id === id)) {
       apiType = 'COURSE_TYPE';
-      type = 'courseType';
     } else if (expireTypeOptions.some(item => item.id === id)) {
       apiType = 'VALIDITY_PERIOD';
-      type = 'expireType';
     } else if (paymentMethodOptions.some(item => item.id === id)) {
       apiType = 'PAYMENT_TYPE';
-      type = 'paymentMethod';
     } else if (giftOptions.some(item => item.id === id)) {
       apiType = 'GIFT_ITEM';
-      type = 'gift';
     } else if (feeOptions.some(item => item.id === id)) {
       apiType = 'HANDLING_FEE_TYPE';
-      type = 'fee';
-    } else {
+    } else if (expenseTypeOptions.some(item => item.id === id)) {
+      apiType = 'EXPENSE_TYPE';
+    }
+
+    if (!apiType) {
       console.error('未能找到选项的类型，ID:', id);
       message.error('更新失败：未能确定选项类型');
       return;
     }
-    
-    setLoading(prev => ({ ...prev, [apiType]: true }));
-    setCloseEditForm(prev => ({ ...prev, [apiType]: false }));
-    
+      
+    setLoading(prev => ({ ...prev, [apiType!]: true }));
+    setCloseEditForm(prev => ({ ...prev, [apiType!]: false }));
+
     try {
-      const constant = {
-        ...mapOptionItemToConstant(option, apiType),
-        id: Number(id)
-      };
-      
-      const success = await API.constants.update(constant);
-      
-      if (success) {
-        message.success(`更新${getOptionTypeName(type)}选项成功`);
+      const constantToUpdate = { ...mapOptionItemToConstant(option, apiType), id: Number(id) };
+      const result = await API.constants.update(constantToUpdate);
+
+      if (result) {
+        message.success(`更新选项成功`);
         
-        // 找到并更新选项
-        const updateState = (prevOptions: IOptionItem[]) => {
-          return prevOptions.map(item => 
-            item.id === id ? { ...option, id } : item
-          );
-        };
-        
-        // 根据类型更新相应的状态
+        let updateState;
         switch (apiType) {
           case 'COURSE_TYPE':
-            setCourseTypeOptions(updateState);
+            updateState = setCourseTypeOptions;
             break;
           case 'PAYMENT_TYPE':
-            setPaymentMethodOptions(updateState);
+            updateState = setPaymentMethodOptions;
             break;
           case 'GIFT_ITEM':
-            setGiftOptions(updateState);
+            updateState = setGiftOptions;
             break;
           case 'HANDLING_FEE_TYPE':
-            setFeeOptions(updateState);
+            updateState = setFeeOptions;
             break;
           case 'VALIDITY_PERIOD':
-            setExpireTypeOptions(updateState);
+            updateState = setExpireTypeOptions;
             break;
+          case 'EXPENSE_TYPE':
+            updateState = setExpenseTypeOptions;
+            break;
+          default:
+            return;
         }
+
+        updateState(prev => prev.map(item => item.id === id ? { ...item, ...option, id } : item));
         
-        // API调用成功，设置closeForm为true
-        setCloseEditForm(prev => ({ ...prev, [apiType]: true }));
+        setCloseEditForm(prev => ({ ...prev, [apiType!]: true }));
       }
-      
-      // 设置loading为false
-      setLoading(prev => ({ ...prev, [apiType]: false }));
     } catch (error: any) {
-      console.error(`更新${type}选项失败:`, error);
-      message.error(error.message || `更新${getOptionTypeName(type)}选项失败`);
-      // 发生错误时也需要设置loading为false，但不关闭表单
-      setLoading(prev => ({ ...prev, [apiType]: false }));
+      console.error(`更新选项失败:`, error);
+      message.error(error.message || `更新选项失败`);
+    } finally {
+      setLoading(prev => ({ ...prev, [apiType!]: false }));
     }
   };
 
@@ -429,6 +433,7 @@ const SystemSettings: React.FC = () => {
       case 'gift': return 'GIFT_ITEM';
       case 'fee': return 'HANDLING_FEE_TYPE';
       case 'expireType': return 'VALIDITY_PERIOD';
+      case 'expenseType': return 'EXPENSE_TYPE';
       default: return type.toUpperCase();
     }
   };
@@ -442,6 +447,7 @@ const SystemSettings: React.FC = () => {
       case 'fee': return '手续费';
       case 'expireType': 
       case 'VALIDITY_PERIOD': return '有效期时长';
+      case 'expenseType': return '费用类型';
       default: return '选项';
     }
   };
@@ -540,7 +546,8 @@ const SystemSettings: React.FC = () => {
           loading['PAYMENT_TYPE'] || 
           loading['GIFT_ITEM'] || 
           loading['HANDLING_FEE_TYPE'] || 
-          loading['VALIDITY_PERIOD']
+          loading['VALIDITY_PERIOD'] ||
+          loading['EXPENSE_TYPE']
         } tip="正在加载选项数据...">
           <OptionsTab
             courseTypeOptions={courseTypeOptions}
@@ -548,11 +555,11 @@ const SystemSettings: React.FC = () => {
             giftOptions={giftOptions}
             feeOptions={feeOptions}
             expireTypeOptions={expireTypeOptions}
+            expenseTypeOptions={expenseTypeOptions}
+            loading={loading}
             onAddOption={handleAddOption}
-            onDeleteOption={(type, id) => handleDeleteOption(type, id)}
             onUpdateOption={handleUpdateOption}
             showDeleteConfirm={showDeleteConfirm}
-            loading={loading}
             closeAddForm={closeAddForm}
             closeEditForm={closeEditForm}
           />

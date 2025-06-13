@@ -11,10 +11,9 @@ export interface Expense {
   type: 'income' | 'expense';
 }
 
-export type ExpenseSearchParams = {
-  searchText: string;
-  selectedItem: string;
-  searchCategories: string[];
-  dateRange: [Dayjs | null, Dayjs | null] | null;
+export interface ExpenseSearchParams {
+  text?: string;
   type?: 'income' | 'expense' | null;
-}; 
+  searchCategories?: string[];
+  dateRange: [Dayjs | null, Dayjs | null] | null;
+} 

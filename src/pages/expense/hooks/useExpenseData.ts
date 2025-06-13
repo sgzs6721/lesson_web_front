@@ -37,18 +37,14 @@ export const useFinanceData = () => {
   
   const filterData = (params: ExpenseSearchParams) => {
     let filteredData = mockData;
-    const { searchText, selectedItem, searchCategories, dateRange, type } = params;
+    const { text, searchCategories, dateRange, type } = params;
 
-    if (searchText) {
+    if (text) {
       filteredData = filteredData.filter(
-        item => item.item.includes(searchText) ||
-               item.remark.includes(searchText) ||
-               item.id.includes(searchText)
+        item => item.item.includes(text) ||
+               item.remark.includes(text) ||
+               item.id.includes(text)
       );
-    }
-
-    if (selectedItem) {
-      filteredData = filteredData.filter(item => item.item === selectedItem);
     }
 
     if (searchCategories && searchCategories.length > 0) {

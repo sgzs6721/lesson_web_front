@@ -130,6 +130,11 @@ const MainLayout: React.FC = () => {
     // 如果canProceed为false，表示没有校区，此时已显示模态框，不进行导航
   };
 
+  const toggleDropdown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDropdown(!showDropdown);
+  };
+
   // 处理校区切换 - 不再调用 detail API
   const handleCampusChange = (campus: Campus) => {
     console.log('切换到校区:', campus.name);
@@ -246,6 +251,8 @@ const MainLayout: React.FC = () => {
         handleLogout={handleLogout}
         setShowProfileModal={setShowProfileModal}
         sidebarCollapsed={sidebarCollapsed}
+        showDropdown={showDropdown}
+        toggleDropdown={toggleDropdown}
       />
 
       {/* 个人信息模态框 */}

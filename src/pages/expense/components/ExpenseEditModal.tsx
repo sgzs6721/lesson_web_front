@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, DatePicker, Input, Select, Button, Radio, Divider } from 'antd';
+import { Modal, Form, DatePicker, Input, Select, Button, Radio, Divider, InputNumber } from 'antd';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import { FormInstance } from 'antd/lib/form';
 import { EXPENSE_CATEGORY, INCOME_CATEGORY, TRANSACTION_TYPE_LABEL } from '../constants/expenseTypes';
@@ -109,7 +109,7 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
             { type: 'number', min: 0, message: '金额必须大于等于0' }
           ]}
         >
-          <Input type="number" prefix="¥" suffix="CNY" />
+          <InputNumber style={{ width: '100%' }} prefix="¥" placeholder="请输入金额" />
         </Form.Item>
 
         <Form.Item

@@ -14,7 +14,6 @@ interface FinanceSearchBarProps {
   onReset: () => void;
   onExport: () => void;
   onTextChange: (value: string) => void;
-  onItemChange: (value: string) => void;
   onCategoriesChange: (value: string[]) => void;
   onTypeChange: (value: 'income' | 'expense' | null) => void;
   onDateRangeChange: (dates: any) => void;
@@ -26,22 +25,10 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
   onReset,
   onExport,
   onTextChange,
-  onItemChange,
   onCategoriesChange,
   onTypeChange,
   onDateRangeChange
 }) => {
-  // 项目选项（从mockData中获取唯一项目）
-  const getItemOptions = () => {
-    const items = [
-      '教练工资', '场地租金', '水电费', '办公用品', '员工福利',
-      '游泳课程', '私教课', '泳具销售', '暑期班报名', '场地租赁'
-    ];
-    return items.map(item => (
-      <Option key={item} value={item}>{item}</Option>
-    ));
-  };
-
   // 根据交易类型获取对应的类别选项
   const getCategoryOptions = () => {
     const options: React.ReactNode[] = [];
@@ -63,16 +50,13 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
     <div className="table-toolbar" style={{ marginBottom: '16px', width: '100%' }}>
       <Row gutter={[12, 8]} align="middle" style={{ width: '100%' }}>
         <Col span={5}>
-          <Select
-            placeholder="选择项目"
-            value={params.selectedItem || undefined}
-            onChange={(value) => onItemChange(value || '')}
+          <Input
+            placeholder="项目关键字搜索"
+            value={params.text || ''}
+            onChange={(e) => onTextChange(e.target.value)}
             allowClear
             style={{ width: '100%' }}
-            getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
-          >
-            {getItemOptions()}
-          </Select>
+          />
         </Col>
         <Col span={4}>
           <Select
