@@ -77,7 +77,7 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         editCourseGroup={df.form.editCourseGroup}
         removeCourseGroup={df.form.removeCourseGroup}
         startAddCourseGroup={df.form.startAddCourseGroup}
-        courseList={filteredCourseList}
+        courseList={df.form.courseList}
         loadingCourses={loadingCourses}
         loading={df.form.loading}
       />

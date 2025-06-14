@@ -278,6 +278,13 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
 
   // 渲染课程编辑表单 - 针对已有课程组的编辑
   const renderCourseEditForm = (group: CourseGroup, index: number) => {
+    const selectedCourseId = group.courses && group.courses.length > 0 ? String(group.courses[0]) : '';
+    // 确保即使课程已暂停，也能在下拉列表中选择
+    const currentCourse = courseList.find(c => String(c.id) === selectedCourseId);
+    const options = courseList
+      .filter(c => c.status === 'PUBLISHED' || String(c.id) === selectedCourseId)
+      .filter((c, i, arr) => arr.findIndex(item => String(item.id) === String(c.id)) === i); // 去重
+
     return (
       <div
         key={group.key}
@@ -359,55 +366,19 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 }}
                 style={{ width: '100%' }}
                 showSearch
-                allowClear
+                filterOption={false}
                 onSearch={setCourseSearchValue}
-                optionFilterProp="children"
-                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement || document.body}
-                dropdownStyle={{ zIndex: 1060 }}
-                loading={loadingCourses}
+                notFoundContent={loadingCourses ? <Spin size="small" /> : null}
+                popupMatchSelectWidth={false}
+                getPopupContainer={triggerNode => triggerNode.parentElement}
               >
-                {courseList && courseList.length > 0 ? (
-                  courseList
-                    .map(course => {
-                    // 获取已选课程ID列表，排除当前正在编辑的课程组
-                    const selectedCourseIds = getSelectedCourseIds(currentEditingGroupIndex !== null ? currentEditingGroupIndex : undefined);
-                    // 检查当前课程是否已被选择
-                    const isDisabled = selectedCourseIds.includes(String(course.id));
-
-                    return (
-                      <Option
-                        key={course.id}
-                        value={course.id.toString()}
-                        disabled={isDisabled}
-                      >
-                        {course.name}
-                      </Option>
-                    );
-                  })
-                ) : (
-                  // 如果课程列表为空，显示模拟数据
-                  (() => {
-                    const mockCourses = [
-                      { id: "basketball", name: "篮球训练" },
-                      { id: "swimming", name: "游泳课程" },
-                      { id: "tennis", name: "网球培训" },
-                      { id: "painting", name: "绘画班" },
-                      { id: "piano", name: "钢琴培训" }
-                    ];
-                    // 获取已选课程ID列表
-                    const selectedCourseIds = getSelectedCourseIds();
-
-                    return mockCourses.map(course => (
-                      <Option
-                        key={course.id}
-                        value={course.id}
-                        disabled={selectedCourseIds.includes(String(course.id))}
-                      >
-                        {course.name}
-                      </Option>
-                    ));
-                  })()
-                )}
+                {options
+                  .filter(c => courseSearchValue ? c.name.toLowerCase().includes(courseSearchValue.toLowerCase()) : true)
+                  .map(course => (
+                    <Option key={course.id} value={String(course.id)} disabled={getSelectedCourseIds(index).includes(String(course.id))}>
+                      {course.name}
+                    </Option>
+                  ))}
               </Select>
             </Form.Item>
           </Col>
@@ -497,7 +468,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     newScheduleTimes[timeIndex].weekday = value;
                     updateCourseGroup(index, 'scheduleTimes', newScheduleTimes);
                   }}
-                  getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
+                  getPopupContainer={triggerNode => triggerNode.parentElement}
                 >
                   {weekdayOptions.map(option => (
                     <Option key={option.value} value={option.value}>{option.label}</Option>
@@ -616,6 +587,9 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
   // 渲染临时课程编辑表单 - 针对新添加的课程
   const renderTempCourseEditForm = () => {
     if (!tempCourseGroup) return null;
+    
+    // 对于新增的表单，只显示已发布的课程
+    const options = courseList.filter(c => c.status === 'PUBLISHED');
 
     return (
       <div
@@ -698,55 +672,19 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 }}
                 style={{ width: '100%' }}
                 showSearch
-                allowClear
+                filterOption={false}
                 onSearch={setCourseSearchValue}
-                optionFilterProp="children"
-                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement || document.body}
-                dropdownStyle={{ zIndex: 1060 }}
-                loading={loadingCourses}
+                notFoundContent={loadingCourses ? <Spin size="small" /> : null}
+                popupMatchSelectWidth={false}
+                getPopupContainer={triggerNode => triggerNode.parentElement}
               >
-                {courseList && courseList.length > 0 ? (
-                  courseList
-                    .map(course => {
-                    // 获取已选课程ID列表，排除当前正在编辑的课程组
-                    const selectedCourseIds = getSelectedCourseIds(currentEditingGroupIndex !== null ? currentEditingGroupIndex : undefined);
-                    // 检查当前课程是否已被选择
-                    const isDisabled = selectedCourseIds.includes(String(course.id));
-
-                    return (
-                      <Option
-                        key={course.id}
-                        value={course.id.toString()}
-                        disabled={isDisabled}
-                      >
-                        {course.name}
-                      </Option>
-                    );
-                  })
-                ) : (
-                  // 如果课程列表为空，显示模拟数据
-                  (() => {
-                    const mockCourses = [
-                      { id: "basketball", name: "篮球训练" },
-                      { id: "swimming", name: "游泳课程" },
-                      { id: "tennis", name: "网球培训" },
-                      { id: "painting", name: "绘画班" },
-                      { id: "piano", name: "钢琴培训" }
-                    ];
-                    // 获取已选课程ID列表
-                    const selectedCourseIds = getSelectedCourseIds();
-
-                    return mockCourses.map(course => (
-                      <Option
-                        key={course.id}
-                        value={course.id}
-                        disabled={selectedCourseIds.includes(String(course.id))}
-                      >
-                        {course.name}
-                      </Option>
-                    ));
-                  })()
-                )}
+                {options
+                  .filter(c => courseSearchValue ? c.name.toLowerCase().includes(courseSearchValue.toLowerCase()) : true)
+                  .map(course => (
+                    <Option key={course.id} value={String(course.id)} disabled={getSelectedCourseIds().includes(String(course.id))}>
+                      {course.name}
+                    </Option>
+                  ))}
               </Select>
             </Form.Item>
           </Col>
@@ -836,7 +774,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                     newScheduleTimes[timeIndex].weekday = value;
                     updateTempCourseGroup('scheduleTimes', newScheduleTimes);
                   }}
-                  getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
+                  getPopupContainer={triggerNode => triggerNode.parentElement}
                 >
                   {weekdayOptions.map(option => (
                     <Option key={option.value} value={option.value}>{option.label}</Option>
@@ -1015,7 +953,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 <Select
                   placeholder="请选择性别"
                   style={{ width: '100%' }}
-                  getPopupContainer={triggerNode => triggerNode.parentNode || document.body}
+                  getPopupContainer={triggerNode => triggerNode.parentElement}
                 >
                   <Option value="male">男</Option>
                   <Option value="female">女</Option>

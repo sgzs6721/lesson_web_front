@@ -191,6 +191,7 @@ export const useStudentForm = (
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [modalCourseList, setModalCourseList] = useState<SimpleCourse[]>([]);
   const [courseGroups, setCourseGroups] = useState<CourseGroup[]>([]);
   const [tempCourseGroup, setTempCourseGroup] = useState<CourseGroup | null>(null);
   const [currentEditingGroupIndex, setCurrentEditingGroupIndex] = useState<number | null>(null);
@@ -201,6 +202,7 @@ export const useStudentForm = (
   const showAddModal = () => {
     form.resetFields();
     setEditingStudent(null);
+    setModalCourseList(courseList);
     setVisible(true);
     setCourseGroups([]);
     setCurrentEditingGroupIndex(null);
@@ -211,6 +213,26 @@ export const useStudentForm = (
 
   // 显示编辑学员模态框
   const showEditModal = (student: Student) => {
+    // 动态合并学员的课程和标准课程列表
+    if (student && student.courses) {
+      const studentCourses: SimpleCourse[] = student.courses.map(c => ({
+        id: c.courseId,
+        name: c.courseName,
+        status: c.status, // 包含暂停的课程
+        typeName: c.courseTypeName || '',
+        coaches: c.coachName ? [{ id: c.coachId, name: c.coachName }] : []
+      }));
+
+      // 合并并去重
+      const combined = [...courseList, ...studentCourses];
+      const uniqueCourses = combined.filter((course, index, self) =>
+        index === self.findIndex((c) => String(c.id) === String(course.id))
+      );
+      setModalCourseList(uniqueCourses);
+    } else {
+      setModalCourseList(courseList);
+    }
+
     // 将API枚举值映射为前端显示值
     const mappedStudent = {
       ...student,
@@ -619,6 +641,7 @@ export const useStudentForm = (
     currentEditingGroupIndex,
     originalCourseGroup,
     isEditing,
+    courseList: modalCourseList,
     showAddModal,
     showEditModal,
     handleSubmit,

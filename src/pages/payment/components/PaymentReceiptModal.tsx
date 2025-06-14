@@ -153,7 +153,13 @@ const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({
       width={800}
       className="payment-receipt-modal"
     >
-      <Descriptions bordered column={2} className="payment-receipt-descriptions">
+      <Descriptions
+        bordered
+        column={2}
+        className="payment-receipt-descriptions"
+        labelStyle={{ textAlign: 'center', width: '120px' }}
+        contentStyle={{ textAlign: 'center' }}
+      >
         <Descriptions.Item label="日期">
           {payment.date}
         </Descriptions.Item>
@@ -163,11 +169,11 @@ const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({
         </Descriptions.Item>
 
         <Descriptions.Item label="课程名称">
-          <Tag 
+          <Tag
             color="blue"
-            style={{ 
-              minWidth: '120px', 
-              width: '120px',
+            style={{
+              minWidth: '100px',
+              width: '100px',
               textAlign: 'center',
               margin: 0,
               display: 'inline-block',
@@ -182,11 +188,11 @@ const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({
         </Descriptions.Item>
 
         <Descriptions.Item label="课程类型">
-          <Tag 
+          <Tag
             color={getCourseTypeColor(payment.lessonType || '')}
-            style={{ 
-              minWidth: '100px', 
-              width: '100px',
+            style={{
+              minWidth: '80px',
+              width: '80px',
               textAlign: 'center',
               margin: 0,
               display: 'inline-block',
