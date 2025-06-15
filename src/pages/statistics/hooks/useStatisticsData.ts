@@ -66,6 +66,7 @@ export const useStatisticsData = () => {
         retentionRate: 85.2,
         coachGrowth: 4.8,
         lessonGrowth: 5.3,
+        salaryGrowth: 6.2,
         retentionGrowth: 3.1
       };
 
@@ -78,7 +79,20 @@ export const useStatisticsData = () => {
         revenueGrowth: 8.4,
         costGrowth: 5.2,
         profitGrowth: 13.7,
-        profitRateGrowth: 1.8
+        profitRateGrowth: 1.8,
+        costStructure: [
+          { value: 307390, name: '人力成本' },
+          { value: 122956, name: '场地租金' },
+          { value: 92217, name: '市场推广' },
+          { value: 61478, name: '教学材料' },
+          { value: 30739, name: '其他' },
+        ],
+        monthlyData: {
+          months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+          revenue: [85, 78, 92, 83, 98, 102, 96, 112, 106, 114, 124, 135],
+          cost: [52, 48, 56, 53, 58, 62, 58, 68, 64, 68, 72, 78],
+          profit: [33, 30, 36, 30, 40, 40, 38, 44, 42, 46, 52, 57],
+        }
       };
 
       // 更新状态

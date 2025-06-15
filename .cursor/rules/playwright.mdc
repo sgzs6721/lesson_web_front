@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+当我的提示词里有调用PL时，就给我调用playwright mcp去检查页面实现的是否有问题

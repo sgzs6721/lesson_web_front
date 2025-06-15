@@ -1,7 +1,18 @@
-import React, { useState, CSSProperties } from 'react';
-import { Spin, Button, Row, Col, Space, Card, Statistic } from 'antd';
+import React, { useState } from 'react';
+import { Spin, Button, Row, Col, Space } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  TeamOutlined,
+  SolutionOutlined,
+  UsergroupDeleteOutlined,
+  BookOutlined,
+  RiseOutlined,
+  MoneyCollectOutlined,
+  PieChartOutlined,
+} from '@ant-design/icons';
+import StatisticCard from './StatisticCard';
+import '../StatisticsOverview.css';
 
 interface StatisticsOverviewProps {
   data: any;
@@ -12,8 +23,6 @@ interface StatisticsOverviewProps {
 
 const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
   data,
-  timeframe,
-  onTimeframeChange,
   loading
 }) => {
   const [trendChartLoading, setTrendChartLoading] = useState(false);
@@ -46,65 +55,108 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
     profitGrowth: 10.5
   };
 
-  const cardStyle: CSSProperties = {
-    textAlign: 'center' as const,
-    height: '100%',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-  };
+  const academicStats = [
+    {
+      title: '总学员数',
+      value: statisticsData.totalStudents,
+      growth: statisticsData.studentGrowth,
+      icon: <UserOutlined />,
+      color: '#3498db',
+    },
+    {
+      title: '活跃学员数',
+      value: statisticsData.activeStudents,
+      growth: statisticsData.activeGrowth,
+      icon: <SolutionOutlined />,
+      color: '#2ecc71',
+    },
+    {
+      title: '新增学员',
+      value: statisticsData.newStudents,
+      growth: statisticsData.newGrowth,
+      icon: <RiseOutlined />,
+      color: '#f39c12',
+    },
+    {
+      title: '流失学员',
+      value: statisticsData.lostStudents,
+      growth: statisticsData.lostGrowth,
+      icon: <UsergroupDeleteOutlined />,
+      color: '#e74c3c',
+    },
+    {
+      title: '总教练数',
+      value: statisticsData.totalCoaches,
+      growth: statisticsData.coachGrowth,
+      icon: <TeamOutlined />,
+      color: '#1abc9c',
+    },
+    {
+      title: '课消总数',
+      value: statisticsData.totalLessons,
+      growth: statisticsData.lessonGrowth,
+      icon: <BookOutlined />,
+      color: '#9b59b6',
+    },
+  ];
 
-  const renderStatisticCard = (title: string, value: number, growth: number, color: string, prefix?: React.ReactNode) => {
-    const isUp = growth >= 0;
-    return (
-      <Col span={6}>
-        <Card style={{ ...cardStyle, borderTop: `4px solid ${color}` }}>
-          <Statistic
-            title={title}
-            value={value}
-            precision={0}
-            prefix={prefix}
-            valueStyle={{ color: color, fontSize: '24px', fontWeight: 600 }}
-            suffix={
-              <span style={{ color: isUp ? '#52c41a' : '#f5222d', fontSize: '14px', marginLeft: '8px' }}>
-                {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />} {Math.abs(growth)}%
-              </span>
-            }
-          />
-        </Card>
-      </Col>
-    );
-  };
+  const financialStats = [
+    {
+      title: '总收入 (元)',
+      value: statisticsData.totalIncome,
+      growth: statisticsData.incomeGrowth,
+      icon: <MoneyCollectOutlined />,
+      color: '#e67e22',
+      prefix: '¥',
+    },
+    {
+      title: '总利润 (元)',
+      value: statisticsData.totalProfit,
+      growth: statisticsData.profitGrowth,
+      icon: <PieChartOutlined />,
+      color: '#3498db',
+      prefix: '¥',
+    },
+  ];
 
   return (
-    <div>
-      <div className="stats-section">
-        <div className="section-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
-          <div className="section-title">核心经营指标</div>
+    <div className="statistics-overview-container">
+      <div className="statistics-overview-layout">
+        {/* Left Column: Statistic Cards */}
+        <div className="statistics-cards-column">
+          <div className="statistics-group">
+            <h3 className="statistics-group-title">学员与教务</h3>
+            <Row gutter={[16, 16]}>
+              {academicStats.map((stat, index) => (
+                <Col span={12} key={index}>
+                  <StatisticCard {...stat} />
+                </Col>
+              ))}
+            </Row>
+          </div>
+          <div className="statistics-group">
+            <h3 className="statistics-group-title">财务指标</h3>
+            <Row gutter={[16, 16]}>
+              {financialStats.map((stat, index) => (
+                <Col span={12} key={index}>
+                  <StatisticCard {...stat} />
+                </Col>
+              ))}
+            </Row>
+          </div>
         </div>
-        <Row gutter={[16, 16]}>
-          {renderStatisticCard('总学员数', statisticsData.totalStudents, statisticsData.studentGrowth, '#3498db')}
-          {renderStatisticCard('活跃学员数', statisticsData.activeStudents, statisticsData.activeGrowth, '#2ecc71')}
-          {renderStatisticCard('新增学员', statisticsData.newStudents, statisticsData.newGrowth, '#f39c12')}
-          {renderStatisticCard('流失学员', statisticsData.lostStudents, statisticsData.lostGrowth, '#e74c3c')}
-          {renderStatisticCard('总教练数', statisticsData.totalCoaches, statisticsData.coachGrowth, '#1abc9c')}
-          {renderStatisticCard('课消总数', statisticsData.totalLessons, statisticsData.lessonGrowth, '#9b59b6')}
-          {renderStatisticCard('总收入 (元)', statisticsData.totalIncome, statisticsData.incomeGrowth, '#e67e22', '¥')}
-          {renderStatisticCard('总利润 (元)', statisticsData.totalProfit, statisticsData.profitGrowth, '#3498db', '¥')}
-        </Row>
-      </div>
-      {/* 趋势图表 */}
-      <div className="chart-container">
-        <div className="chart-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
-          <div className="chart-title">收入与学员数量趋势</div>
-          <div className="chart-actions">
-            <div className="time-filter-buttons">
+
+        {/* Right Column: Chart */}
+        <div className="statistics-chart-column">
+          <div className="chart-container-card">
+            <div className="chart-header">
+              <div className="chart-title">收入与学员数量趋势</div>
               <Space.Compact size="small">
                 <Button
                   type={trendTimeframe === 'month' ? 'primary' : 'default'}
                   onClick={() => {
                     setTrendChartLoading(true);
                     setTrendTimeframe('month');
-                    // 模拟数据加载
                     setTimeout(() => setTrendChartLoading(false), 500);
                   }}
                 >
@@ -115,7 +167,6 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
                   onClick={() => {
                     setTrendChartLoading(true);
                     setTrendTimeframe('year');
-                    // 模拟数据加载
                     setTimeout(() => setTrendChartLoading(false), 500);
                   }}
                 >
@@ -123,132 +174,42 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
                 </Button>
               </Space.Compact>
             </div>
-          </div>
-        </div>
-        <div className="chart-wrapper" style={{ position: 'relative' }}>
-          {trendChartLoading ? (
-            <div style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(255, 255, 255, 0.7)', zIndex: 10 }}>
-              <Spin />
+            <div className="chart-wrapper">
+              {trendChartLoading && (
+                <div style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(255, 255, 255, 0.7)', zIndex: 10 }}>
+                  <Spin />
+                </div>
+              )}
+              <ReactECharts
+                option={{
+                  tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross', label: { backgroundColor: '#6a7985' } },
+                  },
+                  legend: { data: ['收入(万元)', '学员数量'], top: '0%', left: 'center' },
+                  grid: { left: '3%', right: '4%', bottom: '3%', top: '15%', containLabel: true },
+                  xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: trendTimeframe === 'month'
+                      ? ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+                      : ['2018年', '2019年', '2020年', '2021年', '2022年', '2023年', '2024年'],
+                  },
+                  yAxis: [
+                    { type: 'value', name: '收入(万元)', position: 'left', axisLine: { show: true, lineStyle: { color: '#3498db' } } },
+                    { type: 'value', name: '学员数量', position: 'right', axisLine: { show: true, lineStyle: { color: '#2ecc71' } } },
+                  ],
+                  series: [
+                    { name: '收入(万元)', type: 'line', smooth: true, areaStyle: { color: '#3498db', opacity: 0.2 }, data: trendTimeframe === 'month' ? [80, 92, 91, 94, 120, 130, 120, 110, 100, 90, 85, 80] : [70, 82, 91, 94, 120, 130, 140] },
+                    { name: '学员数量', type: 'line', yAxisIndex: 1, smooth: true, areaStyle: { color: '#2ecc71', opacity: 0.2 }, data: trendTimeframe === 'month' ? [1200, 1220, 1240, 1260, 1280, 1290, 1285, 1270, 1250, 1230, 1210, 1200] : [1100, 1150, 1200, 1250, 1300, 1350, 1380] }
+                  ],
+                }}
+                style={{ height: '450px', width: '100%' }}
+                notMerge={true}
+                lazyUpdate={true}
+              />
             </div>
-          ) : null}
-          <ReactECharts
-            option={{
-              tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                  type: 'cross',
-                  label: {
-                    backgroundColor: '#6a7985'
-                  }
-                }
-              },
-              legend: {
-                data: ['收入(万元)', '学员数量'],
-                top: '2%',
-                left: 'center'
-              },
-              grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '3%',
-                top: '15%',
-                containLabel: true
-              },
-              xAxis: {
-                type: 'category',
-                boundaryGap: false,
-                data: trendTimeframe === 'month'
-                  ? ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-                  : ['2018年', '2019年', '2020年', '2021年', '2022年', '2023年', '2024年'],
-                axisLine: {
-                  lineStyle: {
-                    color: '#ddd'
-                  }
-                },
-                splitLine: {
-                  show: true,
-                  lineStyle: {
-                    color: '#eee',
-                    type: 'dashed'
-                  }
-                }
-              },
-              yAxis: [
-                {
-                  type: 'value',
-                  name: '收入(万元)',
-                  min: trendTimeframe === 'month' ? 70 : 60,
-                  max: trendTimeframe === 'month' ? 140 : 150,
-                  interval: 10,
-                  position: 'left',
-                  axisLine: {
-                    show: true,
-                    lineStyle: {
-                      color: '#3498db'
-                    }
-                  },
-                  axisLabel: {
-                    formatter: '{value}'
-                  },
-                  splitLine: {
-                    show: true,
-                    lineStyle: {
-                      color: '#eee',
-                      type: 'dashed'
-                    }
-                  }
-                },
-                {
-                  type: 'value',
-                  name: '学员数量',
-                  min: trendTimeframe === 'month' ? 1050 : 900,
-                  max: trendTimeframe === 'month' ? 1300 : 1400,
-                  interval: 50,
-                  position: 'right',
-                  axisLine: {
-                    show: true,
-                    lineStyle: {
-                      color: '#e74c3c'
-                    }
-                  },
-                  axisLabel: {
-                    formatter: '{value}'
-                  },
-                  splitLine: {
-                    show: false
-                  }
-                }
-              ],
-              series: [
-                {
-                  name: '收入(万元)',
-                  type: 'line',
-                  stack: '总量',
-                  areaStyle: {
-                    color: '#3498db',
-                    opacity: 0.3
-                  },
-                  data: trendTimeframe === 'month'
-                    ? [80, 92, 91, 94, 120, 130, 120, 110, 100, 90, 85, 80]
-                    : [70, 82, 91, 94, 120, 130, 140]
-                },
-                {
-                  name: '学员数量',
-                  type: 'line',
-                  yAxisIndex: 1,
-                  stack: '总量',
-                  areaStyle: {
-                    color: '#e74c3c',
-                    opacity: 0.3
-                  },
-                  data: trendTimeframe === 'month'
-                    ? [1200, 1220, 1240, 1260, 1280, 1290, 1285, 1270, 1250, 1230, 1210, 1200]
-                    : [1100, 1150, 1200, 1250, 1300, 1350, 1380]
-                }
-              ]
-            }}
-            style={{ height: '350px', width: '100%' }}
-          />
+          </div>
         </div>
       </div>
     </div>

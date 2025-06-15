@@ -1,0 +1,13 @@
+.coach-analysis-container {
+  padding: 12px;
+}
+
+.coach-analysis-layout {
+  display: flex;
+  gap: 24px;
+}
+
+.coach-analysis-column {
+  flex: 1;
+  min-width: 0;
+} 

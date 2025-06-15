@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
 import dayjs from 'dayjs';
-import { 
-  AllCampusData, 
-  ComparisonMetric, 
-  TrendMetric, 
-  CoachMetric 
+import {
+  AllCampusData,
+  ComparisonMetric,
+  TrendMetric,
+  CoachMetric
 } from '../types/campus';
 
 // 内联模拟数据，替代从文件导入
@@ -105,36 +105,36 @@ const mockData: AllCampusData = {
 export const useCampusData = () => {
   // 当前选中的校区
   const [currentCampus, setCurrentCampus] = useState<string>('all');
-  
+
   // 所有校区数据
   const [campusData, setCampusData] = useState<AllCampusData>(mockData);
-  
+
   // 当前选中的指标
   const [comparisonMetric, setComparisonMetric] = useState<ComparisonMetric>('revenue');
   const [trendMetric, setTrendMetric] = useState<TrendMetric>('students');
   const [coachMetric, setCoachMetric] = useState<CoachMetric>('lessons');
-  
+
   // 日期范围
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
-    dayjs().startOf('month'), 
+    dayjs().startOf('month'),
     dayjs()
   ]);
-  
+
   // 加载数据
   useEffect(() => {
     // 实际项目中，这里应该从API获取数据
     // 这里我们使用mockData
     setCampusData(mockData);
   }, []);
-  
+
   // 根据日期过滤数据
   const filterDataByDate = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
     setDateRange([startDate, endDate]);
-    
+
     // 在实际项目中，这里应该调用API获取指定日期范围的数据
     // 这里我们只是模拟一下，随机调整数据
     const factor = (endDate.diff(startDate, 'day') % 30) / 30 + 0.8;
-    
+
     const filteredData = Object.entries(mockData).reduce((acc, [key, campus]) => {
       // 创建校区数据的副本并按日期范围调整数值
       acc[key] = {
@@ -156,17 +156,15 @@ export const useCampusData = () => {
       };
       return acc;
     }, {} as AllCampusData);
-    
+
     setCampusData(filteredData);
-    message.success(`已更新为${startDate.format('YYYY-MM-DD')}至${endDate.format('YYYY-MM-DD')}的数据`);
   };
-  
+
   // 切换校区
   const setCampus = (campus: string) => {
     setCurrentCampus(campus);
-    message.success(`已切换到${campus === 'all' ? '全部校区' : mockData[campus].name}`);
   };
-  
+
   return {
     campusData,
     currentCampus,
@@ -180,4 +178,4 @@ export const useCampusData = () => {
     setCoachMetric,
     filterDataByDate
   };
-}; 
+};

@@ -44,24 +44,36 @@ const CampusComparisonChart: React.FC<CampusComparisonChartProps> = ({ data, met
   const labels = Object.values(data).map(campus => campus.name);
   const values = Object.values(data).map(campus => campus[metric]);
   const { title, yAxisLabel } = getChartConfig(metric);
-  
+
+  // 定义多种颜色
+  const colors = ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16'];
+
   // ECharts配置选项
   const getOption = () => {
     return {
-      title: {
-        text: title,
-        left: 'center'
-      },
       tooltip: {
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },
+        formatter: function(params: any) {
+          const param = params[0];
+          let unit = '';
+          if (metric === 'revenue' || metric === 'profit') {
+            unit = '万元';
+          } else if (metric === 'students') {
+            unit = '人';
+          } else if (metric === 'coaches') {
+            unit = '人';
+          }
+          return `${param.name}<br/>${param.seriesName}: ${param.value}${unit}`;
         }
       },
       grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
+        left: '10%',
+        right: '10%',
+        bottom: '15%',
+        top: '10%',
         containLabel: true
       },
       xAxis: {
@@ -69,34 +81,85 @@ const CampusComparisonChart: React.FC<CampusComparisonChartProps> = ({ data, met
         data: labels,
         axisTick: {
           alignWithLabel: true
+        },
+        axisLabel: {
+          fontSize: 12,
+          color: '#666'
         }
       },
       yAxis: {
         type: 'value',
-        name: yAxisLabel
+        name: yAxisLabel,
+        nameTextStyle: {
+          color: '#666',
+          fontSize: 12
+        },
+        axisLabel: {
+          fontSize: 12,
+          color: '#666'
+        },
+        splitLine: {
+          lineStyle: {
+            color: '#f0f0f0'
+          }
+        }
       },
       series: [
         {
           name: yAxisLabel,
           type: 'bar',
-          barWidth: '60%',
-          data: values,
-          itemStyle: {
-            color: '#3498db'
+          barWidth: '50%',
+          data: values.map((value, index) => ({
+            value: value,
+            itemStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [{
+                  offset: 0, color: colors[index % colors.length]
+                }, {
+                  offset: 1, color: colors[index % colors.length] + '80'
+                }]
+              },
+              borderRadius: [4, 4, 0, 0]
+            }
+          })),
+          emphasis: {
+            itemStyle: {
+              color: function(params: any) {
+                const color = colors[params.dataIndex % colors.length];
+                return {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [{
+                    offset: 0, color: color
+                  }, {
+                    offset: 1, color: color + 'CC'
+                  }]
+                };
+              }
+            }
           }
         }
       ]
     };
   };
-  
+
   if (!data || Object.keys(data).length === 0) {
     return <Empty description="暂无数据" />;
   }
-  
+
   return (
     <ReactECharts
       option={getOption()}
       style={{ height: '100%', width: '100%' }}
+      opts={{ renderer: 'svg' }}
     />
   );
 };

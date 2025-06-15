@@ -1,0 +1,24 @@
+.student-analysis-container {
+  padding: 12px;
+}
+
+.student-analysis-layout {
+  display: flex;
+  gap: 24px;
+}
+
+.student-analysis-main-column {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.student-analysis-side-column {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+} 

@@ -37,58 +37,115 @@ const CampusGrowthChart: React.FC<CampusGrowthChartProps> = ({ data, metric }) =
 
   // 准备数据
   const labels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+  const colors = ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'];
   const series = Object.values(data).map((campus, index) => ({
     name: campus.name,
     type: 'line',
     data: campus.growthData[metric],
-    smooth: true
+    smooth: true,
+    symbol: 'circle',
+    symbolSize: 6,
+    lineStyle: {
+      width: 3,
+      color: colors[index % colors.length]
+    },
+    itemStyle: {
+      color: colors[index % colors.length]
+    },
+    areaStyle: {
+      opacity: 0.1,
+      color: colors[index % colors.length]
+    }
   }));
-  
+
   const { title, yAxisLabel } = getChartConfig(metric);
-  
+
   // ECharts配置选项
   const getOption = () => {
     return {
-      title: {
-        text: title,
-        left: 'center'
-      },
       tooltip: {
-        trigger: 'axis'
+        trigger: 'axis',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderColor: '#e8e8e8',
+        borderWidth: 1,
+        textStyle: {
+          color: '#333'
+        },
+        formatter: function(params: any) {
+          let result = `${params[0].name}<br/>`;
+          params.forEach((param: any) => {
+            let unit = '';
+            if (metric === 'revenue' || metric === 'profit') {
+              unit = '万元';
+            } else if (metric === 'students') {
+              unit = '人';
+            }
+            result += `${param.marker}${param.seriesName}: ${param.value}${unit}<br/>`;
+          });
+          return result;
+        }
       },
       legend: {
         data: Object.values(data).map(campus => campus.name),
-        bottom: 0
+        bottom: 10,
+        textStyle: {
+          fontSize: 12,
+          color: '#666'
+        }
       },
       grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '10%',
+        left: '10%',
+        right: '10%',
+        bottom: '20%',
+        top: '10%',
         containLabel: true
       },
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: labels
+        data: labels,
+        axisLabel: {
+          fontSize: 12,
+          color: '#666'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#e8e8e8'
+          }
+        }
       },
       yAxis: {
         type: 'value',
-        name: yAxisLabel
+        name: yAxisLabel,
+        nameTextStyle: {
+          color: '#666',
+          fontSize: 12
+        },
+        axisLabel: {
+          fontSize: 12,
+          color: '#666'
+        },
+        splitLine: {
+          lineStyle: {
+            color: '#f0f0f0'
+          }
+        }
       },
       series: series
     };
   };
-  
+
   if (!data || Object.keys(data).length === 0) {
     return <Empty description="暂无数据" />;
   }
-  
+
   return (
     <ReactECharts
       option={getOption()}
       style={{ height: '100%', width: '100%' }}
+      opts={{ renderer: 'svg' }}
     />
   );
 };
 
-export default CampusGrowthChart; 
+export default CampusGrowthChart;

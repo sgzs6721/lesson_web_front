@@ -43,6 +43,7 @@ export interface CoachData {
   retentionRate: number;
   coachGrowth: number;
   lessonGrowth: number;
+  salaryGrowth: number;
   retentionGrowth: number;
 }
 
@@ -56,6 +57,13 @@ export interface FinanceData {
   costGrowth: number;
   profitGrowth: number;
   profitRateGrowth: number;
+  costStructure: Array<{ value: number; name: string }>;
+  monthlyData: {
+    months: string[];
+    revenue: number[];
+    cost: number[];
+    profit: number[];
+  };
 }
 
 // 校区数据类型
@@ -80,4 +88,4 @@ export interface CourseTypeData {
   percentage: string;
   price: number;
   totalIncome: number;
-} 
+}

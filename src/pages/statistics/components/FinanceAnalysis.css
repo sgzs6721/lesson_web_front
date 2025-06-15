@@ -1,0 +1,13 @@
+.finance-analysis-container {
+  padding: 12px;
+}
+
+.finance-analysis-layout {
+  display: flex;
+  gap: 24px;
+}
+
+.finance-analysis-column {
+  flex: 1;
+  min-width: 0;
+} 

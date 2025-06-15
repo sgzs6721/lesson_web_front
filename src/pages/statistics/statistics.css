@@ -31,10 +31,30 @@
 .header-tabs {
   flex: 1;
   margin-left: 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.header-tabs .ant-tabs {
+  width: auto;
 }
 
 .header-tabs .ant-tabs-nav {
   margin-bottom: 0;
+  width: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-tabs .ant-tabs-nav-wrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-tabs .ant-tabs-nav-list {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .header-tabs .ant-tabs-tab {
@@ -183,57 +203,6 @@
 
 .statistics-tabs {
   margin-top: 24px;
-}
-
-/* 核心指标卡片样式 */
-.stats-section {
-  margin-bottom: 30px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #34495e;
-}
-
-/* 趋势图表容器样式 */
-.statistics-dashboard-container .chart-container {
-  margin-bottom: 30px;
-  background: #fff;
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  position: relative;
-  border: 1px solid #f0f0f0;
-}
-
-.statistics-dashboard-container .chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-}
-
-.statistics-dashboard-container .chart-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #34495e;
-}
-
-.statistics-dashboard-container .chart-actions {
-  display: flex;
-  align-items: center;
 }
 
 .statistics-dashboard-container .chart-wrapper {
