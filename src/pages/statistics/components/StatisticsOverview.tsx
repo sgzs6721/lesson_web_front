@@ -186,8 +186,18 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
                     trigger: 'axis',
                     axisPointer: { type: 'cross', label: { backgroundColor: '#6a7985' } },
                   },
-                  legend: { data: ['收入(万元)', '学员数量'], top: '0%', left: 'center' },
-                  grid: { left: '3%', right: '4%', bottom: '3%', top: '15%', containLabel: true },
+                  legend: { 
+                    data: ['收入(万元)', '学员数量'], 
+                    top: '0%', 
+                    left: 'center'
+                  },
+                  grid: { 
+                    left: '3%', 
+                    right: '4%', 
+                    bottom: '3%', 
+                    top: '15%', 
+                    containLabel: true
+                  },
                   xAxis: {
                     type: 'category',
                     boundaryGap: false,
@@ -196,23 +206,37 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
                       : ['2018年', '2019年', '2020年', '2021年', '2022年', '2023年', '2024年'],
                   },
                   yAxis: [
-                    { type: 'value', name: '收入(万元)', position: 'left', axisLine: { show: true, lineStyle: { color: '#3498db' } } },
-                    { type: 'value', name: '学员数量', position: 'right', axisLine: { show: true, lineStyle: { color: '#2ecc71' } } },
+                    { 
+                      type: 'value', 
+                      name: '收入(万元)', 
+                      position: 'left', 
+                      axisLine: { show: true, lineStyle: { color: '#3B82F6' } },
+                      axisLabel: { color: '#3B82F6' },
+                      nameTextStyle: { color: '#3B82F6' }
+                    },
+                    { 
+                      type: 'value', 
+                      name: '学员数量', 
+                      position: 'right', 
+                      axisLine: { show: true, lineStyle: { color: '#10B981' } },
+                      axisLabel: { color: '#10B981' },
+                      nameTextStyle: { color: '#10B981' }
+                    },
                   ],
                   series: [
                     {
                       name: '收入(万元)',
                       type: 'line',
                       smooth: true,
-                      lineStyle: { color: '#1890ff', width: 3 },
-                      itemStyle: { color: '#1890ff' },
+                      lineStyle: { color: '#3B82F6', width: 2 },
+                      itemStyle: { color: '#3B82F6' },
                       areaStyle: {
                         color: {
                           type: 'linear',
                           x: 0, y: 0, x2: 0, y2: 1,
                           colorStops: [
-                            { offset: 0, color: 'rgba(24, 144, 255, 0.3)' },
-                            { offset: 1, color: 'rgba(24, 144, 255, 0.05)' }
+                            { offset: 0, color: 'rgba(59, 130, 246, 0.3)' },
+                            { offset: 1, color: 'rgba(59, 130, 246, 0.05)' }
                           ]
                         }
                       },
@@ -224,15 +248,15 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
                       type: 'line',
                       yAxisIndex: 1,
                       smooth: true,
-                      lineStyle: { color: '#52c41a', width: 3 },
-                      itemStyle: { color: '#52c41a' },
+                      lineStyle: { color: '#10B981', width: 2 },
+                      itemStyle: { color: '#10B981' },
                       areaStyle: {
                         color: {
                           type: 'linear',
                           x: 0, y: 0, x2: 0, y2: 1,
                           colorStops: [
-                            { offset: 0, color: 'rgba(82, 196, 26, 0.3)' },
-                            { offset: 1, color: 'rgba(82, 196, 26, 0.05)' }
+                            { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+                            { offset: 1, color: 'rgba(16, 185, 129, 0.05)' }
                           ]
                         }
                       },

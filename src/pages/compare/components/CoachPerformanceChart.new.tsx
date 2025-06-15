@@ -22,7 +22,7 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
           title: '各校区教练平均学员数对比',
           yAxisLabel: '平均学员数'
         };
-      case 'revenue':
+      case 'salary':
         return {
           title: '各校区教练平均收入对比',
           yAxisLabel: '平均收入(万元)'
