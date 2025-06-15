@@ -1,6 +1,18 @@
 import React, { CSSProperties } from 'react';
-import { Row, Col, Card, Statistic } from 'antd';
-import { DollarOutlined } from '@ant-design/icons';
+import { Row, Col, Card, Statistic, Space } from 'antd';
+import {
+  DollarOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  MoneyCollectOutlined,
+  PayCircleOutlined,
+  WalletOutlined,
+  BankOutlined,
+  ShoppingOutlined,
+  BookOutlined,
+  GiftOutlined
+} from '@ant-design/icons';
+import './ExpenseStatistics.css';
 
 interface FinanceStatisticsProps {
   totalExpense: number;
@@ -13,6 +25,54 @@ interface FinanceStatisticsProps {
   otherIncome: number;
 }
 
+// 统计卡片组件，与数据统计页面风格一致
+const StatisticCard: React.FC<{
+  icon: React.ReactNode;
+  title: string;
+  value: number;
+  growth: number;
+  color: string;
+  prefix?: React.ReactNode;
+}> = ({ icon, title, value, growth, color, prefix }) => {
+  const isUp = growth >= 0;
+
+  const iconStyle: CSSProperties = {
+    backgroundColor: `${color}20`,
+    color: color,
+  };
+
+  return (
+    <Card className="expense-statistic-card">
+      <div className="expense-statistic-card-inner">
+        <div className="expense-statistic-card-icon" style={iconStyle}>
+          {icon}
+        </div>
+        <div className="expense-statistic-card-content">
+          <Statistic
+            title={<span className="expense-statistic-card-title">{title}</span>}
+            value={value}
+            precision={2}
+            prefix={prefix}
+            valueStyle={{
+              color: '#333',
+              fontSize: '16px',
+              fontWeight: 600,
+              textAlign: 'center',
+              display: 'block'
+            }}
+            suffix={
+              <Space size={4} className="expense-statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
+                {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                <span>{Math.abs(growth)}%</span>
+              </Space>
+            }
+          />
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 const FinanceStatistics: React.FC<FinanceStatisticsProps> = ({
   totalExpense,
   totalIncome,
@@ -23,130 +83,138 @@ const FinanceStatistics: React.FC<FinanceStatisticsProps> = ({
   trainingIncome,
   otherIncome
 }) => {
-  const cardStyle: CSSProperties = {
-    textAlign: 'center' as const,
-    height: '100%'
-  };
-
-  // 支出卡片样式
-  const expenseCardStyle: CSSProperties = {
-    ...cardStyle,
-    background: 'rgba(231, 76, 60, 0.1)',
-    borderLeft: '3px solid #e74c3c'
-  };
-
-  // 收入卡片样式
-  const incomeCardStyle: CSSProperties = {
-    ...cardStyle,
-    background: 'rgba(46, 204, 113, 0.1)',
-    borderLeft: '3px solid #2ecc71'
-  };
+  // 模拟增长率数据（实际项目中应该从API获取）
+  const statisticsData = [
+    {
+      icon: <MoneyCollectOutlined />,
+      title: '总支出',
+      value: totalExpense,
+      growth: -3.2,
+      color: '#f5222d',
+      prefix: '¥',
+    },
+    {
+      icon: <PayCircleOutlined />,
+      title: '工资支出',
+      value: salaryExpense,
+      growth: 2.1,
+      color: '#1890ff',
+      prefix: '¥',
+    },
+    {
+      icon: <BankOutlined />,
+      title: '固定成本',
+      value: operationExpense,
+      growth: -1.5,
+      color: '#faad14',
+      prefix: '¥',
+    },
+    {
+      icon: <WalletOutlined />,
+      title: '其他支出',
+      value: otherExpense,
+      growth: -5.8,
+      color: '#f5222d',
+      prefix: '¥',
+    },
+    {
+      icon: <DollarOutlined />,
+      title: '总收入',
+      value: totalIncome,
+      growth: 8.5,
+      color: '#52c41a',
+      prefix: '¥',
+    },
+    {
+      icon: <BookOutlined />,
+      title: '学费收入',
+      value: tuitionIncome,
+      growth: 12.3,
+      color: '#52c41a',
+      prefix: '¥',
+    },
+    {
+      icon: <ShoppingOutlined />,
+      title: '培训收入',
+      value: trainingIncome,
+      growth: 6.7,
+      color: '#13c2c2',
+      prefix: '¥',
+    },
+    {
+      icon: <GiftOutlined />,
+      title: '其他收入',
+      value: otherIncome,
+      growth: 4.2,
+      color: '#722ed1',
+      prefix: '¥',
+    },
+  ];
 
   return (
-    <>
-      {/* 所有统计数据放在一起，每行4个卡片 */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        {/* 第一行：支出相关 */}
-        <Col span={6}>
-          <Card style={expenseCardStyle}>
-            <Statistic
-              title="总支出"
-              value={totalExpense}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#cf1322', fontWeight: 'bold' }}
-            />
-          </Card>
+    <div style={{ marginBottom: 24 }}>
+      {/* 第一行：支出相关 */}
+      <Row gutter={[8, 12]} style={{ marginBottom: 16 }} wrap={false}>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[0]} />
         </Col>
-        <Col span={6}>
-          <Card style={cardStyle}>
-            <Statistic
-              title="工资支出"
-              value={salaryExpense}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
+        <Col flex="none" style={{ width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="expense-equals-separator" style={{ color: '#1890ff' }}>
+            =
+          </div>
         </Col>
-        <Col span={6}>
-          <Card style={cardStyle}>
-            <Statistic
-              title="固定成本"
-              value={operationExpense}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#faad14' }}
-            />
-          </Card>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[1]} />
         </Col>
-        <Col span={6}>
-          <Card style={cardStyle}>
-            <Statistic
-              title="其他支出"
-              value={otherExpense}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#cf1322' }}
-            />
-          </Card>
+        <Col flex="none" style={{ width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="expense-equals-separator" style={{ color: '#1890ff', fontSize: '16px' }}>
+            +
+          </div>
         </Col>
-
-        {/* 第二行：收入相关 */}
-        <Col span={6}>
-          <Card style={incomeCardStyle}>
-            <Statistic
-              title="总收入"
-              value={totalIncome}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
-            />
-          </Card>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[2]} />
         </Col>
-        <Col span={6}>
-          <Card style={cardStyle}>
-            <Statistic
-              title="学费收入"
-              value={tuitionIncome}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
+        <Col flex="none" style={{ width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="expense-equals-separator" style={{ color: '#1890ff', fontSize: '16px' }}>
+            +
+          </div>
         </Col>
-        <Col span={6}>
-          <Card style={cardStyle}>
-            <Statistic
-              title="培训收入"
-              value={trainingIncome}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#13c2c2' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card style={cardStyle}>
-            <Statistic
-              title="其他收入"
-              value={otherIncome}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix="元"
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[3]} />
         </Col>
       </Row>
-    </>
+
+      {/* 第二行：收入相关 */}
+      <Row gutter={[8, 12]} wrap={false}>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[4]} />
+        </Col>
+        <Col flex="none" style={{ width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="expense-equals-separator" style={{ color: '#52c41a' }}>
+            =
+          </div>
+        </Col>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[5]} />
+        </Col>
+        <Col flex="none" style={{ width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="expense-equals-separator" style={{ color: '#52c41a', fontSize: '16px' }}>
+            +
+          </div>
+        </Col>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[6]} />
+        </Col>
+        <Col flex="none" style={{ width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="expense-equals-separator" style={{ color: '#52c41a', fontSize: '16px' }}>
+            +
+          </div>
+        </Col>
+        <Col flex="1">
+          <StatisticCard {...statisticsData[7]} />
+        </Col>
+      </Row>
+    </div>
   );
 };
 

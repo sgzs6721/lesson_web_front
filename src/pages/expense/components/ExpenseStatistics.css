@@ -1,0 +1,94 @@
+/* 收支管理统计卡片样式 - 与数据统计页面保持一致 */
+.expense-statistic-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.expense-statistic-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+}
+
+.expense-statistic-card .ant-card-body {
+  padding: 12px;
+  text-align: center;
+}
+
+.expense-statistic-card-inner {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.expense-statistic-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.expense-statistic-card-content {
+  flex: 1;
+  text-align: center;
+}
+
+.expense-statistic-card-title {
+  color: #8c8c8c;
+  font-size: 12px;
+  margin-bottom: 4px;
+  display: block;
+  text-align: center;
+}
+
+.expense-statistic-card-growth {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 等号和加号分隔符样式 */
+.expense-equals-separator {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 80px;
+  opacity: 0.8;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .expense-statistic-card .ant-card-body {
+    padding: 16px;
+  }
+
+  .expense-statistic-card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    margin-right: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .expense-statistic-card .ant-card-body {
+    padding: 12px;
+  }
+
+  .expense-statistic-card-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    margin-right: 10px;
+  }
+}
