@@ -111,9 +111,30 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
                 xAxis: { type: 'category', data: coachLessonsData.months },
                 yAxis: [{ type: 'value', name: '数量' }, { type: 'value', name: '收入' }],
                 series: [
-                  { name: '课时数', type: 'bar', data: coachLessonsData.lessons },
-                  { name: '学员数', type: 'bar', data: coachLessonsData.students },
-                  { name: '收入 (千元)', type: 'line', yAxisIndex: 1, smooth: true, data: coachLessonsData.income },
+                  {
+                    name: '课时数',
+                    type: 'bar',
+                    data: coachLessonsData.lessons,
+                    itemStyle: { color: '#1890ff' },
+                    emphasis: { disabled: true }
+                  },
+                  {
+                    name: '学员数',
+                    type: 'bar',
+                    data: coachLessonsData.students,
+                    itemStyle: { color: '#52c41a' },
+                    emphasis: { disabled: true }
+                  },
+                  {
+                    name: '收入 (千元)',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    smooth: true,
+                    data: coachLessonsData.income,
+                    lineStyle: { color: '#faad14', width: 3 },
+                    itemStyle: { color: '#faad14' },
+                    emphasis: { disabled: true }
+                  },
                 ],
               }}
               style={{ height: '350px', width: '100%' }}

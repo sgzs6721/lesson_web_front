@@ -1,0 +1,77 @@
+.organization-stats {
+  width: 100%;
+}
+
+.organization-stats .ant-row {
+  width: 100%;
+}
+
+.organization-stats .ant-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.organization-stats .statistic-card {
+  height: 100%;
+  width: 100%;
+  min-height: 120px;
+}
+
+.organization-stats .statistic-card .ant-card-body {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.organization-stats .statistic-card-inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.organization-stats .statistic-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.organization-stats .statistic-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 确保所有数据块在不同屏幕尺寸下都保持一致 */
+@media (min-width: 1200px) {
+  .organization-stats .ant-col {
+    flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .organization-stats .ant-col {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .organization-stats .ant-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 767px) {
+  .organization-stats .ant-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}

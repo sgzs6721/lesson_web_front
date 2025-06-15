@@ -22,10 +22,10 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
           title: '各校区教练平均学员数对比',
           yAxisLabel: '平均学员数'
         };
-      case 'salary':
+      case 'revenue':
         return {
-          title: '各校区教练平均工资对比',
-          yAxisLabel: '平均工资(元)'
+          title: '各校区教练平均收入对比',
+          yAxisLabel: '平均收入(万元)'
         };
       default:
         return {
@@ -39,7 +39,7 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
   const labels = Object.values(data).map(campus => campus.name);
   const values = Object.values(data).map(campus => campus.coachPerformance[metric]);
   const { title, yAxisLabel } = getChartConfig(metric);
-  
+
   // ECharts配置选项
   const getOption = () => {
     return {
@@ -83,11 +83,11 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
       ]
     };
   };
-  
+
   if (!data || Object.keys(data).length === 0) {
     return <Empty description="暂无数据" />;
   }
-  
+
   return (
     <ReactECharts
       option={getOption()}
@@ -96,4 +96,4 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
   );
 };
 
-export default CoachPerformanceChart; 
+export default CoachPerformanceChart;

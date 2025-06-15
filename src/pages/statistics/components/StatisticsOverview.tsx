@@ -200,8 +200,45 @@ const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
                     { type: 'value', name: '学员数量', position: 'right', axisLine: { show: true, lineStyle: { color: '#2ecc71' } } },
                   ],
                   series: [
-                    { name: '收入(万元)', type: 'line', smooth: true, areaStyle: { color: '#3498db', opacity: 0.2 }, data: trendTimeframe === 'month' ? [80, 92, 91, 94, 120, 130, 120, 110, 100, 90, 85, 80] : [70, 82, 91, 94, 120, 130, 140] },
-                    { name: '学员数量', type: 'line', yAxisIndex: 1, smooth: true, areaStyle: { color: '#2ecc71', opacity: 0.2 }, data: trendTimeframe === 'month' ? [1200, 1220, 1240, 1260, 1280, 1290, 1285, 1270, 1250, 1230, 1210, 1200] : [1100, 1150, 1200, 1250, 1300, 1350, 1380] }
+                    {
+                      name: '收入(万元)',
+                      type: 'line',
+                      smooth: true,
+                      lineStyle: { color: '#1890ff', width: 3 },
+                      itemStyle: { color: '#1890ff' },
+                      areaStyle: {
+                        color: {
+                          type: 'linear',
+                          x: 0, y: 0, x2: 0, y2: 1,
+                          colorStops: [
+                            { offset: 0, color: 'rgba(24, 144, 255, 0.3)' },
+                            { offset: 1, color: 'rgba(24, 144, 255, 0.05)' }
+                          ]
+                        }
+                      },
+                      emphasis: { disabled: true },
+                      data: trendTimeframe === 'month' ? [80, 92, 91, 94, 120, 130, 120, 110, 100, 90, 85, 80] : [70, 82, 91, 94, 120, 130, 140]
+                    },
+                    {
+                      name: '学员数量',
+                      type: 'line',
+                      yAxisIndex: 1,
+                      smooth: true,
+                      lineStyle: { color: '#52c41a', width: 3 },
+                      itemStyle: { color: '#52c41a' },
+                      areaStyle: {
+                        color: {
+                          type: 'linear',
+                          x: 0, y: 0, x2: 0, y2: 1,
+                          colorStops: [
+                            { offset: 0, color: 'rgba(82, 196, 26, 0.3)' },
+                            { offset: 1, color: 'rgba(82, 196, 26, 0.05)' }
+                          ]
+                        }
+                      },
+                      emphasis: { disabled: true },
+                      data: trendTimeframe === 'month' ? [1200, 1220, 1240, 1260, 1280, 1290, 1285, 1270, 1250, 1230, 1210, 1200] : [1100, 1150, 1200, 1250, 1300, 1350, 1380]
+                    }
                   ],
                 }}
                 style={{ height: '450px', width: '100%' }}

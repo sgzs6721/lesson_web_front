@@ -128,23 +128,7 @@ const CampusComparisonChart: React.FC<CampusComparisonChartProps> = ({ data, met
             }
           })),
           emphasis: {
-            itemStyle: {
-              color: function(params: any) {
-                const color = colors[params.dataIndex % colors.length];
-                return {
-                  type: 'linear',
-                  x: 0,
-                  y: 0,
-                  x2: 0,
-                  y2: 1,
-                  colorStops: [{
-                    offset: 0, color: color
-                  }, {
-                    offset: 1, color: color + 'CC'
-                  }]
-                };
-              }
-            }
+            disabled: true
           }
         }
       ]

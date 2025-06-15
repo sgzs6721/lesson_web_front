@@ -18,7 +18,7 @@ export interface CampusData {
   coachPerformance: {
     lessons: number;
     students: number;
-    salary: number;
+    revenue: number;
   };
 }
 
@@ -41,4 +41,4 @@ export interface CampusFilterParams {
 // 图表指标类型
 export type ComparisonMetric = 'revenue' | 'profit' | 'students' | 'coaches';
 export type TrendMetric = 'students' | 'revenue' | 'profit';
-export type CoachMetric = 'lessons' | 'students' | 'salary'; 
+export type CoachMetric = 'lessons' | 'students' | 'revenue';

@@ -33,7 +33,7 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
   }
 
   const financeData = data;
-  
+
   const financeStats = [
     {
       title: '总收入 (元)',
@@ -98,9 +98,29 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
                 xAxis: { type: 'category', data: financeData.monthlyData.months },
                 yAxis: { type: 'value' },
                 series: [
-                  { name: '收入', type: 'bar', data: financeData.monthlyData.revenue },
-                  { name: '成本', type: 'bar', data: financeData.monthlyData.cost },
-                  { name: '利润', type: 'line', smooth: true, data: financeData.monthlyData.profit },
+                  {
+                    name: '收入',
+                    type: 'bar',
+                    data: financeData.monthlyData.revenue,
+                    itemStyle: { color: '#1890ff' },
+                    emphasis: { disabled: true }
+                  },
+                  {
+                    name: '成本',
+                    type: 'bar',
+                    data: financeData.monthlyData.cost,
+                    itemStyle: { color: '#f5222d' },
+                    emphasis: { disabled: true }
+                  },
+                  {
+                    name: '利润',
+                    type: 'line',
+                    smooth: true,
+                    data: financeData.monthlyData.profit,
+                    lineStyle: { color: '#52c41a', width: 3 },
+                    itemStyle: { color: '#52c41a' },
+                    emphasis: { disabled: true }
+                  },
                 ],
               }}
               style={{ height: '350px', width: '100%' }}

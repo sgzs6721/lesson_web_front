@@ -55,6 +55,9 @@ const CampusGrowthChart: React.FC<CampusGrowthChartProps> = ({ data, metric }) =
     areaStyle: {
       opacity: 0.1,
       color: colors[index % colors.length]
+    },
+    emphasis: {
+      disabled: true
     }
   }));
 

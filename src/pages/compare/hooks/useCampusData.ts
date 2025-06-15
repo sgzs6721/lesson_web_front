@@ -25,7 +25,7 @@ const mockData: AllCampusData = {
     coachPerformance: {
       lessons: 95,
       students: 28,
-      salary: 12500
+      revenue: 12.5
     }
   },
   east: {
@@ -43,7 +43,7 @@ const mockData: AllCampusData = {
     coachPerformance: {
       lessons: 88,
       students: 25,
-      salary: 11800
+      revenue: 11.8
     }
   },
   west: {
@@ -61,7 +61,7 @@ const mockData: AllCampusData = {
     coachPerformance: {
       lessons: 82,
       students: 22,
-      salary: 11200
+      revenue: 11.2
     }
   },
   south: {
@@ -79,7 +79,7 @@ const mockData: AllCampusData = {
     coachPerformance: {
       lessons: 78,
       students: 19,
-      salary: 10500
+      revenue: 10.5
     }
   },
   north: {
@@ -97,7 +97,7 @@ const mockData: AllCampusData = {
     coachPerformance: {
       lessons: 70,
       students: 16,
-      salary: 9800
+      revenue: 9.8
     }
   }
 };
@@ -151,7 +151,8 @@ export const useCampusData = () => {
         coachPerformance: {
           ...campus.coachPerformance,
           lessons: Math.round(campus.coachPerformance.lessons * factor),
-          students: Math.round(campus.coachPerformance.students * factor)
+          students: Math.round(campus.coachPerformance.students * factor),
+          revenue: Math.round(campus.coachPerformance.revenue * factor * 100) / 100
         }
       };
       return acc;

@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { AllCampusData } from '../types/campus';
 import StatisticCard from '../../statistics/components/StatisticCard';
+import './OrganizationStats.css';
 
 interface OrganizationStatsProps {
   campusData: AllCampusData;
@@ -44,8 +45,8 @@ const OrganizationStats: React.FC<OrganizationStatsProps> = ({ campusData }) => 
 
   return (
     <div className="organization-stats">
-      <Row gutter={[24, 24]}>
-        <Col xs={24} sm={12} lg={8} xl={4}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} md={12} lg={8} xl={4}>
           <StatisticCard
             icon={<BankOutlined />}
             title="校区总数量"
@@ -54,7 +55,7 @@ const OrganizationStats: React.FC<OrganizationStatsProps> = ({ campusData }) => 
             color="#fa8c16"
           />
         </Col>
-        <Col xs={24} sm={12} lg={8} xl={4}>
+        <Col xs={24} sm={12} md={12} lg={8} xl={4}>
           <StatisticCard
             icon={<UserOutlined />}
             title="机构总学员数"
@@ -63,7 +64,7 @@ const OrganizationStats: React.FC<OrganizationStatsProps> = ({ campusData }) => 
             color="#1890ff"
           />
         </Col>
-        <Col xs={24} sm={12} lg={8} xl={4}>
+        <Col xs={24} sm={12} md={12} lg={8} xl={4}>
           <StatisticCard
             icon={<TeamOutlined />}
             title="机构总教练数"
@@ -72,7 +73,7 @@ const OrganizationStats: React.FC<OrganizationStatsProps> = ({ campusData }) => 
             color="#722ed1"
           />
         </Col>
-        <Col xs={24} sm={12} lg={8} xl={4}>
+        <Col xs={24} sm={12} md={12} lg={8} xl={4}>
           <StatisticCard
             icon={<RiseOutlined />}
             title="机构总收入"
@@ -82,7 +83,7 @@ const OrganizationStats: React.FC<OrganizationStatsProps> = ({ campusData }) => 
             prefix="¥"
           />
         </Col>
-        <Col xs={24} sm={12} lg={8} xl={4}>
+        <Col xs={24} sm={12} md={12} lg={8} xl={4}>
           <StatisticCard
             icon={<FallOutlined />}
             title="机构总支出"
@@ -92,7 +93,7 @@ const OrganizationStats: React.FC<OrganizationStatsProps> = ({ campusData }) => 
             prefix="¥"
           />
         </Col>
-        <Col xs={24} sm={12} lg={8} xl={4}>
+        <Col xs={24} sm={12} md={12} lg={8} xl={4}>
           <StatisticCard
             icon={<DollarOutlined />}
             title="机构总利润"

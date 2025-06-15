@@ -24,7 +24,7 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
           yAxisLabel: '平均学员数',
           unit: '人'
         };
-      case 'salary':
+      case 'revenue':
         return {
           title: '各校区教练平均收入对比',
           yAxisLabel: '平均收入',
@@ -42,7 +42,7 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
   // 准备数据
   const labels = Object.values(data).map(campus => campus.name);
   const values = Object.values(data).map(campus => campus.coachPerformance[metric]);
-  const { title, yAxisLabel, unit } = getChartConfig(metric);
+  const { yAxisLabel, unit } = getChartConfig(metric);
 
   // 定义多种颜色
   const colors = ['#722ed1', '#52c41a', '#faad14', '#f5222d', '#1890ff', '#13c2c2', '#eb2f96', '#fa8c16'];
@@ -121,23 +121,7 @@ const CoachPerformanceChart: React.FC<CoachPerformanceChartProps> = ({ data, met
             }
           })),
           emphasis: {
-            itemStyle: {
-              color: function(params: any) {
-                const color = colors[params.dataIndex % colors.length];
-                return {
-                  type: 'linear',
-                  x: 0,
-                  y: 0,
-                  x2: 0,
-                  y2: 1,
-                  colorStops: [{
-                    offset: 0, color: color
-                  }, {
-                    offset: 1, color: color + 'CC'
-                  }]
-                };
-              }
-            }
+            disabled: true
           }
         }
       ]

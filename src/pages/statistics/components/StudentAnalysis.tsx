@@ -130,7 +130,15 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                 legend: { data: [studentChartType] },
                 xAxis: { type: 'category', data: studentTrendData.months },
                 yAxis: { type: 'value', name: studentChartType === 'retention' ? '%' : '' },
-                series: [{ name: studentChartType, type: 'line', smooth: true, data: studentTrendData[studentChartType] }],
+                series: [{
+                  name: studentChartType,
+                  type: 'line',
+                  smooth: true,
+                  data: studentTrendData[studentChartType],
+                  lineStyle: { color: '#1890ff', width: 3 },
+                  itemStyle: { color: '#1890ff' },
+                  emphasis: { disabled: true }
+                }],
               }}
               style={{ height: '300px', width: '100%' }}
             />
@@ -150,13 +158,32 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                 tooltip: { trigger: 'axis' },
                 xAxis: { type: 'category', data: renewalAmountData.months },
                 yAxis: { type: 'value' },
-                series: [{ name: '续费金额', type: 'bar', data: renewalAmountData.amounts }],
+                series: [{
+                  name: '续费金额',
+                  type: 'bar',
+                  barWidth: '60%',
+                  data: renewalAmountData.amounts.map((value, index) => ({
+                    value: value,
+                    itemStyle: {
+                      color: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                          { offset: 0, color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16', '#a0d911', '#2f54eb', '#fa541c', '#1890ff'][index % 12] },
+                          { offset: 1, color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16', '#a0d911', '#2f54eb', '#fa541c', '#1890ff'][index % 12] + '80' }
+                        ]
+                      },
+                      borderRadius: [4, 4, 0, 0]
+                    }
+                  })),
+                  emphasis: { disabled: true }
+                }],
               }}
               style={{ height: '300px', width: '100%' }}
             />
           </div>
         </div>
-        
+
         <div className="student-analysis-side-column">
             {/* Student Source Chart */}
             <div className="chart-container-card">
@@ -173,9 +200,17 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                             radius: ['50%', '70%'],
                             avoidLabelOverlap: false,
                             label: { show: false, position: 'center' },
-                            emphasis: { label: { show: true, fontSize: '20', fontWeight: 'bold' } },
+                            emphasis: {
+                              label: { show: true, fontSize: '20', fontWeight: 'bold' },
+                              itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' }
+                            },
                             labelLine: { show: false },
-                            data: studentSourceData,
+                            data: studentSourceData.map((item, index) => ({
+                              ...item,
+                              itemStyle: {
+                                color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2'][index % 6]
+                              }
+                            })),
                         }],
                     }}
                     style={{ height: '300px', width: '100%' }}
