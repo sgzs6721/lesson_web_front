@@ -48,8 +48,9 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
 
   return (
     <div className="table-toolbar" style={{ marginBottom: '16px', width: '100%' }}>
-      <Row gutter={[12, 8]} align="middle" style={{ width: '100%' }}>
-        <Col span={5}>
+      <Row gutter={[12, 12]} align="middle" style={{ width: '100%' }}>
+        {/* 搜索框 - 在小屏幕占满宽度 */}
+        <Col xs={24} sm={12} md={8} lg={6} xl={5}>
           <Input
             placeholder="项目关键字搜索"
             value={params.text || ''}
@@ -58,7 +59,9 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
             style={{ width: '100%' }}
           />
         </Col>
-        <Col span={4}>
+        
+        {/* 交易类型选择 */}
+        <Col xs={12} sm={6} md={5} lg={4} xl={4}>
           <Select
             placeholder="选择交易类型"
             value={params.type || undefined}
@@ -71,41 +74,50 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
             <Option value="expense">{TRANSACTION_TYPE_LABEL.expense}</Option>
           </Select>
         </Col>
-        <Col span={4}>
+
+        {/* 类别选择 */}
+        <Col xs={12} sm={6} md={5} lg={4} xl={4}>
           <Select
             placeholder="选择类别"
             mode="multiple"
             value={params.searchCategories}
             onChange={onCategoriesChange}
             allowClear
-            maxTagCount={2}
+            maxTagCount={1}
             style={{ width: '100%' }}
             getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
           >
             {getCategoryOptions()}
           </Select>
         </Col>
-        <Col flex="auto" style={{ minWidth: '240px' }}>
+
+        {/* 日期范围选择 - 在小屏幕占满宽度 */}
+        <Col xs={24} sm={12} md={6} lg={6} xl={6}>
           <RangePicker
             locale={locale}
             value={params.dateRange}
             onChange={onDateRangeChange}
-            style={{ width: '100%', textAlign: 'center' }}
+            style={{ width: '100%' }}
             placeholder={['开始日期', '结束日期']}
+            size="middle"
           />
         </Col>
-        <Col flex="none" style={{ minWidth: '280px' }}>
-          <Space size="middle" style={{ width: '100%', justifyContent: 'flex-end' }}>
-            <Button type="primary" icon={<SearchOutlined />} onClick={onSearch}>
-              搜索
-            </Button>
-            <Button icon={<ReloadOutlined />} onClick={onReset}>
-              重置
-            </Button>
-            <Button icon={<DownloadOutlined />} onClick={onExport}>
-              导出
-            </Button>
-          </Space>
+
+        {/* 操作按钮 - 在小屏幕占满宽度并居中显示 */}
+        <Col xs={24} sm={12} md={6} lg={4} xl={5}>
+          <div className="search-actions">
+            <Space size="small" wrap>
+              <Button type="primary" icon={<SearchOutlined />} onClick={onSearch} size="middle">
+                搜索
+              </Button>
+              <Button icon={<ReloadOutlined />} onClick={onReset} size="middle">
+                重置
+              </Button>
+              <Button icon={<DownloadOutlined />} onClick={onExport} size="middle">
+                导出
+              </Button>
+            </Space>
+          </div>
         </Col>
       </Row>
     </div>

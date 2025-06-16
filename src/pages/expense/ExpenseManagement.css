@@ -20,8 +20,6 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-
-
 .expense-actions {
   display: flex;
   align-items: center;
@@ -38,6 +36,13 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* 搜索栏响应式样式 */
+.search-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
   .expense-management {
@@ -46,5 +51,40 @@
 
   .expense-management-card {
     margin-top: -8px;
+  }
+
+  /* 在小屏幕上让按钮居中 */
+  .search-actions {
+    justify-content: center;
+  }
+
+  /* 在小屏幕上调整头部布局 */
+  .expense-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .expense-header .page-title {
+    text-align: center;
+    margin-bottom: 0;
+  }
+
+  .expense-actions {
+    justify-content: center;
+  }
+}
+
+/* 中等屏幕调整 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .search-actions {
+    justify-content: flex-end;
+  }
+}
+
+/* 大屏幕保持原样 */
+@media (min-width: 1025px) {
+  .search-actions {
+    justify-content: flex-end;
   }
 } 
