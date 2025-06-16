@@ -103,10 +103,10 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
           />
         </Col>
 
-        {/* 操作按钮 - 在小屏幕占满宽度并居中显示 */}
+        {/* 操作按钮 - 确保在一行显示 */}
         <Col xs={24} sm={12} md={6} lg={4} xl={5}>
           <div className="search-actions">
-            <Space size="small" wrap>
+            <Space size="small" style={{ display: 'flex', flexWrap: 'nowrap' }}>
               <Button type="primary" icon={<SearchOutlined />} onClick={onSearch} size="middle">
                 搜索
               </Button>

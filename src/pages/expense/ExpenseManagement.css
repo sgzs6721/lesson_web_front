@@ -43,6 +43,16 @@
   justify-content: flex-end;
 }
 
+.search-actions .ant-space {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.search-actions .ant-btn {
+  min-width: auto;
+  padding: 4px 8px;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
   .expense-management {

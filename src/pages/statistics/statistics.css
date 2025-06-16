@@ -5,6 +5,16 @@
   background-color: #fff;
 }
 
+/* 统计小标题居中对齐 */
+.statistics-group-title {
+  text-align: center;
+}
+
+/* 图表标题居中对齐 */
+.chart-title {
+  text-align: center;
+}
+
 /* 标签页样式 */
 .statistics-tabs-container {
   background-color: white;

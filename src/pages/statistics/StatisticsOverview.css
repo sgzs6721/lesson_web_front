@@ -31,6 +31,7 @@
   font-weight: 600;
   margin-bottom: 24px;
   color: #262626;
+  text-align: center;
 }
 
 .chart-container-card {
@@ -52,6 +53,7 @@
   font-size: 18px;
   font-weight: 600;
   color: #262626;
+  text-align: center;
 }
 
 .chart-wrapper {
