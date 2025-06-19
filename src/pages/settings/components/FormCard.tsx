@@ -7,7 +7,7 @@ const { Title } = Typography;
 const FormCard: React.FC<IFormCardProps> = ({ title, children }) => {
   return (
     <Card className="settings-form-card">
-      <Title level={5} className="form-card-title">{title}</Title>
+      {title && <Title level={5} className="form-card-title">{title}</Title>}
       {children}
     </Card>
   );

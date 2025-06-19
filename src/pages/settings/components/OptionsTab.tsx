@@ -12,6 +12,7 @@ interface OptionsTabProps {
   feeOptions: IOptionItem[];
   expireTypeOptions: IOptionItem[];
   expenseTypeOptions: IOptionItem[];
+  incomeTypeOptions: IOptionItem[];
   loading: Record<string, boolean>;
   onAddOption: (type: string, option: IOptionItem) => Promise<void>;
   onUpdateOption: (id: string, option: IOptionItem) => Promise<void>;
@@ -27,6 +28,7 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
   feeOptions,
   expireTypeOptions,
   expenseTypeOptions,
+  incomeTypeOptions,
   loading,
   onAddOption,
   onUpdateOption,
@@ -166,23 +168,43 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
         </span>
       ),
       children: (
-        <div className="option-section">
-          <OptionListComponent
-            type="expenseType"
-            options={expenseTypeOptions}
-            title="支出类型"
-            onAdd={async (option) => await handleAddOption('expenseType', option)}
-            onDelete={(id, name) => handleDeleteOption('expenseType', id, name)}
-            onUpdate={async (id, option) => await handleUpdateOption(id, option)}
-            loading={loading['EXPENSE_TYPE']}
-            closeForm={closeAddForm['EXPENSE_TYPE'] || closeEditForm['EXPENSE_TYPE']}
-            formFields={[
-              { name: 'name', label: '类型名称', required: true, message: '请输入支出类型名称' },
-              { name: 'value', label: '枚举值', required: true, message: '请输入枚举值' },
-              { name: 'description', label: '描述', required: false, message: '' }
-            ]}
-          />
-        </div>
+        <>
+          <div className="option-section">
+            <OptionListComponent
+              type="expenseType"
+              options={expenseTypeOptions}
+              title="支出类型"
+              onAdd={async (option) => await handleAddOption('expenseType', option)}
+              onDelete={(id, name) => handleDeleteOption('expenseType', id, name)}
+              onUpdate={async (id, option) => await handleUpdateOption(id, option)}
+              loading={loading['EXPEND']}
+              closeForm={closeAddForm['EXPEND'] || closeEditForm['EXPEND']}
+              formFields={[
+                { name: 'name', label: '类型名称', required: true, message: '请输入支出类型名称' },
+                { name: 'value', label: '枚举值', required: true, message: '请输入枚举值' },
+                { name: 'description', label: '描述', required: false, message: '' }
+              ]}
+            />
+          </div>
+          <Divider />
+          <div className="option-section">
+            <OptionListComponent
+              type="incomeType"
+              options={incomeTypeOptions}
+              title="收入类型"
+              onAdd={async (option) => await handleAddOption('incomeType', option)}
+              onDelete={(id, name) => handleDeleteOption('incomeType', id, name)}
+              onUpdate={async (id, option) => await handleUpdateOption(id, option)}
+              loading={loading['INCOME']}
+              closeForm={closeAddForm['INCOME'] || closeEditForm['INCOME']}
+              formFields={[
+                { name: 'name', label: '类型名称', required: true, message: '请输入收入类型名称' },
+                { name: 'value', label: '枚举值', required: true, message: '请输入枚举值' },
+                { name: 'description', label: '描述', required: false, message: '' }
+              ]}
+            />
+          </div>
+        </>
       )
     }
   ];

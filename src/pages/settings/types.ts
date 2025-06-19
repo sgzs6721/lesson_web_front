@@ -79,7 +79,7 @@ export interface IBackupRecord {
 
 // 表单组件接口
 export interface IFormCardProps {
-  title: string;
+  title?: string;
   children: React.ReactNode;
 }
 

@@ -107,7 +107,7 @@
 .option-section {
   margin-top: 0;
   margin-bottom: 24px;
-  padding: 0 0 16px 0;
+  padding: 24px 0 16px 0;
   background: transparent;
   border-radius: 0;
   transition: all 0.3s;

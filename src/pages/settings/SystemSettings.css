@@ -13,122 +13,90 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-  padding: 0 0 16px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 0;
 }
 
 .settings-title {
   margin: 0;
-  font-size: 18px;
   font-weight: 600;
 }
 
-/* 重新设计的选项卡样式 */
-.settings-management .settings-tabs .ant-tabs-nav {
-  margin-bottom: 24px;
-  background-color: #ffffff;
-  padding: 8px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f0f0f0;
-}
-
-.settings-management .settings-tabs .ant-tabs-nav::before {
-  display: none;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab {
-  margin: 0;
-  padding: 12px 24px;
-  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-  border-radius: 6px;
-  border: none !important;
-  color: #595959;
-  font-weight: 500;
-  background: transparent;
-  position: relative;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab:hover {
-  color: #1677ff;
-  background: rgba(22, 119, 255, 0.04);
-}
-
-.settings-management .settings-tabs .ant-tabs-tab + .ant-tabs-tab {
-  margin-left: 4px;
-}
-
-/* 不同选项卡的不同颜色 - 使用更浅的颜色和渐变效果 */
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active {
-  background: linear-gradient(135deg, rgba(22, 119, 255, 0.08) 0%, rgba(22, 119, 255, 0.15) 100%) !important;
-  color: #1677ff !important;
-  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.1);
-  border-bottom: 2px solid #1677ff !important;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active {
-  background: linear-gradient(135deg, rgba(82, 196, 26, 0.08) 0%, rgba(82, 196, 26, 0.15) 100%) !important;
-  color: #52c41a !important;
-  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.1);
-  border-bottom: 2px solid #52c41a !important;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active {
-  background: linear-gradient(135deg, rgba(114, 46, 209, 0.08) 0%, rgba(114, 46, 209, 0.15) 100%) !important;
-  color: #722ed1 !important;
-  box-shadow: 0 2px 8px rgba(114, 46, 209, 0.1);
-  border-bottom: 2px solid #722ed1 !important;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active {
-  background: linear-gradient(135deg, rgba(250, 140, 22, 0.08) 0%, rgba(250, 140, 22, 0.15) 100%) !important;
-  color: #fa8c16 !important;
-  box-shadow: 0 2px 8px rgba(250, 140, 22, 0.1);
-  border-bottom: 2px solid #fa8c16 !important;
-}
-
-/* 保证Tab按钮文字颜色可见 */
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(1).ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #1677ff !important;
-  font-weight: 500;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(2).ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #52c41a !important;
-  font-weight: 500;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(3).ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #722ed1 !important;
-  font-weight: 500;
-}
-
-.settings-management .settings-tabs .ant-tabs-tab:nth-child(4).ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #fa8c16 !important;
-  font-weight: 500;
-}
-
-/* 统一的Tab样式 - 这里为了保险还是保留一个通用样式 */
-.settings-management .settings-tabs .ant-tabs-tab-active {
-  font-weight: 500;
-}
-
-.settings-management .settings-tabs .ant-tabs-ink-bar {
-  display: none;
-}
-
-.settings-management .tab-label {
+/* 头部标签样式 */
+.header-tabs {
+  flex: 1;
+  margin-left: 20px;
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
 }
 
-.settings-management .ant-tabs-content {
-  padding: 16px 0;
+.header-tabs .ant-tabs {
+  width: auto;
 }
 
+.header-tabs .ant-tabs-nav {
+  margin-bottom: 0;
+  width: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-tabs .ant-tabs-nav-wrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-tabs .ant-tabs-nav-list {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-tabs .ant-tabs-tab {
+  padding: 8px 16px;
+  font-size: 15px;
+}
+
+.settings-tabs-content {
+  margin-top: 20px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .settings-management {
+    padding: 0;
+  }
+
+  .settings-management-card {
+    margin-top: -8px;
+  }
+
+  .settings-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-tabs {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .header-tabs .ant-tabs-nav-wrap {
+    justify-content: flex-start;
+  }
+
+  .header-tabs .ant-tabs-nav-list {
+    justify-content: flex-start;
+  }
+
+  .header-tabs .ant-tabs-tab {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+/* 原有样式保留用于内容区域 */
 .settings-management .ant-form-item-label > label {
   font-weight: 500;
   color: #333;
@@ -194,44 +162,6 @@
 
 .settings-management .ant-form {
   animation: fadeIn 0.5s ease;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .settings-management {
-    padding: 0;
-  }
-
-  .settings-management-card {
-    margin-top: -8px;
-  }
-
-  .settings-management .settings-tabs .ant-tabs-tab {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
-}
-
-@keyframes slideIn {
-  0% {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOut {
-  0% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(20px);
-  }
 }
 
 @keyframes fadeIn {

@@ -39,7 +39,7 @@ const BasicSettingsTab: React.FC<IBasicSettingsTabProps> = ({
   const emptyFileList: UploadFile[] = [];
 
   return (
-    <FormCard title="基础设置">
+    <FormCard>
       <Form
         form={form}
         layout="vertical"

@@ -34,19 +34,15 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
           {icon}
         </div>
         <div className="statistic-card-content">
-          <Statistic
-            title={<span className="statistic-card-title">{title}</span>}
-            value={value}
-            precision={0}
-            prefix={prefix}
-            valueStyle={{ color: '#333', fontSize: '22px', fontWeight: 600 }}
-            suffix={
-              <Space size={4} className="statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
-                {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                <span>{Math.abs(growth)}%</span>
-              </Space>
-            }
-          />
+          <div className="statistic-card-title">{title}</div>
+          <div className="statistic-card-value">
+            {prefix && <span className="statistic-card-prefix">{prefix}</span>}
+            <span className="statistic-card-number">{value}</span>
+          </div>
+          <div className="statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
+            {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+            <span style={{ marginLeft: 4 }}>{Math.abs(growth)}%</span>
+          </div>
         </div>
       </div>
     </Card>

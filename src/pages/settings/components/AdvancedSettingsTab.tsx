@@ -18,7 +18,7 @@ const AdvancedSettingsTab: React.FC<IAdvancedSettingsTabProps> = ({
   onSave
 }) => {
   return (
-    <FormCard title="高级设置">
+    <FormCard>
       <Form
         form={form}
         layout="vertical"

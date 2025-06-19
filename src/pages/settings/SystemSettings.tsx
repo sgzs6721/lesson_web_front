@@ -58,6 +58,7 @@ const SystemSettings: React.FC = () => {
   const [feeOptions, setFeeOptions] = useState<IOptionItem[]>([]);
   const [expireTypeOptions, setExpireTypeOptions] = useState<IOptionItem[]>([]);
   const [expenseTypeOptions, setExpenseTypeOptions] = useState<IOptionItem[]>([]);
+  const [incomeTypeOptions, setIncomeTypeOptions] = useState<IOptionItem[]>([]);
   const [backupList, setBackupList] = useState<IBackupItem[]>([]);
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -94,8 +95,11 @@ const SystemSettings: React.FC = () => {
         case 'VALIDITY_PERIOD':
           setExpireTypeOptions(options);
           break;
-        case 'EXPENSE_TYPE':
+        case 'EXPEND':
           setExpenseTypeOptions(options);
+          break;
+        case 'INCOME':
+          setIncomeTypeOptions(options);
           break;
       }
     } catch (error) {
@@ -115,7 +119,8 @@ const SystemSettings: React.FC = () => {
     loadOptions('GIFT_ITEM');
     loadOptions('HANDLING_FEE_TYPE');
     loadOptions('VALIDITY_PERIOD');
-    loadOptions('EXPENSE_TYPE');
+    loadOptions('EXPEND');
+    loadOptions('INCOME');
     setOptionsLoaded(true);
   };
 
@@ -150,6 +155,7 @@ const SystemSettings: React.FC = () => {
     setFeeOptions([]);
     setExpireTypeOptions([]);
     setExpenseTypeOptions([]);
+    setIncomeTypeOptions([]);
 
     // 初始化备份列表
     setBackupList([
@@ -241,8 +247,11 @@ const SystemSettings: React.FC = () => {
           case 'VALIDITY_PERIOD':
             setExpireTypeOptions(prev => [...prev, newOption]);
             break;
-          case 'EXPENSE_TYPE':
+          case 'EXPEND':
             setExpenseTypeOptions(prev => [...prev, newOption]);
+            break;
+          case 'INCOME':
+            setIncomeTypeOptions(prev => [...prev, newOption]);
             break;
         }
         
@@ -306,8 +315,11 @@ const SystemSettings: React.FC = () => {
       case 'VALIDITY_PERIOD':
         optionsList = expireTypeOptions;
         break;
-      case 'EXPENSE_TYPE':
+      case 'EXPEND':
         optionsList = expenseTypeOptions;
+        break;
+      case 'INCOME':
+        optionsList = incomeTypeOptions;
         break;
     }
     
@@ -341,8 +353,11 @@ const SystemSettings: React.FC = () => {
           case 'VALIDITY_PERIOD':
             setExpireTypeOptions(prev => prev.filter(item => item.id !== id));
             break;
-          case 'EXPENSE_TYPE':
+          case 'EXPEND':
             setExpenseTypeOptions(prev => prev.filter(item => item.id !== id));
+            break;
+          case 'INCOME':
+            setIncomeTypeOptions(prev => prev.filter(item => item.id !== id));
             break;
         }
       }
@@ -370,7 +385,9 @@ const SystemSettings: React.FC = () => {
     } else if (feeOptions.some(item => item.id === id)) {
       apiType = 'HANDLING_FEE_TYPE';
     } else if (expenseTypeOptions.some(item => item.id === id)) {
-      apiType = 'EXPENSE_TYPE';
+      apiType = 'EXPEND';
+    } else if (incomeTypeOptions.some(item => item.id === id)) {
+      apiType = 'INCOME';
     }
 
     if (!apiType) {
@@ -406,8 +423,11 @@ const SystemSettings: React.FC = () => {
           case 'VALIDITY_PERIOD':
             updateState = setExpireTypeOptions;
             break;
-          case 'EXPENSE_TYPE':
+          case 'EXPEND':
             updateState = setExpenseTypeOptions;
+            break;
+          case 'INCOME':
+            updateState = setIncomeTypeOptions;
             break;
           default:
             return;
@@ -433,7 +453,8 @@ const SystemSettings: React.FC = () => {
       case 'gift': return 'GIFT_ITEM';
       case 'fee': return 'HANDLING_FEE_TYPE';
       case 'expireType': return 'VALIDITY_PERIOD';
-      case 'expenseType': return 'EXPENSE_TYPE';
+      case 'expenseType': return 'EXPEND';
+      case 'incomeType': return 'INCOME';
       default: return type.toUpperCase();
     }
   };
@@ -448,6 +469,7 @@ const SystemSettings: React.FC = () => {
       case 'expireType': 
       case 'VALIDITY_PERIOD': return '有效期时长';
       case 'expenseType': return '费用类型';
+      case 'incomeType': return '收入类型';
       default: return '选项';
     }
   };
@@ -490,118 +512,114 @@ const SystemSettings: React.FC = () => {
     setBackupList([...backupList, newBackup]);
   };
 
-  // 是否显示指定选项卡
-  const shouldRenderTab = (tab: TabKey) => {
-    return tab === activeTab;
-  };
 
-  // 定义各个选项卡的内容
-  const items = [
-    {
-      key: 'basic',
-      label: (
-        <span className="tab-label">
-          <SettingOutlined />
-          基础设置
-        </span>
-      ),
-      children: shouldRenderTab('basic') ? (
-        <BasicSettingsTab 
-          form={basicForm} 
-          onSave={handleSaveBasicSettings}
-          logoFileList={logoFileList}
-          handleLogoChange={handleLogoChange}
-          beforeUpload={beforeUpload}
-          themes={SYSTEM_THEMES}
-          languages={SYSTEM_LANGUAGES}
-        />
-      ) : null
-    },
-    {
-      key: 'advanced',
-      label: (
-        <span className="tab-label">
-          <ToolOutlined />
-          高级设置
-        </span>
-      ),
-      children: shouldRenderTab('advanced') ? (
-        <AdvancedSettingsTab 
-          form={advancedForm} 
-          onSave={handleSaveAdvancedSettings}
-        />
-      ) : null
-    },
-    {
-      key: 'options',
-      label: (
-        <span className="tab-label">
-          <AppstoreOutlined />
-          选项管理
-        </span>
-      ),
-      children: shouldRenderTab('options') ? (
-        <Spin spinning={
-          loading['COURSE_TYPE'] || 
-          loading['PAYMENT_TYPE'] || 
-          loading['GIFT_ITEM'] || 
-          loading['HANDLING_FEE_TYPE'] || 
-          loading['VALIDITY_PERIOD'] ||
-          loading['EXPENSE_TYPE']
-        } tip="正在加载选项数据...">
-          <OptionsTab
-            courseTypeOptions={courseTypeOptions}
-            paymentMethodOptions={paymentMethodOptions}
-            giftOptions={giftOptions}
-            feeOptions={feeOptions}
-            expireTypeOptions={expireTypeOptions}
-            expenseTypeOptions={expenseTypeOptions}
-            loading={loading}
-            onAddOption={handleAddOption}
-            onUpdateOption={handleUpdateOption}
-            showDeleteConfirm={showDeleteConfirm}
-            closeAddForm={closeAddForm}
-            closeEditForm={closeEditForm}
-          />
-        </Spin>
-      ) : null
-    },
-    {
-      key: 'backup',
-      label: (
-        <span className="tab-label">
-          <SafetyCertificateOutlined />
-          备份恢复
-        </span>
-      ),
-      children: shouldRenderTab('backup') ? (
-        <BackupTab
-          backupList={backupList}
-          onCreateBackup={handleCreateBackup}
-          onRestoreBackup={handleRestoreBackup}
-          onDeleteBackup={handleDeleteBackup}
-          onDownloadBackup={handleDownloadBackup}
-          onUploadBackup={handleUploadBackup}
-        />
-      ) : null
-    }
-  ];
 
   return (
     <div className="settings-management">
       <Card className="settings-management-card">
         <div className="settings-header">
-          <h1 className="settings-title">系统设置</h1>
+          <Title level={4} className="settings-title">系统设置</Title>
+          <Tabs
+            activeKey={activeTab}
+            onChange={handleTabChange}
+            className="header-tabs"
+            items={[
+              {
+                key: 'basic',
+                label: (
+                  <span>
+                    <SettingOutlined />
+                    基础设置
+                  </span>
+                ),
+              },
+              {
+                key: 'advanced',
+                label: (
+                  <span>
+                    <ToolOutlined />
+                    高级设置
+                  </span>
+                ),
+              },
+              {
+                key: 'options',
+                label: (
+                  <span>
+                    <AppstoreOutlined />
+                    选项管理
+                  </span>
+                ),
+              },
+              {
+                key: 'backup',
+                label: (
+                  <span>
+                    <SafetyCertificateOutlined />
+                    备份恢复
+                  </span>
+                ),
+              },
+            ]}
+          />
         </div>
-        
-        <Tabs
-          activeKey={activeTab}
-          onChange={handleTabChange}
-          items={items}
-          destroyInactiveTabPane
-          className="settings-tabs"
-          type="card"
-        />
+
+        <div className="settings-tabs-content">
+          {activeTab === 'basic' && (
+            <BasicSettingsTab 
+              form={basicForm} 
+              onSave={handleSaveBasicSettings}
+              logoFileList={logoFileList}
+              handleLogoChange={handleLogoChange}
+              beforeUpload={beforeUpload}
+              themes={SYSTEM_THEMES}
+              languages={SYSTEM_LANGUAGES}
+            />
+          )}
+          {activeTab === 'advanced' && (
+            <AdvancedSettingsTab 
+              form={advancedForm} 
+              onSave={handleSaveAdvancedSettings}
+            />
+          )}
+          {activeTab === 'options' && (
+            <Spin spinning={
+              loading['COURSE_TYPE'] || 
+              loading['PAYMENT_TYPE'] || 
+              loading['GIFT_ITEM'] || 
+              loading['HANDLING_FEE_TYPE'] || 
+              loading['VALIDITY_PERIOD'] ||
+              loading['EXPEND'] ||
+              loading['INCOME']
+            } tip="正在加载选项数据...">
+              <OptionsTab
+                courseTypeOptions={courseTypeOptions}
+                paymentMethodOptions={paymentMethodOptions}
+                giftOptions={giftOptions}
+                feeOptions={feeOptions}
+                expireTypeOptions={expireTypeOptions}
+                expenseTypeOptions={expenseTypeOptions}
+                incomeTypeOptions={incomeTypeOptions}
+                loading={loading}
+                onAddOption={handleAddOption}
+                onUpdateOption={handleUpdateOption}
+                showDeleteConfirm={showDeleteConfirm}
+                closeAddForm={closeAddForm}
+                closeEditForm={closeEditForm}
+              />
+            </Spin>
+          )}
+          {activeTab === 'backup' && (
+            <BackupTab
+              backupList={backupList}
+              onCreateBackup={handleCreateBackup}
+              onRestoreBackup={handleRestoreBackup}
+              onDeleteBackup={handleDeleteBackup}
+              onDownloadBackup={handleDownloadBackup}
+              onUploadBackup={handleUploadBackup}
+            />
+          )}
+        </div>
         
         <ConstantDeleteModal
           visible={deleteModalVisible}
