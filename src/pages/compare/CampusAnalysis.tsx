@@ -67,7 +67,7 @@ const CampusAnalysis: React.FC = () => {
     <div className="campus-analysis">
       <Card className="campus-analysis-card">
         <div className="campus-analysis-header">
-          <Title level={3} className="campus-analysis-title">校区分析</Title>
+          <Title level={4} className="campus-analysis-title">校区分析</Title>
           <div className="campus-analysis-actions">
             <Space>
               <RangePicker

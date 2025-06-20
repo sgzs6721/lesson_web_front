@@ -42,7 +42,7 @@ const ScheduleLegend: React.FC<ScheduleLegendProps> = ({ coaches, selectedCoach,
       >
         <div 
           className="legend-color" 
-          style={{ backgroundColor: '#666' }}
+          style={{ background: 'linear-gradient(135deg, #4285f4 0%, #1a73e8 100%)' }}
         />
         <span>全部</span>
       </div>
