@@ -18,6 +18,7 @@ export const checkInStudent = async (data: {
   endTime: string;
   notes?: string;
   duration?: number | string;
+  type?: string; // 新增打卡类型参数
 }) => {
   return request(STUDENT_ATTENDANCE_API_PATHS.CHECK_IN, {
     method: 'POST',

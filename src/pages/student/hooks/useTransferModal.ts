@@ -44,7 +44,7 @@ export default function useTransferModal(
   const fetchValidityPeriodOptions = async () => {
     try {
       console.log('获取有效期选项');
-      const data = await API.constants.getList('VALIDITY_PERIOD');
+      const data = await API.constants.getListByType('VALIDITY_PERIOD');
       console.log('获取到有效期选项:', data);
       setValidityPeriodOptions(data);
     } catch (error) {

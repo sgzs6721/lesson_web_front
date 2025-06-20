@@ -85,7 +85,7 @@ const TransferModal: React.FC<TransferModalProps> = ({
   const fetchValidityPeriodOptions = async () => {
     try {
       setLoadingValidityPeriod(true);
-      const data = await API.constants.getList('VALIDITY_PERIOD');
+      const data = await API.constants.getListByType('VALIDITY_PERIOD');
       setValidityPeriodOptions(data);
     } catch (error) {
       console.error('获取有效期类型选项失败:', error);

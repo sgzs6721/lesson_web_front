@@ -22,32 +22,44 @@ let mockConstants: Record<string, Constant[]> = {
 
 // 常量相关接口
 export const constants = {
-  // 获取常量列表
-  getList: async (type: string): Promise<Constant[]> => {
+  // 获取所有常量列表
+  getList: async (): Promise<Constant[]> => {
     if (USE_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 300));
-      return mockConstants[type] || [];
+      // 合并所有类型的模拟数据
+      const allConstants: Constant[] = [];
+      Object.entries(mockConstants).forEach(([type, constants]) => {
+        allConstants.push(...constants.map(constant => ({ ...constant, type })));
+      });
+      return allConstants;
     }
     
     try {
-      const response = await request(`${CONSTANTS_API_PATHS.LIST}?type=${type}`, {
+      const response = await request(CONSTANTS_API_PATHS.LIST, {
         method: 'GET'
       });
       
       // API成功返回code=200
       if (response && response.code === 200) {
-        console.log(`获取${type}常量列表成功:`, response.data);
+        console.log('获取所有常量列表成功:', response.data);
         return response.data || [];
       } else {
         // 抛出错误，包含API返回的错误信息
-        const error = new Error(response.message || `获取${type}常量列表失败`);
-        console.error(`获取${type}常量列表失败:`, error);
+        const error = new Error(response.message || '获取所有常量列表失败');
+        console.error('获取所有常量列表失败:', error);
         throw error;
       }
     } catch (error) {
-      console.error(`获取${type}常量列表失败:`, error);
+      console.error('获取所有常量列表失败:', error);
       throw error; // 重新抛出错误，让调用者处理
     }
+  },
+
+  // 按类型获取常量列表（保持向后兼容）
+  getListByType: async (type: string): Promise<Constant[]> => {
+    // 获取所有常量，然后按类型过滤
+    const allConstants = await constants.getList();
+    return allConstants.filter(constant => constant.type === type);
   },
 
   // 新增常量

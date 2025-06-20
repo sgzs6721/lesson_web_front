@@ -48,7 +48,7 @@ const RefundModal: React.FC<RefundModalProps> = ({
       const fetchHandlingFeeTypes = async () => {
         setLoading(prev => ({ ...prev, handlingFeeTypes: true }));
         try {
-          const data = await API.constants.getList('HANDLING_FEE_TYPE');
+          const data = await API.constants.getListByType('HANDLING_FEE_TYPE');
           setHandlingFeeTypes(data || []);
         } catch (error) {
           console.error('获取手续费类型失败:', error);
@@ -60,7 +60,7 @@ const RefundModal: React.FC<RefundModalProps> = ({
       const fetchPaymentMethods = async () => {
         setLoading(prev => ({ ...prev, paymentMethods: true }));
         try {
-          const data = await API.constants.getList('PAYMENT_TYPE');
+          const data = await API.constants.getListByType('PAYMENT_TYPE');
           setPaymentMethods(data || []);
         } catch (error) {
           console.error('获取退费方式失败:', error);

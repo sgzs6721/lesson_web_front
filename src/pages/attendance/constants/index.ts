@@ -1,13 +1,15 @@
 export const STATUS_TEXT_MAP: Record<string, string> = {
   CHECK_IN: '已到',
+  NORMAL: '已到',
   ABSENT: '缺勤',
   LEAVE: '请假',
 };
 
 export const STATUS_COLOR_MAP: Record<string, string> = {
   CHECK_IN: 'success',
+  NORMAL: 'success',
   ABSENT: 'error',
-  LEAVE: 'default',
+  LEAVE: 'warning',
 };
 
 export const COURSE_OPTIONS = [

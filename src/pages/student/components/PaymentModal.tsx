@@ -96,7 +96,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       const fetchGiftItems = async () => {
         setLoadingGiftItems(true);
         try {
-          const options = await constants.getList('GIFT_ITEM');
+          const options = await constants.getListByType('GIFT_ITEM');
           setGiftItemsOptions(options || []);
         } catch (error) {
           console.error('获取赠品列表失败:', error);

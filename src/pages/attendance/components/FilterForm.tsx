@@ -51,10 +51,28 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, courses }) =
   const [form] = Form.useForm();
 
   const handleFinish = (values: any) => {
-    onFilter(values);
+    console.log('FilterForm handleFinish 接收到的值:', values);
+    
+    // 转换表单字段名称到FilterParams格式
+    const filterParams: FilterParams = {
+      searchText: values.search || '',
+      selectedCourse: values.courseId || '',
+      selectedStatus: values.status || '',
+      dateRange: values.dateRange ? [
+        values.dateRange[0].format('YYYY-MM-DD'),
+        values.dateRange[1].format('YYYY-MM-DD')
+      ] : null,
+      selectedCampus: '', // 暂不使用
+      currentPage: 1,
+      pageSize: 10
+    };
+    
+    console.log('转换后的过滤参数:', filterParams);
+    onFilter(filterParams);
   };
 
   const handleReset = () => {
+    console.log('FilterForm handleReset 被调用');
     form.resetFields();
     onReset();
   };

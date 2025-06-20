@@ -437,16 +437,17 @@ export const getStudentColumns = (
                   justifyContent: 'center',
                   gap: '8px',
                 }}>
-                  {/* 打卡按钮 */}
-                  <Button 
-                    type="link"
-                    icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
-                    size="small"
-                    onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
-                    disabled={isDisabled}
-                    style={{ padding: '0', margin: '0' }}
-                    title={getAttendanceDisabledReason()}
-                  />
+                  {/* 打卡请假按钮 */}
+                  <Tooltip title={isDisabled ? getAttendanceDisabledReason() : "打卡请假"}>
+                    <Button 
+                      type="link"
+                      icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
+                      size="small"
+                      onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
+                      disabled={isDisabled}
+                      style={{ padding: '0', margin: '0' }}
+                    />
+                  </Tooltip>
 
                   {/* 课程记录按钮 */}
                   <Button 

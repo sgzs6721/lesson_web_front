@@ -20,7 +20,7 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
   color,
   prefix,
 }) => {
-  const isUp = growth >= 0;
+  const isUp = (growth || 0) >= 0;
 
   const iconStyle: CSSProperties = {
     backgroundColor: `${color}20`, // Lighter shade for background
@@ -41,7 +41,7 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
           </div>
           <div className="statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
             {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-            <span style={{ marginLeft: 4 }}>{Math.abs(growth)}%</span>
+            <span style={{ marginLeft: 4 }}>{Math.abs(growth || 0).toFixed(1)}%</span>
           </div>
         </div>
       </div>

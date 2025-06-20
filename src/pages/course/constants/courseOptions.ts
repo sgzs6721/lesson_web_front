@@ -23,7 +23,7 @@ export const fetchCategoryOptions = async (): Promise<{ value: number; label: st
 
   try {
     console.log('从API获取课程类型选项');
-    const courseTypes = await constants.getList('COURSE_TYPE');
+    const courseTypes = await constants.getListByType('COURSE_TYPE');
     const result = courseTypes.map(item => ({
       value: item.id,
       label: item.constantValue

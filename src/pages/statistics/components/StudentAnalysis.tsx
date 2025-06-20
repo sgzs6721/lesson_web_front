@@ -5,8 +5,10 @@ import {
   UserOutlined,
   UserAddOutlined,
   UserDeleteOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
+import { generateBarItemStyle, CHART_COLORS } from '../constants/chartColors';
 import './StudentAnalysis.css';
 import '../statistics.css';
 
@@ -30,34 +32,44 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
     );
   }
 
-  const studentData = data || {
+  const studentData = {
     totalStudents: 1284,
     newStudents: 68,
     lostStudents: 24,
+    renewalStudents: 156,
     studentGrowth: 12.5,
     newGrowth: 15.3,
     lostGrowth: -5.2,
+    renewalGrowth: 8.7,
+    ...(data || {}),
   };
 
   const studentStats = [
     {
       title: '总学员数',
-      value: studentData.totalStudents,
-      growth: studentData.studentGrowth,
+      value: studentData.totalStudents || 0,
+      growth: Number(studentData.studentGrowth) || 0,
       icon: <UserOutlined />,
       color: '#3498db',
     },
     {
       title: '新增学员数',
-      value: studentData.newStudents,
-      growth: studentData.newGrowth,
+      value: studentData.newStudents || 0,
+      growth: Number(studentData.newGrowth) || 0,
       icon: <UserAddOutlined />,
       color: '#2ecc71',
     },
     {
+      title: '续费学员数',
+      value: studentData.renewalStudents || 0,
+      growth: Number(studentData.renewalGrowth) || 0,
+      icon: <ReloadOutlined />,
+      color: '#f39c12',
+    },
+    {
       title: '流失学员数',
-      value: studentData.lostStudents,
-      growth: studentData.lostGrowth,
+      value: studentData.lostStudents || 0,
+      growth: Number(studentData.lostGrowth) || 0,
       icon: <UserDeleteOutlined />,
       color: '#e74c3c',
     },
@@ -104,7 +116,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
         </div>
         <Row gutter={[16, 16]}>
           {studentStats.map((stat, index) => (
-            <Col xs={24} sm={24} md={8} lg={8} key={index}>
+            <Col xs={24} sm={12} md={6} lg={6} key={index}>
               <StatisticCard {...stat} />
             </Col>
           ))}
@@ -164,17 +176,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                   barWidth: '60%',
                   data: renewalAmountData.amounts.map((value, index) => ({
                     value: value,
-                    itemStyle: {
-                      color: {
-                        type: 'linear',
-                        x: 0, y: 0, x2: 0, y2: 1,
-                        colorStops: [
-                          { offset: 0, color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16', '#a0d911', '#2f54eb', '#fa541c', '#1890ff'][index % 12] },
-                          { offset: 1, color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96', '#fa8c16', '#a0d911', '#2f54eb', '#fa541c', '#1890ff'][index % 12] + '80' }
-                        ]
-                      },
-                      borderRadius: [4, 4, 0, 0]
-                    }
+                    itemStyle: generateBarItemStyle(index)
                   })),
                   emphasis: { disabled: true }
                 }],
@@ -208,7 +210,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                             data: studentSourceData.map((item, index) => ({
                               ...item,
                               itemStyle: {
-                                color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2'][index % 6]
+                                color: CHART_COLORS[index % CHART_COLORS.length]
                               }
                             })),
                         }],

@@ -71,57 +71,69 @@ const SystemSettings: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{id: string, type: string, name: string} | null>(null);
 
-  // 加载选项数据 - 修改为强制返回空数组
-  const loadOptions = async (type: string) => {
-    setLoading(prev => ({ ...prev, [type]: true }));
-    try {
-      // 从API获取数据
-      const data = await API.constants.getList(type);
-      const options: IOptionItem[] = (data || []).map(mapConstantToOptionItem);
-      
-      switch (type) {
-        case 'COURSE_TYPE':
-          setCourseTypeOptions(options);
-          break;
-        case 'PAYMENT_TYPE':
-          setPaymentMethodOptions(options);
-          break;
-        case 'GIFT_ITEM':
-          setGiftOptions(options);
-          break;
-        case 'HANDLING_FEE_TYPE':
-          setFeeOptions(options);
-          break;
-        case 'VALIDITY_PERIOD':
-          setExpireTypeOptions(options);
-          break;
-        case 'EXPEND':
-          setExpenseTypeOptions(options);
-          break;
-        case 'INCOME':
-          setIncomeTypeOptions(options);
-          break;
-      }
-    } catch (error) {
-      console.error(`加载${type}选项失败:`, error);
-      message.error(`加载${type}选项失败: ${error instanceof Error ? error.message : '请稍后重试'}`);
-    } finally {
-      setLoading(prev => ({ ...prev, [type]: false }));
-    }
-  };
-
-  // 加载所有选项数据
-  const loadAllOptions = () => {
+  // 加载所有选项数据 - 新的实现：一次性获取所有常量
+  const loadAllOptions = async () => {
     if (optionsLoaded) return; // 如果已经加载过，不再重复加载
     
-    loadOptions('COURSE_TYPE');
-    loadOptions('PAYMENT_TYPE');
-    loadOptions('GIFT_ITEM');
-    loadOptions('HANDLING_FEE_TYPE');
-    loadOptions('VALIDITY_PERIOD');
-    loadOptions('EXPEND');
-    loadOptions('INCOME');
-    setOptionsLoaded(true);
+    // 设置所有类型为加载状态
+    setLoading({
+      'COURSE_TYPE': true,
+      'PAYMENT_TYPE': true,
+      'GIFT_ITEM': true,
+      'HANDLING_FEE_TYPE': true,
+      'VALIDITY_PERIOD': true,
+      'EXPEND': true,
+      'INCOME': true,
+    });
+    
+    try {
+      // 一次性获取所有常量
+      const allConstants = await API.constants.getList();
+      
+      // 按type分组数据
+      const groupedConstants: Record<string, IOptionItem[]> = {
+        'COURSE_TYPE': [],
+        'PAYMENT_TYPE': [],
+        'GIFT_ITEM': [],
+        'HANDLING_FEE_TYPE': [],
+        'VALIDITY_PERIOD': [],
+        'EXPEND': [],
+        'INCOME': [],
+      };
+      
+      // 将数据分组到对应的类型中
+      allConstants.forEach(constant => {
+        if (groupedConstants[constant.type]) {
+          groupedConstants[constant.type].push(mapConstantToOptionItem(constant));
+        }
+      });
+      
+      // 更新各种选项状态
+      setCourseTypeOptions(groupedConstants['COURSE_TYPE']);
+      setPaymentMethodOptions(groupedConstants['PAYMENT_TYPE']);
+      setGiftOptions(groupedConstants['GIFT_ITEM']);
+      setFeeOptions(groupedConstants['HANDLING_FEE_TYPE']);
+      setExpireTypeOptions(groupedConstants['VALIDITY_PERIOD']);
+      setExpenseTypeOptions(groupedConstants['EXPEND']);
+      setIncomeTypeOptions(groupedConstants['INCOME']);
+      
+      console.log('所有选项数据加载成功:', groupedConstants);
+      setOptionsLoaded(true);
+    } catch (error) {
+      console.error('加载选项数据失败:', error);
+      message.error(`加载选项数据失败: ${error instanceof Error ? error.message : '请稍后重试'}`);
+    } finally {
+      // 清除所有加载状态
+      setLoading({
+        'COURSE_TYPE': false,
+        'PAYMENT_TYPE': false,
+        'GIFT_ITEM': false,
+        'HANDLING_FEE_TYPE': false,
+        'VALIDITY_PERIOD': false,
+        'EXPEND': false,
+        'INCOME': false,
+      });
+    }
   };
 
   // 初始化数据

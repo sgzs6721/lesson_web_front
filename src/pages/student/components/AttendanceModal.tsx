@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Form, DatePicker, TimePicker, Input, Select, message } from 'antd';
+import { Modal, Form, DatePicker, TimePicker, Input, Select, message, Tooltip } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import dayjs from 'dayjs';
 import { Student } from '../types/student';
 import { getStudentAllCourses } from '../utils/student';
 import { checkInStudent } from '../../../api/student/attendance';
+import { ATTENDANCE_TYPES, ATTENDANCE_TYPE_OPTIONS } from '../constants/attendanceTypes';
 import './AttendanceModal.css';
 import './AttendanceModal.enhanced.css';
 
@@ -473,7 +475,8 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
         startTime: formattedStartTime,
         endTime: formattedEndTime,
         duration: parseFloat(formDuration) || 0, // 确保 duration 是数字
-        notes: values.notes || '' // 确保 notes 是字符串
+        notes: values.notes || '', // 确保 notes 是字符串
+        type: values.type || ATTENDANCE_TYPES.NORMAL // 添加打卡类型参数
       };
 
       console.log('提交打卡数据:', JSON.stringify(checkInData, null, 2));
@@ -504,11 +507,11 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
 
   return (
     <Modal
-      title={`学员打卡 - ${student?.name}`}
+      title={`学员打卡请假 - ${student?.name}`}
       open={visible}
       onCancel={onCancel}
       onOk={handleOk}
-      width={500}
+      width={600}
       okText="确认"
       cancelText="取消"
       destroyOnClose
@@ -529,7 +532,8 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
           date: dayjs(),
           startTime: dayjs().hour(15).minute(0),
           endTime: dayjs().hour(16).minute(0),
-          duration: 1.0 // 合理的默认值，会被动态计算覆盖
+          duration: 1.0, // 合理的默认值，会被动态计算覆盖
+          type: ATTENDANCE_TYPES.NORMAL // 默认选择正常打卡
         }}
         className="attendance-form"
         preserve={false}
@@ -584,6 +588,50 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
                 }
               }}
               inputReadOnly
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                类型
+                <Tooltip 
+                  title={
+                    <div style={{ fontSize: '12px', lineHeight: '16px' }}>
+                      <div style={{ marginBottom: '4px' }}>• 正常打卡：扣除课时</div>
+                      <div style={{ marginBottom: '4px' }}>• 请假：不扣除课时</div>
+                      <div>• 缺勤：扣除课时</div>
+                    </div>
+                  }
+                  placement="top"
+                  overlayStyle={{ maxWidth: '200px' }}
+                >
+                  <InfoCircleOutlined 
+                    style={{ 
+                      color: '#1890ff', 
+                      fontSize: '12px',
+                      cursor: 'help'
+                    }} 
+                  />
+                </Tooltip>
+              </span>
+            }
+            name="type"
+            rules={[{ required: true, message: '请选择打卡类型' }]}
+            className="type-item"
+            style={{ marginBottom: 24 }}
+          >
+            <Select
+              placeholder="请选择打卡类型"
+              style={{ width: '100%', height: '38px', borderRadius: '8px' }}
+              options={ATTENDANCE_TYPE_OPTIONS}
+              defaultValue={ATTENDANCE_TYPES.NORMAL}
+              size="middle"
+              popupMatchSelectWidth={true}
+              getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+              dropdownStyle={{ borderRadius: '8px' }}
+              className="type-select"
+              dropdownClassName="type-select-dropdown"
             />
           </Form.Item>
         </div>

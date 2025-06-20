@@ -8,6 +8,7 @@ import {
   SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
+import { generateBarItemStyle, getBarColor, SERIES_COLORS } from '../constants/chartColors';
 import './CoachAnalysis.css';
 import '../statistics.css';
 
@@ -114,15 +115,19 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
                   {
                     name: '课时数',
                     type: 'bar',
-                    data: coachLessonsData.lessons,
-                    itemStyle: { color: '#1890ff' },
+                    data: coachLessonsData.lessons.map((value, index) => ({
+                      value: value,
+                      itemStyle: generateBarItemStyle(index)
+                    })),
                     emphasis: { disabled: true }
                   },
                   {
                     name: '学员数',
                     type: 'bar',
-                    data: coachLessonsData.students,
-                    itemStyle: { color: '#52c41a' },
+                    data: coachLessonsData.students.map((value, index) => ({
+                      value: value,
+                      itemStyle: generateBarItemStyle(index + 1)
+                    })),
                     emphasis: { disabled: true }
                   },
                   {
@@ -131,8 +136,8 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
                     yAxisIndex: 1,
                     smooth: true,
                     data: coachLessonsData.income,
-                    lineStyle: { color: '#faad14', width: 3 },
-                    itemStyle: { color: '#faad14' },
+                    lineStyle: { color: SERIES_COLORS.warning, width: 3 },
+                    itemStyle: { color: SERIES_COLORS.warning },
                     emphasis: { disabled: true }
                   },
                 ],
@@ -160,9 +165,33 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
                 xAxis: { type: 'category', data: coachBarData.coaches },
                 yAxis: { type: 'value' },
                 series: [
-                  { name: '课时量', type: 'bar', data: coachBarData.lessons, visible: coachBarType === 'all' || coachBarType === 'lessons' },
-                  { name: '学员数', type: 'bar', data: coachBarData.students, visible: coachBarType === 'all' || coachBarType === 'students' },
-                  { name: '创收额(千元)', type: 'bar', data: coachBarData.income, visible: coachBarType === 'all' || coachBarType === 'income' },
+                  { 
+                    name: '课时量', 
+                    type: 'bar', 
+                    data: coachBarData.lessons.map((value, index) => ({
+                      value: value,
+                      itemStyle: generateBarItemStyle(index)
+                    })), 
+                    visible: coachBarType === 'all' || coachBarType === 'lessons' 
+                  },
+                  { 
+                    name: '学员数', 
+                    type: 'bar', 
+                    data: coachBarData.students.map((value, index) => ({
+                      value: value,
+                      itemStyle: generateBarItemStyle(index + 1)
+                    })), 
+                    visible: coachBarType === 'all' || coachBarType === 'students' 
+                  },
+                  { 
+                    name: '创收额(千元)', 
+                    type: 'bar', 
+                    data: coachBarData.income.map((value, index) => ({
+                      value: value,
+                      itemStyle: generateBarItemStyle(index + 2)
+                    })), 
+                    visible: coachBarType === 'all' || coachBarType === 'income' 
+                  },
                 ],
               }}
               style={{ height: '350px', width: '100%' }}

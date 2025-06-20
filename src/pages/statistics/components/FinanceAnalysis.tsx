@@ -8,6 +8,7 @@ import {
   PieChartOutlined,
 } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
+import { generateBarItemStyle, CHART_COLORS, SERIES_COLORS } from '../constants/chartColors';
 import './FinanceAnalysis.css';
 import '../statistics.css';
 
@@ -101,15 +102,19 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
                   {
                     name: '收入',
                     type: 'bar',
-                    data: financeData.monthlyData.revenue,
-                    itemStyle: { color: '#1890ff' },
+                    data: financeData.monthlyData.revenue.map((value: number, index: number) => ({
+                      value: value,
+                      itemStyle: generateBarItemStyle(index)
+                    })),
                     emphasis: { disabled: true }
                   },
                   {
                     name: '成本',
                     type: 'bar',
-                    data: financeData.monthlyData.cost,
-                    itemStyle: { color: '#f5222d' },
+                    data: financeData.monthlyData.cost.map((value: number, index: number) => ({
+                      value: value,
+                      itemStyle: generateBarItemStyle(index + 3)
+                    })),
                     emphasis: { disabled: true }
                   },
                   {
@@ -117,8 +122,8 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
                     type: 'line',
                     smooth: true,
                     data: financeData.monthlyData.profit,
-                    lineStyle: { color: '#52c41a', width: 3 },
-                    itemStyle: { color: '#52c41a' },
+                    lineStyle: { color: SERIES_COLORS.success, width: 3 },
+                    itemStyle: { color: SERIES_COLORS.success },
                     emphasis: { disabled: true }
                   },
                 ],
@@ -142,7 +147,12 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
                   type: 'pie',
                   radius: '70%',
                   center: ['60%', '50%'],
-                  data: financeData.costStructure,
+                  data: financeData.costStructure.map((item: CostStructureItem, index: number) => ({
+                    ...item,
+                    itemStyle: {
+                      color: CHART_COLORS[index % CHART_COLORS.length]
+                    }
+                  })),
                 }],
               }}
               style={{ height: '350px', width: '100%' }}

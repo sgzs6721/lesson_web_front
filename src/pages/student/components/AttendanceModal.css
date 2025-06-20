@@ -40,6 +40,52 @@
   width: 100% !important;
 }
 
+/* 第一行：课程、日期、类型 - 精确对齐布局 */
+.course-date-row {
+  display: flex !important;
+  gap: 16px !important;
+  align-items: flex-start !important;
+  margin-bottom: 0 !important;
+}
+
+.course-date-row .course-item,
+.course-date-row .date-item,
+.course-date-row .type-item {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* 第一行字段样式继承全局设置 */
+
+/* 第二行：开始时间、结束时间、课时 - 精确对齐布局 */
+.time-duration-row {
+  display: flex !important;
+  gap: 16px !important;
+  align-items: flex-start !important;
+  margin-bottom: 0 !important;
+}
+
+.time-duration-row .time-item,
+.time-duration-row .duration-item {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* 第二行字段样式继承全局设置 */
+
+/* 课时字段特殊布局对齐 */
+.time-duration-row .duration-item .duration-input-container {
+  display: flex;
+  height: 38px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.time-duration-row .duration-item .duration-input-container .ant-input {
+  height: 38px !important;
+  border-radius: 0 !important;
+}
+
 /* 课程和日期行中的课程选择框 */
 .course-date-row .course-item .ant-select-selector {
   width: 100% !important;
@@ -70,6 +116,83 @@
 }
 
 /* 确保下拉选项文本不换行 */
+
+/* 类型选择框样式 */
+.course-date-row .type-item .ant-select {
+  width: 100% !important;
+}
+
+.course-date-row .type-item .ant-select-selector {
+  border-radius: 8px !important;
+  height: 38px !important;
+  border: 1px solid #d9d9d9 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 11px !important;
+}
+
+.course-date-row .type-item .ant-select-selection-item {
+  line-height: 36px !important;
+  padding: 0 !important;
+}
+
+.course-date-row .type-item .ant-select-selection-placeholder {
+  line-height: 36px !important;
+  color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 类型选择框下拉菜单样式 */
+.course-date-row .type-item .ant-select-dropdown {
+  border-radius: 8px !important;
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+/* 强制下拉菜单与选择框对齐 */
+.attendance-modal .ant-select-dropdown {
+  border-radius: 8px !important;
+}
+
+.attendance-modal .ant-select-dropdown .ant-select-item {
+  padding: 8px 12px !important;
+}
+
+.attendance-modal .ant-select-dropdown .ant-select-item-option-content {
+  white-space: nowrap !important;
+}
+
+/* 专门针对类型选择框的下拉菜单 */
+.type-select-dropdown {
+  left: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  border-radius: 8px !important;
+}
+
+.type-select-dropdown .ant-select-item {
+  padding: 8px 12px !important;
+  text-align: left !important;
+}
+
+.type-select-dropdown .ant-select-item-option-content {
+  white-space: nowrap !important;
+  display: block !important;
+}
+
+/* 类型标签信息图标样式 */
+.type-item .ant-form-item-label label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.type-item .ant-form-item-label .anticon-info-circle {
+  transition: color 0.3s ease !important;
+}
+
+.type-item .ant-form-item-label .anticon-info-circle:hover {
+  color: #40a9ff !important;
+}
 .attendance-form .ant-select-item-option-content {
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -452,4 +575,126 @@
 /* 鼠标悬停时间选项样式 */
 .time-picker-popup .ant-picker-time-panel-column > li:hover {
   background-color: #e6f7ff;
+}
+
+/* 全局表单字段对齐优化 - 完全重写对齐规则 */
+.attendance-form {
+  width: 100%;
+}
+
+/* 强制重置所有Form.Item的样式 */
+.attendance-form .ant-form-item {
+  margin-bottom: 24px !important;
+  margin-top: 0 !important;
+  position: relative !important;
+}
+
+/* 统一所有标签样式 */
+.attendance-form .ant-form-item-label {
+  text-align: left !important;
+  padding: 0 !important;
+  height: 22px !important;
+  line-height: 22px !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+  position: relative !important;
+}
+
+.attendance-form .ant-form-item-label > label {
+  height: 22px !important;
+  line-height: 22px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+  vertical-align: top !important;
+}
+
+/* 统一所有输入控件容器 */
+.attendance-form .ant-form-item-control {
+  height: 38px !important;
+  line-height: 38px !important;
+  position: relative !important;
+}
+
+.attendance-form .ant-form-item-control-input {
+  height: 38px !important;
+  line-height: 38px !important;
+}
+
+.attendance-form .ant-form-item-control-input-content {
+  height: 38px !important;
+  line-height: 38px !important;
+}
+
+/* 强制统一所有输入组件的高度和样式 */
+.attendance-form .ant-input,
+.attendance-form .ant-picker,
+.attendance-form .ant-select,
+.attendance-form .ant-select-selector,
+.attendance-form .ant-input-number,
+.attendance-form .duration-input-container {
+  height: 38px !important;
+  line-height: 36px !important;
+  border-radius: 8px !important;
+  border: 1px solid #d9d9d9 !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 确保所有标签文字都正确显示 */
+.attendance-form .ant-form-item-label > label {
+  display: flex !important;
+  align-items: center !important;
+  color: rgba(0, 0, 0, 0.85) !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+/* 特别确保类型字段标签显示 */
+.course-date-row .type-item .ant-form-item-label,
+.course-date-row .type-item .ant-form-item-label > label {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* 修复备注字段的样式 */
+.attendance-form .ant-input {
+  padding: 11px !important;
+  line-height: 1.5715 !important;
+}
+
+.attendance-form .ant-input::placeholder {
+  color: rgba(0, 0, 0, 0.25) !important;
+  line-height: 1.5715 !important;
+}
+
+/* 备注文本域样式优化 */
+.attendance-form .ant-input.ant-input {
+  height: auto !important;
+  min-height: 32px !important;
+  padding: 11px !important;
+  line-height: 1.5715 !important;
+  resize: none !important;
+}
+
+.attendance-form textarea.ant-input {
+  height: auto !important;
+  min-height: 88px !important;
+  padding: 11px !important;
+  line-height: 1.5715 !important;
+  resize: none !important;
+  vertical-align: top !important;
+}
+
+.attendance-form textarea.ant-input::placeholder {
+  color: rgba(0, 0, 0, 0.25) !important;
+  line-height: 1.5715 !important;
+  vertical-align: top !important;
 }
