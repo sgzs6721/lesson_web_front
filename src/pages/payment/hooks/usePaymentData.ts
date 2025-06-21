@@ -21,8 +21,8 @@ export const usePaymentData = () => {
     searchText: '',
     searchStatus: '',
     searchPaymentType: '',
-    searchPaymentMethod: '',
-    selectedCourse: '',
+    searchPaymentMethod: [],
+    selectedCourse: [],
     dateRange: null,
   });
 
@@ -64,13 +64,21 @@ export const usePaymentData = () => {
       params.keyword = searchParams.searchText;
     }
     if (searchParams.selectedCourse) {
-      params.courseId = Number(searchParams.selectedCourse);
+      if (Array.isArray(searchParams.selectedCourse) && searchParams.selectedCourse.length > 0) {
+        params.courseIds = searchParams.selectedCourse.map(id => Number(id));
+      } else if (typeof searchParams.selectedCourse === 'string' && searchParams.selectedCourse) {
+        params.courseId = Number(searchParams.selectedCourse);
+      }
     }
     if (searchParams.searchPaymentType) {
       params.lessonType = searchParams.searchPaymentType;
     }
     if (searchParams.searchPaymentMethod) {
-      params.paymentType = searchParams.searchPaymentMethod;
+      if (Array.isArray(searchParams.searchPaymentMethod) && searchParams.searchPaymentMethod.length > 0) {
+        params.paymentTypes = searchParams.searchPaymentMethod;
+      } else if (typeof searchParams.searchPaymentMethod === 'string' && searchParams.searchPaymentMethod) {
+        params.paymentType = searchParams.searchPaymentMethod;
+      }
     }
     if (searchParams.dateRange?.[0] && searchParams.dateRange?.[1]) {
       params.startDate = searchParams.dateRange[0].format('YYYY-MM-DD');
@@ -142,8 +150,19 @@ export const usePaymentData = () => {
   };
   
   const filterData = useCallback((params: PaymentSearchParams) => {
+    // 过滤掉所有value数组中的空字符串，防止antd Select渲染空标签
+    const cleanedParams: PaymentSearchParams = {
+      ...params,
+      searchPaymentMethod: Array.isArray(params.searchPaymentMethod) 
+        ? params.searchPaymentMethod.filter(v => v) 
+        : params.searchPaymentMethod,
+      selectedCourse: Array.isArray(params.selectedCourse)
+        ? params.selectedCourse.filter(v => v)
+        : params.selectedCourse,
+    };
+
     // 使用React 18的自动批处理，同时更新多个状态
-    setSearchParams(params);
+    setSearchParams(cleanedParams);
     if (currentPage !== 1) {
       setCurrentPage(1); // 重置到第一页
     }
@@ -154,8 +173,8 @@ export const usePaymentData = () => {
       searchText: '',
       searchStatus: '',
       searchPaymentType: '',
-      searchPaymentMethod: '',
-      selectedCourse: '',
+      searchPaymentMethod: [],
+      selectedCourse: [],
       dateRange: null,
     };
     setSearchParams(defaultParams);

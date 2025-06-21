@@ -25,7 +25,7 @@ export interface AttendanceStatistics {
 
 export interface FilterParams {
   searchText: string;
-  selectedCourse: string;
+  selectedCourse: string | string[]; // 兼容旧版本，支持多选
   selectedCampus: string;
   selectedStatus: string;
   dateRange: [string, string] | null;
@@ -38,6 +38,7 @@ export interface AttendanceStatRequest {
   studentId?: number;
   keyword?: string;
   courseId?: number;
+  courseIds?: number[]; // 新增多选课程参数
   campusId: number;
   status?: string;
   startDate?: string;

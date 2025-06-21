@@ -21,8 +21,8 @@ export type PaymentSearchParams = {
   searchText: string;
   searchStatus: string;
   searchPaymentType: string;
-  searchPaymentMethod: string;
-  selectedCourse: string;
+  searchPaymentMethod: string | string[]; // 兼容单选和多选
+  selectedCourse: string | string[]; // 兼容单选和多选
   dateRange: [Dayjs | null, Dayjs | null] | null;
 };
 
@@ -37,8 +37,10 @@ export interface PaymentStatistics {
 export interface PaymentFilterParams {
   keyword?: string;
   courseId?: number;
+  courseIds?: number[]; // 新增多选课程ID数组
   lessonType?: string;
   paymentType?: string;
+  paymentTypes?: string[]; // 新增多选支付类型数组
   payType?: string;
   campusId: number;
   startDate?: string;

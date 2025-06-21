@@ -3,12 +3,11 @@ import { Typography, Card, Button, Table, Input, Select, Row, Col, message, Moda
 import { DownloadOutlined } from '@ant-design/icons';
 import PaymentStatistics from './components/PaymentStatistics';
 import PaymentTable from './components/PaymentTable';
-import PaymentSearchBar from './components/PaymentSearchBar';
+import FilterForm, { PaymentFilterParams } from './components/FilterForm';
 import PaymentReceiptModal from './components/PaymentReceiptModal';
 import PaymentDeleteModal from './components/PaymentDeleteModal';
 import { usePaymentData } from './hooks/usePaymentData';
-import { usePaymentSearch } from './hooks/usePaymentSearch';
-import { Payment } from './types/payment';
+import { Payment, PaymentSearchParams } from './types/payment';
 import { exportToCSV } from './utils/exportData';
 import { getCourseSimpleList } from '@/api/course';
 import type { SimpleCourse } from '@/api/course/types';
@@ -32,25 +31,12 @@ const PaymentRecords: React.FC = () => {
     pageSize,
     deletePayment,
     filterData,
-    resetData,
     handlePageChange,
     paymentCount,
     paymentAmount,
     refundCount,
     refundAmount
   } = usePaymentData();
-  
-  // 使用搜索功能钩子
-  const {
-    searchParams,
-    setSearchText,
-    setSearchStatus,
-    setSearchPaymentMethod,
-    setSelectedCourse,
-    setDateRange,
-    handleSearch,
-    handleReset
-  } = usePaymentSearch(filterData);
   
   // 详情模态框状态
   const [receiptVisible, setReceiptVisible] = React.useState(false);
@@ -72,6 +58,30 @@ const PaymentRecords: React.FC = () => {
     };
     fetchCourses();
   }, []);
+  
+  const handleFilter = (params: PaymentFilterParams) => {
+    const apiParams: PaymentSearchParams = {
+      searchText: params.searchText || '',
+      selectedCourse: params.courseIds || [],
+      searchPaymentMethod: params.paymentTypes || [],
+      dateRange: null, // dateRange is not handled by usePaymentData based on quick check, will ignore for now.
+      searchStatus: '', // not in new filter
+      searchPaymentType: '', // not in new filter
+    };
+    filterData(apiParams);
+  };
+  
+  const handleReset = () => {
+    const emptyParams: PaymentSearchParams = {
+      searchText: '',
+      selectedCourse: [],
+      searchPaymentMethod: [],
+      dateRange: null,
+      searchStatus: '',
+      searchPaymentType: '',
+    };
+    filterData(emptyParams);
+  };
   
   // 处理查看详情
   const handleReceipt = (record: Payment) => {
@@ -107,17 +117,11 @@ const PaymentRecords: React.FC = () => {
           <Title level={4} className="page-title">缴费记录</Title>
         </div>
 
-        <PaymentSearchBar
-          params={searchParams}
+        <FilterForm
           courses={courses}
-          onSearch={handleSearch}
+          onFilter={handleFilter}
           onReset={handleReset}
           onExport={() => exportToCSV(data)}
-          onTextChange={setSearchText}
-          onStatusChange={setSearchStatus}
-          onPaymentMethodChange={setSearchPaymentMethod}
-          onCourseChange={setSelectedCourse}
-          onDateRangeChange={setDateRange}
         />
 
         <PaymentStatistics

@@ -15,6 +15,7 @@ export interface AttendanceListRequest {
   studentId?: number;
   keyword?: string;
   courseId?: number;
+  courseIds?: number[]; // 新增多选课程参数
   campusId: number;
   status?: string;
   startDate?: string;

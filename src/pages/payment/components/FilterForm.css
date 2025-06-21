@@ -1,4 +1,4 @@
-.attendance-table-toolbar {
+.filter-toolbar {
   background: #fafafa;
   padding: 16px;
   border-radius: 6px;
@@ -8,52 +8,52 @@
 }
 
 /* 表单项样式统一 */
-.attendance-table-toolbar .ant-form-item {
+.filter-toolbar .ant-form-item {
   margin-bottom: 0;
 }
 
-.attendance-table-toolbar .ant-form-item-control {
+.filter-toolbar .ant-form-item-control {
   line-height: 32px;
 }
 
 /* 搜索栏响应式样式 */
-.attendance-table-toolbar .ant-input-search {
+.filter-toolbar .ant-input-search {
   border-radius: 4px;
 }
 
-.attendance-table-toolbar .ant-select {
+.filter-toolbar .ant-select {
   border-radius: 4px;
 }
 
-.attendance-table-toolbar .ant-picker {
+.filter-toolbar .ant-picker {
   border-radius: 4px;
 }
 
-.attendance-table-toolbar .ant-picker-input input {
+.filter-toolbar .ant-picker-input input {
   text-align: center;
 }
 
-.attendance-table-toolbar .ant-picker-range .ant-picker-input input {
+.filter-toolbar .ant-picker-range .ant-picker-input input {
   text-align: center;
 }
 
 /* 按钮样式优化 */
-.attendance-table-toolbar .ant-btn {
+.filter-toolbar .ant-btn {
   border-radius: 4px;
   font-weight: 500;
 }
 
-.attendance-table-toolbar .ant-btn-primary {
+.filter-toolbar .ant-btn-primary {
   box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
 }
 
-.attendance-table-toolbar .ant-btn-primary:hover {
+.filter-toolbar .ant-btn-primary:hover {
   box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
   transform: translateY(-1px);
 }
 
 /* 多选课程下拉框样式优化 */
-.attendance-table-toolbar .ant-select-multiple .ant-select-selection-item {
+.filter-toolbar .ant-select-multiple .ant-select-selection-item {
   background: #e6f7ff;
   border: 1px solid #91d5ff;
   border-radius: 4px;
@@ -69,21 +69,21 @@
   align-items: center;
 }
 
-.attendance-table-toolbar .ant-select-multiple .ant-select-selection-item-content {
+.filter-toolbar .ant-select-multiple .ant-select-selection-item-content {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: calc(100% - 16px);
 }
 
-.attendance-table-toolbar .ant-select-multiple .ant-select-selection-item-remove {
+.filter-toolbar .ant-select-multiple .ant-select-selection-item-remove {
   color: #1890ff;
   font-size: 10px;
   margin-left: 4px;
   opacity: 0.7;
 }
 
-.attendance-table-toolbar .ant-select-multiple .ant-select-selection-item-remove:hover {
+.filter-toolbar .ant-select-multiple .ant-select-selection-item-remove:hover {
   opacity: 1;
   color: #ff4d4f;
 }
@@ -105,11 +105,11 @@
 }
 
 /* 防止选择框换行 */
-.attendance-table-toolbar .ant-select-multiple .ant-select-selector {
+.filter-toolbar .ant-select-multiple .ant-select-selector {
   flex-wrap: nowrap;
   overflow: hidden;
 }
 
-.attendance-table-toolbar .ant-select-multiple .ant-select-selection-overflow {
+.filter-toolbar .ant-select-multiple .ant-select-selection-overflow {
   flex-wrap: nowrap;
 } 

@@ -24,7 +24,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
     <Spin spinning={loading}>
       <Row gutter={16} style={{ marginBottom: 24 }}>
           <Col flex={1}>
-            <Card style={cardStyle} bordered={false}>
+            <Card style={cardStyle} variant="borderless">
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1890ff' }}>打卡学员</span>}
                 value={statistics.total}
@@ -34,7 +34,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
             </Card>
           </Col>
           <Col flex={1}>
-            <Card style={cardStyle} bordered={false}>
+            <Card style={cardStyle} variant="borderless">
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#52c41a' }}>总打卡数</span>}
                 value={statistics.present}
@@ -44,7 +44,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
             </Card>
           </Col>
           <Col flex={1}>
-            <Card style={cardStyle} bordered={false}>
+            <Card style={cardStyle} variant="borderless">
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#722ed1' }}>总请假数</span>}
                 value={statistics.leave}
@@ -54,7 +54,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
             </Card>
           </Col>
           <Col flex={1}>
-            <Card style={cardStyle} bordered={false}>
+            <Card style={cardStyle} variant="borderless">
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#f5222d' }}>总缺勤数</span>}
                 value={statistics.absent}
@@ -64,7 +64,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({ statistics, loading = f
             </Card>
           </Col>
           <Col flex={1}>
-            <Card style={cardStyle} bordered={false}>
+            <Card style={cardStyle} variant="borderless">
               <Statistic
                 title={<span style={{ fontSize: '16px', fontWeight: 'bold', color: '#fa8c16' }}>出勤率</span>}
                 value={statistics.presentRate}

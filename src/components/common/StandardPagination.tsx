@@ -35,20 +35,28 @@ const StandardPagination: React.FC<StandardPaginationProps> = ({
       <div className="pagination-right">
         <span className="pagination-total">共 {total} {totalText}</span>
         {showSizeChanger && (
-          <Select
-            size="middle"
-            value={pageSize}
-            onChange={(value) => onChange(current, value)}
-            className="pagination-size-selector"
-            dropdownClassName="pagination-size-dropdown"
-            popupMatchSelectWidth={false}
-            dropdownStyle={{ 
-              width: '120px',
-              minWidth: '120px',
-              maxWidth: '120px'
-            }}
-            getPopupContainer={(trigger) => trigger.parentNode}
-          >
+                  <Select
+          size="middle"
+          value={pageSize}
+          onChange={(value) => onChange(current, value)}
+          className="pagination-size-selector"
+          classNames={{
+            popup: {
+              root: "pagination-size-dropdown"
+            }
+          }}
+          popupMatchSelectWidth={false}
+          styles={{
+            popup: {
+              root: { 
+                width: '120px',
+                minWidth: '120px',
+                maxWidth: '120px'
+              }
+            }
+          }}
+          getPopupContainer={(trigger) => trigger.parentNode}
+        >
             {pageSizeOptions.map(option => (
               <Option 
                 key={option} 

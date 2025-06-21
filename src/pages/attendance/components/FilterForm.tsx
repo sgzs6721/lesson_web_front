@@ -56,7 +56,7 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, courses }) =
     // 转换表单字段名称到FilterParams格式
     const filterParams: FilterParams = {
       searchText: values.search || '',
-      selectedCourse: values.courseId || '',
+      selectedCourse: values.courseIds || [], // 改为多选数组
       selectedStatus: values.status || '',
       dateRange: values.dateRange ? [
         values.dateRange[0].format('YYYY-MM-DD'),
@@ -110,13 +110,63 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, courses }) =
           </Form.Item>
         </Col>
         <Col span={4}>
-          <Form.Item name="courseId" className="mb-0">
+          <Form.Item name="courseIds" className="mb-0">
             <Select
+              mode="multiple"
               placeholder="选择课程"
               options={courseOptions}
               allowClear
               style={{ width: '100%' }}
+              maxTagCount={1}
+              maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
+              tagRender={({ label, onClose }) => (
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    backgroundColor: '#f0f0f0',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    padding: '2px 6px',
+                    margin: '1px 2px',
+                    fontSize: '12px',
+                    maxWidth: '80px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                  title={label as string}
+                >
+                  <span style={{ 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis', 
+                    whiteSpace: 'nowrap',
+                    marginRight: '4px'
+                  }}>
+                    {label}
+                  </span>
+                  <span
+                    onClick={onClose}
+                    style={{
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      color: '#999',
+                      lineHeight: 1
+                    }}
+                  >
+                    ×
+                  </span>
+                </span>
+              )}
               getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
+              styles={{
+                popup: {
+                  root: {
+                    borderRadius: '6px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                  }
+                }
+              }}
             />
           </Form.Item>
         </Col>

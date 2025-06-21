@@ -36,7 +36,7 @@ const AttendanceManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
@@ -92,9 +92,9 @@ const AttendanceManagement: React.FC = () => {
       listParams.keyword = searchText;
       statParams.keyword = searchText;
     }
-    if (selectedCourse) {
-      listParams.courseId = Number(selectedCourse);
-      statParams.courseId = Number(selectedCourse);
+    if (selectedCourse && selectedCourse.length > 0) {
+      listParams.courseIds = selectedCourse.map(id => Number(id));
+      statParams.courseIds = selectedCourse.map(id => Number(id));
     }
     if (selectedStatus) {
       listParams.status = selectedStatus;
@@ -185,7 +185,7 @@ const AttendanceManagement: React.FC = () => {
 
   const handleFilter = (values: FilterParams) => {
     setSearchText(values.searchText);
-    setSelectedCourse(values.selectedCourse);
+    setSelectedCourse(Array.isArray(values.selectedCourse) ? values.selectedCourse : []);
     setSelectedStatus(values.selectedStatus);
     setDateRange(values.dateRange);
     setCurrentPage(1);
@@ -193,7 +193,7 @@ const AttendanceManagement: React.FC = () => {
 
   const handleReset = () => {
     setSearchText('');
-    setSelectedCourse('');
+    setSelectedCourse([]);
     setSelectedStatus('');
     setDateRange(null);
     setCurrentPage(1);
