@@ -352,7 +352,7 @@ const StudentManagement: React.FC = () => {
     setAttendanceModalVisible(true);
   };
 
-  const handleAttendanceOk = (checkInData: { studentId: number; courseId: number; duration: number }) => {
+  const handleAttendanceOk = (checkInData: { studentId: number; courseId: number; duration: number; type?: string }) => {
     // ★ 增加详细日志，检查传入的数据
     console.log('[handleAttendanceOk] 接收到打卡数据:', checkInData);
     if (typeof checkInData.studentId !== 'number' || typeof checkInData.courseId !== 'number' || typeof checkInData.duration !== 'number') {
@@ -361,13 +361,19 @@ const StudentManagement: React.FC = () => {
         setAttendanceModalVisible(false);
         return;
     }
-    if (checkInData.duration <= 0) {
-      console.warn('[handleAttendanceOk] 消耗课时 duration 为 0 或负数，将不更新本地状态。打卡数据:', checkInData);
-      // 可能仍然需要关闭模态框和显示通用成功消息，但不调用本地更新
-       setAttendanceModalVisible(false);
-       message.success(`${selectedStudent?.name || '学员'} 打卡记录成功（课时未扣除）`);
-       // 不调用本地更新
-       return; 
+
+    // 检查是否为请假类型，请假不扣减课时
+    const isLeave = checkInData.type === 'LEAVE';
+    
+    if (checkInData.duration <= 0 || isLeave) {
+      const reason = isLeave ? '请假' : '课时为0或负数';
+      console.warn(`[handleAttendanceOk] ${reason}，将不更新本地状态。打卡数据:`, checkInData);
+      // 关闭模态框并显示相应的成功消息，但不调用本地更新
+      setAttendanceModalVisible(false);
+      const message_text = isLeave ? '请假记录成功（课时未扣除）' : '打卡记录成功（课时未扣除）';
+      message.success(`${selectedStudent?.name || '学员'} ${message_text}`);
+      // 不调用本地更新
+      return; 
     }
 
     console.log(`[handleAttendanceOk] 准备调用本地更新: studentId=${checkInData.studentId}, courseId=${checkInData.courseId}, duration=${checkInData.duration}`);
