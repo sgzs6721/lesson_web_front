@@ -1,5 +1,5 @@
-import { Constant, ConstantListResponse } from './types';
 import { request, USE_MOCK } from '../config';
+import { Constant } from './types';
 
 // API Path Constants
 const CONSTANTS_API_PATHS = {
@@ -16,8 +16,18 @@ let mockConstants: Record<string, Constant[]> = {
   'GIFT_ITEM': [],
   'HANDLING_FEE_TYPE': [],
   'VALIDITY_PERIOD': [],
-  'EXPEND': [],
-  'INCOME': []
+  'EXPEND': [
+    { id: 1, constantKey: 'RENT', constantValue: '房租', description: '办公室租赁费用', type: 'EXPEND', status: 1 },
+    { id: 2, constantKey: 'SALARY', constantValue: '工资', description: '员工工资支出', type: 'EXPEND', status: 1 },
+    { id: 3, constantKey: 'EQUIPMENT', constantValue: '设备', description: '教学设备购买', type: 'EXPEND', status: 1 },
+    { id: 4, constantKey: 'MARKETING', constantValue: '市场推广', description: '广告宣传费用', type: 'EXPEND', status: 1 },
+  ],
+  'INCOME': [
+    { id: 5, constantKey: 'TUITION', constantValue: '学费', description: '学员学费收入', type: 'INCOME', status: 1 },
+    { id: 6, constantKey: 'TRAINING', constantValue: '培训费', description: '专项培训收入', type: 'INCOME', status: 1 },
+    { id: 7, constantKey: 'MATERIAL', constantValue: '教材费', description: '教材销售收入', type: 'INCOME', status: 1 },
+    { id: 8, constantKey: 'OTHER', constantValue: '其他收入', description: '其他收入来源', type: 'INCOME', status: 1 },
+  ]
 };
 
 // 常量相关接口
@@ -55,13 +65,67 @@ export const constants = {
     }
   },
 
-  // 按类型获取常量列表（保持向后兼容）
+  // 按类型获取常量列表
   getListByType: async (type: string): Promise<Constant[]> => {
-    // 获取所有常量，然后按类型过滤
-    const allConstants = await constants.getList();
-    return allConstants.filter(constant => constant.type === type);
+    if (USE_MOCK) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return mockConstants[type] || [];
+    }
+    
+    try {
+      const url = `${CONSTANTS_API_PATHS.LIST}?type=${encodeURIComponent(type)}`;
+      const response = await request(url, {
+        method: 'GET'
+      });
+      
+      if (response && response.code === 200) {
+        console.log(`获取${type}类型常量列表成功:`, response.data);
+        return response.data || [];
+      } else {
+        const error = new Error(response.message || `获取${type}类型常量列表失败`);
+        console.error(`获取${type}类型常量列表失败:`, error);
+        throw error;
+      }
+    } catch (error) {
+      console.error(`获取${type}类型常量列表失败:`, error);
+      throw error;
+    }
   },
-
+  
+    
+    // 按多个类型获取常量列表
+    getListByTypes: async (types: string[]): Promise<Constant[]> => {
+      if (USE_MOCK) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const allConstants: Constant[] = [];
+        types.forEach(type => {
+          const typeConstants = mockConstants[type] || [];
+          allConstants.push(...typeConstants);
+        });
+        return allConstants;
+      }
+      
+      try {
+        // 构建包含多个type参数的URL
+        const typeParams = types.map(type => `type=${encodeURIComponent(type)}`).join('&');
+        const url = `${CONSTANTS_API_PATHS.LIST}?${typeParams}`;
+        const response = await request(url, {
+          method: 'GET'
+        });
+        
+        if (response && response.code === 200) {
+          console.log(`获取${types.join(',')}类型常量列表成功:`, response.data);
+          return response.data || [];
+        } else {
+          const error = new Error(response.message || `获取${types.join(',')}类型常量列表失败`);
+          console.error(`获取${types.join(',')}类型常量列表失败:`, error);
+          throw error;
+        }
+      } catch (error) {
+        console.error(`获取${types.join(',')}类型常量列表失败:`, error);
+        throw error;
+      }
+    },
   // 新增常量
   save: async (constant: Omit<Constant, 'id'>): Promise<Constant | null> => {
     if (USE_MOCK) {

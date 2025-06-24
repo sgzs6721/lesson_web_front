@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
 import { Modal, Form, DatePicker, Input, Select, Button, Radio, Divider, InputNumber } from 'antd';
+import { useEffect } from 'react';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import { FormInstance } from 'antd/lib/form';
-import { EXPENSE_CATEGORY, INCOME_CATEGORY, TRANSACTION_TYPE_LABEL } from '../constants/expenseTypes';
+import { TRANSACTION_TYPE_LABEL } from '../constants/expenseTypes';
+import { useExpenseCategories } from '../hooks/useExpenseCategories';
 
 const { Option } = Select;
 
@@ -27,25 +28,15 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
   onSubmit,
   onTypeChange
 }) => {
+  // 只在模态框可见时获取类别选项，避免不必要的API调用
+  const { categories, loading: categoriesLoading } = useExpenseCategories(visible ? type : undefined);
+
   // 监听类型变化，重置类别选择
   useEffect(() => {
     if (visible && !editingId) {
       form.setFieldValue('category', undefined);
     }
   }, [form, type, visible, editingId]);
-
-  // 根据交易类型获取对应的类别选项
-  const getCategoryOptions = () => {
-    if (type === 'expense') {
-      return Object.values(EXPENSE_CATEGORY).map(category => (
-        <Option key={category} value={category}>{category}</Option>
-      ));
-    } else {
-      return Object.values(INCOME_CATEGORY).map(category => (
-        <Option key={category} value={category}>{category}</Option>
-      ));
-    }
-  };
 
   const handleTypeChange = (e: any) => {
     onTypeChange(e.target.value);
@@ -119,12 +110,17 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
         >
           <Select
             placeholder="请选择类别"
+            loading={categoriesLoading}
             showSearch={false}
             virtual={false}
             dropdownMatchSelectWidth={true}
             getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
           >
-            {getCategoryOptions()}
+            {categories.map(category => (
+              <Option key={category.value} value={category.value}>
+                {category.label}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 

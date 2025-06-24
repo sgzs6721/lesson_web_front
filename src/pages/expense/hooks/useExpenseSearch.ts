@@ -18,6 +18,14 @@ export const useExpenseSearch = (onSearch: (params: ExpenseSearchParams) => void
     onSearch(params);
   };
   
+  // 切换交易类型时清空类别选择
+  const handleTypeChange = (type: 'income' | 'expense' | null | undefined) => {
+    // 将 undefined 转换为 null，保持一致性
+    const normalizedType = type === undefined ? null : type;
+    setSearchType(normalizedType);
+    setSearchCategories([]); // 清空类别选择
+  };
+  
   const handleReset = () => {
     setText('');
     setSearchCategories([]);
@@ -41,9 +49,9 @@ export const useExpenseSearch = (onSearch: (params: ExpenseSearchParams) => void
     },
     setSearchText: setText,
     setSearchCategories,
-    setSearchType,
+    setSearchType: handleTypeChange,
     setDateRange,
     handleSearch,
     handleReset
   };
-}; 
+};

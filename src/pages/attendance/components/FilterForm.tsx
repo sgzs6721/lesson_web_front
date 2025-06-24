@@ -119,45 +119,56 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, courses }) =
               style={{ width: '100%' }}
               maxTagCount={1}
               maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
-              tagRender={({ label, onClose }) => (
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    backgroundColor: '#f0f0f0',
-                    border: '1px solid #d9d9d9',
-                    borderRadius: '4px',
-                    padding: '2px 6px',
-                    margin: '1px 2px',
-                    fontSize: '12px',
-                    maxWidth: '80px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
-                  title={label as string}
-                >
-                  <span style={{ 
-                    overflow: 'hidden', 
-                    textOverflow: 'ellipsis', 
-                    whiteSpace: 'nowrap',
-                    marginRight: '4px'
-                  }}>
-                    {label}
-                  </span>
+              tagRender={({ label, closable, onClose }) => {
+                // 提取纯文本作为 title
+                let tagTitle = '';
+                if (typeof label === 'string') {
+                  tagTitle = label;
+                } else if (React.isValidElement(label)) {
+                  const children = (label.props as any)?.children;
+                  if (Array.isArray(children) && children.length > 0) {
+                    tagTitle = children[0]?.props?.children || '';
+                  }
+                }
+
+                return (
                   <span
-                    onClick={onClose}
                     style={{
-                      cursor: 'pointer',
-                      fontSize: '10px',
-                      color: '#999',
-                      lineHeight: 1
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      backgroundColor: '#f0f0f0',
+                      border: '1px solid #d9d9d9',
+                      borderRadius: '4px',
+                      padding: '0 6px',
+                      margin: '0 2px',
+                      fontSize: '12px',
+                      maxWidth: '90px',
+                      height: '24px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
                     }}
+                    title={tagTitle}
                   >
-                    ×
+                    <span style={{ whiteSpace: 'nowrap', marginRight: '4px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {label}
+                    </span>
+                    {closable && (
+                      <span
+                        onClick={onClose}
+                        style={{
+                          cursor: 'pointer',
+                          fontSize: '10px',
+                          color: '#999',
+                          lineHeight: 1
+                        }}
+                      >
+                        ×
+                      </span>
+                    )}
                   </span>
-                </span>
-              )}
+                );
+              }}
               getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               styles={{
                 popup: {

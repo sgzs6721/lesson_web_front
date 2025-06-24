@@ -59,33 +59,45 @@
   border-radius: 4px;
   color: #1890ff;
   font-size: 12px;
-  padding: 2px 6px;
-  margin: 1px 2px;
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 0 6px;
+  height: 24px;
+  margin: 0 2px;
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
 }
 
-.filter-toolbar .ant-select-multiple .ant-select-selection-item-content {
+/* 缴费类型选框样式 - 确保标签能占据整个选择框宽度 */
+.filter-toolbar .ant-form-item:nth-child(3) .ant-select-multiple .ant-select-selector {
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+.filter-toolbar .ant-form-item:nth-child(3) .ant-select-multiple .ant-select-selection-overflow {
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+/* 缴费类型标签强制占据合适宽度 */
+.payment-type-tag-large {
+  min-width: 80px !important;
+  width: 80px !important;
+  max-width: 80px !important;
+  display: inline-flex !important;
+  box-sizing: border-box !important;
+}
+
+/* 缴费类型选择框内的标签容器样式 - 调整为自适应宽度 */
+.filter-toolbar .ant-form-item:nth-child(3) .ant-select-multiple .ant-select-selection-item {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: calc(100% - 16px);
-}
-
-.filter-toolbar .ant-select-multiple .ant-select-selection-item-remove {
-  color: #1890ff;
-  font-size: 10px;
-  margin-left: 4px;
-  opacity: 0.7;
-}
-
-.filter-toolbar .ant-select-multiple .ant-select-selection-item-remove:hover {
-  opacity: 1;
-  color: #ff4d4f;
 }
 
 /* 下拉选项中选中项的样式 */
@@ -106,10 +118,55 @@
 
 /* 防止选择框换行 */
 .filter-toolbar .ant-select-multiple .ant-select-selector {
-  flex-wrap: nowrap;
+  flex-wrap: nowrap !important;
   overflow: hidden;
+  display: flex !important;
+  align-items: center !important;
+  height: 32px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.filter-toolbar .ant-select-multiple .ant-select-selection-item {
+  height: 24px;
+  line-height: 24px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .filter-toolbar .ant-select-multiple .ant-select-selection-overflow {
   flex-wrap: nowrap;
-} 
+  display: flex;
+  align-items: center;
+}
+
+/* 缩短缴费类型选择框的+1标签 - 多重选择器确保生效 */
+.filter-toolbar .ant-form-item:nth-child(3) .ant-select-multiple .ant-select-selection-overflow-item-rest .ant-select-selection-item,
+.filter-toolbar .ant-form-item:nth-child(3) .ant-select-multiple .ant-select-selection-overflow-item-rest span,
+.filter-toolbar .ant-form-item:nth-child(3) .ant-select-selection-overflow-item-rest .ant-select-selection-item,
+.filter-toolbar .ant-form-item:nth-child(3) .ant-select-selection-overflow-item-rest span {
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+  background: #f0f0f0 !important;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 4px !important;
+  color: #666 !important;
+  font-size: 12px !important;
+  padding: 2px 6px !important;
+  margin: 1px 2px !important;
+  text-align: center !important;
+  display: inline-block !important;
+  box-sizing: border-box !important;
+}
+
+.filter-toolbar .ant-select-multiple .ant-select-selection-overflow .ant-select-selection-overflow-item:first-child {
+  margin-left: 0;
+}
+
+.filter-toolbar .ant-select-multiple .ant-select-selection-overflow-item {
+  display: flex;
+  align-items: center;
+}
+
+ 

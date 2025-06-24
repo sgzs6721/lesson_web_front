@@ -43,6 +43,51 @@ const getCourseStatusColor = (status: string): string => {
   return '#d9d9d9';
 };
 
+// 为缴费类型选择框创建专门的标签渲染函数
+const renderPaymentTypeTag = (props: CustomTagProps) => {
+  const { label, closable, onClose, value } = props;
+
+  let tagTitle = '';
+  if (React.isValidElement(label) && (label.props as any)?.children) {
+    const children = (label.props as any).children;
+    if (Array.isArray(children) && children[0]?.props?.children) {
+      tagTitle = children[0].props.children;
+    } else {
+      tagTitle = '标签'; // 回退值
+    }
+  } else {
+    tagTitle = String(label);
+  }
+
+  return (
+    <span
+      className="payment-type-tag"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        backgroundColor: '#f0f0f0',
+        border: '1px solid #d9d9d9',
+        borderRadius: '4px',
+        padding: '0 6px',
+        margin: '0 2px',
+        fontSize: '12px',
+        maxWidth: '90%',
+        whiteSpace: 'nowrap'
+      }}
+      title={tagTitle}
+    >
+      <span style={{ whiteSpace: 'nowrap', marginRight: '4px' }}>
+        {label}
+      </span>
+      {closable && (
+        <span onClick={onClose} style={{ cursor: 'pointer', fontSize: '10px', color: '#999', lineHeight: 1 }}>
+          ×
+        </span>
+      )}
+    </span>
+  );
+};
+
 const renderCustomTag = (props: CustomTagProps) => {
   const { label, closable, onClose } = props;
 
@@ -66,17 +111,15 @@ const renderCustomTag = (props: CustomTagProps) => {
         backgroundColor: '#f0f0f0',
         border: '1px solid #d9d9d9',
         borderRadius: '4px',
-        padding: '2px 6px',
-        margin: '1px 2px',
+        padding: '0 6px',
+        margin: '0 2px',
         fontSize: '12px',
         maxWidth: '90%',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
         whiteSpace: 'nowrap'
       }}
       title={tagTitle}
     >
-      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '4px' }}>
+      <span style={{ whiteSpace: 'nowrap', marginRight: '4px' }}>
         {label}
       </span>
       {closable && (
@@ -151,10 +194,13 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, co
                 mode="multiple"
                 placeholder="选择缴费类型"
                 allowClear
-                style={{ width: '100%' }}
+                style={{ 
+                  width: '100%',
+                  minHeight: '32px'
+                }}
                 maxTagCount={1}
                 maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
-                tagRender={renderCustomTag}
+                tagRender={renderPaymentTypeTag}
                 getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               >
                 <Option value="NEW">新增</Option>

@@ -397,9 +397,9 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                             {/* 枚举值 */}
                             <div style={{ 
                               display: 'flex', 
-                              marginBottom: item.description ? '12px' : '0',
-                              paddingBottom: item.description ? '12px' : '0',
-                              borderBottom: item.description ? '1px solid rgba(234, 236, 239, 0.6)' : 'none'
+                              marginBottom: '12px',
+                              paddingBottom: '12px',
+                              borderBottom: '1px solid rgba(234, 236, 239, 0.6)'
                             }}>
                               <div style={{ 
                                 fontSize: '13px', 
@@ -419,8 +419,7 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                             </div>
                             
                             {/* 描述 */}
-                            {item.description && (
-                              <div style={{ display: 'flex' }}>
+                            <div style={{ display: 'flex' }}>
                                 <div style={{ 
                                   fontSize: '13px', 
                                   color: '#57606a', 
@@ -434,10 +433,9 @@ const OptionListComponent: React.FC<IOptionListProps> = ({
                                   lineHeight: '1.5',
                                   wordBreak: 'break-word'
                                 }}>
-                                  {item.description.length > 80 ? `${item.description.slice(0, 80)}...` : item.description}
+                                  {item.description && item.description.trim() ? (item.description.length > 80 ? `${item.description.slice(0, 80)}...` : item.description) : '空'}
                                 </div>
                               </div>
-                            )}
                           </div>
                         </div>
                       </div>

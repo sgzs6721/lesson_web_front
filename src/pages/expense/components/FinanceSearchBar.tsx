@@ -1,8 +1,8 @@
-import React from 'react';
-import { Input, Select, DatePicker, Button, Space, Row, Col } from 'antd';
+import { Button, Input, Select, DatePicker, Row, Col, Space, Tag } from 'antd';
 import { SearchOutlined, ReloadOutlined, DownloadOutlined } from '@ant-design/icons';
 import { ExpenseSearchParams } from '../types/expense';
-import { EXPENSE_CATEGORY, INCOME_CATEGORY, TRANSACTION_TYPE_LABEL } from '../constants/expenseTypes';
+import { TRANSACTION_TYPE_LABEL } from '../constants/expenseTypes';
+import { useExpenseCategories } from '../hooks/useExpenseCategories';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 
 const { RangePicker } = DatePicker;
@@ -15,7 +15,7 @@ interface FinanceSearchBarProps {
   onExport: () => void;
   onTextChange: (value: string) => void;
   onCategoriesChange: (value: string[]) => void;
-  onTypeChange: (value: 'income' | 'expense' | null) => void;
+  onTypeChange: (value: 'income' | 'expense' | null | undefined) => void;
   onDateRangeChange: (dates: any) => void;
 }
 
@@ -29,22 +29,8 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
   onTypeChange,
   onDateRangeChange
 }) => {
-  // 根据交易类型获取对应的类别选项
-  const getCategoryOptions = () => {
-    const options: React.ReactNode[] = [];
-
-    // 支出类别
-    Object.values(EXPENSE_CATEGORY).forEach(category => {
-      options.push(<Option key={category} value={category}>{category}</Option>);
-    });
-
-    // 收入类别
-    Object.values(INCOME_CATEGORY).forEach(category => {
-      options.push(<Option key={category} value={category}>{category}</Option>);
-    });
-
-    return options;
-  };
+  // 获取类别选项
+  const { categories, loading: categoriesLoading } = useExpenseCategories(params.type);
 
   return (
     <div className="table-toolbar" style={{ marginBottom: '16px', width: '100%' }}>
@@ -84,10 +70,46 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
             onChange={onCategoriesChange}
             allowClear
             maxTagCount={1}
+            loading={categoriesLoading}
             style={{ width: '100%' }}
             getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
+            optionLabelProp="label"
           >
-            {getCategoryOptions()}
+            {categories.map(category => {
+              // 强制显示类型标签
+              const shouldShowTypeTag = category.type;
+              return (
+                <Option 
+                  key={category.value} 
+                  value={category.value}
+                  label={category.label}
+                >
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    width: '100%',
+                    padding: '4px 0'
+                  }}>
+                    <span style={{ flex: 1 }}>{category.label}</span>
+                    {shouldShowTypeTag && (
+                      <Tag 
+                        color={category.type === 'EXPEND' ? 'red' : 'green'}
+                        style={{ 
+                          margin: 0,
+                          fontSize: '12px',
+                          lineHeight: '20px',
+                          padding: '0 6px',
+                          borderRadius: '10px'
+                        }}
+                      >
+                        {category.type === 'EXPEND' ? '支出' : '收入'}
+                      </Tag>
+                    )}
+                  </div>
+                </Option>
+              );
+            })}
           </Select>
         </Col>
 
