@@ -1,4 +1,4 @@
-import { Modal, Form, DatePicker, Input, Select, Button, Radio, Divider, InputNumber } from 'antd';
+import { Modal, Form, DatePicker, Input, Select, Button, Radio, Divider, InputNumber, Row, Col } from 'antd';
 import { useEffect } from 'react';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import { FormInstance } from 'antd/lib/form';
@@ -12,10 +12,10 @@ interface FinanceEditModalProps {
   loading: boolean;
   form: FormInstance;
   editingId: string | null;
-  type: 'income' | 'expense';
+  type: 'EXPEND' | 'INCOME';
   onCancel: () => void;
   onSubmit: () => void;
-  onTypeChange: (type: 'income' | 'expense') => void;
+  onTypeChange: (type: 'EXPEND' | 'INCOME') => void;
 }
 
 const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
@@ -65,64 +65,92 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
         {!editingId && (
           <Form.Item label="交易类型">
             <Radio.Group value={type} onChange={handleTypeChange}>
-              <Radio.Button value="expense">{TRANSACTION_TYPE_LABEL.expense}</Radio.Button>
-              <Radio.Button value="income">{TRANSACTION_TYPE_LABEL.income}</Radio.Button>
+              <Radio.Button 
+                value="EXPEND"
+                style={{
+                  backgroundColor: type === 'EXPEND' ? '#ff4d4f' : undefined,
+                  borderColor: type === 'EXPEND' ? '#ff4d4f' : undefined,
+                  color: type === 'EXPEND' ? '#fff' : undefined
+                }}
+              >
+                {TRANSACTION_TYPE_LABEL.EXPEND}
+              </Radio.Button>
+              <Radio.Button 
+                value="INCOME"
+                style={{
+                  backgroundColor: type === 'INCOME' ? '#52c41a' : undefined,
+                  borderColor: type === 'INCOME' ? '#52c41a' : undefined,
+                  color: type === 'INCOME' ? '#fff' : undefined
+                }}
+              >
+                {TRANSACTION_TYPE_LABEL.INCOME}
+              </Radio.Button>
             </Radio.Group>
           </Form.Item>
         )}
 
-        <Form.Item
-          label="日期"
-          name="date"
-          rules={[{ required: true, message: '请选择日期' }]}
-        >
-          <DatePicker
-            style={{ width: '100%' }}
-            placeholder="选择日期"
-            locale={locale}
-            format="YYYY-MM-DD"
-          />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="日期"
+              name="date"
+              rules={[{ required: true, message: '请选择日期' }]}
+            >
+              <DatePicker
+                style={{ width: '100%' }}
+                placeholder="选择日期"
+                locale={locale}
+                format="YYYY-MM-DD"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="类别"
+              name="category"
+              rules={[{ required: true, message: '请选择类别' }]}
+            >
+              <Select
+                placeholder="请选择类别"
+                loading={categoriesLoading}
+                showSearch={false}
+                virtual={false}
+                dropdownMatchSelectWidth={true}
+                getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
+              >
+                {categories.map(category => (
+                  <Option key={category.value} value={category.value}>
+                    {category.label}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          label={type === 'expense' ? '支出项目' : '收入项目'}
-          name="item"
-          rules={[{ required: true, message: `请输入${type === 'expense' ? '支出' : '收入'}项目` }]}
-        >
-          <Input placeholder={`请输入${type === 'expense' ? '支出' : '收入'}项目`} />
-        </Form.Item>
-
-        <Form.Item
-          label="金额"
-          name="amount"
-          rules={[
-            { required: true, message: '请输入金额' },
-            { type: 'number', min: 0, message: '金额必须大于等于0' }
-          ]}
-        >
-          <InputNumber style={{ width: '100%' }} prefix="¥" placeholder="请输入金额" />
-        </Form.Item>
-
-        <Form.Item
-          label="类别"
-          name="category"
-          rules={[{ required: true, message: '请选择类别' }]}
-        >
-          <Select
-            placeholder="请选择类别"
-            loading={categoriesLoading}
-            showSearch={false}
-            virtual={false}
-            dropdownMatchSelectWidth={true}
-            getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
-          >
-            {categories.map(category => (
-              <Option key={category.value} value={category.value}>
-                {category.label}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label={TRANSACTION_TYPE_LABEL[type] + '项目'}
+              name="item"
+              rules={[{ required: true, message: `请输入${TRANSACTION_TYPE_LABEL[type]}项目` }]}
+            >
+              <Input placeholder={`请输入${TRANSACTION_TYPE_LABEL[type]}项目`} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="金额"
+              name="amount"
+              rules={[
+                { required: true, message: '请输入金额' },
+                { type: 'number', min: 0, message: '金额必须大于等于0' }
+              ]}
+            >
+              <InputNumber style={{ width: '100%' }} prefix="¥" placeholder="请输入金额" />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item
           label="备注"

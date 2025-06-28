@@ -23,7 +23,7 @@ const FinanceDetailsModal: React.FC<FinanceDetailsModalProps> = ({
 
   // 根据交易类型设置颜色
   const getTypeTag = () => {
-    const color = record.type === 'income' ? 'green' : 'red';
+    const color = record.type === 'INCOME' ? 'green' : 'red';
     return <Tag color={color}>{TRANSACTION_TYPE_LABEL[record.type]}</Tag>;
   };
 
@@ -31,7 +31,7 @@ const FinanceDetailsModal: React.FC<FinanceDetailsModalProps> = ({
   const getCategoryTag = () => {
     let color = 'default';
 
-    if (record.type === 'expense') {
+    if (record.type === 'EXPEND') {
       switch (record.category) {
         case '工资支出': color = 'blue'; break;
         case '固定成本': color = 'orange'; break;
@@ -74,7 +74,7 @@ const FinanceDetailsModal: React.FC<FinanceDetailsModalProps> = ({
         <Descriptions.Item label="金额">
           <Text
             style={{
-              color: record.type === 'income' ? '#3f8600' : '#cf1322',
+              color: record.type === 'INCOME' ? '#3f8600' : '#cf1322',
               fontSize: '16px',
               fontWeight: 'bold'
             }}

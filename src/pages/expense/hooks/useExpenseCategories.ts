@@ -3,7 +3,7 @@ import { API } from '@/api';
 import { Constant } from '@/api/constants/types';
 
 // 费用类别选项Hook
-export const useExpenseCategories = (transactionType: 'income' | 'expense' | null | undefined) => {
+export const useExpenseCategories = (transactionType: 'EXPEND' | 'INCOME' | null | undefined) => {
   const [categories, setCategories] = useState<{ label: string; value: string; type?: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +30,7 @@ export const useExpenseCategories = (transactionType: 'income' | 'expense' | nul
           });
         } else {
           // 根据交易类型获取对应的类别
-          const type = transactionType === 'expense' ? 'EXPEND' : 'INCOME';
+          const type = transactionType;
           allCategories = await API.constants.getListByType(type);
           // 强制设置类型，以防API没有返回
           allCategories = allCategories.map(item => ({ ...item, type }));

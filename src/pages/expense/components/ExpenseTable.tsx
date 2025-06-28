@@ -6,16 +6,26 @@ import StandardPagination from '@/components/common/StandardPagination';
 
 interface FinanceTableProps {
   data: Expense[];
+  loading?: boolean;
+  pagination?: {
+    current: number;
+    pageSize: number;
+    total: number;
+  };
   onEdit: (record: Expense) => void;
   onDelete: (id: string) => void;
   onViewDetails: (record: Expense) => void;
+  onPageChange?: (page: number, pageSize?: number) => void;
 }
 
 const FinanceTable: React.FC<FinanceTableProps> = ({
   data,
+  loading = false,
+  pagination,
   onEdit,
   onDelete,
-  onViewDetails
+  onViewDetails,
+  onPageChange
 }) => {
   const columns = getTableColumns(onEdit, onDelete, onViewDetails);
   
@@ -25,6 +35,7 @@ const FinanceTable: React.FC<FinanceTableProps> = ({
         columns={columns}
         dataSource={data}
         rowKey="id"
+        loading={loading}
         pagination={false}
         locale={{
           triggerDesc: '点击降序',
@@ -32,16 +43,15 @@ const FinanceTable: React.FC<FinanceTableProps> = ({
           cancelSort: '取消排序'
         }}
       />
-      <StandardPagination
-        current={1}
-        pageSize={10}
-        total={data.length}
-        onChange={(page, pageSize) => {
-          // 这里需要费用管理页面传递分页处理函数
-          console.log('费用分页变化:', page, pageSize);
-        }}
-        totalText="条支出记录"
-      />
+      {pagination && (
+        <StandardPagination
+          current={pagination.current}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onChange={(page, pageSize) => onPageChange?.(page, pageSize)}
+          totalText="条财务记录"
+        />
+      )}
     </>
   );
 };

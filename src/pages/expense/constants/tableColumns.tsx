@@ -37,7 +37,7 @@ export const getTableColumns = (
     dataIndex: 'amount',
     key: 'amount',
     render: (amount, record) => {
-      const style = { color: record.type === 'income' ? '#3f8600' : '#cf1322' };
+      const style = { color: record.type === 'INCOME' ? '#3f8600' : '#cf1322' };
       return <span style={style}>{`¥${amount.toLocaleString('zh-CN')}`}</span>;
     },
     align: 'center',
@@ -50,7 +50,7 @@ export const getTableColumns = (
     render: (category, record) => {
       let color = 'default';
       // 根据收支类型和具体类别设置颜色
-      if (record.type === 'expense') {
+      if (record.type === 'EXPEND') {
         switch (category) {
           case '工资支出': color = 'blue'; break;
           case '固定成本': color = 'orange'; break;

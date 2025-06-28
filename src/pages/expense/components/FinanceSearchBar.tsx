@@ -15,7 +15,7 @@ interface FinanceSearchBarProps {
   onExport: () => void;
   onTextChange: (value: string) => void;
   onCategoriesChange: (value: string[]) => void;
-  onTypeChange: (value: 'income' | 'expense' | null | undefined) => void;
+  onTypeChange: (value: 'EXPEND' | 'INCOME' | null | undefined) => void;
   onDateRangeChange: (dates: any) => void;
 }
 
@@ -56,8 +56,8 @@ const FinanceSearchBar: React.FC<FinanceSearchBarProps> = ({
             style={{ width: '100%' }}
             getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
           >
-            <Option value="income">{TRANSACTION_TYPE_LABEL.income}</Option>
-            <Option value="expense">{TRANSACTION_TYPE_LABEL.expense}</Option>
+            <Option value="INCOME">{TRANSACTION_TYPE_LABEL.INCOME}</Option>
+            <Option value="EXPEND">{TRANSACTION_TYPE_LABEL.EXPEND}</Option>
           </Select>
         </Col>
 

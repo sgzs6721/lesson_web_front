@@ -8,6 +8,7 @@ import { coach } from './coach';
 import { constants } from './constants';
 import { schedule } from './schedule';
 import { payment } from './payment';
+import { financeAPI } from './finance';
 
 // 导出所有接口
 export const API = {
@@ -20,5 +21,6 @@ export const API = {
   coach,
   constants,
   schedule,
-  payment
+  payment,
+  finance: financeAPI
 };

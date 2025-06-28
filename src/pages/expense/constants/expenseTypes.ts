@@ -23,4 +23,6 @@ export const TRANSACTION_TYPE = {
 export const TRANSACTION_TYPE_LABEL = {
   [TRANSACTION_TYPE.EXPENSE]: '支出',
   [TRANSACTION_TYPE.INCOME]: '收入',
+  EXPEND: '支出',
+  INCOME: '收入',
 }; 

@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Form } from 'antd';
+import { Form, message } from 'antd';
 import { Expense } from '../types/expense';
 import dayjs from 'dayjs';
+import { API } from '@/api';
+import { CreateFinanceRecordRequest } from '@/api/finance';
+import { TRANSACTION_TYPE } from '../constants/expenseTypes';
 
 export const useFinanceForm = (
   onAddTransaction: (values: any) => void,
@@ -11,7 +14,7 @@ export const useFinanceForm = (
   const [visible, setVisible] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
+  const [transactionType, setTransactionType] = useState<'EXPEND' | 'INCOME'>('EXPEND');
 
   const handleAddTransaction = () => {
     form.resetFields();
@@ -19,7 +22,7 @@ export const useFinanceForm = (
     setVisible(true);
   };
 
-  const handleTypeChange = (type: 'income' | 'expense') => {
+  const handleTypeChange = (type: 'EXPEND' | 'INCOME') => {
     setTransactionType(type);
   };
 
@@ -38,21 +41,39 @@ export const useFinanceForm = (
       const values = await form.validateFields();
       setLoading(true);
 
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       if (editingId) {
+        // 编辑现有记录 - 暂时使用本地更新
         onUpdateTransaction(editingId, values);
+        message.success('记录更新成功');
       } else {
+        // 添加新记录 - 调用真实API
+        const currentCampusId = localStorage.getItem('currentCampusId') || '1';
+        
+        const apiData: CreateFinanceRecordRequest = {
+          type: transactionType,
+          date: values.date.format('YYYY-MM-DD'),
+          item: values.item,
+          amount: values.amount,
+          category: values.category,
+          notes: values.remark || '',
+          campusId: Number(currentCampusId)
+        };
+
+        await API.finance.createRecord(apiData);
+        
+        // 调用本地添加方法更新界面
         onAddTransaction({
           ...values,
           type: transactionType
         });
+        
+        message.success(`${transactionType === 'EXPEND' ? '支出' : '收入'}记录添加成功`);
       }
 
       setVisible(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('提交错误:', error);
+      message.error(error.message || '提交失败，请重试');
     } finally {
       setLoading(false);
     }

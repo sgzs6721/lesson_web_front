@@ -20,11 +20,14 @@ const FinanceManagement: React.FC = () => {
   // 使用数据管理钩子
   const {
     data,
+    loading: dataLoading,
+    pagination,
     addTransaction,
     updateTransaction,
     deleteTransaction,
     filterData,
-
+    handlePageChange,
+    fetchData,
     totalExpense,
     salaryExpense,
     operationExpense,
@@ -59,7 +62,13 @@ const FinanceManagement: React.FC = () => {
     handleEdit,
     handleSubmit,
     handleCancel
-  } = useFinanceForm(addTransaction, updateTransaction);
+  } = useFinanceForm(
+    (values) => {
+      addTransaction(values);
+      fetchData(); // 添加后刷新数据
+    }, 
+    updateTransaction
+  );
 
   // 删除确认模态框状态
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -152,9 +161,12 @@ const FinanceManagement: React.FC = () => {
         {/* 数据表格 */}
         <FinanceTable
           data={data}
+          loading={dataLoading}
+          pagination={pagination}
           onEdit={handleEdit}
           onDelete={showDeleteConfirm}
           onViewDetails={showDetails}
+          onPageChange={handlePageChange}
         />
 
         {/* 编辑/添加模态框 */}

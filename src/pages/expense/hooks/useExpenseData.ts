@@ -1,23 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Expense, ExpenseSearchParams } from '../types/expense';
-import { mockData } from '../constants/mockData';
 import dayjs from 'dayjs';
 import { message } from 'antd';
 import { generateTransactionId } from '../utils/formatters';
+import { API } from '@/api';
+import { FinanceListRequest } from '@/api/finance';
 
 export const useFinanceData = () => {
-  const [data, setData] = useState<Expense[]>(mockData);
+  const [data, setData] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+
+  // 获取数据的函数
+  const fetchData = async (params: Partial<FinanceListRequest> = {}) => {
+    try {
+      setLoading(true);
+      const currentCampusId = localStorage.getItem('currentCampusId') || '1';
+      
+      const requestParams: FinanceListRequest = {
+        campusId: Number(currentCampusId),
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize,
+        ...params
+      };
+
+      const response = await API.finance.getList(requestParams);
+      
+      // 转换API响应数据到前端格式
+      // 由于API返回的id可能重复，我们生成唯一的前端id
+      const transformedData: Expense[] = response.data.list.map((item, index) => ({
+        id: `${item.id}-${index}-${item.date}`, // 使用id+索引+日期确保唯一性
+        type: item.type,
+        date: item.date,
+        item: item.item,
+        amount: item.amount,
+        category: item.category,
+        remark: item.notes,
+        operator: item.operator
+      }));
+
+      setData(transformedData);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.total
+      }));
+    } catch (error) {
+      console.error('获取数据失败:', error);
+      message.error('获取数据失败');
+      setData([]);
+      setPagination(prev => ({
+        ...prev,
+        total: 0
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 初始化加载数据
+  useEffect(() => {
+    fetchData();
+  }, [pagination.current, pagination.pageSize]);
   
-  const addTransaction = (values: Omit<Expense, 'id' | 'date' | 'operator'> & { date: dayjs.Dayjs; type: 'income' | 'expense' }) => {
-    const countByType = data.filter(item => item.type === values.type).length;
+  const addTransaction = (values: Omit<Expense, 'id' | 'date' | 'operator'> & { date: dayjs.Dayjs; type: 'EXPEND' | 'INCOME' }) => {
+    // 不再在本地添加数据，而是等待API调用后刷新
+    // 这样可以避免id重复的问题
     const newTransaction: Expense = {
-      id: generateTransactionId(countByType, values.type),
+      id: `temp-${Date.now()}`, // 临时id，不会被使用
       ...values,
       date: values.date.format('YYYY-MM-DD'),
       operator: '当前用户'
     };
-    setData([...data, newTransaction]);
-    message.success(values.type === 'income' ? '收入记录添加成功' : '支出记录添加成功');
     return newTransaction;
   };
   
@@ -36,42 +93,45 @@ export const useFinanceData = () => {
   };
   
   const filterData = (params: ExpenseSearchParams) => {
-    let filteredData = mockData;
-    const { text, searchCategories, dateRange, type } = params;
-
-    if (text) {
-      filteredData = filteredData.filter(
-        item => item.item.includes(text) ||
-               item.remark.includes(text) ||
-               item.id.includes(text)
-      );
+    // 使用API搜索
+    const apiParams: Partial<FinanceListRequest> = {};
+    
+    if (params.text) {
+      apiParams.keyword = params.text;
     }
-
-    if (searchCategories && searchCategories.length > 0) {
-      filteredData = filteredData.filter(item => searchCategories.includes(item.category));
+    
+    if (params.searchCategories && params.searchCategories.length > 0) {
+      // 如果有多个分类，取第一个（API可能不支持多分类搜索）
+      apiParams.category = params.searchCategories[0];
     }
-
-    if (type) {
-      filteredData = filteredData.filter(item => item.type === type);
+    
+    if (params.type) {
+      apiParams.transactionType = params.type;
     }
-
-    if (dateRange && dateRange[0] && dateRange[1]) {
-      const startDate = dateRange[0].format('YYYY-MM-DD');
-      const endDate = dateRange[1].format('YYYY-MM-DD');
-      filteredData = filteredData.filter(
-        item => item.date >= startDate && item.date <= endDate
-      );
+    
+    if (params.dateRange && params.dateRange[0] && params.dateRange[1]) {
+      apiParams.startDate = params.dateRange[0].format('YYYY-MM-DD');
+      apiParams.endDate = params.dateRange[1].format('YYYY-MM-DD');
     }
-
-    setData(filteredData);
+    
+    fetchData(apiParams);
   };
   
   const resetData = () => {
-    setData(mockData);
+    fetchData();
+  };
+
+  // 分页处理
+  const handlePageChange = (page: number, pageSize?: number) => {
+    setPagination(prev => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize || prev.pageSize
+    }));
   };
   
   // 支出数据统计
-  const expenseData = data.filter(item => item.type === 'expense');
+  const expenseData = data.filter(item => item.type === 'EXPEND');
   const totalExpense = expenseData.reduce((sum, item) => sum + item.amount, 0);
   
   const salaryExpense = expenseData
@@ -87,7 +147,7 @@ export const useFinanceData = () => {
     .reduce((sum, item) => sum + item.amount, 0);
 
   // 收入数据统计
-  const incomeData = data.filter(item => item.type === 'income');
+  const incomeData = data.filter(item => item.type === 'INCOME');
   const totalIncome = incomeData.reduce((sum, item) => sum + item.amount, 0);
   
   const tuitionIncome = incomeData
@@ -108,11 +168,15 @@ export const useFinanceData = () => {
   
   return {
     data,
+    loading,
+    pagination,
     addTransaction,
     updateTransaction,
     deleteTransaction,
     filterData,
     resetData,
+    handlePageChange,
+    fetchData,
     // 支出统计
     totalExpense,
     salaryExpense,

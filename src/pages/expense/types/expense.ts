@@ -8,12 +8,12 @@ export interface Expense {
   category: string;
   remark: string;
   operator: string;
-  type: 'income' | 'expense';
+  type: 'EXPEND' | 'INCOME';
 }
 
 export interface ExpenseSearchParams {
   text?: string;
-  type?: 'income' | 'expense' | null;
+  type?: 'EXPEND' | 'INCOME' | null;
   searchCategories?: string[];
   dateRange: [Dayjs | null, Dayjs | null] | null;
 } 
