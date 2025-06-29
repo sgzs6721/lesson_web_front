@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Expense, ExpenseSearchParams } from '../types/expense';
 import dayjs from 'dayjs';
 import { message } from 'antd';
@@ -15,55 +15,118 @@ export const useFinanceData = () => {
     total: 0
   });
 
-  // 获取数据的函数
-  const fetchData = async (params: Partial<FinanceListRequest> = {}) => {
-    try {
-      setLoading(true);
-      const currentCampusId = localStorage.getItem('currentCampusId') || '1';
-      
-      const requestParams: FinanceListRequest = {
-        campusId: Number(currentCampusId),
-        pageNum: pagination.current,
-        pageSize: pagination.pageSize,
-        ...params
-      };
+  // 用于防止重复错误提示的ref
+  const lastErrorTimeRef = useRef<number>(0);
+  const lastErrorMessageRef = useRef<string>('');
 
-      const response = await API.finance.getList(requestParams);
-      
-      // 转换API响应数据到前端格式
-      // 由于API返回的id可能重复，我们生成唯一的前端id
-      const transformedData: Expense[] = response.data.list.map((item, index) => ({
-        id: `${item.id}-${index}-${item.date}`, // 使用id+索引+日期确保唯一性
-        type: item.type,
-        date: item.date,
-        item: item.item,
-        amount: item.amount,
-        category: item.category,
-        remark: item.notes,
-        operator: item.operator
-      }));
+  // 用于防止重复请求的ref
+  const lastFetchTimeRef = useRef<number>(0);
+  const lastFetchParamsRef = useRef<string>('');
+  const fetchPromiseRef = useRef<Promise<any> | null>(null);
 
-      setData(transformedData);
-      setPagination(prev => ({
-        ...prev,
-        total: response.data.total
-      }));
-    } catch (error) {
-      console.error('获取数据失败:', error);
-      message.error('获取数据失败');
-      setData([]);
-      setPagination(prev => ({
-        ...prev,
-        total: 0
-      }));
-    } finally {
-      setLoading(false);
+  // 显示错误消息的函数，带防重复机制
+  const showErrorMessage = (errorMessage: string) => {
+    const now = Date.now();
+    const timeDiff = now - lastErrorTimeRef.current;
+    
+    // 如果距离上次错误提示不足1秒且错误消息相同，则不显示
+    if (timeDiff < 1000 && lastErrorMessageRef.current === errorMessage) {
+      return;
     }
+    
+    lastErrorTimeRef.current = now;
+    lastErrorMessageRef.current = errorMessage;
+    message.error(errorMessage);
+  };
+
+  // 获取数据的函数
+  const fetchData = async (
+    params: Partial<FinanceListRequest> = {},
+    currentPage?: number,
+    currentPageSize?: number
+  ) => {
+    const now = Date.now();
+    const timeDiff = now - lastFetchTimeRef.current;
+    
+    // 生成请求参数的唯一标识
+    const requestKey = JSON.stringify({
+      ...params,
+      pageNum: currentPage || pagination.current,
+      pageSize: currentPageSize || pagination.pageSize,
+      campusId: localStorage.getItem('currentCampusId') || '1'
+    });
+
+    // 如果距离上次请求不足500ms且请求参数相同，则不重复请求
+    if (timeDiff < 500 && lastFetchParamsRef.current === requestKey) {
+      return;
+    }
+
+    // 如果当前有正在进行的相同请求，则复用该请求
+    if (fetchPromiseRef.current && lastFetchParamsRef.current === requestKey) {
+      return fetchPromiseRef.current;
+    }
+
+    const doFetch = async () => {
+      try {
+        setLoading(true);
+        const currentCampusId = localStorage.getItem('currentCampusId') || '1';
+        
+        const requestParams: FinanceListRequest = {
+          campusId: Number(currentCampusId),
+          pageNum: currentPage || pagination.current,
+          pageSize: currentPageSize || pagination.pageSize,
+          ...params
+        };
+
+        const response = await API.finance.getList(requestParams);
+        
+        // 转换API响应数据到前端格式
+        // 由于API返回的id可能重复，我们生成唯一的前端id
+        const transformedData: Expense[] = response.data.list.map((item, index) => ({
+          id: `${item.id}-${index}-${item.date}`, // 使用id+索引+日期确保唯一性
+          type: item.transactionType, // 将API的transactionType映射到前端的type
+          date: item.date,
+          item: item.item,
+          amount: item.amount,
+          category: item.categoryName, // 将API的categoryName映射到前端的category
+          remark: item.notes,
+          operator: item.operator
+        }));
+
+        setData(transformedData);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.total
+        }));
+      } catch (error) {
+        console.error('获取数据失败:', error);
+        setData([]);
+        setPagination(prev => ({
+          ...prev,
+          total: 0
+        }));
+        showErrorMessage('获取数据失败，请检查网络连接或稍后再试');
+      } finally {
+        setLoading(false);
+        // 清除请求promise引用
+        fetchPromiseRef.current = null;
+      }
+    };
+
+    // 记录请求信息
+    lastFetchTimeRef.current = now;
+    lastFetchParamsRef.current = requestKey;
+    
+    // 保存并执行请求
+    const promise = doFetch();
+    fetchPromiseRef.current = promise;
+    
+    return promise;
   };
 
   // 初始化加载数据
   useEffect(() => {
-    fetchData();
+    fetchData({}, pagination.current, pagination.pageSize);
   }, [pagination.current, pagination.pageSize]);
   
   const addTransaction = (values: Omit<Expense, 'id' | 'date' | 'operator'> & { date: dayjs.Dayjs; type: 'EXPEND' | 'INCOME' }) => {
@@ -101,8 +164,9 @@ export const useFinanceData = () => {
     }
     
     if (params.searchCategories && params.searchCategories.length > 0) {
-      // 如果有多个分类，取第一个（API可能不支持多分类搜索）
-      apiParams.category = params.searchCategories[0];
+      // 现在API支持多分类搜索，传递分类ID数组
+      // 假设searchCategories中存储的是分类ID
+      apiParams.categoryId = params.searchCategories.map(category => Number(category));
     }
     
     if (params.type) {

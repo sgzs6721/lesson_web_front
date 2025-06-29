@@ -54,7 +54,7 @@ export const useFinanceForm = (
           date: values.date.format('YYYY-MM-DD'),
           item: values.item,
           amount: values.amount,
-          category: values.category,
+          categoryId: values.category,
           notes: values.remark || '',
           campusId: Number(currentCampusId)
         };

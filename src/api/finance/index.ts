@@ -6,7 +6,7 @@ export interface CreateFinanceRecordRequest {
   date: string;
   item: string;
   amount: number;
-  category: string;
+  categoryId: number;
   notes?: string;
   campusId: number;
 }
@@ -15,7 +15,7 @@ export interface CreateFinanceRecordRequest {
 export interface FinanceListRequest {
   transactionType?: 'INCOME' | 'EXPEND';
   keyword?: string;
-  category?: string;
+  categoryId?: number[];
   startDate?: string;
   endDate?: string;
   campusId: number;
@@ -26,11 +26,11 @@ export interface FinanceListRequest {
 // 财务记录响应类型
 export interface FinanceRecord {
   id: string;
-  type: 'EXPEND' | 'INCOME';
+  transactionType: 'EXPEND' | 'INCOME';
   date: string;
   item: string;
   amount: number;
-  category: string;
+  categoryName: string;
   notes: string;
   operator: string;
   campusId: number;

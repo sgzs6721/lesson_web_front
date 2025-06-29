@@ -14,7 +14,6 @@ interface FinanceTableProps {
   };
   onEdit: (record: Expense) => void;
   onDelete: (id: string) => void;
-  onViewDetails: (record: Expense) => void;
   onPageChange?: (page: number, pageSize?: number) => void;
 }
 
@@ -24,10 +23,9 @@ const FinanceTable: React.FC<FinanceTableProps> = ({
   pagination,
   onEdit,
   onDelete,
-  onViewDetails,
   onPageChange
 }) => {
-  const columns = getTableColumns(onEdit, onDelete, onViewDetails);
+  const columns = getTableColumns(onEdit, onDelete);
   
   return (
     <>

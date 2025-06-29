@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, message } from 'antd';
+import React, { useState } from 'react';
+import { Card, Button, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import FinanceStatistics from './components/ExpenseStatistics';
 import FinanceTable from './components/ExpenseTable';
 import FinanceSearchBar from './components/FinanceSearchBar';
 import FinanceEditModal from './components/ExpenseEditModal';
-import FinanceDetailsModal from './components/ExpenseDetailsModal';
 import FinanceDeleteModal from './components/ExpenseDeleteModal';
 import { useFinanceData } from './hooks/useExpenseData';
 import { useExpenseSearch } from './hooks/useExpenseSearch';
 import { useFinanceForm } from './hooks/useExpenseForm';
 import { exportToCSV } from './utils/exportData';
-import { Expense } from './types/expense';
 import './expense.css';
 
 const { Title } = Typography;
@@ -74,10 +72,6 @@ const FinanceManagement: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<string | null>(null);
 
-  // 详情模态框状态
-  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [recordDetails, setRecordDetails] = useState<Expense | null>(null);
-
   // 处理删除确认
   const showDeleteConfirm = (id: string) => {
     setRecordToDelete(id);
@@ -97,18 +91,6 @@ const FinanceManagement: React.FC = () => {
   const handleCancelDelete = () => {
     setDeleteModalVisible(false);
     setRecordToDelete(null);
-  };
-
-  // 显示详情
-  const showDetails = (record: Expense) => {
-    setRecordDetails(record);
-    setDetailsModalVisible(true);
-  };
-
-  // 关闭详情
-  const handleCloseDetails = () => {
-    setDetailsModalVisible(false);
-    setRecordDetails(null);
   };
 
   return (
@@ -165,7 +147,6 @@ const FinanceManagement: React.FC = () => {
           pagination={pagination}
           onEdit={handleEdit}
           onDelete={showDeleteConfirm}
-          onViewDetails={showDetails}
           onPageChange={handlePageChange}
         />
 
@@ -186,13 +167,6 @@ const FinanceManagement: React.FC = () => {
           visible={deleteModalVisible}
           onConfirm={handleDelete}
           onCancel={handleCancelDelete}
-        />
-
-        {/* 详情模态框 */}
-        <FinanceDetailsModal
-          visible={detailsModalVisible}
-          record={recordDetails}
-          onCancel={handleCloseDetails}
         />
       </Card>
     </div>

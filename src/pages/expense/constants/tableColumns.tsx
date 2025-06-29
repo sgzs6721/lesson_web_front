@@ -1,14 +1,12 @@
-
 import { ColumnsType } from 'antd/es/table';
 import { Tag, Button, Tooltip, Space } from 'antd';
-import { EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Expense } from '../types/expense';
 import { TRANSACTION_TYPE_LABEL } from './expenseTypes';
 
 export const getTableColumns = (
   handleEdit: (record: Expense) => void,
-  showDeleteConfirm: (id: string) => void,
-  showDetails: (record: Expense) => void
+  showDeleteConfirm: (id: string) => void
 ): ColumnsType<Expense> => [
   {
     title: '日期',
@@ -22,7 +20,7 @@ export const getTableColumns = (
     key: 'type',
     align: 'center',
     render: (type) => {
-      const color = type === 'income' ? 'green' : 'red';
+      const color = type === 'INCOME' ? 'green' : 'red';
       return <Tag color={color}>{TRANSACTION_TYPE_LABEL[type]}</Tag>;
     },
   },
@@ -79,13 +77,6 @@ export const getTableColumns = (
     align: 'center',
     render: (_, record) => (
       <Space size="middle">
-        <Tooltip title="详情">
-          <Button
-            type="text"
-            icon={<FileTextOutlined />}
-            onClick={() => showDetails(record)}
-          />
-        </Tooltip>
         <Tooltip title="编辑">
           <Button
             type="text"

@@ -1,15 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { API } from '@/api';
 import { Constant } from '@/api/constants/types';
 
 // 费用类别选项Hook
 export const useExpenseCategories = (transactionType: 'EXPEND' | 'INCOME' | null | undefined) => {
-  const [categories, setCategories] = useState<{ label: string; value: string; type?: string }[]>([]);
+  const [categories, setCategories] = useState<{ label: string; value: number; type?: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // 防重复请求的ref
+  const lastRequestTimeRef = useRef<number>(0);
+  const lastRequestTypeRef = useRef<'EXPEND' | 'INCOME' | null | undefined>(undefined);
+  const requestPromiseRef = useRef<Promise<any> | null>(null);
 
   useEffect(() => {
     // 如果传入 undefined，则不发起请求（用于优化性能）
     if (transactionType === undefined) {
+      return;
+    }
+
+    const now = Date.now();
+    const timeDiff = now - lastRequestTimeRef.current;
+
+    // 如果距离上次请求不足500ms且请求参数相同，则不重复请求
+    if (timeDiff < 500 && lastRequestTypeRef.current === transactionType) {
+      return;
+    }
+
+    // 如果当前有正在进行的请求且参数相同，则复用该请求
+    if (requestPromiseRef.current && lastRequestTypeRef.current === transactionType) {
       return;
     }
 
@@ -39,7 +57,7 @@ export const useExpenseCategories = (transactionType: 'EXPEND' | 'INCOME' | null
         // 转换为选项格式
         const options = allCategories.map((item: Constant) => ({
           label: item.constantValue,
-          value: item.constantValue,
+          value: item.id,
           type: item.type // 保留类型信息供UI使用
         }));
         
@@ -49,10 +67,19 @@ export const useExpenseCategories = (transactionType: 'EXPEND' | 'INCOME' | null
         setCategories([]);
       } finally {
         setLoading(false);
+        // 清除请求promise引用
+        requestPromiseRef.current = null;
       }
     };
 
-    fetchCategories();
+    // 记录请求信息
+    lastRequestTimeRef.current = now;
+    lastRequestTypeRef.current = transactionType;
+    
+    // 保存请求promise
+    const promise = fetchCategories();
+    requestPromiseRef.current = promise;
+
   }, [transactionType]);
 
   return {
