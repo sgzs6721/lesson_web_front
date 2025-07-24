@@ -74,6 +74,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 980,
             unitPrice: 200,
             totalRevenue: 588000,
+            enrollments: 245,
+            completions: 196,
+            rating: 4.8,
+            revenue: 588000,
           },
           {
             courseId: 'course-002',
@@ -84,6 +88,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 756,
             unitPrice: 150,
             totalRevenue: 340200,
+            enrollments: 189,
+            completions: 151,
+            rating: 4.6,
+            revenue: 340200,
           },
           {
             courseId: 'course-003',
@@ -94,6 +102,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 668,
             unitPrice: 120,
             totalRevenue: 240480,
+            enrollments: 167,
+            completions: 134,
+            rating: 4.4,
+            revenue: 240480,
           },
           {
             courseId: 'course-004',
@@ -104,6 +116,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 536,
             unitPrice: 120,
             totalRevenue: 192960,
+            enrollments: 134,
+            completions: 107,
+            rating: 4.3,
+            revenue: 192960,
           },
           {
             courseId: 'course-005',
@@ -114,6 +130,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 492,
             unitPrice: 150,
             totalRevenue: 221400,
+            enrollments: 123,
+            completions: 98,
+            rating: 4.5,
+            revenue: 221400,
           },
           {
             courseId: 'course-006',
@@ -124,6 +144,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 792,
             unitPrice: 250,
             totalRevenue: 594000,
+            enrollments: 198,
+            completions: 178,
+            rating: 4.9,
+            revenue: 594000,
           },
           {
             courseId: 'course-007',
@@ -134,6 +158,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 356,
             unitPrice: 180,
             totalRevenue: 192240,
+            enrollments: 89,
+            completions: 71,
+            rating: 4.2,
+            revenue: 192240,
           },
           {
             courseId: 'course-008',
@@ -144,6 +172,10 @@ export const useCourseAnalysisData = (
             remainingLessons: 268,
             unitPrice: 100,
             totalRevenue: 80400,
+            enrollments: 67,
+            completions: 54,
+            rating: 4.1,
+            revenue: 80400,
           },
         ];
 

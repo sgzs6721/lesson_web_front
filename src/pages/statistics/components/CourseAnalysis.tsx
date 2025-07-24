@@ -69,11 +69,15 @@ export interface CourseComparisonData {
   remainingLessons: number;       // 剩余课时
   unitPrice: number;              // 单价
   totalRevenue: number;           // 总收入
+  enrollments: number;            // 报名人数
+  completions: number;            // 完成人数
+  rating: number;                 // 评分
+  revenue: number;                // 收入（与totalRevenue相同，保持兼容性）
 }
 
 const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
   const [timeframe, setTimeframe] = useState<string>('month');
-  const [chartType, setChartType] = useState<'totalLessons' | 'newLessons' | 'renewalLessons' | 'salesAmount'>('totalLessons');
+  const [chartType, setChartType] = useState<'soldCourses' | 'consumedLessons' | 'salesAmount' | 'newCourses'>('soldCourses');
 
   const {
     courseData,
@@ -117,7 +121,7 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       value: courseAnalysisData.totalCourses,
       unit: '门',
       icon: <BookOutlined />,
-      trend: courseAnalysisData.courseGrowth,
+      growth: courseAnalysisData.courseGrowth,
       color: '#1890ff'
     },
     {
@@ -125,7 +129,7 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       value: courseAnalysisData.newCourses,
       unit: '门',
       icon: <RiseOutlined />,
-      trend: courseAnalysisData.newGrowth,
+      growth: courseAnalysisData.newGrowth,
       color: '#faad14'
     },
     {
@@ -133,7 +137,7 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       value: 892, // 续费课程数
       unit: '门',
       icon: <TrophyOutlined />,
-      trend: 8.5,
+      growth: 8.5,
       color: '#52c41a'
     },
     {
@@ -141,7 +145,7 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       value: courseAnalysisData.soldCourses,
       unit: '门',
       icon: <UserOutlined />,
-      trend: courseAnalysisData.soldGrowth,
+      growth: courseAnalysisData.soldGrowth,
       color: '#f5222d'
     },
     {
@@ -149,7 +153,7 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       value: courseAnalysisData.remainingLessons,
       unit: '门',
       icon: <StarOutlined />,
-      trend: 0, // 剩余课程数不显示增长率
+      growth: 0, // 剩余课程数不显示增长率
       color: '#722ed1'
     },
     {
@@ -157,7 +161,7 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       value: courseAnalysisData.averagePrice,
       unit: '元/课时',
       icon: <DollarOutlined />,
-      trend: courseAnalysisData.priceGrowth,
+      growth: courseAnalysisData.priceGrowth,
       color: '#13c2c2'
     }
   ];
@@ -345,9 +349,9 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
                 dropdownStyle={{ minWidth: 140 }}
                 getPopupContainer={(triggerNode) => triggerNode.parentElement}
               >
-                <Option value="totalLessons">总课时</Option>
-                <Option value="newLessons">新报课时</Option>
-                <Option value="renewalLessons">续费课时</Option>
+                <Option value="soldCourses">已销课程</Option>
+                <Option value="newCourses">新报课程</Option>
+                <Option value="consumedLessons">消耗课时</Option>
                 <Option value="salesAmount">销售额</Option>
               </Select>
             }
