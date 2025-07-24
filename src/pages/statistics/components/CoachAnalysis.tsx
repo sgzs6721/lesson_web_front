@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Spin, Space, Row, Col } from 'antd';
+import { Button, Spin, Space, Row, Col, Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import {
   TeamOutlined,
@@ -88,8 +88,11 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
 
   return (
     <div className="coach-analysis-container">
-      <div className="statistics-group" style={{ marginBottom: '24px' }}>
-        <h3 className="statistics-group-title">教练绩效指标</h3>
+      <Card
+        title="教练绩效指标"
+        size="small"
+        style={{ marginBottom: '24px' }}
+      >
         <Row gutter={[16, 16]}>
           {coachStats.map((stat, index) => (
             <Col xs={24} sm={12} md={12} lg={6} key={index}>
@@ -97,14 +100,16 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
             </Col>
           ))}
         </Row>
-      </div>
+      </Card>
 
-      <div className="coach-analysis-layout">
-        <div className="coach-analysis-column">
-          <div className="chart-container-card">
-            <div className="chart-header">
-              <div className="chart-title">教练课时统计</div>
-            </div>
+      {/* Charts Section */}
+      <Row gutter={[16, 16]}>
+        {/* Coach Lessons Statistics */}
+        <Col xs={24} lg={12}>
+          <Card
+            title="教练课时统计"
+            size="small"
+          >
             <ReactECharts
               option={{
                 tooltip: { trigger: 'axis' },
@@ -144,20 +149,23 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
               }}
               style={{ height: '350px', width: '100%' }}
             />
-          </div>
-        </div>
+          </Card>
+        </Col>
 
-        <div className="coach-analysis-column">
-          <div className="chart-container-card">
-            <div className="chart-header">
-              <div className="chart-title">教练TOP5多维度对比</div>
+        {/* Coach TOP5 Comparison */}
+        <Col xs={24} lg={12}>
+          <Card
+            title="教练TOP5多维度对比"
+            size="small"
+            extra={
               <Space.Compact>
                 <Button size="small" type={coachBarType === 'all' ? 'primary' : 'default'} onClick={() => setCoachBarType('all')}>全部</Button>
                 <Button size="small" type={coachBarType === 'lessons' ? 'primary' : 'default'} onClick={() => setCoachBarType('lessons')}>课时</Button>
                 <Button size="small" type={coachBarType === 'students' ? 'primary' : 'default'} onClick={() => setCoachBarType('students')}>学员</Button>
                 <Button size="small" type={coachBarType === 'income' ? 'primary' : 'default'} onClick={() => setCoachBarType('income')}>创收</Button>
               </Space.Compact>
-            </div>
+            }
+          >
             <ReactECharts
               option={{
                 tooltip: { trigger: 'axis' },
@@ -165,40 +173,40 @@ const CoachAnalysis: React.FC<CoachAnalysisProps> = ({ data, loading }) => {
                 xAxis: { type: 'category', data: coachBarData.coaches },
                 yAxis: { type: 'value' },
                 series: [
-                  { 
-                    name: '课时量', 
-                    type: 'bar', 
+                  {
+                    name: '课时量',
+                    type: 'bar',
                     data: coachBarData.lessons.map((value, index) => ({
                       value: value,
                       itemStyle: generateBarItemStyle(index)
-                    })), 
-                    visible: coachBarType === 'all' || coachBarType === 'lessons' 
+                    })),
+                    visible: coachBarType === 'all' || coachBarType === 'lessons'
                   },
-                  { 
-                    name: '学员数', 
-                    type: 'bar', 
+                  {
+                    name: '学员数',
+                    type: 'bar',
                     data: coachBarData.students.map((value, index) => ({
                       value: value,
                       itemStyle: generateBarItemStyle(index + 1)
-                    })), 
-                    visible: coachBarType === 'all' || coachBarType === 'students' 
+                    })),
+                    visible: coachBarType === 'all' || coachBarType === 'students'
                   },
-                  { 
-                    name: '创收额(千元)', 
-                    type: 'bar', 
+                  {
+                    name: '创收额(千元)',
+                    type: 'bar',
                     data: coachBarData.income.map((value, index) => ({
                       value: value,
                       itemStyle: generateBarItemStyle(index + 2)
-                    })), 
-                    visible: coachBarType === 'all' || coachBarType === 'income' 
+                    })),
+                    visible: coachBarType === 'all' || coachBarType === 'income'
                   },
                 ],
               }}
               style={{ height: '350px', width: '100%' }}
             />
-          </div>
-        </div>
-      </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

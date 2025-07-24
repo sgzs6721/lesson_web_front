@@ -12,7 +12,7 @@
 }
 
 .statistic-card .ant-card-body {
-  padding: 20px;
+  padding: 20px 20px 20px 40px;
 }
 
 .statistic-card-inner {
@@ -43,7 +43,6 @@
 }
 
 .statistic-card-value {
-  text-align: center;
   margin-bottom: 8px;
 }
 
@@ -62,8 +61,6 @@
 .statistic-card-growth {
   font-size: 14px;
   font-weight: 500;
-  text-align: center;
   display: flex;
   align-items: center;
-  justify-content: center;
-} 
+}

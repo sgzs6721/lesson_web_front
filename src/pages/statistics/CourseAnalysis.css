@@ -1,0 +1,265 @@
+/* Course Analysis Styles */
+.course-analysis-container {
+  padding: 0;
+  background: transparent;
+}
+
+.filter-controls-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.filter-controls-card .ant-card-body {
+  padding: 12px 16px;
+}
+
+.kpi-cards-section {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-cards-section .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 16px;
+  min-height: 40px;
+}
+
+.kpi-cards-section .ant-card-head-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.kpi-cards-section .ant-card-body {
+  padding: 16px;
+}
+
+/* Chart Cards */
+.ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 16px;
+  min-height: 48px;
+}
+
+.ant-card-head-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.ant-card-body {
+  padding: 16px;
+}
+
+/* Chart Container */
+.chart-container {
+  height: 300px;
+  width: 100%;
+}
+
+.chart-container-small {
+  height: 250px;
+  width: 100%;
+}
+
+/* Filter Controls Styling */
+.ant-select {
+  border-radius: 6px;
+}
+
+.ant-picker {
+  border-radius: 6px;
+}
+
+.ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .course-analysis-container {
+    padding: 0 8px;
+  }
+  
+  .filter-controls-card .ant-card-body {
+    padding: 8px 12px;
+  }
+  
+  .kpi-cards-section .ant-card-body {
+    padding: 12px;
+  }
+  
+  .ant-card-body {
+    padding: 12px;
+  }
+  
+  .chart-container {
+    height: 250px;
+  }
+  
+  .chart-container-small {
+    height: 200px;
+  }
+}
+
+@media (max-width: 576px) {
+  .course-analysis-container {
+    padding: 0 4px;
+  }
+  
+  .filter-controls-card .ant-card-body {
+    padding: 8px;
+  }
+  
+  .kpi-cards-section .ant-card-body {
+    padding: 8px;
+  }
+  
+  .ant-card-body {
+    padding: 8px;
+  }
+  
+  .chart-container {
+    height: 200px;
+  }
+  
+  .chart-container-small {
+    height: 180px;
+  }
+}
+
+/* Loading State */
+.course-analysis-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+/* Empty State */
+.course-analysis-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background: #fafafa;
+  border-radius: 8px;
+  color: #8c8c8c;
+}
+
+.course-analysis-empty .anticon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #d9d9d9;
+}
+
+/* Chart Specific Styles */
+.course-performance-chart {
+  height: 100%;
+  width: 100%;
+}
+
+.course-engagement-chart {
+  height: 100%;
+  width: 100%;
+}
+
+.course-comparison-chart {
+  height: 100%;
+  width: 100%;
+}
+
+.course-rating-chart {
+  height: 100%;
+  width: 100%;
+}
+
+/* Metric Cards Enhancement */
+.metric-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(30px, -30px);
+}
+
+.metric-card-title {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.metric-card-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.metric-card-trend {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Animation */
+.course-analysis-container .ant-card {
+  transition: all 0.3s ease;
+}
+
+.course-analysis-container .ant-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Custom Scrollbar */
+.course-analysis-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.course-analysis-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.course-analysis-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.course-analysis-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

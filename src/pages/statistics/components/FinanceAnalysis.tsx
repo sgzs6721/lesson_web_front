@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Spin, Space, Row, Col } from 'antd';
+import { Button, Spin, Space, Row, Col, Card } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import {
   LineChartOutlined,
@@ -68,15 +68,18 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
 
   return (
     <div className="finance-analysis-container">
-      <div className="statistics-group" style={{ marginBottom: '24px' }}>
-        <div className="chart-header">
-            <h3 className="statistics-group-title" style={{ marginBottom: 0 }}>财务核心指标</h3>
-            <Space.Compact size="small">
-                <Button type={financeTimeframe === 'month' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('month')}>本月</Button>
-                <Button type={financeTimeframe === 'quarter' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('quarter')}>季度</Button>
-                <Button type={financeTimeframe === 'year' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('year')}>年度</Button>
-            </Space.Compact>
-        </div>
+      <Card
+        title="财务核心指标"
+        size="small"
+        style={{ marginBottom: '24px' }}
+        extra={
+          <Space.Compact size="small">
+            <Button type={financeTimeframe === 'month' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('month')}>本月</Button>
+            <Button type={financeTimeframe === 'quarter' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('quarter')}>季度</Button>
+            <Button type={financeTimeframe === 'year' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('year')}>年度</Button>
+          </Space.Compact>
+        }
+      >
         <Row gutter={[16, 16]}>
           {financeStats.map((stat, index) => (
             <Col xs={24} sm={12} md={12} lg={6} key={index}>
@@ -84,14 +87,16 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
             </Col>
           ))}
         </Row>
-      </div>
+      </Card>
 
-      <div className="finance-analysis-layout">
-        <div className="finance-analysis-column">
-          <div className="chart-container-card">
-            <div className="chart-header">
-                <div className="chart-title">收入与成本趋势 (万元)</div>
-            </div>
+      {/* Charts Section */}
+      <Row gutter={[16, 16]}>
+        {/* Revenue and Cost Trends */}
+        <Col xs={24} lg={12}>
+          <Card
+            title="收入与成本趋势 (万元)"
+            size="small"
+          >
             <ReactECharts
               option={{
                 tooltip: { trigger: 'axis' },
@@ -130,14 +135,15 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
               }}
               style={{ height: '350px', width: '100%' }}
             />
-          </div>
-        </div>
+          </Card>
+        </Col>
 
-        <div className="finance-analysis-column">
-          <div className="chart-container-card">
-            <div className="chart-header">
-                <div className="chart-title">成本结构分析</div>
-            </div>
+        {/* Cost Structure Analysis */}
+        <Col xs={24} lg={12}>
+          <Card
+            title="成本结构分析"
+            size="small"
+          >
             <ReactECharts
               option={{
                 tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
@@ -157,9 +163,9 @@ const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
               }}
               style={{ height: '350px', width: '100%' }}
             />
-          </div>
-        </div>
-      </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

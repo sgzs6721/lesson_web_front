@@ -11,6 +11,7 @@ import {
 export const useStatisticsData = () => {
   const [data, setData] = useState<OverviewData | null>(null);
   const [studentData, setStudentData] = useState<StudentData | null>(null);
+  const [courseData, setCourseData] = useState<any | null>(null);
   const [coachData, setCoachData] = useState<CoachData | null>(null);
   const [financeData, setFinanceData] = useState<FinanceData | null>(null);
   const [campusData, setCampusData] = useState<CampusData[] | null>(null);
@@ -95,9 +96,26 @@ export const useStatisticsData = () => {
         }
       };
 
+      // Mock course data
+      const mockCourseData = {
+        totalCourses: 156,
+        activeCourses: 142,
+        completionRate: 78.5,
+        averageRating: 4.6,
+        totalRevenue: 2456800,
+        enrollmentTrend: 1284,
+        courseGrowth: 8.3,
+        activeGrowth: 5.7,
+        completionGrowth: 12.4,
+        ratingGrowth: 3.2,
+        revenueGrowth: 15.8,
+        enrollmentGrowthRate: 9.6,
+      };
+
       // 更新状态
       setData(mockData);
       setStudentData(mockStudentData);
+      setCourseData(mockCourseData);
       setCoachData(mockCoachData);
       setFinanceData(mockFinanceData);
       setCampusData(null); // 校区数据需要单独获取
@@ -288,6 +306,7 @@ export const useStatisticsData = () => {
   return {
     data,
     studentData,
+    courseData,
     coachData,
     financeData,
     campusData,

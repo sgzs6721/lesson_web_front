@@ -1,0 +1,174 @@
+.course-analysis-container {
+  padding: 16px;
+}
+
+.filter-controls-card {
+  margin-bottom: 20px;
+}
+
+.filter-controls-card .ant-card-body {
+  padding: 16px 20px;
+}
+
+.filter-controls-card .ant-select {
+  min-width: 120px !important;
+}
+
+.filter-controls-card .ant-select-selector {
+  height: 32px !important;
+  padding: 4px 11px !important;
+}
+
+.filter-controls-card .ant-select-selection-item {
+  line-height: 24px !important;
+}
+
+/* 修复下拉菜单样式 */
+.ant-select-dropdown {
+  min-width: 120px !important;
+  z-index: 1050 !important;
+}
+
+.ant-select-item {
+  padding: 5px 12px !important;
+  min-height: 32px !important;
+  line-height: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.ant-select-item-option-content {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* 确保下拉菜单正确显示 */
+.ant-select-item-option {
+  background: white !important;
+}
+
+.ant-select-item-option:hover {
+  background: #f5f5f5 !important;
+}
+
+.ant-select-item-option-selected {
+  background: #e6f7ff !important;
+}
+
+/* 修复小尺寸Select的样式 */
+.ant-select-small .ant-select-selector {
+  height: 24px !important;
+  padding: 1px 7px !important;
+}
+
+.ant-select-small .ant-select-selection-item {
+  line-height: 22px !important;
+}
+
+.filter-controls-card .ant-space {
+  width: 100%;
+}
+
+.filter-controls-card .ant-select {
+  min-width: 100px !important;
+}
+
+.filter-controls-card .ant-select-selector {
+  height: 32px !important;
+  padding: 4px 11px !important;
+}
+
+.filter-controls-card .ant-picker {
+  height: 32px !important;
+}
+
+.filter-controls-card .ant-btn {
+  height: 32px !important;
+  padding: 4px 15px !important;
+}
+
+.kpi-cards-section {
+  margin-bottom: 16px;
+}
+
+.course-type-analysis {
+  margin-bottom: 16px;
+}
+
+.course-type-item {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 16px;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.course-type-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #1890ff;
+}
+
+.course-type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.course-type-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.course-type-count {
+  font-size: 14px;
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.course-type-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.stat-value {
+  font-size: 13px;
+  color: #262626;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .course-type-item {
+    margin-bottom: 12px;
+  }
+  
+  .course-type-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .stat-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}

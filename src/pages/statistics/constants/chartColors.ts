@@ -1,7 +1,7 @@
-// 图表颜色配置
+// 图表颜色配置 - 高饱和度鲜艳色系
 export const CHART_COLORS = [
-  '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2', 
-  '#eb2f96', '#fa8c16', '#a0d911', '#2f54eb', '#fa541c', '#1890ff'
+  '#3498DB', '#2ECC71', '#F1C40F', '#E74C3C', '#9B59B6', '#1ABC9C',
+  '#E67E22', '#E91E63', '#00BCD4', '#8BC34A', '#FF9800', '#795548'
 ];
 
 // 生成带渐变效果的柱状图颜色配置
@@ -11,7 +11,7 @@ export const generateBarItemStyle = (index: number) => ({
     x: 0, y: 0, x2: 0, y2: 1,
     colorStops: [
       { offset: 0, color: CHART_COLORS[index % CHART_COLORS.length] },
-      { offset: 1, color: CHART_COLORS[index % CHART_COLORS.length] + '80' }
+      { offset: 1, color: CHART_COLORS[index % CHART_COLORS.length] }
     ]
   },
   borderRadius: [4, 4, 0, 0]
