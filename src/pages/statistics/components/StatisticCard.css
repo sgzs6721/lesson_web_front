@@ -12,7 +12,7 @@
 }
 
 .statistic-card .ant-card-body {
-  padding: 20px 20px 20px 40px;
+  padding: 20px;
 }
 
 .statistic-card-inner {
@@ -27,23 +27,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16px;
+  margin-right: 20px;
   font-size: 24px;
+  flex-shrink: 0;
 }
 
 .statistic-card-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-right: 12px;
 }
 
 .statistic-card-title {
   color: #8c8c8c;
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   display: block;
+  text-align: center;
+}
+
+.statistic-card-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
 .statistic-card-value {
-  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
 }
 
 .statistic-card-prefix {
@@ -59,8 +76,9 @@
 }
 
 .statistic-card-growth {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   display: flex;
   align-items: center;
+  white-space: nowrap;
 }

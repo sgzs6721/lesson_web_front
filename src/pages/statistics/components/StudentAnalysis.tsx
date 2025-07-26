@@ -192,8 +192,45 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                       type: 'line',
                       smooth: true,
                       data: studentTrendData[studentChartType],
-                      lineStyle: { color: CHART_COLORS[0], width: 3 },
-                      itemStyle: { color: CHART_COLORS[0] },
+                      lineStyle: {
+                        color: studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
+                               studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
+                               studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
+                               studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
+                               '#faad14',                                       // 橙色 - 留存率
+                        width: 3
+                      },
+                      itemStyle: {
+                        color: studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
+                               studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
+                               studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
+                               studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
+                               '#faad14'                                        // 橙色 - 留存率
+                      },
+                      areaStyle: {
+                        color: {
+                          type: 'linear',
+                          x: 0, y: 0, x2: 0, y2: 1,
+                          colorStops: [
+                            {
+                              offset: 0,
+                              color: (studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
+                                     studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
+                                     studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
+                                     studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
+                                     '#faad14') + '40'                                // 橙色 - 留存率
+                            },
+                            {
+                              offset: 1,
+                              color: (studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
+                                     studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
+                                     studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
+                                     studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
+                                     '#faad14') + '10'                                // 橙色 - 留存率
+                            }
+                          ]
+                        }
+                      },
                       emphasis: { disabled: true }
                     }],
                   }}
@@ -201,54 +238,148 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                 />
               </div>
               <div style={{
-                width: '120px',
+                width: '140px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                gap: '8px',
-                paddingLeft: '16px'
+                gap: '12px',
+                paddingLeft: '20px',
+                background: 'linear-gradient(135deg, #f8faff 0%, #f0f5ff 100%)',
+                borderRadius: '12px',
+                padding: '20px 16px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
               }}>
-                <Button
-                  type={studentChartType === 'cumulative' ? 'primary' : 'default'}
+                <div
                   onClick={() => setStudentChartType('cumulative')}
-                  size="small"
-                  style={{ width: '80px' }}
+                  style={{
+                    width: '100px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '18px',
+                    background: studentChartType === 'cumulative'
+                      ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
+                      : 'rgba(255,255,255,0.8)',
+                    color: studentChartType === 'cumulative' ? 'white' : '#666',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: studentChartType === 'cumulative' ? '600' : '500',
+                    border: studentChartType === 'cumulative' ? 'none' : '1px solid #e8e8e8',
+                    boxShadow: studentChartType === 'cumulative'
+                      ? '0 4px 12px rgba(24,144,255,0.3)'
+                      : '0 2px 4px rgba(0,0,0,0.04)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: studentChartType === 'cumulative' ? 'translateY(-1px)' : 'none'
+                  }}
                 >
                   总计
-                </Button>
-                <Button
-                  type={studentChartType === 'new' ? 'primary' : 'default'}
+                </div>
+                <div
                   onClick={() => setStudentChartType('new')}
-                  size="small"
-                  style={{ width: '80px' }}
+                  style={{
+                    width: '100px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '18px',
+                    background: studentChartType === 'new'
+                      ? 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
+                      : 'rgba(255,255,255,0.8)',
+                    color: studentChartType === 'new' ? 'white' : '#666',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: studentChartType === 'new' ? '600' : '500',
+                    border: studentChartType === 'new' ? 'none' : '1px solid #e8e8e8',
+                    boxShadow: studentChartType === 'new'
+                      ? '0 4px 12px rgba(82,196,26,0.3)'
+                      : '0 2px 4px rgba(0,0,0,0.04)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: studentChartType === 'new' ? 'translateY(-1px)' : 'none'
+                  }}
                 >
                   新增
-                </Button>
-                <Button
-                  type={studentChartType === 'renewal' ? 'primary' : 'default'}
+                </div>
+                <div
                   onClick={() => setStudentChartType('renewal')}
-                  size="small"
-                  style={{ width: '80px' }}
+                  style={{
+                    width: '100px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '18px',
+                    background: studentChartType === 'renewal'
+                      ? 'linear-gradient(135deg, #722ed1 0%, #9254de 100%)'
+                      : 'rgba(255,255,255,0.8)',
+                    color: studentChartType === 'renewal' ? 'white' : '#666',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: studentChartType === 'renewal' ? '600' : '500',
+                    border: studentChartType === 'renewal' ? 'none' : '1px solid #e8e8e8',
+                    boxShadow: studentChartType === 'renewal'
+                      ? '0 4px 12px rgba(114,46,209,0.3)'
+                      : '0 2px 4px rgba(0,0,0,0.04)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: studentChartType === 'renewal' ? 'translateY(-1px)' : 'none'
+                  }}
                 >
                   续费
-                </Button>
-                <Button
-                  type={studentChartType === 'lost' ? 'primary' : 'default'}
+                </div>
+                <div
                   onClick={() => setStudentChartType('lost')}
-                  size="small"
-                  style={{ width: '80px' }}
+                  style={{
+                    width: '100px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '18px',
+                    background: studentChartType === 'lost'
+                      ? 'linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%)'
+                      : 'rgba(255,255,255,0.8)',
+                    color: studentChartType === 'lost' ? 'white' : '#666',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: studentChartType === 'lost' ? '600' : '500',
+                    border: studentChartType === 'lost' ? 'none' : '1px solid #e8e8e8',
+                    boxShadow: studentChartType === 'lost'
+                      ? '0 4px 12px rgba(255,77,79,0.3)'
+                      : '0 2px 4px rgba(0,0,0,0.04)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: studentChartType === 'lost' ? 'translateY(-1px)' : 'none'
+                  }}
                 >
                   流失
-                </Button>
-                <Button
-                  type={studentChartType === 'retention' ? 'primary' : 'default'}
+                </div>
+                <div
                   onClick={() => setStudentChartType('retention')}
-                  size="small"
-                  style={{ width: '80px' }}
+                  style={{
+                    width: '100px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '18px',
+                    background: studentChartType === 'retention'
+                      ? 'linear-gradient(135deg, #faad14 0%, #ffc53d 100%)'
+                      : 'rgba(255,255,255,0.8)',
+                    color: studentChartType === 'retention' ? 'white' : '#666',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: studentChartType === 'retention' ? '600' : '500',
+                    border: studentChartType === 'retention' ? 'none' : '1px solid #e8e8e8',
+                    boxShadow: studentChartType === 'retention'
+                      ? '0 4px 12px rgba(250,173,20,0.3)'
+                      : '0 2px 4px rgba(0,0,0,0.04)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: studentChartType === 'retention' ? 'translateY(-1px)' : 'none'
+                  }}
                 >
                   留存率
-                </Button>
+                </div>
               </div>
             </div>
 
@@ -303,14 +434,14 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                     name: '续费金额',
                     type: 'bar',
                     data: renewalAmountData.renewal,
-                    itemStyle: { color: '#FFB6C1' }, // 马卡龙粉色 (暖色系)
+                    itemStyle: { color: '#1890ff' }, // 蓝色 - 与上方图表一致
                     emphasis: { disabled: true }
                   },
                   {
                     name: '新增学员缴费金额',
                     type: 'bar',
                     data: renewalAmountData.newPayment,
-                    itemStyle: { color: '#FFDAB9' }, // 马卡龙桃色 (暖色系)
+                    itemStyle: { color: '#52c41a' }, // 绿色 - 与上方图表一致
                     emphasis: { disabled: true }
                   }
                 ],

@@ -35,13 +35,15 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
         </div>
         <div className="statistic-card-content">
           <div className="statistic-card-title">{title}</div>
-          <div className="statistic-card-value">
-            {prefix && <span className="statistic-card-prefix">{prefix}</span>}
-            <span className="statistic-card-number">{value}</span>
-          </div>
-          <div className="statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
-            {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-            <span style={{ marginLeft: 4 }}>{Math.abs(growth || 0).toFixed(1)}%</span>
+          <div className="statistic-card-value-row">
+            <div className="statistic-card-value">
+              {prefix && <span className="statistic-card-prefix">{prefix}</span>}
+              <span className="statistic-card-number">{value}</span>
+            </div>
+            <div className="statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
+              {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+              <span style={{ marginLeft: 4 }}>{Math.abs(growth || 0).toFixed(1)}%</span>
+            </div>
           </div>
         </div>
       </div>
