@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Card, Statistic, Space } from 'antd';
+import { Card, Statistic, Space, Spin } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import './StatisticCard.css';
 
@@ -10,6 +10,7 @@ interface StatisticCardProps {
   growth: number;
   color: string;
   prefix?: React.ReactNode;
+  loading?: boolean;
 }
 
 const StatisticCard: React.FC<StatisticCardProps> = ({
@@ -19,6 +20,7 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
   growth,
   color,
   prefix,
+  loading = false,
 }) => {
   const isUp = (growth || 0) >= 0;
 
@@ -36,14 +38,24 @@ const StatisticCard: React.FC<StatisticCardProps> = ({
         <div className="statistic-card-content">
           <div className="statistic-card-title">{title}</div>
           <div className="statistic-card-value-row">
-            <div className="statistic-card-value">
-              {prefix && <span className="statistic-card-prefix">{prefix}</span>}
-              <span className="statistic-card-number">{value}</span>
-            </div>
-            <div className="statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
-              {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-              <span style={{ marginLeft: 4 }}>{Math.abs(growth || 0).toFixed(1)}%</span>
-            </div>
+            {loading ? (
+              <div className="statistic-card-loading">
+                <Spin size="small" />
+              </div>
+            ) : (
+              <>
+                <div className="statistic-card-value">
+                  {prefix && <span className="statistic-card-prefix">{prefix}</span>}
+                  <span className="statistic-card-number">{value}</span>
+                </div>
+                <div className="statistic-card-growth" style={{ color: isUp ? '#52c41a' : '#f5222d' }}>
+                  <span>
+                    {isUp ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                    <span style={{ marginLeft: 4 }}>{Math.abs(growth || 0).toFixed(1)}%</span>
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

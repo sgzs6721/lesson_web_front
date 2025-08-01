@@ -1,117 +1,55 @@
 import React, { useState } from 'react';
-import { Spin, Row, Col, Card, Select, DatePicker, Space, Button } from 'antd';
-import { 
-  BookOutlined, 
-  TrophyOutlined, 
-  StarOutlined, 
-  DollarOutlined,
-  RiseOutlined,
-  UserOutlined
-} from '@ant-design/icons';
+import { Card, Row, Col, Spin, Button, Space, Select } from 'antd';
+import { BookOutlined, RiseOutlined, FallOutlined, DollarOutlined } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
-import CoursePerformanceChart from './CoursePerformanceChart';
 import CourseEngagementChart from './CourseEngagementChart';
+import CoursePerformanceChart from './CoursePerformanceChart';
 import CourseComparisonChart from './CourseComparisonChart';
 import CourseRatingChart from './CourseRatingChart';
-import { useCourseAnalysisData } from '../hooks/useCourseAnalysisData';
+import { CourseAnalysisData } from '@/api/statistics/types';
 import './CourseAnalysis.css';
 
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 interface CourseAnalysisProps {
-  data?: any;
+  data: CourseAnalysisData | null;
   loading: boolean;
 }
 
-export interface CourseAnalysisData {
-  totalCourses: number;           // 课程总数
-  soldCourses: number;            // 已销课程数
-  newCourses: number;             // 新报课程数
-  consumedLessons: number;        // 已消耗课时
-  remainingLessons: number;       // 剩余课时
-  averagePrice: number;           // 课程平均单价
-  totalSalesAmount: number;       // 总销售额
-  courseGrowth: number;           // 课程总数增长率
-  soldGrowth: number;             // 销课增长率
-  newGrowth: number;              // 新报课程增长率
-  consumedGrowth: number;         // 消耗课时增长率
-  salesGrowth: number;            // 销售额增长率
-  priceGrowth: number;            // 单价增长率
-}
-
-export interface CourseMetrics {
-  courseId: string;
-  courseName: string;
-  courseType: string;
-  enrollmentCount: number;
-  completionRate: number;
-  averageRating: number;
-  revenue: number;
-  engagementScore: number;
-  lastUpdated: string;
-}
-
-export interface CourseSalesData {
-  months: string[];
-  soldCourses: number[];          // 每月销课数量
-  consumedLessons: number[];      // 每月消耗课时
-  salesAmount: number[];          // 每月销售额
-  newCourses: number[];           // 每月新报课程数
-}
-
-export interface CourseComparisonData {
-  courseId: string;
-  courseName: string;
-  courseType: string;             // 课程类型
-  totalSold: number;              // 总销售数量
-  consumedLessons: number;        // 已消耗课时
-  remainingLessons: number;       // 剩余课时
-  unitPrice: number;              // 单价
-  totalRevenue: number;           // 总收入
-  enrollments: number;            // 报名人数
-  completions: number;            // 完成人数
-  rating: number;                 // 评分
-  revenue: number;                // 收入（与totalRevenue相同，保持兼容性）
-}
-
 const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
-  const [timeframe, setTimeframe] = useState<string>('month');
   const [chartType, setChartType] = useState<'soldCourses' | 'consumedLessons' | 'salesAmount' | 'newCourses'>('soldCourses');
 
-  const {
-    courseData,
-    salesData,
-    comparisonData,
-    loading: hookLoading
-  } = useCourseAnalysisData(timeframe);
+  // 移除整页loading，改为局部loading
 
-  const isLoading = loading || hookLoading;
-
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
-
-  // Mock data for demonstration
-  const courseAnalysisData: CourseAnalysisData = {
-    totalCourses: 156,              // 课程总数
-    soldCourses: 1284,              // 已销课程数
-    newCourses: 68,                 // 新报课程数
-    consumedLessons: 3420,          // 已消耗课时
-    remainingLessons: 8760,         // 剩余课时
-    averagePrice: 180,              // 课程平均单价(元/课时)
-    totalSalesAmount: 2456800,      // 总销售额(元)
-    courseGrowth: 8.3,              // 课程总数增长率
-    soldGrowth: 12.5,               // 销课增长率
-    newGrowth: 15.3,                // 新报课程增长率
-    consumedGrowth: 9.7,            // 消耗课时增长率
-    salesGrowth: 11.8,              // 销售额增长率
-    priceGrowth: 2.1,               // 单价增长率
-    ...(courseData || {}),
+  // 使用真实API数据或默认值
+  const courseAnalysisData = data ? {
+    totalCourses: data.courseMetrics.totalCourses,
+    soldCourses: data.courseMetrics.soldCourses,
+    newCourses: data.courseMetrics.newCoursesEnrolled,
+    consumedLessons: 0, // API中没有这个字段，可能需要计算
+    remainingLessons: data.courseMetrics.remainingCourses,
+    averagePrice: data.courseMetrics.courseUnitPrice,
+    totalSalesAmount: 0, // 可能需要从revenue分析中获取
+    courseGrowth: data.courseMetrics.totalCoursesChangeRate,
+    soldGrowth: data.courseMetrics.soldCoursesChangeRate,
+    newGrowth: data.courseMetrics.newCoursesEnrolledChangeRate,
+    consumedGrowth: 0, // API中没有这个字段
+    salesGrowth: 0, // 可能需要从revenue分析中获取
+    priceGrowth: data.courseMetrics.courseUnitPriceChangeRate,
+  } : {
+    totalCourses: 0,
+    soldCourses: 0,
+    newCourses: 0,
+    consumedLessons: 0,
+    remainingLessons: 0,
+    averagePrice: 0,
+    totalSalesAmount: 0,
+    courseGrowth: 0,
+    soldGrowth: 0,
+    newGrowth: 0,
+    consumedGrowth: 0,
+    salesGrowth: 0,
+    priceGrowth: 0,
   };
 
   // KPI Cards configuration
@@ -122,7 +60,8 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       unit: '门',
       icon: <BookOutlined />,
       growth: courseAnalysisData.courseGrowth,
-      color: '#1890ff'
+      color: '#1890ff',
+      loading: loading
     },
     {
       title: '新报课程数',
@@ -130,31 +69,35 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       unit: '门',
       icon: <RiseOutlined />,
       growth: courseAnalysisData.newGrowth,
-      color: '#faad14'
+      color: '#faad14',
+      loading: loading
     },
     {
       title: '续费课程数',
-      value: 892, // 续费课程数
+      value: courseAnalysisData.soldCourses,
       unit: '门',
-      icon: <TrophyOutlined />,
-      growth: 8.5,
-      color: '#52c41a'
+      icon: <BookOutlined />,
+      growth: courseAnalysisData.soldGrowth,
+      color: '#52c41a',
+      loading: loading
     },
     {
       title: '已销课程数',
       value: courseAnalysisData.soldCourses,
       unit: '门',
-      icon: <UserOutlined />,
+      icon: <FallOutlined />,
       growth: courseAnalysisData.soldGrowth,
-      color: '#f5222d'
+      color: '#f5222d',
+      loading: loading
     },
     {
       title: '剩余课程数',
       value: courseAnalysisData.remainingLessons,
-      unit: '门',
-      icon: <StarOutlined />,
-      growth: 0, // 剩余课程数不显示增长率
-      color: '#722ed1'
+      unit: '课时',
+      icon: <BookOutlined />,
+      growth: 0,
+      color: '#722ed1',
+      loading: loading
     },
     {
       title: '课程单价',
@@ -162,42 +105,19 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
       unit: '元/课时',
       icon: <DollarOutlined />,
       growth: courseAnalysisData.priceGrowth,
-      color: '#13c2c2'
+      color: '#13c2c2',
+      loading: loading
     }
   ];
 
   return (
-    <div className="course-analysis-container">
-      {/* Filter Controls */}
-      <Card className="filter-controls-card" size="small">
-        <Space wrap size="middle">
-          <Select
-            value={timeframe}
-            onChange={setTimeframe}
-            style={{ width: 120 }}
-            size="middle"
-            dropdownStyle={{ minWidth: 120 }}
-            getPopupContainer={(triggerNode) => triggerNode.parentElement}
-          >
-            <Option value="week">本周</Option>
-            <Option value="month">本月</Option>
-            <Option value="quarter">本季度</Option>
-            <Option value="year">本年</Option>
-          </Select>
-
-          <RangePicker
-            style={{ width: 260 }}
-            size="middle"
-            placeholder={['开始日期', '结束日期']}
-          />
-
-          <Button type="primary" size="middle">应用筛选</Button>
-          <Button size="middle">重置</Button>
-        </Space>
-      </Card>
-
-      {/* KPI Cards */}
-      <Card className="kpi-cards-section" title="课程关键指标" size="small">
+    <div className="course-analysis">
+      {/* Course KPI Cards */}
+      <Card
+        title="课程关键指标"
+        size="small"
+        style={{ marginBottom: '24px' }}
+      >
         <Row gutter={[16, 16]}>
           {courseKPIs.map((kpi, index) => (
             <Col xs={24} sm={12} md={8} lg={4} key={index}>
@@ -207,147 +127,62 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
         </Row>
       </Card>
 
-      {/* Course Type Analysis */}
-      <Card className="course-type-analysis" title="课程类型分析" size="small">
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={6}>
-            <div className="course-type-item">
-              <div className="course-type-header">
-                <span className="course-type-name">一对一</span>
-                <span className="course-type-count">456课时</span>
-              </div>
-              <div className="course-type-stats">
-                <div className="stat-item">
-                  <span className="stat-label">报名总课时:</span>
-                  <span className="stat-value">1,280课时</span>
+      {/* 课程类型分析 */}
+      <Card
+        title="课程类型分析"
+        size="small"
+        style={{ marginBottom: '24px' }}
+      >
+        <Spin spinning={loading}>
+          <Row gutter={[16, 16]}>
+            {data?.courseTypeAnalysis && data.courseTypeAnalysis.length > 0 ? (
+              data.courseTypeAnalysis.map((item, index) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={index}>
+                  <div className="course-type-item">
+                    <div className="course-type-header">
+                      <div className="course-type-name">{item.courseType}</div>
+                      <div className="course-type-count">{typeof item.courseCount === 'number' ? item.courseCount : '--'}门</div>
+                    </div>
+                    <div className="course-type-stats">
+                      <div className="stat-item">
+                        <span className="stat-label">占比</span>
+                        <span className="stat-value">{typeof item.percentage === 'number' ? ((item.percentage * 100).toFixed(1) + '%') : '--'}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">平均单价</span>
+                        <span className="stat-value">¥{typeof item.averagePrice === 'number' && !isNaN(item.averagePrice) ? item.averagePrice.toFixed(0) : '--'}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">总收入</span>
+                        <span className="stat-value">¥{typeof item.totalRevenue === 'number' && !isNaN(item.totalRevenue) ? item.totalRevenue.toLocaleString() : '--'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+              ))
+            ) : (
+              <Col span={24}>
+                <div style={{ textAlign: 'center', padding: '30px 0', color: '#999' }}>
+                  暂无课程类型数据
                 </div>
-                <div className="stat-item">
-                  <span className="stat-label">已销课时:</span>
-                  <span className="stat-value">960课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">剩余课时:</span>
-                  <span className="stat-value">320课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">销售额:</span>
-                  <span className="stat-value">¥1,234,567</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">平均课单价:</span>
-                  <span className="stat-value">¥280/课时</span>
-                </div>
-              </div>
-            </div>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <div className="course-type-item">
-              <div className="course-type-header">
-                <span className="course-type-name">一对二</span>
-                <span className="course-type-count">324课时</span>
-              </div>
-              <div className="course-type-stats">
-                <div className="stat-item">
-                  <span className="stat-label">报名总课时:</span>
-                  <span className="stat-value">980课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">已销课时:</span>
-                  <span className="stat-value">720课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">剩余课时:</span>
-                  <span className="stat-value">260课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">销售额:</span>
-                  <span className="stat-value">¥856,432</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">平均课单价:</span>
-                  <span className="stat-value">¥180/课时</span>
-                </div>
-              </div>
-            </div>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <div className="course-type-item">
-              <div className="course-type-header">
-                <span className="course-type-name">小班课</span>
-                <span className="course-type-count">298课时</span>
-              </div>
-              <div className="course-type-stats">
-                <div className="stat-item">
-                  <span className="stat-label">报名总课时:</span>
-                  <span className="stat-value">760课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">已销课时:</span>
-                  <span className="stat-value">580课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">剩余课时:</span>
-                  <span className="stat-value">180课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">销售额:</span>
-                  <span className="stat-value">¥456,789</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">平均课单价:</span>
-                  <span className="stat-value">¥120/课时</span>
-                </div>
-              </div>
-            </div>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <div className="course-type-item">
-              <div className="course-type-header">
-                <span className="course-type-name">大班课</span>
-                <span className="course-type-count">206课时</span>
-              </div>
-              <div className="course-type-stats">
-                <div className="stat-item">
-                  <span className="stat-label">报名总课时:</span>
-                  <span className="stat-value">400课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">已销课时:</span>
-                  <span className="stat-value">320课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">剩余课时:</span>
-                  <span className="stat-value">80课时</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">销售额:</span>
-                  <span className="stat-value">¥234,567</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">平均课单价:</span>
-                  <span className="stat-value">¥80/课时</span>
-                </div>
-              </div>
-            </div>
-          </Col>
-        </Row>
+              </Col>
+            )}
+          </Row>
+        </Spin>
       </Card>
 
-      {/* Charts Section */}
       <Row gutter={[16, 16]}>
-        {/* Course Sales Trends */}
+        {/* Course Engagement Chart */}
         <Col xs={24} lg={12}>
           <Card
-            title="课程销售趋势"
+            title="课程参与度分析"
             size="small"
             extra={
               <Select
                 value={chartType}
                 onChange={setChartType}
-                style={{ width: 120, minWidth: 120 }}
                 size="small"
-                dropdownStyle={{ minWidth: 140 }}
-                getPopupContainer={(triggerNode) => triggerNode.parentElement}
+                style={{ width: 120 }}
               >
                 <Option value="soldCourses">已销课程</Option>
                 <Option value="newCourses">新报课程</Option>
@@ -356,41 +191,49 @@ const CourseAnalysis: React.FC<CourseAnalysisProps> = ({ data, loading }) => {
               </Select>
             }
           >
-            <CourseEngagementChart
-              data={salesData}
-              chartType={chartType}
-              loading={isLoading}
-            />
+            <Spin spinning={loading}>
+              <CourseEngagementChart
+                data={data?.salesTrend || []}
+                chartType={chartType}
+                loading={false}
+              />
+            </Spin>
           </Card>
         </Col>
 
         {/* Course Sales Performance */}
         <Col xs={24} lg={12}>
           <Card title="课程销售表现" size="small">
-            <CoursePerformanceChart
-              data={comparisonData}
-              loading={isLoading}
-            />
+            <Spin spinning={loading}>
+              <CoursePerformanceChart
+                data={data?.salesPerformance || []}
+                loading={false}
+              />
+            </Spin>
           </Card>
         </Col>
 
         {/* Course Sales Rankings */}
         <Col xs={24} lg={12}>
           <Card title="课程销售排行" size="small">
-            <CourseComparisonChart
-              data={comparisonData}
-              loading={isLoading}
-            />
+            <Spin spinning={loading}>
+              <CourseComparisonChart
+                data={data?.salesRanking || []}
+                loading={false}
+              />
+            </Spin>
           </Card>
         </Col>
 
         {/* Course Revenue Analysis */}
         <Col xs={24} lg={12}>
           <Card title="课程收入分析" size="small">
-            <CourseRatingChart
-              data={comparisonData}
-              loading={isLoading}
-            />
+            <Spin spinning={loading}>
+              <CourseRatingChart
+                data={data?.revenueDistribution || []}
+                loading={false}
+              />
+            </Spin>
           </Card>
         </Col>
       </Row>

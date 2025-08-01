@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Typography, Tabs, Card } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Typography, Tabs, Card, Spin } from 'antd';
 import { useStatisticsData } from './hooks/useStatisticsData';
 import StudentAnalysis from './components/StudentAnalysis';
 import CourseAnalysis from './components/CourseAnalysis';
@@ -21,7 +21,6 @@ const { Title } = Typography;
 
 const StatisticsDashboard: React.FC = () => {
   // 状态管理
-  const [timeframe, setTimeframe] = useState<string>('month');
   const [activeTab, setActiveTab] = useState<string>('student');
 
   // 使用自定义 Hook 获取统计数据
@@ -31,8 +30,57 @@ const StatisticsDashboard: React.FC = () => {
     courseData,
     coachData,
     financeData,
-    loading
+    loading,
+    studentLoading,
+    courseLoading,
+    coachLoading,
+    financeLoading,
+    filters,
+    applyFilters,
+    fetchDataByTab,
+    getLoadingState,
+    getStudentLoadingStates,
+    updateStudentTrendTimeframe,
+    updateStudentRenewalTimeframe
   } = useStatisticsData();
+
+  // 时间段变更处理 - 只对学员分析页面有效
+  const handleTimeframeChange = (timeframe: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY') => {
+    applyFilters({ timeframe }, 'student');
+  };
+
+  // 切换tab时，如果该tab没有数据，则加载数据
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    
+    // 检查是否需要加载数据
+    let needsData = false;
+    switch (key) {
+      case 'student':
+        needsData = !studentData;
+        break;
+      case 'course':
+        needsData = !courseData;
+        break;
+      case 'coach':
+        needsData = !coachData;
+        break;
+      case 'finance':
+        needsData = !financeData;
+        break;
+    }
+
+    // 如果需要数据，则加载
+    if (needsData) {
+      fetchDataByTab(key as 'student' | 'course' | 'coach' | 'finance');
+    }
+  };
+
+  // 组件首次加载时，加载学员分析数据
+  useEffect(() => {
+    // 确保首次加载时有loading状态
+    fetchDataByTab('student');
+  }, []);
 
   return (
     <div className="statistics-management">
@@ -41,7 +89,7 @@ const StatisticsDashboard: React.FC = () => {
           <Title level={4} className="statistics-title">数据统计</Title>
           <Tabs
             activeKey={activeTab}
-            onChange={setActiveTab}
+            onChange={handleTabChange}
             className="header-tabs"
             items={[
               {
@@ -85,10 +133,35 @@ const StatisticsDashboard: React.FC = () => {
         </div>
 
         <div className="statistics-tabs-content">
-          {activeTab === 'student' && <StudentAnalysis data={studentData} loading={loading} />}
-          {activeTab === 'course' && <CourseAnalysis data={courseData} loading={loading} />}
-          {activeTab === 'coach' && <CoachAnalysis data={coachData} loading={loading} />}
-          {activeTab === 'finance' && <FinanceAnalysis data={financeData} loading={loading} />}
+          {activeTab === 'student' && (
+            <StudentAnalysis 
+              data={studentData} 
+              loading={studentLoading}
+              timeframe={filters.timeframe}
+              onTimeframeChange={handleTimeframeChange}
+              loadingStates={getStudentLoadingStates()}
+              onTrendTimeframeChange={updateStudentTrendTimeframe}
+              onRenewalTimeframeChange={updateStudentRenewalTimeframe}
+            />
+          )}
+          {activeTab === 'course' && (
+            <CourseAnalysis 
+              data={courseData} 
+              loading={courseLoading} 
+            />
+          )}
+          {activeTab === 'coach' && (
+            <CoachAnalysis 
+              data={coachData} 
+              loading={coachLoading} 
+            />
+          )}
+          {activeTab === 'finance' && (
+            <FinanceAnalysis 
+              data={financeData} 
+              loading={financeLoading} 
+            />
+          )}
         </div>
       </Card>
     </div>

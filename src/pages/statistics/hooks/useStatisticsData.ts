@@ -7,222 +7,387 @@ import {
   FinanceData,
   CampusData
 } from '../types/statistics';
+import {
+  studentAnalysisApi,
+  courseAnalysisApi,
+  coachAnalysisApi,
+  financeAnalysisApi,
+  StatisticsRequestParams
+} from '@/api/statistics';
+import {
+  StudentAnalysisData,
+  CourseAnalysisData,
+  CoachAnalysisData,
+  FinanceAnalysisData
+} from '@/api/statistics/types';
 
 export const useStatisticsData = () => {
   const [data, setData] = useState<OverviewData | null>(null);
-  const [studentData, setStudentData] = useState<StudentData | null>(null);
-  const [courseData, setCourseData] = useState<any | null>(null);
-  const [coachData, setCoachData] = useState<CoachData | null>(null);
-  const [financeData, setFinanceData] = useState<FinanceData | null>(null);
-  const [campusData, setCampusData] = useState<CampusData[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [studentData, setStudentData] = useState<StudentAnalysisData | null>(null);
+  const [courseData, setCourseData] = useState<CourseAnalysisData | null>(null);
+  const [coachData, setCoachData] = useState<CoachAnalysisData | null>(null);
+  const [financeData, setFinanceData] = useState<FinanceAnalysisData | null>(null);
+  const [campusData, setCampusData] = useState<CampusData | null>(null);
+  
+  // 分别管理每个tab的loading状态 - 初始状态设为true，确保首次加载时显示loading
+  const [studentLoading, setStudentLoading] = useState(true);
+  const [courseLoading, setCourseLoading] = useState(false);
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [financeLoading, setFinanceLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // 分别管理各个组件的loading状态 - 初始状态设为true
+  const [studentMetricsLoading, setStudentMetricsLoading] = useState(true);
+  const [studentTrendLoading, setStudentTrendLoading] = useState(true);
+  const [studentRenewalLoading, setStudentRenewalLoading] = useState(true);
+  
   const [filters, setFilters] = useState<StatisticsFilter>({
-    timeframe: 'day',
+    timeframe: 'WEEKLY',
     startDate: null,
     endDate: null
   });
 
-  // 获取统计数据
-  const fetchData = async () => {
-    setLoading(true);
+  // 获取学员指标数据（独立接口）
+  const fetchStudentMetrics = async (params: StatisticsRequestParams) => {
+    setStudentMetricsLoading(true);
     try {
-      // 这里应该是从API获取数据
-      // 目前使用模拟数据
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // 模拟数据 - 总览数据
-      const mockData: OverviewData = {
-        totalStudents: 1284,
-        activeStudents: 876,
-        newStudents: 68,
-        lostStudents: 24,
-        totalCoaches: 42,
-        totalLessons: 3425,
-        totalIncome: 876500,
-        totalProfit: 412680,
-        studentGrowth: 12.5,
-        activeGrowth: 8.2,
-        newGrowth: 15.3,
-        lostGrowth: -5.2,
-        coachGrowth: 4.8,
-        lessonGrowth: 9.7,
-        incomeGrowth: 11.3,
-        profitGrowth: 10.5
-      };
-
-      // 模拟数据 - 学员数据
-      const mockStudentData: StudentData = {
-        totalStudents: 1284,
-        newStudents: 68,
-        lostStudents: 24,
-        studentGrowth: 12.5,
-        newGrowth: 15.3,
-        lostGrowth: -5.2
-      };
-
-      // 模拟数据 - 教练数据
-      const mockCoachData: CoachData = {
-        totalCoaches: 42,
-        averageLessons: 82.5,
-        retentionRate: 85.2,
-        coachGrowth: 4.8,
-        lessonGrowth: 5.3,
-        salaryGrowth: 6.2,
-        retentionGrowth: 3.1
-      };
-
-      // 模拟数据 - 财务数据
-      const mockFinanceData: FinanceData = {
-        totalRevenue: 1007700,
-        totalCost: 614780,
-        totalProfit: 392920,
-        profitRate: 39.0,
-        revenueGrowth: 8.4,
-        costGrowth: 5.2,
-        profitGrowth: 13.7,
-        profitRateGrowth: 1.8,
-        costStructure: [
-          { value: 307390, name: '人力成本' },
-          { value: 122956, name: '场地租金' },
-          { value: 92217, name: '市场推广' },
-          { value: 61478, name: '教学材料' },
-          { value: 30739, name: '其他' },
-        ],
-        monthlyData: {
-          months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-          revenue: [85, 78, 92, 83, 98, 102, 96, 112, 106, 114, 124, 135],
-          cost: [52, 48, 56, 53, 58, 62, 58, 68, 64, 68, 72, 78],
-          profit: [33, 30, 36, 30, 40, 40, 38, 44, 42, 46, 52, 57],
-        }
-      };
-
-      // Mock course data
-      const mockCourseData = {
-        totalCourses: 156,
-        activeCourses: 142,
-        completionRate: 78.5,
-        averageRating: 4.6,
-        totalRevenue: 2456800,
-        enrollmentTrend: 1284,
-        courseGrowth: 8.3,
-        activeGrowth: 5.7,
-        completionGrowth: 12.4,
-        ratingGrowth: 3.2,
-        revenueGrowth: 15.8,
-        enrollmentGrowthRate: 9.6,
-      };
-
-      // 更新状态
-      setData(mockData);
-      setStudentData(mockStudentData);
-      setCourseData(mockCourseData);
-      setCoachData(mockCoachData);
-      setFinanceData(mockFinanceData);
-      setCampusData(null); // 校区数据需要单独获取
+      const response = await studentAnalysisApi.getStudentMetrics(params);
+      
+      // 更新学员数据中的指标部分
+      setStudentData(prev => prev ? {
+        ...prev,
+        studentMetrics: response.data
+      } : {
+        studentMetrics: response.data,
+        growthTrend: [],
+        renewalAmountTrend: [],
+        sourceDistribution: [],
+        newStudentSourceDistribution: []
+      });
+      
+      return response.data;
     } catch (error) {
-      console.error('获取统计数据失败', error);
+      console.error('获取学员指标数据失败:', error);
+      throw error;
     } finally {
-      setLoading(false);
+      setStudentMetricsLoading(false);
     }
   };
 
-  // 获取校区对比数据
-  const fetchCampusData = async () => {
-    setLoading(true);
+  // 获取学员趋势数据（独立接口，支持不同时间范围）
+  const fetchStudentTrend = async (params: StatisticsRequestParams) => {
+    setStudentTrendLoading(true);
     try {
-      // 这里应该是从API获取数据
-      // 目前使用模拟数据
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // 校区列表数据
-      const campusList: CampusData[] = [
-        {
-          id: 'headquarters',
-          name: '总部校区',
-          totalStudents: 425,
-          newStudents: 35,
-          retentionRate: '92%',
-          totalCoaches: 15,
-          totalLessons: 1280,
-          totalRevenue: 320500,
-          totalProfit: 128200,
-          profitRate: '40.0%'
+      const response = await studentAnalysisApi.getStudentGrowthTrend(params);
+      
+      // 更新学员数据中的趋势部分
+      setStudentData(prev => prev ? {
+        ...prev,
+        growthTrend: response.data
+      } : {
+        studentMetrics: {
+          totalStudents: 0,
+          newStudents: 0,
+          lostStudents: 0,
+          renewingStudents: 0,
+          totalStudentsChangeRate: 0,
+          newStudentsChangeRate: 0,
+          lostStudentsChangeRate: 0,
+          renewingStudentsChangeRate: 0
         },
-        {
-          id: 'east',
-          name: '东城校区',
-          totalStudents: 345,
-          newStudents: 22,
-          retentionRate: '88%',
-          totalCoaches: 12,
-          totalLessons: 1035,
-          totalRevenue: 276000,
-          totalProfit: 110400,
-          profitRate: '40.0%'
-        },
-        {
-          id: 'west',
-          name: '西城校区',
-          totalStudents: 260,
-          newStudents: 18,
-          retentionRate: '85%',
-          totalCoaches: 8,
-          totalLessons: 780,
-          totalRevenue: 208000,
-          totalProfit: 83200,
-          profitRate: '40.0%'
-        },
-        {
-          id: 'south',
-          name: '南城校区',
-          totalStudents: 165,
-          newStudents: 10,
-          retentionRate: '82%',
-          totalCoaches: 5,
-          totalLessons: 495,
-          totalRevenue: 132000,
-          totalProfit: 46200,
-          profitRate: '35.0%'
-        },
-        {
-          id: 'north',
-          name: '北城校区',
-          totalStudents: 89,
-          newStudents: 5,
-          retentionRate: '80%',
-          totalCoaches: 2,
-          totalLessons: 267,
-          totalRevenue: 71200,
-          totalProfit: 24920,
-          profitRate: '35.0%'
-        }
-      ];
-
-      setCampusData(campusList);
+        growthTrend: response.data,
+        renewalAmountTrend: [],
+        sourceDistribution: [],
+        newStudentSourceDistribution: []
+      });
+      
+      return response.data;
     } catch (error) {
-      console.error('获取校区对比数据失败', error);
+      console.error('获取学员趋势数据失败:', error);
+      throw error;
     } finally {
-      setLoading(false);
+      setStudentTrendLoading(false);
     }
   };
 
-  // 应用筛选
-  const applyFilters = (newFilters: Partial<StatisticsFilter>) => {
+  // 获取学员续费金额趋势（独立接口，支持不同时间范围）
+  const fetchStudentRenewalTrend = async (params: StatisticsRequestParams) => {
+    setStudentRenewalLoading(true);
+    try {
+      const response = await studentAnalysisApi.getStudentRenewalTrend(params);
+      
+      // 更新学员数据中的续费趋势部分
+      setStudentData(prev => prev ? {
+        ...prev,
+        renewalAmountTrend: response.data
+      } : {
+        studentMetrics: {
+          totalStudents: 0,
+          newStudents: 0,
+          lostStudents: 0,
+          renewingStudents: 0,
+          totalStudentsChangeRate: 0,
+          newStudentsChangeRate: 0,
+          lostStudentsChangeRate: 0,
+          renewingStudentsChangeRate: 0
+        },
+        growthTrend: [],
+        renewalAmountTrend: response.data,
+        sourceDistribution: [],
+        newStudentSourceDistribution: []
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('获取学员续费趋势数据失败:', error);
+      throw error;
+    } finally {
+      setStudentRenewalLoading(false);
+    }
+  };
+
+  // 获取学员分析详细数据（初始加载时使用）
+  const fetchStudentDetailData = async (params: StatisticsRequestParams) => {
+    setStudentLoading(true);
+    setStudentMetricsLoading(true);
+    setStudentTrendLoading(true);
+    setStudentRenewalLoading(true);
+    try {
+      // 并行调用所有学员分析子接口
+      const [
+        metricsResponse,
+        growthTrendResponse,
+        renewalTrendResponse,
+        sourceDistributionResponse,
+        newStudentSourceResponse
+      ] = await Promise.all([
+        studentAnalysisApi.getStudentMetrics(params),
+        studentAnalysisApi.getStudentGrowthTrend(params),
+        studentAnalysisApi.getStudentRenewalTrend(params),
+        studentAnalysisApi.getStudentSourceDistribution(params),
+        studentAnalysisApi.getNewStudentSource(params)
+      ]);
+
+      // 组合所有数据
+      const combinedStudentData: StudentAnalysisData = {
+        studentMetrics: metricsResponse.data,
+        growthTrend: growthTrendResponse.data,
+        renewalAmountTrend: renewalTrendResponse.data,
+        sourceDistribution: sourceDistributionResponse.data,
+        newStudentSourceDistribution: newStudentSourceResponse.data
+      };
+
+      setStudentData(combinedStudentData);
+      return combinedStudentData;
+    } catch (error) {
+      console.error('获取学员详细分析数据失败:', error);
+      setStudentData(null);
+      throw error;
+    } finally {
+      setStudentLoading(false);
+      setStudentMetricsLoading(false);
+      setStudentTrendLoading(false);
+      setStudentRenewalLoading(false);
+    }
+  };
+
+  // 获取课程分析详细数据
+  const fetchCourseDetailData = async (params: StatisticsRequestParams) => {
+    setCourseLoading(true);
+    try {
+      // 并行调用所有课程分析子接口
+      const [
+        metricsResponse,
+        typeAnalysisResponse,
+        salesTrendResponse,
+        salesPerformanceResponse,
+        salesRankingResponse,
+        revenueAnalysisResponse,
+        revenueDistributionResponse
+      ] = await Promise.all([
+        courseAnalysisApi.getCourseMetrics(params),
+        courseAnalysisApi.getCourseTypeAnalysis(params),
+        courseAnalysisApi.getCourseSalesTrend(params),
+        courseAnalysisApi.getCourseSalesPerformance(params),
+        courseAnalysisApi.getCourseSalesRanking(params),
+        courseAnalysisApi.getCourseRevenueAnalysis(params),
+        courseAnalysisApi.getCourseRevenueDistribution(params)
+      ]);
+
+      // 组合所有数据
+      const combinedCourseData: CourseAnalysisData = {
+        courseMetrics: metricsResponse.data,
+        courseTypeAnalysis: typeAnalysisResponse.data,
+        salesTrend: salesTrendResponse.data,
+        salesPerformance: salesPerformanceResponse.data,
+        salesRanking: salesRankingResponse.data,
+        revenueAnalysis: revenueAnalysisResponse.data,
+        revenueDistribution: revenueDistributionResponse.data
+      };
+
+      setCourseData(combinedCourseData);
+      return combinedCourseData;
+    } catch (error) {
+      console.error('获取课程详细分析数据失败:', error);
+      setCourseData(null);
+      throw error;
+    } finally {
+      setCourseLoading(false);
+    }
+  };
+
+  // 获取教练分析详细数据
+  const fetchCoachDetailData = async (params: StatisticsRequestParams) => {
+    setCoachLoading(true);
+    try {
+      // 并行调用所有教练分析子接口
+      const [
+        metricsResponse,
+        classHourTrendResponse,
+        top5ComparisonResponse,
+        typeDistributionResponse,
+        salaryAnalysisResponse,
+        performanceRankingResponse
+      ] = await Promise.all([
+        coachAnalysisApi.getCoachMetrics(params),
+        coachAnalysisApi.getCoachClassHourTrend(params),
+        coachAnalysisApi.getCoachTop5Comparison(params),
+        coachAnalysisApi.getCoachTypeDistribution(params),
+        coachAnalysisApi.getCoachSalaryAnalysis(params),
+        coachAnalysisApi.getCoachPerformanceRanking(params)
+      ]);
+
+      // 组合所有数据
+      const combinedCoachData: CoachAnalysisData = {
+        coachMetrics: metricsResponse.data,
+        classHourTrend: classHourTrendResponse.data,
+        coachTop5Comparison: top5ComparisonResponse.data,
+        coachTypeDistribution: typeDistributionResponse.data,
+        salaryAnalysis: salaryAnalysisResponse.data,
+        performanceRanking: performanceRankingResponse.data
+      };
+
+      setCoachData(combinedCoachData);
+      return combinedCoachData;
+    } catch (error) {
+      console.error('获取教练详细分析数据失败:', error);
+      setCoachData(null);
+      throw error;
+    } finally {
+      setCoachLoading(false);
+    }
+  };
+
+  // 获取财务分析详细数据
+  const fetchFinanceDetailData = async (params: StatisticsRequestParams) => {
+    setFinanceLoading(true);
+    try {
+      // 并行调用所有财务分析子接口
+      const [
+        metricsResponse,
+        revenueCostTrendResponse,
+        costStructureResponse,
+        financeTrendResponse,
+        revenueAnalysisResponse,
+        costAnalysisResponse,
+        profitAnalysisResponse
+      ] = await Promise.all([
+        financeAnalysisApi.getFinanceMetrics(params),
+        financeAnalysisApi.getRevenueCostTrend(params),
+        financeAnalysisApi.getCostStructure(params),
+        financeAnalysisApi.getFinanceTrend(params),
+        financeAnalysisApi.getRevenueAnalysis(params),
+        financeAnalysisApi.getCostAnalysis(params),
+        financeAnalysisApi.getProfitAnalysis(params)
+      ]);
+
+      // 组合所有数据
+      const combinedFinanceData: FinanceAnalysisData = {
+        financeMetrics: metricsResponse.data,
+        revenueCostTrend: revenueCostTrendResponse.data,
+        costStructure: costStructureResponse.data,
+        financeTrend: financeTrendResponse.data,
+        revenueAnalysis: revenueAnalysisResponse.data,
+        costAnalysis: costAnalysisResponse.data,
+        profitAnalysis: profitAnalysisResponse.data
+      };
+
+      setFinanceData(combinedFinanceData);
+      return combinedFinanceData;
+    } catch (error) {
+      console.error('获取财务详细分析数据失败:', error);
+      setFinanceData(null);
+      throw error;
+    } finally {
+      setFinanceLoading(false);
+    }
+  };
+
+  // 按需获取数据的方法
+  const fetchDataByTab = async (tab: 'student' | 'course' | 'coach' | 'finance') => {
+    const params: StatisticsRequestParams = {
+      timeType: filters.timeframe as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY',
+      campusId: 1 // 默认校区ID，可以从用户配置中获取
+    };
+
+    switch (tab) {
+      case 'student':
+        return await fetchStudentDetailData(params);
+      case 'course':
+        return await fetchCourseDetailData(params);
+      case 'coach':
+        return await fetchCoachDetailData(params);
+      case 'finance':
+        return await fetchFinanceDetailData(params);
+      default:
+        throw new Error(`Unknown tab: ${tab}`);
+    }
+  };
+
+  // 应用筛选 - 只对当前激活的tab重新获取数据
+  const applyFilters = (newFilters: Partial<StatisticsFilter>, activeTab?: string) => {
     // 更新筛选条件
     setFilters(prev => ({ ...prev, ...newFilters }));
-
-    // 如果只有timeframe变化，只刷新核心指标数据
-    if (newFilters.timeframe && Object.keys(newFilters).length === 1) {
-      refreshCoreStats();
-      // 阻止全局数据刷新
-      return;
+    
+    // 如果指定了activeTab，只重新获取该tab的数据
+    if (activeTab) {
+      const params: StatisticsRequestParams = {
+        timeType: (newFilters.timeframe || filters.timeframe) as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY',
+        campusId: 1
+      };
+      
+      // 对于学员分析，只更新指标数据
+      if (activeTab === 'student') {
+        setStudentMetricsLoading(true);
+        fetchStudentMetrics(params);
+      } else {
+        fetchDataByTab(activeTab as 'student' | 'course' | 'coach' | 'finance');
+      }
     }
+  };
+
+  // 学员分析图表时间范围切换（独立接口调用）
+  const updateStudentTrendTimeframe = (timeframe: 'MONTHLY' | 'YEARLY') => {
+    const params: StatisticsRequestParams = {
+      timeType: timeframe,
+      campusId: 1
+    };
+    fetchStudentTrend(params);
+  };
+
+  // 学员续费金额图表时间范围切换（独立接口调用）
+  const updateStudentRenewalTimeframe = (timeframe: 'MONTHLY' | 'YEARLY') => {
+    const params: StatisticsRequestParams = {
+      timeType: timeframe,
+      campusId: 1
+    };
+    fetchStudentRenewalTrend(params);
   };
 
   // 重置筛选
   const resetFilters = () => {
     setFilters({
-      timeframe: 'day',
+      timeframe: 'WEEKLY',
       startDate: null,
       endDate: null
     });
@@ -235,73 +400,28 @@ export const useStatisticsData = () => {
     alert(`已开始导出${section}数据，请稍候...`);
   };
 
-  // 单独刷新核心指标数据
-  const refreshCoreStats = () => {
-    // 模拟刷新核心指标数据
-    console.log('刷新核心指标数据', filters.timeframe);
-
-    // 根据时间范围生成不同的数据
-    let multiplier = 1;
-    switch(filters.timeframe) {
-      case 'day':
-        multiplier = 1;
-        break;
-      case 'week':
-        multiplier = 7;
-        break;
-      case 'month':
-        multiplier = 30;
-        break;
-      case 'year':
-        multiplier = 365;
-        break;
+  // 获取对应tab的loading状态
+  const getLoadingState = (tab: string) => {
+    switch (tab) {
+      case 'student':
+        return studentLoading;
+      case 'course':
+        return courseLoading;
+      case 'coach':
+        return coachLoading;
+      case 'finance':
+        return financeLoading;
       default:
-        multiplier = 1;
+        return false;
     }
-
-    // 更新核心指标数据
-    const updatedData: OverviewData = {
-      ...data!,
-      totalStudents: 1284,
-      activeStudents: Math.floor(876 * (1 + 0.1 * multiplier)),
-      newStudents: Math.floor(68 * multiplier),
-      lostStudents: Math.floor(24 * (multiplier / 2)),
-      totalCoaches: data?.totalCoaches || 42,
-      totalLessons: data?.totalLessons || 3425,
-      totalIncome: Math.floor(876500 * multiplier),
-      totalProfit: Math.floor(412680 * multiplier),
-      studentGrowth: data?.studentGrowth || 12.5,
-      activeGrowth: data?.activeGrowth || 8.2,
-      newGrowth: data?.newGrowth || 15.3,
-      lostGrowth: data?.lostGrowth || -5.2,
-      coachGrowth: data?.coachGrowth || 4.8,
-      lessonGrowth: data?.lessonGrowth || 9.7,
-      incomeGrowth: data?.incomeGrowth || 11.3,
-      profitGrowth: data?.profitGrowth || 10.5
-    };
-
-    // 更新数据
-    setData(updatedData);
   };
 
-  // 监听筛选条件变化，重新获取数据
-  useEffect(() => {
-    // 如果是初始加载或非 timeframe 变化，则刷新所有数据
-    fetchData();
-  }, [filters.startDate, filters.endDate]);
-
-  // 组件挂载时获取校区对比数据
-  useEffect(() => {
-    fetchCampusData();
-  }, []);
-
-  // 监听 timeframe 变化，刷新核心指标数据
-  useEffect(() => {
-    // 如果不是初始加载，则刷新核心指标数据
-    if (filters.timeframe) {
-      refreshCoreStats();
-    }
-  }, [filters.timeframe]);
+  // 获取学员分析各部分的loading状态
+  const getStudentLoadingStates = () => ({
+    metrics: studentMetricsLoading,
+    trend: studentTrendLoading,
+    renewal: studentRenewalLoading
+  });
 
   return {
     data,
@@ -311,8 +431,21 @@ export const useStatisticsData = () => {
     financeData,
     campusData,
     loading,
+    studentLoading,
+    courseLoading,
+    coachLoading,
+    financeLoading,
+    filters,
     applyFilters,
     resetFilters,
-    exportData
+    fetchDataByTab,
+    getLoadingState,
+    getStudentLoadingStates,
+    updateStudentTrendTimeframe,
+    updateStudentRenewalTimeframe,
+    fetchStudentMetrics,
+    fetchStudentTrend,
+    fetchStudentRenewalTrend,
+    refetch: () => {} // 不再需要全量刷新
   };
 };

@@ -133,6 +133,10 @@ export const useStudentData = () => {
         // 使用 updateWithCourse 方法
         console.log('使用 updateWithCourse 方法更新学员及课程:', updatedData);
         await API.student.updateWithCourse(updatedData);
+        
+        // 更新成功后，直接更新本地状态
+        console.log('学员更新成功，更新本地状态');
+        updateStudentLocally(Number(id), updatedData);
       } else {
         // 使用原来的 update 方法
         console.log('使用原来的 update 方法更新学员:', updatedData);
@@ -147,13 +151,11 @@ export const useStudentData = () => {
           }
         }
         await API.student.update(id, updatedData);
+        
+        // 更新成功后，直接更新本地状态
+        console.log('学员更新成功，更新本地状态');
+        updateStudentLocally(Number(id), updatedData);
       }
-
-      // 重新获取学员列表，确保数据最新
-      await fetchStudents({
-        pageNum: currentPage,
-        pageSize: pageSize
-      });
     } catch (error) {
       console.error('更新学员失败:', error);
       message.error('更新学员失败');
@@ -472,6 +474,40 @@ export const useStudentData = () => {
     console.log(`[updateLocally] 更新调用完成`);
   };
 
+  // 新增：本地更新学员信息
+  const updateStudentLocally = (studentId: number, updatedData: Partial<Student>) => {
+    console.log(`[updateLocally] 尝试更新本地学员: ID=${studentId}, 更新数据:`, updatedData);
+    setStudents(prevStudents => {
+      const updated = prevStudents.map(student => {
+        if (String(student.id) === String(studentId) || 
+            (student.studentId !== undefined && student.studentId === studentId)) {
+          return {
+            ...student,
+            ...updatedData,
+          };
+        }
+        return student;
+      });
+      console.log(`[updateLocally] 本地状态已更新，新数组引用`);
+      return updated;
+    });
+    setFilteredStudents(prevStudents => {
+      const updated = prevStudents.map(student => {
+        if (String(student.id) === String(studentId) || 
+            (student.studentId !== undefined && student.studentId === studentId)) {
+          return {
+            ...student,
+            ...updatedData,
+          };
+        }
+        return student;
+      });
+      console.log(`[updateLocally] 本地过滤状态已更新，新数组引用`);
+      return updated;
+    });
+    console.log(`[updateLocally] 本地更新调用完成`);
+  };
+
   return {
     students: filteredStudents,
     totalStudents: total,
@@ -486,6 +522,7 @@ export const useStudentData = () => {
     handlePageChange,
     fetchStudents,
     addNewStudentToList,
-    updateStudentAttendanceLocally
+    updateStudentAttendanceLocally,
+    updateStudentLocally
   };
 };

@@ -111,6 +111,7 @@ export const login = createAsyncThunk(
         // 保存到本地存储
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('loginResponse', JSON.stringify(data)); // 保存完整的登录响应数据
         console.log('已保存用户信息到localStorage');
 
         // 同时保存到cookie中，用于API请求验证

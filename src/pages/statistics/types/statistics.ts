@@ -1,6 +1,6 @@
 // 基础筛选条件类型
 export interface StatisticsFilter {
-  timeframe: string;
+  timeframe: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
   startDate: Date | null;
   endDate: Date | null;
   [key: string]: any;

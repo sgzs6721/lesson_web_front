@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Spin, Row, Col, Space, Card } from 'antd';
+import { getTimeRange } from '@/utils/date';
 import ReactECharts from 'echarts-for-react';
 import {
   UserOutlined,
@@ -9,41 +10,218 @@ import {
 } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
 import { CHART_COLORS } from '../constants/chartColors';
+import { StudentAnalysisData } from '@/api/statistics/types';
 import './StudentAnalysis.css';
 import '../statistics.css';
 
 interface StudentAnalysisProps {
-  data: any;
+  data: StudentAnalysisData | null;
   loading: boolean;
+  timeframe: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  onTimeframeChange: (timeframe: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY') => void;
+  loadingStates?: {
+    metrics: boolean;
+    trend: boolean;
+    renewal: boolean;
+  };
+  onTrendTimeframeChange?: (timeframe: 'MONTHLY' | 'YEARLY') => void;
+  onRenewalTimeframeChange?: (timeframe: 'MONTHLY' | 'YEARLY') => void;
 }
 
 type StudentChartType = 'cumulative' | 'new' | 'lost' | 'retention' | 'renewal';
 
-const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
-  const [timeframe, setTimeframe] = useState<string>('week');
+const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ 
+  data, 
+  loading, 
+  timeframe, 
+  onTimeframeChange,
+  loadingStates,
+  onTrendTimeframeChange,
+  onRenewalTimeframeChange
+}) => {
   const [studentChartType, setStudentChartType] = useState<StudentChartType>('cumulative');
-  const [studentTrendTimeframe, setStudentTrendTimeframe] = useState<string>('month');
-  const [renewalTimeframe, setRenewalTimeframe] = useState<string>('month');
-  const [sourceTimeframe, setSourceTimeframe] = useState<string>('month');
+  const [studentTrendTimeframe, setStudentTrendTimeframe] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
+  const [renewalTimeframe, setRenewalTimeframe] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
+  const [newStudentSourceTimeframe, setNewStudentSourceTimeframe] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
+  // 处理学员趋势图表时间范围切换
+  const handleStudentTrendTimeframeChange = (newTimeframe: string) => {
+    setStudentTrendTimeframe(newTimeframe as 'MONTHLY' | 'YEARLY');
+    if (onTrendTimeframeChange) {
+      onTrendTimeframeChange(newTimeframe as 'MONTHLY' | 'YEARLY');
+    }
+  };
 
-  const studentData = {
-    totalStudents: 1284,
-    newStudents: 68,
-    lostStudents: 24,
-    renewalStudents: 156,
-    studentGrowth: 12.5,
-    newGrowth: 15.3,
-    lostGrowth: -5.2,
-    renewalGrowth: 8.7,
-    ...(data || {}),
+  // 处理续费金额图表时间范围切换
+  const handleRenewalTimeframeChange = (newTimeframe: string) => {
+    setRenewalTimeframe(newTimeframe as 'MONTHLY' | 'YEARLY');
+    if (onRenewalTimeframeChange) {
+      onRenewalTimeframeChange(newTimeframe as 'MONTHLY' | 'YEARLY');
+    }
+  };
+
+  const handleNewStudentSourceTimeframeChange = (newTimeframe: string) => {
+    setNewStudentSourceTimeframe(newTimeframe as 'MONTHLY' | 'YEARLY');
+  };
+
+  const studentData = data ? {
+    totalStudents: data.studentMetrics.totalStudents,
+    newStudents: data.studentMetrics.newStudents,
+    lostStudents: data.studentMetrics.lostStudents,
+    renewalStudents: data.studentMetrics.renewingStudents,
+    studentGrowth: data.studentMetrics.totalStudentsChangeRate,
+    newGrowth: data.studentMetrics.newStudentsChangeRate,
+    lostGrowth: data.studentMetrics.lostStudentsChangeRate,
+    renewalGrowth: data.studentMetrics.renewingStudentsChangeRate,
+  } : {
+    totalStudents: 0,
+    newStudents: 0,
+    lostStudents: 0,
+    renewalStudents: 0,
+    studentGrowth: 0,
+    newGrowth: 0,
+    lostGrowth: 0,
+    renewalGrowth: 0,
+  };
+
+  // 学员趋势数据
+  const studentTrendData = data ? {
+    months: data.growthTrend.map(item => {
+      // 根据时间范围格式化横坐标显示
+      if (studentTrendTimeframe === 'YEARLY') {
+        // 年度显示：生成连续的年份
+        const timeStr = item.timePoint;
+        // 如果timePoint是"2024-01"这样的格式，提取年份
+        if (timeStr.includes('-')) {
+          return timeStr.split('-')[0] + '年';
+        }
+        // 如果timePoint已经是年份，直接使用
+        if (/^\d{4}$/.test(timeStr)) {
+          return timeStr + '年';
+        }
+        // 其他情况，尝试提取4位数字作为年份
+        const yearMatch = timeStr.match(/\d{4}/);
+        return yearMatch ? yearMatch[0] + '年' : timeStr;
+      } else {
+        // 月度显示：显示月份格式
+        const timeStr = item.timePoint;
+        if (timeStr.includes('-') && timeStr.length >= 7) {
+          // 如果是"2024-01"格式，显示为"1月"
+          const parts = timeStr.split('-');
+          if (parts.length >= 2) {
+            const month = parseInt(parts[1], 10);
+            return month + '月';
+          }
+        }
+        // 如果已经是月份格式，直接返回
+        if (timeStr.includes('月')) {
+          return timeStr;
+        }
+        return timeStr;
+      }
+    }),
+    cumulative: data.growthTrend.map(item => item.totalStudents),
+    new: data.growthTrend.map(item => item.newStudents),
+    lost: data.growthTrend.map(item => item.lostStudents),
+    retention: data.growthTrend.map(item => item.retentionRate),
+    renewal: data.growthTrend.map(item => item.renewingStudents),
+  } : {
+    months: [],
+    cumulative: [],
+    new: [],
+    lost: [],
+    retention: [],
+    renewal: [],
+  };
+
+  // 学员来源数据
+  const studentSourceData = data ? data.sourceDistribution.map(item => ({
+    name: item.sourceName,
+    value: item.studentCount
+  })) : [];
+
+  // 续费金额数据
+  const renewalAmountData = data ? {
+    months: data.renewalAmountTrend.map(item => {
+      // 根据时间范围格式化横坐标显示
+      if (renewalTimeframe === 'YEARLY') {
+        // 年度显示：生成连续的年份
+        const timeStr = item.timePoint;
+        // 如果timePoint是"2024-01"这样的格式，提取年份
+        if (timeStr.includes('-')) {
+          return timeStr.split('-')[0] + '年';
+        }
+        // 如果timePoint已经是年份，直接使用
+        if (/^\d{4}$/.test(timeStr)) {
+          return timeStr + '年';
+        }
+        // 其他情况，尝试提取4位数字作为年份
+        const yearMatch = timeStr.match(/\d{4}/);
+        return yearMatch ? yearMatch[0] + '年' : timeStr;
+      } else {
+        // 月度显示：显示月份格式
+        const timeStr = item.timePoint;
+        if (timeStr.includes('-') && timeStr.length >= 7) {
+          // 如果是"2024-01"格式，显示为"1月"
+          const parts = timeStr.split('-');
+          if (parts.length >= 2) {
+            const month = parseInt(parts[1], 10);
+            return month + '月';
+          }
+        }
+        // 如果已经是月份格式，直接返回
+        if (timeStr.includes('月')) {
+          return timeStr;
+        }
+        return timeStr;
+      }
+    }),
+    renewal: data.renewalAmountTrend.map(item => item.renewalAmount),
+    newPayment: data.renewalAmountTrend.map(item => item.newStudentPaymentAmount),
+  } : {
+    months: [],
+    renewal: [],
+    newPayment: [],
+  };
+
+  // 新增学员来源数据 - 堆叠柱状图格式
+  const newStudentSourceData = data ? data.newStudentSourceDistribution.map(item => ({
+    name: item.sourceName,
+    value: item.studentCount
+  })) : [];
+
+  // 生成模拟的时间序列数据用于堆叠柱状图
+  const generateTimeSeriesData = () => {
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    const years = ['2023年', '2024年'];
+    
+    return {
+      monthly: months,
+      yearly: years,
+      series: newStudentSourceData.map((source, index) => ({
+        name: source.name,
+        type: 'bar',
+        stack: 'total',
+        data: newStudentSourceTimeframe === 'YEARLY' 
+          ? years.map(() => Math.floor(Math.random() * 50) + 10) // 模拟年度数据
+          : months.map(() => Math.floor(Math.random() * 20) + 5), // 模拟月度数据
+        itemStyle: {
+          color: CHART_COLORS[index % CHART_COLORS.length]
+        }
+      }))
+    };
+  };
+
+  // 获取当前时间范围的显示文本
+  const getTimeRangeText = () => {
+    const range = getTimeRange(timeframe);
+    const timeframeText = {
+      'WEEKLY': '周度',
+      'MONTHLY': '月度', 
+      'QUARTERLY': '季度',
+      'YEARLY': '年度'
+    }[timeframe];
+    return `${timeframeText} (${range.start} ~ ${range.end})`;
   };
 
   const studentStats = [
@@ -53,6 +231,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
       growth: Number(studentData.studentGrowth) || 0,
       icon: <UserOutlined />,
       color: '#3498db',
+      loading: loadingStates?.metrics || false,
     },
     {
       title: '新增学员数',
@@ -60,6 +239,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
       growth: Number(studentData.newGrowth) || 0,
       icon: <UserAddOutlined />,
       color: '#2ecc71',
+      loading: loadingStates?.metrics || false,
     },
     {
       title: '续费学员数',
@@ -67,6 +247,7 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
       growth: Number(studentData.renewalGrowth) || 0,
       icon: <ReloadOutlined />,
       color: '#f39c12',
+      loading: loadingStates?.metrics || false,
     },
     {
       title: '流失学员数',
@@ -74,83 +255,32 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
       growth: Number(studentData.lostGrowth) || 0,
       icon: <UserDeleteOutlined />,
       color: '#e74c3c',
+      loading: loadingStates?.metrics || false,
     },
   ];
-
-  const studentTrendData = {
-    months: studentTrendTimeframe === 'month'
-      ? ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-      : ['2020年', '2021年', '2022年', '2023年', '2024年'],
-    cumulative: studentTrendTimeframe === 'month'
-      ? [1050, 1080, 1110, 1130, 1160, 1190, 1210, 1230, 1250, 1260, 1270, 1284]
-      : [800, 950, 1100, 1200, 1284],
-    new: studentTrendTimeframe === 'month'
-      ? [30, 35, 42, 28, 38, 45, 32, 40, 36, 25, 30, 28]
-      : [150, 180, 220, 180, 200],
-    lost: studentTrendTimeframe === 'month'
-      ? [10, 12, 15, 8, 12, 18, 14, 16, 12, 10, 14, 12]
-      : [50, 60, 80, 70, 85],
-    retention: studentTrendTimeframe === 'month'
-      ? [92, 91, 93, 94, 92, 90, 91, 92, 93, 94, 92, 93]
-      : [88, 90, 92, 91, 93],
-    renewal: studentTrendTimeframe === 'month'
-      ? [120, 125, 130, 115, 140, 150, 135, 145, 140, 130, 135, 156]
-      : [1200, 1350, 1500, 1400, 1560],
-  };
-
-  const studentSourceData = [
-    { name: '小程序推广', value: 387 },
-    { name: '老学员介绍', value: 335 },
-    { name: '线下活动', value: 245 },
-    { name: '社交媒体', value: 180 },
-    { name: '其他渠道', value: 137 },
-  ];
-
-  const renewalAmountData = {
-    months: renewalTimeframe === 'month'
-      ? ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-      : ['2020年', '2021年', '2022年', '2023年', '2024年'],
-    renewal: renewalTimeframe === 'month'
-      ? [320000, 280000, 380000, 260000, 420000, 360000, 300000, 460000, 380000, 500000, 480000, 560000]
-      : [3200000, 3500000, 4200000, 4800000, 5600000],
-    newPayment: renewalTimeframe === 'month'
-      ? [450000, 380000, 520000, 350000, 580000, 490000, 420000, 630000, 520000, 680000, 650000, 750000]
-      : [4500000, 4800000, 5600000, 6200000, 7500000],
-  };
-
-  const sourceTimeData = {
-    months: sourceTimeframe === 'month'
-      ? ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-      : ['2020年', '2021年', '2022年', '2023年', '2024年'],
-    sources: ['小程序推广', '老学员介绍', '线下活动', '社交媒体', '其他渠道'],
-    data: sourceTimeframe === 'month' ? {
-      '小程序推广': [15, 18, 22, 16, 25, 28, 20, 30, 26, 32, 28, 35],
-      '老学员介绍': [12, 15, 18, 14, 20, 22, 18, 24, 20, 26, 24, 28],
-      '线下活动': [8, 10, 12, 9, 15, 18, 12, 20, 16, 22, 18, 24],
-      '社交媒体': [6, 8, 10, 7, 12, 15, 10, 16, 12, 18, 15, 20],
-      '其他渠道': [4, 6, 8, 5, 10, 12, 8, 14, 10, 16, 12, 18],
-    } : {
-      '小程序推广': [180, 220, 280, 320, 350],
-      '老学员介绍': [150, 180, 220, 260, 280],
-      '线下活动': [120, 140, 180, 200, 240],
-      '社交媒体': [80, 100, 130, 150, 180],
-      '其他渠道': [60, 80, 100, 120, 137],
-    }
-  };
 
   return (
     <div className="student-analysis-container">
       {/* Top Statistic Cards */}
       <Card
-        title="学员指标"
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600 }}>
+              学员指标
+              <span style={{ fontSize: '12px', color: '#666', fontWeight: 400, marginLeft: '12px' }}>
+                {getTimeRangeText()}
+              </span>
+            </div>
+          </div>
+        }
         size="small"
         style={{ marginBottom: '24px' }}
         extra={
           <Space.Compact size="small">
-            <Button type={timeframe === 'week' ? 'primary' : 'default'} onClick={() => setTimeframe('week')}>周度</Button>
-            <Button type={timeframe === 'month' ? 'primary' : 'default'} onClick={() => setTimeframe('month')}>月度</Button>
-            <Button type={timeframe === 'quarter' ? 'primary' : 'default'} onClick={() => setTimeframe('quarter')}>季度</Button>
-            <Button type={timeframe === 'year' ? 'primary' : 'default'} onClick={() => setTimeframe('year')}>年度</Button>
+            <Button type={timeframe === 'WEEKLY' ? 'primary' : 'default'} onClick={() => onTimeframeChange('WEEKLY')}>周度</Button>
+            <Button type={timeframe === 'MONTHLY' ? 'primary' : 'default'} onClick={() => onTimeframeChange('MONTHLY')}>月度</Button>
+            <Button type={timeframe === 'QUARTERLY' ? 'primary' : 'default'} onClick={() => onTimeframeChange('QUARTERLY')}>季度</Button>
+            <Button type={timeframe === 'YEARLY' ? 'primary' : 'default'} onClick={() => onTimeframeChange('YEARLY')}>年度</Button>
           </Space.Compact>
         }
       >
@@ -172,217 +302,145 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
             size="small"
             extra={
               <Space.Compact size="small">
-                <Button type={studentTrendTimeframe === 'month' ? 'primary' : 'default'} onClick={() => setStudentTrendTimeframe('month')}>月度</Button>
-                <Button type={studentTrendTimeframe === 'year' ? 'primary' : 'default'} onClick={() => setStudentTrendTimeframe('year')}>年度</Button>
+                <Button 
+                  type={studentTrendTimeframe === 'MONTHLY' ? 'primary' : 'default'} 
+                  onClick={() => handleStudentTrendTimeframeChange('MONTHLY')}
+                >
+                  月度
+                </Button>
+                <Button 
+                  type={studentTrendTimeframe === 'YEARLY' ? 'primary' : 'default'} 
+                  onClick={() => handleStudentTrendTimeframeChange('YEARLY')}
+                >
+                  年度
+                </Button>
               </Space.Compact>
             }
           >
-            <div style={{ display: 'flex', height: '300px' }}>
-              <div style={{ flex: 1 }}>
-                <ReactECharts
-                  option={{
-                    tooltip: { trigger: 'axis' },
-                    xAxis: { type: 'category', data: studentTrendData.months },
-                    yAxis: { type: 'value', name: studentChartType === 'retention' ? '%' : '' },
-                    series: [{
-                      name: studentChartType === 'cumulative' ? '累计' :
-                            studentChartType === 'new' ? '新增' :
-                            studentChartType === 'lost' ? '流失' :
-                            studentChartType === 'renewal' ? '续费' : '留存率',
-                      type: 'line',
-                      smooth: true,
-                      data: studentTrendData[studentChartType],
-                      lineStyle: {
-                        color: studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
-                               studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
-                               studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
-                               studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
-                               '#faad14',                                       // 橙色 - 留存率
-                        width: 3
-                      },
-                      itemStyle: {
-                        color: studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
-                               studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
-                               studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
-                               studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
-                               '#faad14'                                        // 橙色 - 留存率
-                      },
-                      areaStyle: {
-                        color: {
-                          type: 'linear',
-                          x: 0, y: 0, x2: 0, y2: 1,
-                          colorStops: [
-                            {
-                              offset: 0,
-                              color: (studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
-                                     studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
-                                     studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
-                                     studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
-                                     '#faad14') + '40'                                // 橙色 - 留存率
-                            },
-                            {
-                              offset: 1,
-                              color: (studentChartType === 'cumulative' ? '#1890ff' :  // 蓝色 - 累计
-                                     studentChartType === 'new' ? '#52c41a' :        // 绿色 - 新增
-                                     studentChartType === 'lost' ? '#ff4d4f' :       // 红色 - 流失
-                                     studentChartType === 'renewal' ? '#722ed1' :    // 紫色 - 续费
-                                     '#faad14') + '10'                                // 橙色 - 留存率
-                            }
-                          ]
-                        }
-                      },
-                      emphasis: { disabled: true }
-                    }],
-                  }}
-                  style={{ height: '100%', width: '100%' }}
-                />
-              </div>
-              <div style={{
-                width: '140px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '12px',
-                paddingLeft: '20px',
-                background: 'linear-gradient(135deg, #f8faff 0%, #f0f5ff 100%)',
-                borderRadius: '12px',
-                padding: '20px 16px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <div
-                  onClick={() => setStudentChartType('cumulative')}
-                  style={{
-                    width: '100px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '18px',
-                    background: studentChartType === 'cumulative'
-                      ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
-                      : 'rgba(255,255,255,0.8)',
-                    color: studentChartType === 'cumulative' ? 'white' : '#666',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: studentChartType === 'cumulative' ? '600' : '500',
-                    border: studentChartType === 'cumulative' ? 'none' : '1px solid #e8e8e8',
-                    boxShadow: studentChartType === 'cumulative'
-                      ? '0 4px 12px rgba(24,144,255,0.3)'
-                      : '0 2px 4px rgba(0,0,0,0.04)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: studentChartType === 'cumulative' ? 'translateY(-1px)' : 'none'
-                  }}
-                >
-                  总计
+            <Spin spinning={loadingStates?.trend || false}>
+              <div style={{ display: 'flex', height: '300px' }}>
+                <div style={{ flex: 1 }}>
+                  <ReactECharts
+                    option={{
+                      tooltip: { trigger: 'axis' },
+                      xAxis: { type: 'category', data: studentTrendData.months },
+                      yAxis: { type: 'value', name: studentChartType === 'retention' ? '%' : '' },
+                      series: [{
+                        name: studentChartType === 'cumulative' ? '累计' :
+                              studentChartType === 'new' ? '新增' :
+                              studentChartType === 'lost' ? '流失' :
+                              studentChartType === 'renewal' ? '续费' : '留存率',
+                        type: 'line',
+                        smooth: true,
+                        data: studentTrendData[studentChartType],
+                        lineStyle: {
+                          color: studentChartType === 'cumulative' ? '#1890ff' :
+                                 studentChartType === 'new' ? '#52c41a' :
+                                 studentChartType === 'lost' ? '#ff4d4f' :
+                                 studentChartType === 'renewal' ? '#722ed1' :
+                                 '#faad14',
+                          width: 3
+                        },
+                        itemStyle: {
+                          color: studentChartType === 'cumulative' ? '#1890ff' :
+                                 studentChartType === 'new' ? '#52c41a' :
+                                 studentChartType === 'lost' ? '#ff4d4f' :
+                                 studentChartType === 'renewal' ? '#722ed1' :
+                                 '#faad14'
+                        },
+                        areaStyle: {
+                          color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                              {
+                                offset: 0,
+                                color: (studentChartType === 'cumulative' ? '#1890ff' :
+                                       studentChartType === 'new' ? '#52c41a' :
+                                       studentChartType === 'lost' ? '#ff4d4f' :
+                                       studentChartType === 'renewal' ? '#722ed1' :
+                                       '#faad14') + '40'
+                              },
+                              {
+                                offset: 1,
+                                color: (studentChartType === 'cumulative' ? '#1890ff' :
+                                       studentChartType === 'new' ? '#52c41a' :
+                                       studentChartType === 'lost' ? '#ff4d4f' :
+                                       studentChartType === 'renewal' ? '#722ed1' :
+                                       '#faad14') + '10'
+                              }
+                            ]
+                          }
+                        },
+                        emphasis: { disabled: true }
+                      }],
+                    }}
+                    style={{ height: '100%', width: '100%' }}
+                  />
                 </div>
-                <div
-                  onClick={() => setStudentChartType('new')}
-                  style={{
-                    width: '100px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '18px',
-                    background: studentChartType === 'new'
-                      ? 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
-                      : 'rgba(255,255,255,0.8)',
-                    color: studentChartType === 'new' ? 'white' : '#666',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: studentChartType === 'new' ? '600' : '500',
-                    border: studentChartType === 'new' ? 'none' : '1px solid #e8e8e8',
-                    boxShadow: studentChartType === 'new'
-                      ? '0 4px 12px rgba(82,196,26,0.3)'
-                      : '0 2px 4px rgba(0,0,0,0.04)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: studentChartType === 'new' ? 'translateY(-1px)' : 'none'
-                  }}
-                >
-                  新增
-                </div>
-                <div
-                  onClick={() => setStudentChartType('renewal')}
-                  style={{
-                    width: '100px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '18px',
-                    background: studentChartType === 'renewal'
-                      ? 'linear-gradient(135deg, #722ed1 0%, #9254de 100%)'
-                      : 'rgba(255,255,255,0.8)',
-                    color: studentChartType === 'renewal' ? 'white' : '#666',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: studentChartType === 'renewal' ? '600' : '500',
-                    border: studentChartType === 'renewal' ? 'none' : '1px solid #e8e8e8',
-                    boxShadow: studentChartType === 'renewal'
-                      ? '0 4px 12px rgba(114,46,209,0.3)'
-                      : '0 2px 4px rgba(0,0,0,0.04)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: studentChartType === 'renewal' ? 'translateY(-1px)' : 'none'
-                  }}
-                >
-                  续费
-                </div>
-                <div
-                  onClick={() => setStudentChartType('lost')}
-                  style={{
-                    width: '100px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '18px',
-                    background: studentChartType === 'lost'
-                      ? 'linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%)'
-                      : 'rgba(255,255,255,0.8)',
-                    color: studentChartType === 'lost' ? 'white' : '#666',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: studentChartType === 'lost' ? '600' : '500',
-                    border: studentChartType === 'lost' ? 'none' : '1px solid #e8e8e8',
-                    boxShadow: studentChartType === 'lost'
-                      ? '0 4px 12px rgba(255,77,79,0.3)'
-                      : '0 2px 4px rgba(0,0,0,0.04)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: studentChartType === 'lost' ? 'translateY(-1px)' : 'none'
-                  }}
-                >
-                  流失
-                </div>
-                <div
-                  onClick={() => setStudentChartType('retention')}
-                  style={{
-                    width: '100px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '18px',
-                    background: studentChartType === 'retention'
-                      ? 'linear-gradient(135deg, #faad14 0%, #ffc53d 100%)'
-                      : 'rgba(255,255,255,0.8)',
-                    color: studentChartType === 'retention' ? 'white' : '#666',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: studentChartType === 'retention' ? '600' : '500',
-                    border: studentChartType === 'retention' ? 'none' : '1px solid #e8e8e8',
-                    boxShadow: studentChartType === 'retention'
-                      ? '0 4px 12px rgba(250,173,20,0.3)'
-                      : '0 2px 4px rgba(0,0,0,0.04)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: studentChartType === 'retention' ? 'translateY(-1px)' : 'none'
-                  }}
-                >
-                  留存率
+                <div style={{
+                  width: '140px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '12px',
+                  paddingLeft: '20px',
+                  background: 'linear-gradient(135deg, #f8faff 0%, #f0f5ff 100%)',
+                  borderRadius: '12px',
+                  padding: '20px 16px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                }}>
+                  {['cumulative', 'new', 'renewal', 'lost', 'retention'].map((type) => {
+                    const isActive = studentChartType === type;
+                    const colors = {
+                      cumulative: '#1890ff',
+                      new: '#52c41a',
+                      renewal: '#722ed1',
+                      lost: '#ff4d4f',
+                      retention: '#faad14'
+                    };
+                    const labels = {
+                      cumulative: '总计',
+                      new: '新增',
+                      renewal: '续费',
+                      lost: '流失',
+                      retention: '留存率'
+                    };
+                    
+                    return (
+                      <div
+                        key={type}
+                        onClick={() => setStudentChartType(type as StudentChartType)}
+                        style={{
+                          width: '100px',
+                          height: '36px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '18px',
+                          background: isActive
+                            ? `linear-gradient(135deg, ${colors[type as keyof typeof colors]} 0%, ${colors[type as keyof typeof colors]}cc 100%)`
+                            : 'rgba(255,255,255,0.8)',
+                          color: isActive ? 'white' : '#666',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: isActive ? '600' : '500',
+                          border: isActive ? 'none' : '1px solid #e8e8e8',
+                          boxShadow: isActive
+                            ? `0 4px 12px ${colors[type as keyof typeof colors]}40`
+                            : '0 2px 4px rgba(0,0,0,0.04)',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          transform: isActive ? 'translateY(-1px)' : 'none'
+                        }}
+                      >
+                        {labels[type as keyof typeof labels]}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
-
+            </Spin>
           </Card>
         </Col>
 
@@ -393,61 +451,73 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
             size="small"
             extra={
               <Space.Compact size="small">
-                <Button type={renewalTimeframe === 'month' ? 'primary' : 'default'} onClick={() => setRenewalTimeframe('month')}>月度</Button>
-                <Button type={renewalTimeframe === 'year' ? 'primary' : 'default'} onClick={() => setRenewalTimeframe('year')}>年度</Button>
+                <Button 
+                  type={renewalTimeframe === 'MONTHLY' ? 'primary' : 'default'} 
+                  onClick={() => handleRenewalTimeframeChange('MONTHLY')}
+                >
+                  月度
+                </Button>
+                <Button 
+                  type={renewalTimeframe === 'YEARLY' ? 'primary' : 'default'} 
+                  onClick={() => handleRenewalTimeframeChange('YEARLY')}
+                >
+                  年度
+                </Button>
               </Space.Compact>
             }
           >
-            <ReactECharts
-              option={{
-                tooltip: {
-                  trigger: 'axis',
-                  formatter: function(params: any) {
-                    let result = `${params[0].name}<br/>`;
-                    params.forEach((param: any) => {
-                      result += `${param.seriesName}: ¥${param.value.toLocaleString()}<br/>`;
-                    });
-                    return result;
-                  }
-                },
-                legend: {
-                  data: ['续费金额', '新增学员缴费金额'],
-                  top: 10,
-                  left: 'center'
-                },
-                xAxis: { type: 'category', data: renewalAmountData.months },
-                yAxis: {
-                  type: 'value',
-                  axisLabel: {
-                    formatter: function(value: number) {
-                      if (value >= 1000000) {
-                        return (value / 1000000).toFixed(1) + 'M';
-                      } else if (value >= 1000) {
-                        return (value / 1000).toFixed(0) + 'K';
-                      }
-                      return value.toString();
+            <Spin spinning={loadingStates?.renewal || false}>
+              <ReactECharts
+                option={{
+                  tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params: any) {
+                      let result = `${params[0].name}<br/>`;
+                      params.forEach((param: any) => {
+                        result += `${param.seriesName}: ¥${param.value.toLocaleString()}<br/>`;
+                      });
+                      return result;
                     }
-                  }
-                },
-                series: [
-                  {
-                    name: '续费金额',
-                    type: 'bar',
-                    data: renewalAmountData.renewal,
-                    itemStyle: { color: '#1890ff' }, // 蓝色 - 与上方图表一致
-                    emphasis: { disabled: true }
                   },
-                  {
-                    name: '新增学员缴费金额',
-                    type: 'bar',
-                    data: renewalAmountData.newPayment,
-                    itemStyle: { color: '#52c41a' }, // 绿色 - 与上方图表一致
-                    emphasis: { disabled: true }
-                  }
-                ],
-              }}
-              style={{ height: '300px', width: '100%' }}
-            />
+                  legend: {
+                    data: ['续费金额', '新增学员缴费金额'],
+                    top: 10,
+                    left: 'center'
+                  },
+                  xAxis: { type: 'category', data: renewalAmountData.months },
+                  yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                      formatter: function(value: number) {
+                        if (value >= 1000000) {
+                          return (value / 1000000).toFixed(1) + 'M';
+                        } else if (value >= 1000) {
+                          return (value / 1000).toFixed(0) + 'K';
+                        }
+                        return value.toString();
+                      }
+                    }
+                  },
+                  series: [
+                    {
+                      name: '续费金额',
+                      type: 'bar',
+                      data: renewalAmountData.renewal,
+                      itemStyle: { color: '#1890ff' },
+                      emphasis: { disabled: true }
+                    },
+                    {
+                      name: '新增学员缴费金额',
+                      type: 'bar',
+                      data: renewalAmountData.newPayment,
+                      itemStyle: { color: '#52c41a' },
+                      emphasis: { disabled: true }
+                    }
+                  ],
+                }}
+                style={{ height: '300px', width: '100%' }}
+              />
+            </Spin>
           </Card>
         </Col>
 
@@ -460,176 +530,197 @@ const StudentAnalysis: React.FC<StudentAnalysisProps> = ({ data, loading }) => {
                 title="学员来源分布"
                 size="small"
               >
-            <ReactECharts
-              option={{
-                tooltip: {
-                  trigger: 'item',
-                  formatter: '{a} <br/>{b}: {c}人 ({d}%)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  borderColor: '#e8e8e8',
-                  borderWidth: 1,
-                  textStyle: {
-                    color: '#333'
-                  }
-                },
-                legend: {
-                  orient: 'horizontal',
-                  bottom: 10,
-                  left: 'center',
-                  data: studentSourceData.map(d => d.name),
-                  textStyle: {
-                    fontSize: 12,
-                    color: '#666'
-                  },
-                  itemWidth: 14,
-                  itemHeight: 14,
-                  itemGap: 20
-                },
-                series: [{
-                  name: '学员来源',
-                  type: 'pie',
-                  radius: ['40%', '70%'],
-                  center: ['50%', '45%'],
-                  avoidLabelOverlap: true,
-                  label: {
-                    show: true,
-                    position: 'outside',
-                    formatter: '{b}: {c}人\n({d}%)',
-                    fontSize: 11,
-                    color: '#666',
-                    lineHeight: 14
-                  },
-                  emphasis: {
-                    label: {
-                      show: true,
-                      fontSize: 12,
-                      fontWeight: 'bold',
-                      color: '#333'
+                <ReactECharts
+                  option={{
+                    tooltip: {
+                      trigger: 'item',
+                      formatter: '{a} <br/>{b}: {c}人 ({d}%)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      borderColor: '#e8e8e8',
+                      borderWidth: 1,
+                      textStyle: {
+                        color: '#333'
+                      }
                     },
-                    itemStyle: {
-                      shadowBlur: 10,
-                      shadowOffsetX: 0,
-                      shadowColor: 'rgba(0, 0, 0, 0.3)'
-                    }
-                  },
-                  labelLine: {
-                    show: true,
-                    length: 15,
-                    length2: 10,
-                    lineStyle: {
-                      color: '#999',
-                      width: 1
-                    }
-                  },
-                  data: studentSourceData.map((item, index) => ({
-                    ...item,
-                    itemStyle: {
-                      color: CHART_COLORS[index % CHART_COLORS.length],
-                      borderColor: '#fff',
-                      borderWidth: 2
-                    }
-                  })),
-                }],
-              }}
-                style={{ height: '300px', width: '100%' }}
-              />
-            </Card>
-          </Col>
+                    legend: {
+                      orient: 'horizontal',
+                      bottom: 10,
+                      left: 'center',
+                      data: studentSourceData.map(d => d.name),
+                      textStyle: {
+                        fontSize: 12,
+                        color: '#666'
+                      },
+                      itemWidth: 14,
+                      itemHeight: 14,
+                      itemGap: 20
+                    },
+                    series: [{
+                      name: '学员来源',
+                      type: 'pie',
+                      radius: ['40%', '70%'],
+                      center: ['50%', '45%'],
+                      avoidLabelOverlap: true,
+                      label: {
+                        show: true,
+                        position: 'outside',
+                        formatter: '{b}: {c}人\n({d}%)',
+                        fontSize: 11,
+                        color: '#666',
+                        lineHeight: 14
+                      },
+                      emphasis: {
+                        label: {
+                          show: true,
+                          fontSize: 12,
+                          fontWeight: 'bold',
+                          color: '#333'
+                        },
+                        itemStyle: {
+                          shadowBlur: 10,
+                          shadowOffsetX: 0,
+                          shadowColor: 'rgba(0, 0, 0, 0.3)'
+                        }
+                      },
+                      labelLine: {
+                        show: true,
+                        length: 15,
+                        length2: 10,
+                        lineStyle: {
+                          color: '#999',
+                          width: 1
+                        }
+                      },
+                      data: studentSourceData.map((item, index) => ({
+                        ...item,
+                        itemStyle: {
+                          color: CHART_COLORS[index % CHART_COLORS.length],
+                          borderColor: '#fff',
+                          borderWidth: 2
+                        }
+                      })),
+                    }],
+                  }}
+                  style={{ height: '300px', width: '100%' }}
+                />
+              </Card>
+            </Col>
 
-          {/* Student Source Time Trend */}
-          <Col xs={24} lg={12}>
-            <Card
-              title="新增学员来源分布"
-              size="small"
-              extra={
-                <Space.Compact size="small">
-                  <Button type={sourceTimeframe === 'month' ? 'primary' : 'default'} onClick={() => setSourceTimeframe('month')}>月度</Button>
-                  <Button type={sourceTimeframe === 'year' ? 'primary' : 'default'} onClick={() => setSourceTimeframe('year')}>年度</Button>
-                </Space.Compact>
-              }
-            >
-              <ReactECharts
-                option={{
-                  tooltip: {
-                    trigger: 'axis',
-                    axisPointer: {
-                      type: 'shadow'
+            {/* 新增学员来源分布 */}
+            <Col xs={24} lg={12}>
+              <Card
+                title="新增学员来源分布"
+                size="small"
+                extra={
+                  <Space.Compact size="small">
+                    <Button 
+                      type={newStudentSourceTimeframe === 'MONTHLY' ? 'primary' : 'default'} 
+                      onClick={() => handleNewStudentSourceTimeframeChange('MONTHLY')}
+                    >
+                      月度
+                    </Button>
+                    <Button 
+                      type={newStudentSourceTimeframe === 'YEARLY' ? 'primary' : 'default'} 
+                      onClick={() => handleNewStudentSourceTimeframeChange('YEARLY')}
+                    >
+                      年度
+                    </Button>
+                  </Space.Compact>
+                }
+              >
+                <ReactECharts
+                  option={{
+                    tooltip: {
+                      trigger: 'axis',
+                      axisPointer: {
+                        type: 'shadow'
+                      },
+                      formatter: function(params: any) {
+                        let result = params[0].name + '<br/>';
+                        let total = 0;
+                        params.forEach((param: any) => {
+                          result += param.marker + param.seriesName + ': ' + param.value + '人<br/>';
+                          total += param.value;
+                        });
+                        result += '<br/>总计: ' + total + '人';
+                        return result;
+                      }
                     },
-                    formatter: function(params: any) {
-                      let result = `${params[0].name}<br/>`;
-                      let total = 0;
-                      params.forEach((param: any) => {
-                        total += param.value;
-                      });
-                      params.forEach((param: any) => {
-                        const percentage = ((param.value / total) * 100).toFixed(1);
-                        result += `${param.marker}${param.seriesName}: ${param.value}人 (${percentage}%)<br/>`;
-                      });
-                      result += `总计: ${total}人`;
-                      return result;
-                    }
-                  },
-                  legend: {
-                    orient: 'horizontal',
-                    bottom: 10,
-                    left: 'center',
-                    data: sourceTimeData.sources,
-                    textStyle: {
-                      fontSize: 12,
-                      color: '#666'
+                    legend: {
+                      data: ['小程序推广', '老学员介绍', '线下活动', '社交媒体', '其他渠道'],
+                      bottom: 10,
+                      textStyle: {
+                        fontSize: 12,
+                        color: '#666'
+                      }
                     },
-                    itemWidth: 14,
-                    itemHeight: 14,
-                    itemGap: 15
-                  },
-                  grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '20%',
-                    top: '10%',
-                    containLabel: true
-                  },
-                  xAxis: {
-                    type: 'category',
-                    data: sourceTimeData.months,
-                    axisLabel: {
-                      fontSize: 12,
-                      color: '#666'
-                    }
-                  },
-                  yAxis: {
-                    type: 'value',
-                    name: '新增学员数',
-                    nameTextStyle: {
-                      color: '#666',
-                      fontSize: 12
+                    grid: {
+                      left: '3%',
+                      right: '4%',
+                      bottom: '15%',
+                      top: '10%',
+                      containLabel: true
                     },
-                    axisLabel: {
-                      fontSize: 12,
-                      color: '#666'
-                    }
-                  },
-                  series: sourceTimeData.sources.map((source, index) => ({
-                    name: source,
-                    type: 'bar',
-                    stack: 'total',
-                    data: sourceTimeData.data[source as keyof typeof sourceTimeData.data],
-                    itemStyle: {
-                      color: CHART_COLORS[index % CHART_COLORS.length]
+                    xAxis: {
+                      type: 'category',
+                      data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
                     },
-                    emphasis: { disabled: true }
-                  }))
-                }}
-                style={{ height: '300px', width: '100%' }}
-              />
-
-            </Card>
-          </Col>
-        </Row>
-      </Col>
-    </Row>
-  </div>
-);
+                    yAxis: {
+                      type: 'value',
+                      name: '新增学员数',
+                      nameTextStyle: {
+                        color: '#666'
+                      },
+                      max: 150,
+                      interval: 30
+                    },
+                    series: [
+                      {
+                        name: '小程序推广',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80],
+                        itemStyle: { color: '#3498db' }
+                      },
+                      {
+                        name: '老学员介绍',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
+                        itemStyle: { color: '#2ecc71' }
+                      },
+                      {
+                        name: '线下活动',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70],
+                        itemStyle: { color: '#f39c12' }
+                      },
+                      {
+                        name: '社交媒体',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65],
+                        itemStyle: { color: '#e74c3c' }
+                      },
+                      {
+                        name: '其他渠道',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+                        itemStyle: { color: '#9b59b6' }
+                      }
+                    ]
+                  }}
+                  style={{ height: '300px', width: '100%' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+    </div>
+  );
 };
 
 export default StudentAnalysis;

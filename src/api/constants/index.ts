@@ -16,6 +16,7 @@ let mockConstants: Record<string, Constant[]> = {
   'GIFT_ITEM': [],
   'HANDLING_FEE_TYPE': [],
   'VALIDITY_PERIOD': [],
+  'STUDENT_SOURCE': [],
   'EXPEND': [
     { id: 1, constantKey: 'RENT', constantValue: '房租', description: '办公室租赁费用', type: 'EXPEND', status: 1 },
     { id: 2, constantKey: 'SALARY', constantValue: '工资', description: '员工工资支出', type: 'EXPEND', status: 1 },

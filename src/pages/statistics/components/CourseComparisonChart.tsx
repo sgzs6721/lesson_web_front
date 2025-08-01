@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Empty, Radio, Space } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { CourseComparisonData } from './CourseAnalysis';
 import { CHART_COLORS } from '../constants/chartColors';
 
 interface CourseComparisonChartProps {
-  data: CourseComparisonData[] | null;
+  data: any[] | null;
   loading: boolean;
 }
 
@@ -37,7 +36,7 @@ const CourseComparisonChart: React.FC<CourseComparisonChartProps> = ({ data, loa
           title: '课程销售数量排行榜',
           yAxisName: '销售数量',
           formatter: '{value}份',
-          sortKey: 'totalSold' as keyof CourseComparisonData,
+          sortKey: 'totalSold' as keyof any,
           color: CHART_COLORS[0]
         };
       case 'totalRevenue':
@@ -47,7 +46,7 @@ const CourseComparisonChart: React.FC<CourseComparisonChartProps> = ({ data, loa
           formatter: function(value: number) {
             return value >= 10000 ? `${(value / 10000).toFixed(1)}万` : `${value}`;
           },
-          sortKey: 'totalRevenue' as keyof CourseComparisonData,
+          sortKey: 'totalRevenue' as keyof any,
           color: CHART_COLORS[3]
         };
       case 'unitPrice':
@@ -55,7 +54,7 @@ const CourseComparisonChart: React.FC<CourseComparisonChartProps> = ({ data, loa
           title: '课程单价排行榜',
           yAxisName: '单价(元)',
           formatter: '{value}元',
-          sortKey: 'unitPrice' as keyof CourseComparisonData,
+          sortKey: 'unitPrice' as keyof any,
           color: CHART_COLORS[2]
         };
       default:
@@ -63,7 +62,7 @@ const CourseComparisonChart: React.FC<CourseComparisonChartProps> = ({ data, loa
           title: '课程排行榜',
           yAxisName: '数值',
           formatter: '{value}',
-          sortKey: 'totalSold' as keyof CourseComparisonData,
+          sortKey: 'totalSold' as keyof any,
           color: CHART_COLORS[0]
         };
     }

@@ -9,6 +9,13 @@ import { constants } from './constants';
 import { schedule } from './schedule';
 import { payment } from './payment';
 import { financeAPI } from './finance';
+import {
+  studentAnalysisApi,
+  courseAnalysisApi,
+  coachAnalysisApi,
+  financeAnalysisApi,
+  statisticsApi
+} from './statistics';
 
 // 导出所有接口
 export const API = {
@@ -22,5 +29,12 @@ export const API = {
   constants,
   schedule,
   payment,
-  finance: financeAPI
+  finance: financeAPI,
+  statistics: {
+    student: studentAnalysisApi,
+    course: courseAnalysisApi,
+    coach: coachAnalysisApi,
+    finance: financeAnalysisApi,
+    general: statisticsApi
+  }
 };

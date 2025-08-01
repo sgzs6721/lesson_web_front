@@ -185,7 +185,8 @@ const mapWeekdayToNumber = (weekday: string): number | undefined => {
 export const useStudentForm = (
   onAddStudent: (payload: { studentInfo: any; courseInfoList: any[] }) => Promise<Student>,
   onUpdateStudent: (id: string, student: any) => Promise<void>,
-  courseList: SimpleCourse[]
+  courseList: SimpleCourse[],
+  updateStudentLocally?: (studentId: number, updatedData: Partial<Student>) => void
 ) => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(false);
@@ -238,6 +239,7 @@ export const useStudentForm = (
       ...student,
       gender: mapApiGenderToFrontend(student.gender), // 将 MALE/FEMALE 映射为 male/female
       status: mapApiStatusToFrontend(student.status), // 将后端状态映射为前端状态
+      sourceId: student.sourceId, // 保持sourceId不变
       ...(student.expireDate && { expireDate: dayjs(student.expireDate) }),
       ...(student.enrollDate && { enrollDate: dayjs(student.enrollDate) }),
     };
@@ -402,6 +404,7 @@ export const useStudentForm = (
         gender: studentInfo.gender, 
         age: studentInfo.age, 
         phone: studentInfo.phone,
+        sourceId: studentInfo.sourceId, // 修改为sourceId
         campusId: studentInfo.campusId || Number(localStorage.getItem('currentCampusId')) || 0 
       };
 
@@ -429,6 +432,15 @@ export const useStudentForm = (
         console.log('准备提交的最终 Payload (Update):', JSON.stringify(payload, null, 2));
         await onUpdateStudent(editingStudent.id, payload); 
         message.success('学员信息更新成功');
+
+        // 更新成功后，更新本地状态
+        if (updateStudentLocally && editingStudent.id) {
+          console.log('更新本地学员状态');
+          updateStudentLocally(Number(editingStudent.id), {
+            ...finalStudentInfo,
+            // 可以添加其他需要更新的字段
+          });
+        }
 
       } else {
         // --- 添加逻辑 --- 

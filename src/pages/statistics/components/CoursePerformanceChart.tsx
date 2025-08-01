@@ -1,11 +1,10 @@
 import React from 'react';
 import { Empty } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { CourseComparisonData } from './CourseAnalysis';
 import { CHART_COLORS } from '../constants/chartColors';
 
 interface CoursePerformanceChartProps {
-  data: CourseComparisonData[] | null;
+  data: any[] | null;
   loading: boolean;
 }
 

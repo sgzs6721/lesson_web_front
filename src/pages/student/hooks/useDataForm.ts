@@ -19,7 +19,8 @@ export const useDataForm = (
   const formProps = useStudentForm(
     createStudentApiFunc,
     dataProps.updateStudent,
-    courseList
+    courseList,
+    dataProps.updateStudentLocally
   );
 
   const handleSubmit = async (): Promise<boolean> => {
@@ -35,7 +36,8 @@ export const useDataForm = (
       updateStudent: dataProps.updateStudent,
       fetchStudents: dataProps.fetchStudents,
       addNewStudentToList: dataProps.addNewStudentToList,
-      updateStudentAttendanceLocally: dataProps.updateStudentAttendanceLocally
+      updateStudentAttendanceLocally: dataProps.updateStudentAttendanceLocally,
+      updateStudentLocally: dataProps.updateStudentLocally
     },
     search: {
       params: searchProps.searchParams,

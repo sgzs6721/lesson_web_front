@@ -25,6 +25,7 @@ const MainLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [institutionName, setInstitutionName] = useState<string>('');
 
   // 使用校区检查Context
   const { refreshCampusCheck, checkCampusBeforeNavigate } = useCampusCheck();
@@ -39,6 +40,39 @@ const MainLayout: React.FC = () => {
     const pathKey = location.pathname;
     setActiveMenu(pathKey);
   }, [location.pathname]);
+
+  // 获取机构名称
+  useEffect(() => {
+    const fetchInstitutionName = async () => {
+      try {
+        // 从localStorage获取登录响应数据
+        const loginResponseStr = localStorage.getItem('loginResponse');
+        if (loginResponseStr) {
+          const loginResponse = JSON.parse(loginResponseStr);
+          const institutionName = loginResponse.institutionName;
+          
+          if (institutionName) {
+            setInstitutionName(institutionName);
+            console.log('获取到机构名称:', institutionName);
+          } else {
+            console.log('登录响应中没有机构名称，使用默认名称');
+            setInstitutionName('培训机构管理系统');
+          }
+        } else {
+          console.log('没有找到登录响应数据，使用默认名称');
+          setInstitutionName('培训机构管理系统');
+        }
+      } catch (error) {
+        console.error('获取机构名称失败:', error);
+        // 如果获取失败，使用默认名称
+        setInstitutionName('培训机构管理系统');
+      }
+    };
+
+    if (auth.isAuthenticated) {
+      fetchInstitutionName();
+    }
+  }, [auth.isAuthenticated]);
 
   // 初始化加载校区信息 - 只在组件挂载时执行一次
   useEffect(() => {
@@ -235,6 +269,7 @@ const MainLayout: React.FC = () => {
         isDarkTheme={isDarkTheme}
         activeMenu={activeMenu}
         handleMenuClick={handleMenuClick}
+        institutionName={institutionName}
       />
 
       {/* 主内容区 */}

@@ -55,6 +55,15 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
+  min-height: 32px; /* 确保加载状态和数据显示时高度一致 */
+}
+
+.statistic-card-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32px;
 }
 
 .statistic-card-value {

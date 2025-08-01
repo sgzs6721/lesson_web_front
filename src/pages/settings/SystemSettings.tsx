@@ -59,6 +59,7 @@ const SystemSettings: React.FC = () => {
   const [expireTypeOptions, setExpireTypeOptions] = useState<IOptionItem[]>([]);
   const [expenseTypeOptions, setExpenseTypeOptions] = useState<IOptionItem[]>([]);
   const [incomeTypeOptions, setIncomeTypeOptions] = useState<IOptionItem[]>([]);
+  const [studentSourceOptions, setStudentSourceOptions] = useState<IOptionItem[]>([]);
   const [backupList, setBackupList] = useState<IBackupItem[]>([]);
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -84,6 +85,7 @@ const SystemSettings: React.FC = () => {
       'VALIDITY_PERIOD': true,
       'EXPEND': true,
       'INCOME': true,
+      'STUDENT_SOURCE': true,
     });
     
     try {
@@ -99,6 +101,7 @@ const SystemSettings: React.FC = () => {
         'VALIDITY_PERIOD': [],
         'EXPEND': [],
         'INCOME': [],
+        'STUDENT_SOURCE': [],
       };
       
       // 将数据分组到对应的类型中
@@ -116,6 +119,7 @@ const SystemSettings: React.FC = () => {
       setExpireTypeOptions(groupedConstants['VALIDITY_PERIOD']);
       setExpenseTypeOptions(groupedConstants['EXPEND']);
       setIncomeTypeOptions(groupedConstants['INCOME']);
+      setStudentSourceOptions(groupedConstants['STUDENT_SOURCE']);
       
       console.log('所有选项数据加载成功:', groupedConstants);
       setOptionsLoaded(true);
@@ -132,6 +136,7 @@ const SystemSettings: React.FC = () => {
         'VALIDITY_PERIOD': false,
         'EXPEND': false,
         'INCOME': false,
+        'STUDENT_SOURCE': false,
       });
     }
   };
@@ -168,6 +173,7 @@ const SystemSettings: React.FC = () => {
     setExpireTypeOptions([]);
     setExpenseTypeOptions([]);
     setIncomeTypeOptions([]);
+    setStudentSourceOptions([]);
 
     // 初始化备份列表
     setBackupList([
@@ -265,6 +271,9 @@ const SystemSettings: React.FC = () => {
           case 'INCOME':
             setIncomeTypeOptions(prev => [...prev, newOption]);
             break;
+          case 'STUDENT_SOURCE':
+            setStudentSourceOptions(prev => [...prev, newOption]);
+            break;
         }
         
         // API调用成功，设置closeForm为true
@@ -333,6 +342,9 @@ const SystemSettings: React.FC = () => {
       case 'INCOME':
         optionsList = incomeTypeOptions;
         break;
+      case 'STUDENT_SOURCE':
+        optionsList = studentSourceOptions;
+        break;
     }
     
     const targetOption = optionsList.find(item => item.id === id);
@@ -371,6 +383,9 @@ const SystemSettings: React.FC = () => {
           case 'INCOME':
             setIncomeTypeOptions(prev => prev.filter(item => item.id !== id));
             break;
+          case 'STUDENT_SOURCE':
+            setStudentSourceOptions(prev => prev.filter(item => item.id !== id));
+            break;
         }
       }
       
@@ -400,6 +415,8 @@ const SystemSettings: React.FC = () => {
       apiType = 'EXPEND';
     } else if (incomeTypeOptions.some(item => item.id === id)) {
       apiType = 'INCOME';
+    } else if (studentSourceOptions.some(item => item.id === id)) {
+      apiType = 'STUDENT_SOURCE';
     }
 
     if (!apiType) {
@@ -441,6 +458,9 @@ const SystemSettings: React.FC = () => {
           case 'INCOME':
             updateState = setIncomeTypeOptions;
             break;
+          case 'STUDENT_SOURCE':
+            updateState = setStudentSourceOptions;
+            break;
           default:
             return;
         }
@@ -467,6 +487,7 @@ const SystemSettings: React.FC = () => {
       case 'expireType': return 'VALIDITY_PERIOD';
       case 'expenseType': return 'EXPEND';
       case 'incomeType': return 'INCOME';
+      case 'studentSource': return 'STUDENT_SOURCE';
       default: return type.toUpperCase();
     }
   };
@@ -482,6 +503,7 @@ const SystemSettings: React.FC = () => {
       case 'VALIDITY_PERIOD': return '有效期时长';
       case 'expenseType': return '费用类型';
       case 'incomeType': return '收入类型';
+      case 'studentSource': return '学生来源';
       default: return '选项';
     }
   };
@@ -602,7 +624,8 @@ const SystemSettings: React.FC = () => {
               loading['HANDLING_FEE_TYPE'] || 
               loading['VALIDITY_PERIOD'] ||
               loading['EXPEND'] ||
-              loading['INCOME']
+              loading['INCOME'] ||
+              loading['STUDENT_SOURCE']
             } tip="正在加载选项数据...">
               <OptionsTab
                 courseTypeOptions={courseTypeOptions}
@@ -612,6 +635,7 @@ const SystemSettings: React.FC = () => {
                 expireTypeOptions={expireTypeOptions}
                 expenseTypeOptions={expenseTypeOptions}
                 incomeTypeOptions={incomeTypeOptions}
+                studentSourceOptions={studentSourceOptions}
                 loading={loading}
                 onAddOption={handleAddOption}
                 onUpdateOption={handleUpdateOption}

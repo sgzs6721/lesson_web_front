@@ -66,6 +66,7 @@ export interface Student {
   gender: 'MALE' | 'FEMALE'; // 与 API 保持一致
   age: number;
   phone: string;
+  sourceId?: number; // 学员来源ID
   email?: string;         // 与 API 保持一致
   address?: string;        // 与 API 保持一致
   parentName?: string;     // 与 API 保持一致

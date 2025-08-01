@@ -28,6 +28,7 @@ import { FormInstance } from 'antd/lib/form';
 import { Student, CourseGroup, ScheduleTime } from '@/pages/student/types/student';
 import { courseTypeOptions, weekdayOptions, studentStatusOptions } from '@/pages/student/constants/options';
 import { SimpleCourse } from '@/api/course/types';
+import { useStudentSourceOptions } from '@/pages/student/hooks/useStudentSourceOptions';
 import dayjs from 'dayjs';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import './EnrollmentModal.css';
@@ -140,12 +141,18 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
     setCourseSearchValue('');
   }, [visible, currentEditingGroupIndex, tempCourseGroup]);
 
-  // 获取已选择的课程ID列表，用于禁用已选课程
+  // 获取学员来源选项
+  const { options: studentSourceOptions, loading: loadingStudentSource, defaultSourceId } = useStudentSourceOptions();
+
+  // 获取已选择的课程ID列表（排除当前编辑的课程组）
   const getSelectedCourseIds = (excludeIndex?: number): string[] => {
-    return courseGroups
-      .filter((_, index) => index !== excludeIndex) // 排除当前正在编辑的课程组
-      .map(group => group.courses && group.courses.length > 0 ? String(group.courses[0]) : '')
-      .filter(id => id); // 过滤掉空值
+    const selectedIds: string[] = [];
+    courseGroups.forEach((group, index) => {
+      if (excludeIndex === undefined || index !== excludeIndex) {
+        selectedIds.push(...group.courses);
+      }
+    });
+    return selectedIds;
   };
   // 渲染课程组表格
   const renderCourseGroupTable = () => {
@@ -930,12 +937,13 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
           name="studentForm"
           initialValues={{
             gender: 'male',
-            status: undefined
+            status: undefined,
+            sourceId: defaultSourceId
           }}
         >
           <Title level={5}>基本信息</Title>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 name="name"
                 label="学员姓名"
@@ -944,7 +952,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 <Input prefix={<UserOutlined />} placeholder="请输入学员姓名" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 name="gender"
                 label="性别"
@@ -960,10 +968,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 name="age"
                 label="年龄"
@@ -976,6 +981,9 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 <Input type="number" placeholder="请输入年龄" />
               </Form.Item>
             </Col>
+          </Row>
+
+          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="phone"
@@ -986,6 +994,27 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 ]}
               >
                 <Input prefix={<PhoneOutlined />} placeholder="请输入联系电话" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="sourceId"
+                label="学员来源"
+              >
+                <Select
+                  placeholder="请选择学员来源"
+                  style={{ width: '100%' }}
+                  loading={loadingStudentSource}
+                  getPopupContainer={triggerNode => triggerNode.parentElement}
+                  allowClear
+                  defaultValue={defaultSourceId}
+                >
+                  {studentSourceOptions.map(option => (
+                    <Option key={option.id} value={option.id}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>

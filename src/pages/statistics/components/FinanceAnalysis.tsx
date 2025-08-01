@@ -1,168 +1,299 @@
-import React, { useState } from 'react';
-import { Button, Spin, Space, Row, Col, Card } from 'antd';
-import ReactECharts from 'echarts-for-react';
-import {
-  LineChartOutlined,
-  WarningOutlined,
-  SmileOutlined,
-  PieChartOutlined,
-} from '@ant-design/icons';
+import React from 'react';
+import { Card, Row, Col, Spin, Button, Space } from 'antd';
+import { DollarOutlined, RiseOutlined, FallOutlined, PieChartOutlined } from '@ant-design/icons';
 import StatisticCard from './StatisticCard';
-import { generateBarItemStyle, CHART_COLORS, SERIES_COLORS } from '../constants/chartColors';
+import ReactECharts from 'echarts-for-react';
+import { CHART_COLORS } from '../constants/chartColors';
+import { FinanceAnalysisData } from '@/api/statistics/types';
 import './FinanceAnalysis.css';
-import '../statistics.css';
 
 interface FinanceAnalysisProps {
-  data: any;
+  data: FinanceAnalysisData | null;
   loading: boolean;
 }
 
-interface CostStructureItem {
-  name: string;
-  value: number;
-}
-
 const FinanceAnalysis: React.FC<FinanceAnalysisProps> = ({ data, loading }) => {
-  const [financeTimeframe, setFinanceTimeframe] = useState<string>('month');
+  // 移除整页loading，改为局部loading
 
-  if (loading || !data) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
+  // 使用真实API数据或默认值
+  const financeData = data ? {
+    totalRevenue: data.financeMetrics.totalRevenue,
+    totalCost: data.financeMetrics.totalCost,
+    totalProfit: data.financeMetrics.totalProfit,
+    profitMargin: data.financeMetrics.profitMargin,
+    revenueGrowth: data.financeMetrics.revenueChangeRate,
+    costGrowth: data.financeMetrics.costChangeRate,
+    profitGrowth: data.financeMetrics.profitChangeRate,
+    marginGrowth: data.financeMetrics.marginChangeRate,
+  } : {
+    totalRevenue: 0,
+    totalCost: 0,
+    totalProfit: 0,
+    profitMargin: 0,
+    revenueGrowth: 0,
+    costGrowth: 0,
+    profitGrowth: 0,
+    marginGrowth: 0,
+  };
 
-  const financeData = data;
-
+  // 财务统计卡片数据
   const financeStats = [
     {
-      title: '总收入 (元)',
-      value: financeData.totalRevenue.toLocaleString(),
+      title: '总收入',
+      value: financeData.totalRevenue,
+      unit: '元',
+      icon: <DollarOutlined />,
       growth: financeData.revenueGrowth,
-      icon: <LineChartOutlined />,
-      color: '#3498db',
+      color: '#1890ff',
+      loading: loading
     },
     {
-      title: '总成本 (元)',
-      value: financeData.totalCost.toLocaleString(),
+      title: '总成本',
+      value: financeData.totalCost,
+      unit: '元',
+      icon: <FallOutlined />,
       growth: financeData.costGrowth,
-      icon: <WarningOutlined />,
-      color: '#e74c3c',
+      color: '#f5222d',
+      loading: loading
     },
     {
-      title: '总利润 (元)',
-      value: financeData.totalProfit.toLocaleString(),
+      title: '总利润',
+      value: financeData.totalProfit,
+      unit: '元',
+      icon: <RiseOutlined />,
       growth: financeData.profitGrowth,
-      icon: <SmileOutlined />,
-      color: '#2ecc71',
+      color: '#52c41a',
+      loading: loading
     },
     {
       title: '利润率',
-      value: `${financeData.profitRate}%`,
-      growth: financeData.profitRateGrowth,
+      value: financeData.profitMargin,
+      unit: '%',
       icon: <PieChartOutlined />,
-      color: '#9b59b6',
-    },
+      growth: financeData.marginGrowth,
+      color: '#faad14',
+      loading: loading
+    }
   ];
 
+  // 收入成本趋势数据
+  const revenueCostTrendData = data?.revenueCostTrend || [];
+
+  // 成本结构数据
+  const costStructureData = data?.costStructure?.map(item => ({
+    name: item.costType,
+    value: item.amount
+  })) || [];
+
+  // 财务趋势数据
+  const financeTrendData = data?.financeTrend || [];
+
   return (
-    <div className="finance-analysis-container">
+    <div className="finance-analysis">
+      {/* Finance KPI Cards */}
       <Card
-        title="财务核心指标"
+        title="财务指标"
         size="small"
         style={{ marginBottom: '24px' }}
-        extra={
-          <Space.Compact size="small">
-            <Button type={financeTimeframe === 'month' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('month')}>本月</Button>
-            <Button type={financeTimeframe === 'quarter' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('quarter')}>季度</Button>
-            <Button type={financeTimeframe === 'year' ? 'primary' : 'default'} onClick={() => setFinanceTimeframe('year')}>年度</Button>
-          </Space.Compact>
-        }
       >
         <Row gutter={[16, 16]}>
           {financeStats.map((stat, index) => (
-            <Col xs={24} sm={12} md={12} lg={6} key={index}>
+            <Col xs={24} sm={12} md={6} lg={6} key={index}>
               <StatisticCard {...stat} />
             </Col>
           ))}
         </Row>
       </Card>
 
-      {/* Charts Section */}
       <Row gutter={[16, 16]}>
-        {/* Revenue and Cost Trends */}
+        {/* 收入成本趋势 */}
         <Col xs={24} lg={12}>
-          <Card
-            title="收入与成本趋势 (万元)"
-            size="small"
-          >
-            <ReactECharts
+          <Card title="收入成本趋势" size="small">
+            <Spin spinning={loading}>
+              <ReactECharts
               option={{
-                tooltip: { trigger: 'axis' },
-                legend: { data: ['收入', '成本', '利润'], bottom: 0 },
-                xAxis: { type: 'category', data: financeData.monthlyData.months },
-                yAxis: { type: 'value' },
+                tooltip: {
+                  trigger: 'axis',
+                  axisPointer: {
+                    type: 'cross'
+                  }
+                },
+                legend: {
+                  data: ['收入', '成本', '利润']
+                },
+                grid: {
+                  left: '3%',
+                  right: '4%',
+                  bottom: '3%',
+                  containLabel: true
+                },
+                xAxis: {
+                  type: 'category',
+                  data: revenueCostTrendData.map(item => item.timePoint)
+                },
+                yAxis: {
+                  type: 'value'
+                },
                 series: [
                   {
                     name: '收入',
                     type: 'bar',
-                    data: financeData.monthlyData.revenue.map((value: number, index: number) => ({
-                      value: value,
-                      itemStyle: generateBarItemStyle(index)
-                    })),
-                    emphasis: { disabled: true }
+                    data: revenueCostTrendData.map(item => item.revenue),
+                    itemStyle: { color: CHART_COLORS[0] }
                   },
                   {
                     name: '成本',
                     type: 'bar',
-                    data: financeData.monthlyData.cost.map((value: number, index: number) => ({
-                      value: value,
-                      itemStyle: generateBarItemStyle(index + 3)
-                    })),
-                    emphasis: { disabled: true }
+                    data: revenueCostTrendData.map(item => item.cost),
+                    itemStyle: { color: CHART_COLORS[1] }
                   },
                   {
                     name: '利润',
                     type: 'line',
-                    smooth: true,
-                    data: financeData.monthlyData.profit,
-                    lineStyle: { color: SERIES_COLORS.success, width: 3 },
-                    itemStyle: { color: SERIES_COLORS.success },
-                    emphasis: { disabled: true }
-                  },
-                ],
+                    data: revenueCostTrendData.map(item => item.profit),
+                    itemStyle: { color: CHART_COLORS[2] }
+                  }
+                ]
               }}
-              style={{ height: '350px', width: '100%' }}
-            />
+              style={{ height: '300px' }}
+              />
+            </Spin>
           </Card>
         </Col>
 
-        {/* Cost Structure Analysis */}
+        {/* 成本结构分析 */}
         <Col xs={24} lg={12}>
-          <Card
-            title="成本结构分析"
-            size="small"
-          >
-            <ReactECharts
+          <Card title="成本结构分析" size="small">
+            <Spin spinning={loading}>
+              <ReactECharts
               option={{
-                tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
-                legend: { orient: 'vertical', left: 'left', data: financeData.costStructure.map((d: CostStructureItem) => d.name) },
-                series: [{
-                  name: '成本结构',
-                  type: 'pie',
-                  radius: '70%',
-                  center: ['60%', '50%'],
-                  data: financeData.costStructure.map((item: CostStructureItem, index: number) => ({
-                    ...item,
-                    itemStyle: {
-                      color: CHART_COLORS[index % CHART_COLORS.length]
+                tooltip: {
+                  trigger: 'item'
+                },
+                legend: {
+                  orient: 'vertical',
+                  left: 'left'
+                },
+                series: [
+                  {
+                    name: '成本结构',
+                    type: 'pie',
+                    radius: '50%',
+                    data: costStructureData,
+                    emphasis: {
+                      itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                      }
                     }
-                  })),
-                }],
+                  }
+                ]
               }}
-              style={{ height: '350px', width: '100%' }}
-            />
+              style={{ height: '300px' }}
+              />
+            </Spin>
+          </Card>
+        </Col>
+
+        {/* 利润率趋势 */}
+        <Col xs={24} lg={12}>
+          <Card title="利润率趋势" size="small">
+            <Spin spinning={loading}>
+              <ReactECharts
+              option={{
+                tooltip: {
+                  trigger: 'axis',
+                  axisPointer: {
+                    type: 'cross'
+                  }
+                },
+                grid: {
+                  left: '3%',
+                  right: '4%',
+                  bottom: '3%',
+                  containLabel: true
+                },
+                xAxis: {
+                  type: 'category',
+                  data: financeTrendData.map(item => item.timePoint)
+                },
+                yAxis: {
+                  type: 'value',
+                  axisLabel: {
+                    formatter: '{value}%'
+                  }
+                },
+                series: [
+                  {
+                    name: '利润率',
+                    type: 'line',
+                    smooth: true,
+                    data: financeTrendData.map(item => item.profitMargin),
+                    itemStyle: { color: CHART_COLORS[3] },
+                    areaStyle: {
+                      color: {
+                        type: 'linear',
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [
+                          {
+                            offset: 0,
+                            color: CHART_COLORS[3] + '40'
+                          },
+                          {
+                            offset: 1,
+                            color: CHART_COLORS[3] + '10'
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }}
+              style={{ height: '300px' }}
+              />
+            </Spin>
+          </Card>
+        </Col>
+
+        {/* 收入分析 */}
+        <Col xs={24} lg={12}>
+          <Card title="收入来源分析" size="small">
+            <Spin spinning={loading}>
+              <ReactECharts
+              option={{
+                tooltip: {
+                  trigger: 'item'
+                },
+                legend: {
+                  orient: 'vertical',
+                  left: 'left'
+                },
+                series: [
+                  {
+                    name: '收入来源',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    data: data?.revenueAnalysis?.revenueBySource?.map(item => ({
+                      name: item.source,
+                      value: item.amount
+                    })) || [],
+                    emphasis: {
+                      itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                      }
+                    }
+                  }
+                ]
+              }}
+              style={{ height: '300px' }}
+              />
+            </Spin>
           </Card>
         </Col>
       </Row>

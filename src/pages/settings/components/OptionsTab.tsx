@@ -13,6 +13,7 @@ interface OptionsTabProps {
   expireTypeOptions: IOptionItem[];
   expenseTypeOptions: IOptionItem[];
   incomeTypeOptions: IOptionItem[];
+  studentSourceOptions: IOptionItem[];
   loading: Record<string, boolean>;
   onAddOption: (type: string, option: IOptionItem) => Promise<void>;
   onUpdateOption: (id: string, option: IOptionItem) => Promise<void>;
@@ -29,6 +30,7 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
   expireTypeOptions,
   expenseTypeOptions,
   incomeTypeOptions,
+  studentSourceOptions,
   loading,
   onAddOption,
   onUpdateOption,
@@ -87,6 +89,22 @@ const OptionsTab: React.FC<OptionsTabProps> = ({
             formFields={[
               { name: 'name', label: '时长名称', required: true, message: '请输入时长名称' },
               { name: 'value', label: '枚举值 (月数)', required: true, message: '请输入月数' },
+              { name: 'description', label: '描述', required: false, message: '' }
+            ]}
+          />
+          <Divider />
+          <OptionListComponent
+            type="studentSource"
+            options={studentSourceOptions}
+            title="学生来源"
+            onAdd={async (option) => await handleAddOption('studentSource', option)}
+            onDelete={(id, name) => handleDeleteOption('studentSource', id, name)}
+            onUpdate={async (id, option) => await handleUpdateOption(id, option)}
+            loading={loading['STUDENT_SOURCE']}
+            closeForm={closeAddForm['STUDENT_SOURCE'] || closeEditForm['STUDENT_SOURCE']}
+            formFields={[
+              { name: 'name', label: '来源名称', required: true, message: '请输入学生来源名称' },
+              { name: 'value', label: '枚举值', required: true, message: '请输入枚举值' },
               { name: 'description', label: '描述', required: false, message: '' }
             ]}
           />

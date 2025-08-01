@@ -20,6 +20,7 @@ interface SidebarProps {
   isDarkTheme: boolean;
   activeMenu: string;
   handleMenuClick: (e: React.MouseEvent, path: string) => Promise<void>;
+  institutionName?: string; // 添加机构名称属性
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -27,7 +28,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   toggleSidebar,
   isDarkTheme,
   activeMenu,
-  handleMenuClick
+  handleMenuClick,
+  institutionName
 }) => {
   return (
     <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${isDarkTheme ? 'dark-theme' : ''}`}>
@@ -53,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <line x1="100" y1="110" x2="114" y2="110" stroke="#4285f4" strokeWidth="4" strokeLinecap="round"/>
               <circle cx="100" cy="110" r="4" fill="#4285f4"/>
             </svg>
-            <h1 style={{ fontSize: '20px', textAlign: 'center' }}>培训机构管理系统</h1>
+            <h1 style={{ fontSize: '20px', textAlign: 'center' }}>{institutionName || "培训机构管理系统"}</h1>
             <p style={{ opacity: 0.7, marginTop: '5px', fontSize: '12px', textAlign: 'center' }}>核心业务管理平台</p>
           </Link>
         ) : (

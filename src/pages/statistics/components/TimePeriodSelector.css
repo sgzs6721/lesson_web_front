@@ -1,0 +1,49 @@
+.time-period-selector {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.time-period-button {
+  min-width: 60px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.time-period-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.time-period-button[ant-button-type="primary"] {
+  background: #1890ff;
+  border-color: #1890ff;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);
+}
+
+.time-period-button[ant-button-type="default"] {
+  background: #ffffff;
+  border-color: #d9d9d9;
+  color: #666666;
+}
+
+.time-period-button[ant-button-type="default"]:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .time-period-selector {
+    gap: 4px;
+  }
+  
+  .time-period-button {
+    min-width: 50px;
+    height: 28px;
+    font-size: 12px;
+  }
+} 

@@ -100,8 +100,9 @@
   background: #fafafa;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
-  padding: 16px;
-  height: 100%;
+  padding: 10px 12px;
+  /* 原来是16px，改为更紧凑 */
+  /* height: 100%; */
   transition: all 0.3s ease;
 }
 
@@ -114,8 +115,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
   border-bottom: 1px solid #e8e8e8;
 }
 
@@ -134,13 +135,16 @@
 .course-type-stats {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
+  /* 原来是8px，改为更紧凑 */
 }
 
 .stat-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .stat-label {

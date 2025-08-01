@@ -82,9 +82,112 @@ export const compareDates = (date1: any, date2: any): number => {
   return 0;
 };
 
+/**
+ * 获取当前周度的时间范围
+ * @returns { start: string, end: string } 周的开始和结束日期
+ */
+export const getWeekRange = (): { start: string; end: string } => {
+  const now = dayjs();
+  const startOfWeek = now.startOf('week'); // 周一
+  const endOfWeek = now.endOf('week'); // 周日
+  
+  return {
+    start: startOfWeek.format('YYYY-MM-DD'),
+    end: endOfWeek.format('YYYY-MM-DD')
+  };
+};
+
+/**
+ * 获取当前月度的时间范围
+ * @returns { start: string, end: string } 月的开始和结束日期
+ */
+export const getMonthRange = (): { start: string; end: string } => {
+  const now = dayjs();
+  const startOfMonth = now.startOf('month');
+  const endOfMonth = now.endOf('month');
+  
+  return {
+    start: startOfMonth.format('YYYY-MM-DD'),
+    end: endOfMonth.format('YYYY-MM-DD')
+  };
+};
+
+/**
+ * 获取当前季度的时间范围
+ * @returns { start: string, end: string } 季度的开始和结束日期
+ */
+export const getQuarterRange = (): { start: string; end: string } => {
+  const now = dayjs();
+  const month = now.month(); // 0-11
+  
+  // 计算季度
+  let startMonth, endMonth;
+  if (month >= 0 && month <= 2) { // Q1: 1-3月
+    startMonth = 0;
+    endMonth = 2;
+  } else if (month >= 3 && month <= 5) { // Q2: 4-6月
+    startMonth = 3;
+    endMonth = 5;
+  } else if (month >= 6 && month <= 8) { // Q3: 7-9月
+    startMonth = 6;
+    endMonth = 8;
+  } else { // Q4: 10-12月
+    startMonth = 9;
+    endMonth = 11;
+  }
+  
+  const startOfQuarter = now.month(startMonth).startOf('month');
+  const endOfQuarter = now.month(endMonth).endOf('month');
+  
+  return {
+    start: startOfQuarter.format('YYYY-MM-DD'),
+    end: endOfQuarter.format('YYYY-MM-DD')
+  };
+};
+
+/**
+ * 获取当前年度的时间范围
+ * @returns { start: string, end: string } 年的开始和结束日期
+ */
+export const getYearRange = (): { start: string; end: string } => {
+  const now = dayjs();
+  const startOfYear = now.startOf('year');
+  const endOfYear = now.endOf('year');
+  
+  return {
+    start: startOfYear.format('YYYY-MM-DD'),
+    end: endOfYear.format('YYYY-MM-DD')
+  };
+};
+
+/**
+ * 根据时间类型获取时间范围
+ * @param timeframe 时间类型
+ * @returns { start: string, end: string } 时间范围
+ */
+export const getTimeRange = (timeframe: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY'): { start: string; end: string } => {
+  switch (timeframe) {
+    case 'WEEKLY':
+      return getWeekRange();
+    case 'MONTHLY':
+      return getMonthRange();
+    case 'QUARTERLY':
+      return getQuarterRange();
+    case 'YEARLY':
+      return getYearRange();
+    default:
+      return getWeekRange();
+  }
+};
+
 export default {
   safeDayjs,
   formatDate,
   isValidDate,
-  compareDates
+  compareDates,
+  getWeekRange,
+  getMonthRange,
+  getQuarterRange,
+  getYearRange,
+  getTimeRange
 }; 

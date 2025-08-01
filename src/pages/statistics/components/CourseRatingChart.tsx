@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { Empty, Radio, Row, Col, Statistic } from 'antd';
 import { DollarOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
-import { CourseRevenueData } from '../hooks/useCourseAnalysisData';
-import { CourseComparisonData } from './CourseAnalysis';
 import { CHART_COLORS } from '../constants/chartColors';
 
 interface CourseRatingChartProps {
-  data: CourseComparisonData[] | null;
+  data: any[] | null;
   loading: boolean;
 }
 
