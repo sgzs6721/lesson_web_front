@@ -293,24 +293,31 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                   position: 'relative',
                   height: '24px'
                 }}>
-                  {/* 职位标签放在年龄左侧 */}
+                  {/* 职位标签 */}
                   <div style={{ marginRight: '20px' }}>
                     {renderJobTitleTag(coach.jobTitle)}
                   </div>
+                  {/* 工作类型标签 */}
                   <div style={{ marginRight: '20px' }}>
-                    <span style={{
-                      backgroundColor: '#f5f5f5',
-                      padding: '0 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      color: '#333',
-                      height: '22px',
-                      lineHeight: '22px',
-                      display: 'inline-block',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                    }}>{coach.idNumber ? `${coach.idNumber.substring(6, 10)}年` : '-'}</span>
+                    <Tag
+                      color={coach.workType === 'FULLTIME' ? 'green' : 'blue'}
+                      style={{
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        padding: '0 8px',
+                        fontWeight: 600,
+                        marginRight: 0,
+                        border: 'none',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        height: '22px',
+                        lineHeight: '22px',
+                        display: 'inline-block'
+                      }}
+                    >
+                      {coach.workType === 'FULLTIME' ? '全职' : '兼职'}
+                    </Tag>
                   </div>
+                  {/* 状态标签 */}
                   <div>
                     {renderStatusTag(coach.status, coach)}
                   </div>

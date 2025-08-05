@@ -242,7 +242,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               <span style={{ color: '#1890ff', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♂</span> :
               <span style={{ color: '#eb2f96', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♀</span>
             }
-            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px', marginRight: '12px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>{displayCoach.idNumber ? `${displayCoach.idNumber.substring(6, 10)}年` : '-'}</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px', marginRight: '12px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>{displayCoach.workType === 'FULLTIME' ? '全职' : '兼职'}</span>
             {displayCoach.status && (
               <Tag color={getStatusTagInfo(displayCoach.status).color} style={{ margin: 0, fontSize: '14px', padding: '2px 8px' }}>
                 {getStatusTagInfo(displayCoach.status).text}
