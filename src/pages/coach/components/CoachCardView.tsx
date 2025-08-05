@@ -33,6 +33,36 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
   onStatusChange,
   rowLoading = {}
 }) => {
+  // 从身份证号计算年龄
+  const calculateAgeFromIdNumber = (idNumber: string): number => {
+    if (!idNumber || idNumber.length < 6) return 0;
+    
+    try {
+      // 提取出生年份
+      const year = parseInt(idNumber.substring(6, 10));
+      const currentYear = new Date().getFullYear();
+      return currentYear - year;
+    } catch (error) {
+      console.error('计算年龄失败:', error);
+      return 0;
+    }
+  };
+
+  // 从执教日期计算教龄
+  const calculateTeachingExperience = (coachingDate: string): number => {
+    if (!coachingDate) return 0;
+    
+    try {
+      const startDate = new Date(coachingDate);
+      const currentDate = new Date();
+      const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+      const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
+      return diffYears;
+    } catch (error) {
+      console.error('计算教龄失败:', error);
+      return 0;
+    }
+  };
 
   // 渲染状态标签
   const renderStatusTag = (status: string, coach: Coach) => {
@@ -291,20 +321,24 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                 {/* 左栏：基本信息 */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
-                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>电话：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.phone}</span>
-                  </div>
-                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>ID：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.id}</span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
-                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>教龄：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.coachingDate ? `${new Date().getFullYear() - new Date(coach.coachingDate).getFullYear()}年` : '-'}</span>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>电话：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.phone}</span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
-                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>入职：</span>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>身份证：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.idNumber || '-'}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>入职日期：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>{formatDate(coach.hireDate)}</span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>执教日期：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.coachingDate ? formatDate(coach.coachingDate) : '-'}</span>
                   </div>
                   <div className="coach-info-item" style={{display: 'flex', alignItems: 'center'}}>
                     <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>证书：</span>
@@ -460,11 +494,9 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
-                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>社保费：</span>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>保底课时：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
-                      {typeof coach.socialInsurance === 'number'
-                        ? `¥ ${coach.socialInsurance.toLocaleString()}`
-                        : '¥ 0'}
+                      {coach.guaranteedHours || '0'}小时
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
@@ -478,6 +510,14 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                         }
                         return `¥ 0${noBreakSpace}/时`;
                       })()}
+                    </span>
+                  </div>
+                  <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
+                    <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>社保费：</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>
+                      {typeof coach.socialInsurance === 'number'
+                        ? `¥ ${coach.socialInsurance.toLocaleString()}`
+                        : '¥ 0'}
                     </span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>

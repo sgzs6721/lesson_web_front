@@ -262,19 +262,11 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
           <Descriptions.Item label="教练ID" span={1}>{displayCoach.id || '-'}</Descriptions.Item>
           <Descriptions.Item label="联系电话" span={1}>{displayCoach.phone || '-'}</Descriptions.Item>
 
+          <Descriptions.Item label="身份证号" span={1}>{displayCoach.idNumber || '-'}</Descriptions.Item>
+          <Descriptions.Item label="所属校区" span={1}>{currentCampusName || displayCoach.campusName || '-'}</Descriptions.Item>
+
           <Descriptions.Item label="入职日期" span={1}>{displayCoach.hireDate || '-'}</Descriptions.Item>
           <Descriptions.Item label="执教日期" span={1}>{displayCoach.coachingDate ? new Date(displayCoach.coachingDate).toLocaleDateString() : '-'}</Descriptions.Item>
-
-          <Descriptions.Item label="所属校区" span={2}>{currentCampusName || displayCoach.campusName || '-'}</Descriptions.Item>
-
-          <Descriptions.Item label="基本工资" span={1}>{`¥ ${displayCoach.baseSalary?.toLocaleString() || '0'}`}</Descriptions.Item>
-          <Descriptions.Item label="社保费" span={1}>{`¥ ${displayCoach.socialInsurance?.toLocaleString() || '0'}`}</Descriptions.Item>
-
-          <Descriptions.Item label="课时费" span={1}>{formatClassFee(displayCoach.classFee)}</Descriptions.Item>
-          <Descriptions.Item label="绩效奖金" span={1}>{`¥ ${displayCoach.performanceBonus?.toLocaleString() || '0'}`}</Descriptions.Item>
-
-          <Descriptions.Item label="提成" span={1}>{`${displayCoach.commission || '0'}%`}</Descriptions.Item>
-          <Descriptions.Item label="分红" span={1}>{`¥ ${displayCoach.dividend?.toLocaleString() || '0'}`}</Descriptions.Item>
 
           <Descriptions.Item label="证书" span={2}>
             <div className="certification-content" style={{
@@ -288,6 +280,17 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               {renderCertifications(displayCoach.certifications)}
             </div>
           </Descriptions.Item>
+
+          <Descriptions.Item label="基本工资" span={1}>{`¥ ${displayCoach.baseSalary?.toLocaleString() || '0'}`}</Descriptions.Item>
+          <Descriptions.Item label="保底课时" span={1}>{displayCoach.guaranteedHours || '0'}小时</Descriptions.Item>
+
+          <Descriptions.Item label="课时费" span={1}>{formatClassFee(displayCoach.classFee)}</Descriptions.Item>
+          <Descriptions.Item label="社保费" span={1}>{`¥ ${displayCoach.socialInsurance?.toLocaleString() || '0'}`}</Descriptions.Item>
+
+          <Descriptions.Item label="绩效奖金" span={1}>{`¥ ${displayCoach.performanceBonus?.toLocaleString() || '0'}`}</Descriptions.Item>
+          <Descriptions.Item label="提成" span={1}>{`${displayCoach.commission || '0'}%`}</Descriptions.Item>
+
+          <Descriptions.Item label="分红" span={1}>{`¥ ${displayCoach.dividend?.toLocaleString() || '0'}`}</Descriptions.Item>
         </Descriptions>
       </Spin>
     </Modal>
