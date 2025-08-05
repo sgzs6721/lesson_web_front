@@ -13,6 +13,12 @@ export enum CoachGender {
   FEMALE = 'FEMALE'
 }
 
+// 教练工作类型枚举
+export enum CoachEmploymentType {
+  FULLTIME = 'FULLTIME',
+  PARTTIME = 'PARTTIME'
+}
+
 // 教练简单信息类型
 export interface CoachSimple {
   id: number; // 修改为数字类型
@@ -24,17 +30,19 @@ export interface Coach {
   id: number | string;
   name: string;
   gender: CoachGender;
-  age: number;
+  workType: CoachEmploymentType; // 修改字段名
+  idNumber: string; // 修改字段名
   phone: string;
   avatar?: string;
   jobTitle: string;
   certifications: string[] | string;
-  experience: number;
+  coachingDate: string; // 修改字段名
   status: CoachStatus;
   hireDate: string;
   baseSalary?: number;
-  socialInsurance?: number;
+  guaranteedHours?: number;
   classFee?: number;
+  socialInsurance?: number;
   performanceBonus?: number;
   commission?: number;
   dividend?: number;
@@ -61,17 +69,19 @@ export interface CoachQueryParams {
 export interface CoachCreateParams {
   name: string;
   gender: CoachGender;
-  age: number;
+  workType: CoachEmploymentType; // 修改字段名
+  idNumber: string; // 修改字段名
   phone: string;
   avatar?: string;
   jobTitle: string;
   certifications: string[] | string;
-  experience: number;
+  coachingDate: string; // 修改字段名
   status: CoachStatus;
   hireDate: string;
   baseSalary?: number;
-  socialInsurance?: number;
+  guaranteedHours?: number;
   classFee?: number;
+  socialInsurance?: number;
   performanceBonus?: number;
   commission?: number;
   dividend?: number;
@@ -83,17 +93,19 @@ export interface CoachUpdateParams {
   id: number | string;
   name: string;
   gender: CoachGender;
-  age: number;
+  workType: CoachEmploymentType; // 修改字段名
+  idNumber: string; // 修改字段名
   phone: string;
   avatar?: string;
   jobTitle: string;
   certifications: string[] | string;
-  experience: number;
+  coachingDate: string; // 修改字段名
   status: CoachStatus;
   hireDate: string;
   baseSalary?: number;
-  socialInsurance?: number;
+  guaranteedHours?: number;
   classFee?: number;
+  socialInsurance?: number;
   performanceBonus?: number;
   commission?: number;
   dividend?: number;

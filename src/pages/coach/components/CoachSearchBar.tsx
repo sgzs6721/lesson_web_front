@@ -12,7 +12,6 @@ interface CoachSearchBarProps {
   onTextChange: (value: string) => void;
   onStatusChange: (value: string | undefined) => void;
   onJobTitleChange: (value: string | undefined) => void;
-  onSortFieldChange: (value: 'experience' | 'hireDate' | 'status' | 'age' | 'jobTitle' | 'gender' | undefined) => void;
 }
 
 const CoachSearchBar: React.FC<CoachSearchBarProps> = ({
@@ -21,8 +20,7 @@ const CoachSearchBar: React.FC<CoachSearchBarProps> = ({
   onReset,
   onTextChange,
   onStatusChange,
-  onJobTitleChange,
-  onSortFieldChange
+  onJobTitleChange
 }) => {
   return (
     <Row gutter={[16, 16]} style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap' }}>
@@ -66,26 +64,6 @@ const CoachSearchBar: React.FC<CoachSearchBarProps> = ({
             <Option value="高级教练">高级教练</Option>
             <Option value="中级教练">中级教练</Option>
             <Option value="初级教练">初级教练</Option>
-          </Select>
-        </div>
-      </Col>
-      <Col style={{ flex: 1, minWidth: '150px' }}>
-        <div className="select-wrapper">
-          <Select
-            placeholder="默认排序"
-            style={{ width: '100%' }}
-            value={params.sortField}
-            onChange={onSortFieldChange}
-            allowClear
-            popupMatchSelectWidth={true}
-            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-          >
-            <Option value="experience">按教龄排序</Option>
-            <Option value="hireDate">按入职日期排序</Option>
-            <Option value="status">按状态排序</Option>
-            <Option value="age">按年龄排序</Option>
-            <Option value="jobTitle">按职位排序</Option>
-            <Option value="gender">按性别排序</Option>
           </Select>
         </div>
       </Col>

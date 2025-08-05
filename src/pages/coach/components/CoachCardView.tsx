@@ -279,7 +279,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                       lineHeight: '22px',
                       display: 'inline-block',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                    }}>{coach.age}岁</span>
+                    }}>{coach.idNumber ? `${coach.idNumber.substring(6, 10)}年` : '-'}</span>
                   </div>
                   <div>
                     {renderStatusTag(coach.status, coach)}
@@ -300,7 +300,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>教龄：</span>
-                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.experience}年</span>
+                    <span className="info-value" style={{textAlign: 'right', flex: 1}}>{coach.coachingDate ? `${new Date().getFullYear() - new Date(coach.coachingDate).getFullYear()}年` : '-'}</span>
                   </div>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 56, flexShrink: 0}}>入职：</span>

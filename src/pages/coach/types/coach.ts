@@ -1,5 +1,5 @@
 import { Dayjs } from 'dayjs';
-import { CoachGender, CoachStatus } from '../../../api/coach/types';
+import { CoachGender, CoachStatus, CoachEmploymentType } from '../../../api/coach/types';
 
 // 性别类型定义
 export type Gender = CoachGender;
@@ -7,8 +7,9 @@ export type Gender = CoachGender;
 // 薪资对象接口
 export interface CoachSalary {
   baseSalary: number;
-  socialInsurance: number;
+  guaranteedHours: number;
   classFee: number;
+  socialInsurance: number;
   performanceBonus: number;
   commission: number;
   dividend: number;
@@ -19,18 +20,20 @@ export interface Coach {
   id: string;
   name: string;
   gender: Gender;
-  age: number;
+  workType: CoachEmploymentType; // 修改字段名
+  idNumber: string; // 修改字段名
   phone: string;
   avatar?: string;
   jobTitle: string;
   certifications: string[] | string;
-  experience: number;
+  coachingDate: string; // 修改字段名
   status: CoachStatus;
   hireDate: string;
   // 可以直接访问的薪资字段
   baseSalary?: number;
-  socialInsurance?: number;
+  guaranteedHours?: number;
   classFee?: number;
+  socialInsurance?: number;
   performanceBonus?: number;
   commission?: number;
   dividend?: number;
@@ -49,7 +52,7 @@ export type CoachSearchParams = {
   searchText: string;
   selectedStatus?: string;
   selectedJobTitle?: string;
-  sortField?: 'experience' | 'hireDate' | 'status' | 'age' | 'jobTitle' | 'gender';
+  sortField?: 'coachingDate' | 'hireDate' | 'status' | 'idNumber' | 'jobTitle' | 'gender';
 };
 
 // 视图模式

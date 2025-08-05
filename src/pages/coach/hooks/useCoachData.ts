@@ -15,7 +15,9 @@ export const useCoachData = () => {
   const fetchCoaches = async (
     currentPage: number,
     pageSize: number,
-    params?: CoachSearchParams
+    params?: CoachSearchParams,
+    sortField?: string,
+    sortOrder?: 'ascend' | 'descend'
   ) => {
     setLoading(true);
     try {
@@ -29,8 +31,8 @@ export const useCoachData = () => {
         keyword: params?.searchText,
         status: params?.selectedStatus as CoachStatus,
         jobTitle: params?.selectedJobTitle,
-        sortField: params?.sortField,
-        sortOrder: 'desc' as 'asc' | 'desc', // 默认降序
+        sortField: sortField || params?.sortField,
+        sortOrder: (sortOrder === 'ascend' ? 'asc' : 'desc') as 'asc' | 'desc',
         campusId: currentCampusId // 添加当前校区ID
       };
 
@@ -45,15 +47,17 @@ export const useCoachData = () => {
         id: apiCoach.id.toString(),
         name: apiCoach.name,
         gender: apiCoach.gender,
-        age: apiCoach.age,
+        workType: apiCoach.workType || 'FULLTIME',
+        idNumber: apiCoach.idNumber || '',
         phone: apiCoach.phone,
         avatar: apiCoach.avatar,
         jobTitle: apiCoach.jobTitle,
         certifications: apiCoach.certifications,
-        experience: apiCoach.experience,
+        coachingDate: apiCoach.coachingDate || apiCoach.hireDate,
         status: apiCoach.status,
         hireDate: apiCoach.hireDate,
         baseSalary: apiCoach.baseSalary,
+        guaranteedHours: apiCoach.guaranteedHours,
         socialInsurance: apiCoach.socialInsurance,
         classFee: apiCoach.classFee,
         performanceBonus: apiCoach.performanceBonus,
@@ -83,6 +87,9 @@ export const useCoachData = () => {
       // 构建API请求参数
       const apiParams = {
         ...values,
+        workType: values.workType || 'FULLTIME',
+        idNumber: values.idNumber || '',
+        coachingDate: values.coachingDate || values.hireDate,
         campusId: Number(campusId)
       };
 
@@ -132,16 +139,18 @@ export const useCoachData = () => {
         id: id,
         name: updatedCoach.name,
         gender: updatedCoach.gender as CoachGender,
-        age: updatedCoach.age,
+        workType: updatedCoach.workType || 'FULLTIME',
+        idNumber: updatedCoach.idNumber || '',
         phone: updatedCoach.phone,
         avatar: updatedCoach.avatar,
         jobTitle: updatedCoach.jobTitle,
         certifications: updatedCoach.certifications,
-        experience: updatedCoach.experience,
+        coachingDate: updatedCoach.coachingDate || updatedCoach.hireDate,
         status: updatedCoach.status as CoachStatus,
         hireDate: updatedCoach.hireDate,
         // 薪资相关字段
         baseSalary: updatedCoach.baseSalary || 0,
+        guaranteedHours: updatedCoach.guaranteedHours || 0,
         socialInsurance: updatedCoach.socialInsurance || 0,
         classFee: updatedCoach.classFee || 0,
         performanceBonus: updatedCoach.performanceBonus || 0,

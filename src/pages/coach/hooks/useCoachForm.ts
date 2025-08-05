@@ -69,16 +69,17 @@ export const useCoachForm = (
     form.setFieldsValue({
       status: 'ACTIVE',
       gender: 'MALE',
-      experience: 1,
-      age: 25,
+      workType: 'FULLTIME',
       campusId: currentCampusId,
       baseSalary: 0,
-      socialInsurance: 0,
+      guaranteedHours: 0,
       classFee: 0,
+      socialInsurance: 0,
       performanceBonus: 0,
       commission: 0,
       dividend: 0,
       hireDate: dayjs(),
+      coachingDate: dayjs(),
     });
 
     // 清除编辑状态和头像
@@ -98,8 +99,7 @@ export const useCoachForm = (
     form.setFieldsValue({
       status: 'ACTIVE',
       gender: 'MALE',
-      experience: 1,
-      age: 25,
+      employmentType: 'FULL_TIME',
       campusId: currentCampusId,
       baseSalary: 0,
       socialInsurance: 0,
@@ -108,6 +108,7 @@ export const useCoachForm = (
       commission: 0,
       dividend: 0,
       hireDate: dayjs(),
+      teachingStartDate: dayjs(),
     })
 
     try {
@@ -251,17 +252,19 @@ export const useCoachForm = (
         const formattedValues: any = {
           name: values.name,
           gender: values.gender,
-          age: Number(values.age),
+          workType: values.workType,
+          idNumber: values.idNumber,
           phone: values.phone,
           avatar: selectedAvatar || values.avatar,
           jobTitle: values.jobTitle,
           hireDate: safeDayjs(values.hireDate).format('YYYY-MM-DD'),
-          experience: Number(values.experience),
+          coachingDate: safeDayjs(values.coachingDate).format('YYYY-MM-DD'),
           certifications: values.certifications ? values.certifications.split('\n').filter((cert: string) => cert.trim() !== '') : [],
           status: values.status,
           campusId: Number(values.campusId || localStorage.getItem('currentCampusId') || 1),
           // 直接添加薪资字段
           baseSalary: Number(values.baseSalary || 0),
+          guaranteedHours: Number(values.guaranteedHours || 0),
           socialInsurance: Number(values.socialInsurance || 0),
           classFee: Number(values.classFee || 0),
           performanceBonus: Number(values.performanceBonus || 0),
@@ -275,7 +278,7 @@ export const useCoachForm = (
         console.log('最终提交的数据:', formattedValues);
 
         // 再次确认必要字段存在
-        const requiredFields = ['name', 'gender', 'age', 'phone', 'jobTitle', 'hireDate', 'experience', 'status', 'campusId'];
+        const requiredFields = ['name', 'gender', 'workType', 'idNumber', 'phone', 'jobTitle', 'hireDate', 'coachingDate', 'status', 'campusId'];
         let missingFields: string[] = [];
 
         requiredFields.forEach(field => {
@@ -304,17 +307,19 @@ export const useCoachForm = (
                   id: editingCoach.id,
                   name: formattedValues.name,
                   gender: formattedValues.gender,
-                  age: formattedValues.age,
+                  workType: formattedValues.workType,
+                  idNumber: formattedValues.idNumber,
+                  coachingDate: formattedValues.coachingDate,
                   phone: formattedValues.phone,
                   avatar: formattedValues.avatar,
                   jobTitle: formattedValues.jobTitle,
                   hireDate: formattedValues.hireDate,
-                  experience: formattedValues.experience,
                   certifications: formattedValues.certifications,
                   status: formattedValues.status,
                   campusId: formattedValues.campusId,
                   // 薪资相关字段
                   baseSalary: formattedValues.baseSalary,
+                  guaranteedHours: formattedValues.guaranteedHours,
                   socialInsurance: formattedValues.socialInsurance,
                   classFee: formattedValues.classFee,
                   performanceBonus: formattedValues.performanceBonus,

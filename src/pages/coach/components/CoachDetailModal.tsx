@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Descriptions, Avatar, Tag, Space, Button, Spin, Tooltip } from 'antd';
 import { Coach } from '../types/coach';
 import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
-import { CoachGender, CoachStatus } from '../../../api/coach/types';
+import { CoachGender, CoachStatus, CoachEmploymentType } from '../../../api/coach/types';
 import { UserOutlined } from '@ant-design/icons';
 
 interface CoachDetailModalProps {
@@ -167,11 +167,12 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
     id: '',
     name: '',
     gender: CoachGender.MALE,
-    age: 0,
+          workType: CoachEmploymentType.FULLTIME,
+            idNumber: '',
     phone: '',
     status: CoachStatus.ACTIVE,
     jobTitle: '',
-    experience: 0,
+          coachingDate: '',
     hireDate: '',
     campusId: '',
     campusName: '',
@@ -241,7 +242,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
               <span style={{ color: '#1890ff', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♂</span> :
               <span style={{ color: '#eb2f96', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♀</span>
             }
-            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px', marginRight: '12px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>{displayCoach.age}岁</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px', marginRight: '12px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>{displayCoach.idNumber ? `${displayCoach.idNumber.substring(6, 10)}年` : '-'}</span>
             {displayCoach.status && (
               <Tag color={getStatusTagInfo(displayCoach.status).color} style={{ margin: 0, fontSize: '14px', padding: '2px 8px' }}>
                 {getStatusTagInfo(displayCoach.status).text}
@@ -262,7 +263,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
           <Descriptions.Item label="联系电话" span={1}>{displayCoach.phone || '-'}</Descriptions.Item>
 
           <Descriptions.Item label="入职日期" span={1}>{displayCoach.hireDate || '-'}</Descriptions.Item>
-          <Descriptions.Item label="教龄" span={1}>{displayCoach.experience ? `${displayCoach.experience}年` : '-'}</Descriptions.Item>
+          <Descriptions.Item label="执教日期" span={1}>{displayCoach.coachingDate ? new Date(displayCoach.coachingDate).toLocaleDateString() : '-'}</Descriptions.Item>
 
           <Descriptions.Item label="所属校区" span={2}>{currentCampusName || displayCoach.campusName || '-'}</Descriptions.Item>
 

@@ -146,3 +146,50 @@
   z-index: 999 !important;
   opacity: 0.6 !important;
 }
+
+/* 性别选择器样式 */
+.gender-option,
+.employment-option {
+  border: 2px solid #d9d9d9 !important;
+  background: #fff !important;
+  transition: all 0.3s ease !important;
+}
+
+.gender-option:hover,
+.employment-option:hover {
+  border-color: #1890ff !important;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+.gender-option-selected,
+.employment-option-selected {
+  border-color: #1890ff !important;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%) !important;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 性别选择器特殊样式 */
+.gender-option-selected[onclick*="MALE"] {
+  border-color: #1890ff !important;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%) !important;
+}
+
+.gender-option-selected[onclick*="FEMALE"] {
+  border-color: #eb2f96 !important;
+  background: linear-gradient(135deg, #fff0f6 0%, #ffe7f3 100%) !important;
+}
+
+/* 工作类型选择器特殊样式 */
+.employment-option-selected[onclick*="FULL_TIME"] {
+  border-color: #52c41a !important;
+  background: linear-gradient(135deg, #f6ffed 0%, #e6f7d9 100%) !important;
+}
+
+.employment-option-selected[onclick*="PART_TIME"] {
+  border-color: #fa8c16 !important;
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%) !important;
+}
+
+/* 选中状态的左侧圆形标记 - 已通过内联样式实现 */

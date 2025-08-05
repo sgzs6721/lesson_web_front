@@ -83,7 +83,7 @@ export const responseInterceptor = async (response: Response) => {
         localStorage.removeItem('user');
         
         // 使用window.location进行跳转，完全刷新页面
-        window.location.href = '/login';
+        window.location.href = '/home';
         
         // 可选：显示一个通知
         if (typeof window !== 'undefined') {

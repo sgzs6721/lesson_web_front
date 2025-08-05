@@ -22,6 +22,9 @@ interface CoachTableProps {
   onViewDetail: (record: Coach) => void;
   onStatusChange?: (id: string, newStatus: string) => void;
   rowLoading?: Record<string, boolean>; // 每一行的加载状态，用于状态变更时显示加载效果
+  sortField?: string;
+  sortOrder?: 'ascend' | 'descend';
+  onSortChange?: (field: string, order: 'ascend' | 'descend') => void;
 }
 
 const CoachTable: React.FC<CoachTableProps> = ({
@@ -32,8 +35,41 @@ const CoachTable: React.FC<CoachTableProps> = ({
   onDelete,
   onViewDetail,
   onStatusChange,
-  rowLoading = {}
+  rowLoading = {},
+  sortField,
+  sortOrder,
+  onSortChange
 }) => {
+  // 从身份证号计算年龄
+  const calculateAgeFromIdNumber = (idNumber: string): number => {
+    if (!idNumber || idNumber.length < 6) return 0;
+    
+    try {
+      // 提取出生年份
+      const year = parseInt(idNumber.substring(6, 10));
+      const currentYear = new Date().getFullYear();
+      return currentYear - year;
+    } catch (error) {
+      console.error('计算年龄失败:', error);
+      return 0;
+    }
+  };
+
+  // 从执教日期计算教龄
+  const calculateTeachingExperience = (coachingDate: string): number => {
+    if (!coachingDate) return 0;
+    
+    try {
+      const startDate = new Date(coachingDate);
+      const currentDate = new Date();
+      const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+      const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
+      return diffYears;
+    } catch (error) {
+      console.error('计算教龄失败:', error);
+      return 0;
+    }
+  };
   // 渲染状态标签
   const renderStatusTag = (status: string, record: Coach) => {
     const { color, text } = getStatusTagInfo(status);
@@ -100,6 +136,10 @@ const CoachTable: React.FC<CoachTableProps> = ({
       key: 'id',
       width: 100,
       align: 'center',
+      sorter: true,
+      sortDirections: ['ascend', 'descend'],
+      defaultSortOrder: 'ascend',
+      sortOrder: sortField === 'id' ? sortOrder : null,
     },
     {
       title: '姓名',
@@ -128,11 +168,30 @@ const CoachTable: React.FC<CoachTableProps> = ({
       ),
     },
     {
-      title: '年龄',
-      dataIndex: 'age',
-      key: 'age',
-      width: 80,
+      title: '类型',
+      dataIndex: 'workType',
+      key: 'workType',
       align: 'center',
+      render: (workType) => {
+        const typeInfo = workType === 'FULLTIME' 
+          ? { color: 'green', text: '全职' }
+          : { color: 'orange', text: '兼职' };
+        return (
+          <Tag
+            color={typeInfo.color}
+            style={{
+              padding: '1px 5px',
+              borderRadius: '3px',
+              fontSize: '11px',
+              lineHeight: '1.3',
+              height: '18px',
+              margin: '2px',
+            }}
+          >
+            {typeInfo.text}
+          </Tag>
+        );
+      },
     },
     {
       title: '职位',
@@ -159,6 +218,33 @@ const CoachTable: React.FC<CoachTableProps> = ({
       },
     },
     {
+      title: '年龄',
+      dataIndex: 'idNumber',
+      key: 'age',
+      width: 80,
+      align: 'center',
+      sorter: true,
+      sortDirections: ['ascend', 'descend'],
+      sortOrder: sortField === 'age' ? sortOrder : null,
+      render: (idNumber) => {
+        const age = calculateAgeFromIdNumber(idNumber);
+        return age > 0 ? `${age}岁` : '-';
+      },
+    },
+    {
+      title: '教龄',
+      dataIndex: 'coachingDate',
+      key: 'experience',
+      align: 'center',
+      sorter: true,
+      sortDirections: ['ascend', 'descend'],
+      sortOrder: sortField === 'experience' ? sortOrder : null,
+      render: (coachingDate) => {
+        const years = calculateTeachingExperience(coachingDate);
+        return years > 0 ? `${years}年` : '-';
+      },
+    },
+    {
       title: '联系电话',
       dataIndex: 'phone',
       key: 'phone',
@@ -166,175 +252,6 @@ const CoachTable: React.FC<CoachTableProps> = ({
       render: (phone) => (
         <div>{phone}</div>
       ),
-    },
-    {
-      title: '入职日期',
-      dataIndex: 'hireDate',
-      key: 'hireDate',
-      align: 'center',
-      render: text => dayjs(text).format('YYYY-MM-DD'),
-    },
-    {
-      title: '教龄',
-      dataIndex: 'experience',
-      key: 'experience',
-      align: 'center',
-      render: (years) => `${years}年`,
-    },
-    {
-      title: <div style={{ textAlign: 'center' }}>证书</div>,
-      dataIndex: 'certifications',
-      key: 'certifications',
-      ellipsis: true,
-      width: 200,
-      align: 'center',
-      render: (certifications) => {
-        if (!certifications ||
-            (Array.isArray(certifications) && certifications.length === 0) ||
-            (typeof certifications === 'string' && certifications.trim() === '')) {
-          return <div style={{ color: '#999', textAlign: 'center' }}>无</div>;
-        }
-
-        // 将证书数据转换为数组
-        let certArray: string[] = [];
-        if (Array.isArray(certifications)) {
-          certArray = certifications.filter(c => c.trim());
-        } else if (typeof certifications === 'string') {
-          certArray = certifications.split(/[,，\n\r]/).map(c => c.trim()).filter(c => c);
-        }
-
-        if (certArray.length === 0) {
-          return <div style={{ color: '#999', textAlign: 'center' }}>无</div>;
-        }
-
-        // 限制最多显示2个证书，超出部分显示+N
-        const maxShow = 2;
-        const hasMore = certArray.length > maxShow;
-        const visibleCerts = certArray.slice(0, maxShow);
-
-        // 创建Tooltip内容，每个证书一行，美化样式
-        const tooltipContent = (
-          <div style={{
-            textAlign: 'left',
-            padding: '0',
-            minWidth: '220px',
-            maxWidth: '260px',
-            borderRadius: '6px',
-            overflow: 'hidden',
-            boxShadow: '0 3px 8px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e8e8e8',
-            backgroundColor: '#fff'
-          }}>
-            <div style={{
-              padding: '8px 12px',
-              backgroundColor: '#f5f5f5',
-              color: '#333',
-              fontSize: '13px',
-              fontWeight: 'bold',
-              letterSpacing: '0.5px',
-              borderBottom: '1px solid #e8e8e8'
-            }}>
-              证书列表
-            </div>
-            <div style={{
-              padding: '8px 12px',
-              backgroundColor: '#fff',
-              maxHeight: '180px',
-              overflowY: 'auto'
-            }}>
-              {certArray.length > 0 ? certArray.map((cert, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    padding: '6px 10px',
-                    margin: '4px 0',
-                    backgroundColor: '#f6ffed',
-                    border: '1px solid #b7eb8f',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    color: '#52c41a',
-                    display: 'flex',
-                    alignItems: 'center',
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
-                  }}
-                >
-                  <div style={{
-                    width: '5px',
-                    height: '5px',
-                    backgroundColor: '#52c41a',
-                    borderRadius: '50%',
-                    marginRight: '8px'
-                  }}></div>
-                  {cert}
-                </div>
-              )) : (
-                <div style={{
-                  padding: '8px',
-                  textAlign: 'center',
-                  color: '#999',
-                  fontStyle: 'italic',
-                  fontSize: '12px'
-                }}>
-                  暂无证书信息
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-        return (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexWrap: 'nowrap',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            gap: '4px'
-          }}>
-            <Tooltip title={tooltipContent} placement="top" styles={{ body: { padding: 0, backgroundColor: 'transparent', boxShadow: 'none' } }}>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {visibleCerts.map((cert, index) => (
-                  <Tag
-                    key={index}
-                    color="green"
-                    style={{
-                      padding: '1px 5px',
-                      borderRadius: '3px',
-                      fontSize: '11px',
-                      lineHeight: '1.3',
-                      height: '18px',
-                      margin: '0 2px',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '80px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}
-                  >
-                    {cert}
-                  </Tag>
-                ))}
-                {hasMore && (
-                  <Tag
-                    color="default"
-                    style={{
-                      padding: '1px 5px',
-                      borderRadius: '3px',
-                      fontSize: '11px',
-                      lineHeight: '1.3',
-                      height: '18px',
-                      margin: '0 2px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    +{certArray.length - maxShow}
-                  </Tag>
-                )}
-              </div>
-            </Tooltip>
-          </div>
-        );
-      }
     },
     {
       title: '状态',
@@ -389,13 +306,20 @@ const CoachTable: React.FC<CoachTableProps> = ({
         rowKey="id"
         loading={loading}
         pagination={false}
+        onChange={(pagination, filters, sorter) => {
+          if (onSortChange && sorter && typeof sorter === 'object' && 'field' in sorter) {
+            const field = sorter.field as string;
+            const order = sorter.order as 'ascend' | 'descend';
+            onSortChange(field, order);
+          }
+        }}
+        sortDirections={['ascend', 'descend']}
       />
       <StandardPagination
         current={pagination.current}
         pageSize={pagination.pageSize}
         total={pagination.total}
         onChange={pagination.onChange}
-        totalText="个教练"
       />
     </>
   );

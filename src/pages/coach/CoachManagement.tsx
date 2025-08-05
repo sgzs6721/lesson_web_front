@@ -27,6 +27,10 @@ const CoachManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  // 排序状态
+  const [tableSortField, setTableSortField] = useState<string>('id');
+  const [tableSortOrder, setTableSortOrder] = useState<'ascend' | 'descend'>('ascend');
+
   // 数据相关钩子
   const { coaches, total, loading, fetchCoaches, addCoach, updateCoach, updateCoachStatus, deleteCoach } = useCoachData();
 
@@ -63,8 +67,8 @@ const CoachManagement: React.FC = () => {
   };
 
   // 加载教练列表
-  const loadCoaches = async (page = currentPage, size = pageSize) => {
-    await fetchCoaches(page, size, searchParams);
+  const loadCoaches = async (page = currentPage, size = pageSize, sortField = tableSortField, sortOrder = tableSortOrder) => {
+    await fetchCoaches(page, size, searchParams, sortField, sortOrder);
 
     // 如果当前是卡片视图模式，预加载所有教练的详情数据
     if (viewMode === 'card') {
@@ -97,7 +101,26 @@ const CoachManagement: React.FC = () => {
   const handleReset = () => {
     resetSearchParams();
     setCurrentPage(1);
+    setTableSortField('id');
+    setTableSortOrder('ascend');
     loadCoaches(1, pageSize);
+  };
+
+  // 处理表格排序
+  const handleTableSortChange = (field: string, order: 'ascend' | 'descend') => {
+    setTableSortField(field);
+    setTableSortOrder(order);
+    
+    // 将前端排序字段映射到后端字段
+    let backendSortField = field;
+    if (field === 'age') {
+      backendSortField = 'idNumber'; // 年龄排序基于身份证号
+    } else if (field === 'experience') {
+      backendSortField = 'coachingDate'; // 教龄排序基于执教日期
+    }
+    
+    // 重新加载数据以应用新的排序
+    loadCoaches(currentPage, pageSize, backendSortField, order);
   };
 
   // 处理视图模式变更
@@ -226,7 +249,6 @@ const CoachManagement: React.FC = () => {
           onTextChange={setSearchText}
           onStatusChange={setSelectedStatus}
           onJobTitleChange={setSelectedJobTitle}
-          onSortFieldChange={setSortField}
         />
 
         {/* 表格或卡片视图 */}
@@ -240,6 +262,9 @@ const CoachManagement: React.FC = () => {
             onViewDetail={showDetail}
             onStatusChange={handleStatusChange}
             rowLoading={statusLoading}
+            sortField={tableSortField}
+            sortOrder={tableSortOrder}
+            onSortChange={handleTableSortChange}
           />
         ) : (
           <CoachCardView
