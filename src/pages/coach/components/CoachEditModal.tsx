@@ -132,36 +132,7 @@ const validateCoachingDate = (form: FormInstance) => (_: any, value: any) => {
   return Promise.resolve();
 };
 
-// 从身份证号计算年龄
-const calculateAgeFromIdNumber = (idNumber: string): number => {
-  if (!idNumber || idNumber.length < 6) return 0;
-  
-  try {
-    // 提取出生年份
-    const year = parseInt(idNumber.substring(6, 10));
-    const currentYear = new Date().getFullYear();
-    return currentYear - year;
-  } catch (error) {
-    console.error('计算年龄失败:', error);
-    return 0;
-  }
-};
 
-// 从执教日期计算教龄
-const calculateTeachingExperience = (coachingDate: any): number => {
-  if (!coachingDate) return 0;
-  
-  try {
-    const startDate = coachingDate.toDate ? coachingDate.toDate() : new Date(coachingDate);
-    const currentDate = new Date();
-    const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
-    const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
-    return diffYears;
-  } catch (error) {
-    console.error('计算教龄失败:', error);
-    return 0;
-  }
-};
 
 interface CoachEditModalProps {
   visible: boolean;
@@ -193,18 +164,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
   const gender = Form.useWatch('gender', form);
   const workType = Form.useWatch('workType', form);
   
-  // 监听身份证号和执教日期字段变化，用于计算年龄和教龄
-  const idNumber = Form.useWatch('idNumber', form);
-  const coachingDate = Form.useWatch('coachingDate', form);
-  
-  // 计算年龄和教龄
-  const calculatedAge = useMemo(() => {
-    return calculateAgeFromIdNumber(idNumber || '');
-  }, [idNumber]);
-  
-  const calculatedExperience = useMemo(() => {
-    return calculateTeachingExperience(coachingDate);
-  }, [coachingDate]);
+
 
   // 使用useMemo处理头像背景色，避免在表单未准备好时使用form.getFieldValue
   const avatarStyle = useMemo(() => {
@@ -557,34 +517,7 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                 </Col>
               </Row>
 
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    label="年龄"
-                    htmlFor="coach_age_display"
-                  >
-                    <Input 
-                      id="coach_age_display" 
-                      value={calculatedAge > 0 ? `${calculatedAge}岁` : '-'}
-                      disabled
-                      style={{ backgroundColor: '#f5f5f5', color: '#666' }}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="教龄"
-                    htmlFor="coach_experience_display"
-                  >
-                    <Input 
-                      id="coach_experience_display" 
-                      value={calculatedExperience > 0 ? `${calculatedExperience}年` : '-'}
-                      disabled
-                      style={{ backgroundColor: '#f5f5f5', color: '#666' }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
+
 
               <Row gutter={16}>
                 <Col span={12}>

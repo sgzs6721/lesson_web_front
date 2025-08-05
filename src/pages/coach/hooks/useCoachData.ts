@@ -64,9 +64,22 @@ export const useCoachData = () => {
         try {
           const startDate = new Date(coachingDate);
           const currentDate = new Date();
-          const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
-          const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
-          return diffYears;
+          
+          // 计算年份差
+          let years = currentDate.getFullYear() - startDate.getFullYear();
+          
+          // 检查是否已经过了今年的执教日期
+          const currentMonth = currentDate.getMonth();
+          const currentDay = currentDate.getDate();
+          const startMonth = startDate.getMonth();
+          const startDay = startDate.getDate();
+          
+          // 如果还没到今年的执教日期，减1年
+          if (currentMonth < startMonth || (currentMonth === startMonth && currentDay < startDay)) {
+            years--;
+          }
+          
+          return Math.max(0, years);
         } catch (error) {
           console.error('计算教龄失败:', error);
           return 0;
@@ -91,8 +104,9 @@ export const useCoachData = () => {
           coachingDate: coachingDate,
           status: apiCoach.status,
           hireDate: apiCoach.hireDate,
-          age: calculateAgeFromIdNumber(idNumber),
-          experience: calculateTeachingExperience(coachingDate),
+          // 正常情况下从后端API获取年龄和教龄
+          age: apiCoach.age,
+          experience: apiCoach.experience,
           baseSalary: apiCoach.baseSalary,
           guaranteedHours: apiCoach.guaranteedHours,
           socialInsurance: apiCoach.socialInsurance,
@@ -156,9 +170,22 @@ export const useCoachData = () => {
         try {
           const startDate = new Date(coachingDate);
           const currentDate = new Date();
-          const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
-          const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
-          return diffYears;
+          
+          // 计算年份差
+          let years = currentDate.getFullYear() - startDate.getFullYear();
+          
+          // 检查是否已经过了今年的执教日期
+          const currentMonth = currentDate.getMonth();
+          const currentDay = currentDate.getDate();
+          const startMonth = startDate.getMonth();
+          const startDay = startDate.getDate();
+          
+          // 如果还没到今年的执教日期，减1年
+          if (currentMonth < startMonth || (currentMonth === startMonth && currentDay < startDay)) {
+            years--;
+          }
+          
+          return Math.max(0, years);
         } catch (error) {
           console.error('计算教龄失败:', error);
           return 0;
@@ -256,9 +283,22 @@ export const useCoachData = () => {
         try {
           const startDate = new Date(coachingDate);
           const currentDate = new Date();
-          const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
-          const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
-          return diffYears;
+          
+          // 计算年份差
+          let years = currentDate.getFullYear() - startDate.getFullYear();
+          
+          // 检查是否已经过了今年的执教日期
+          const currentMonth = currentDate.getMonth();
+          const currentDay = currentDate.getDate();
+          const startMonth = startDate.getMonth();
+          const startDay = startDate.getDate();
+          
+          // 如果还没到今年的执教日期，减1年
+          if (currentMonth < startMonth || (currentMonth === startMonth && currentDay < startDay)) {
+            years--;
+          }
+          
+          return Math.max(0, years);
         } catch (error) {
           console.error('计算教龄失败:', error);
           return 0;
@@ -271,7 +311,7 @@ export const useCoachData = () => {
         ...currentCoach,  // 保留原始教练对象中的其他字段
         ...values,       // 更新提交的字段
         id: id,          // 确保 ID 不变
-        // 计算年龄和教龄
+        // 更新后动态计算年龄和教龄（因为不会重新调用列表接口）
         age: calculateAgeFromIdNumber(values.idNumber || currentCoach.idNumber || ''),
         experience: calculateTeachingExperience(values.coachingDate || currentCoach.coachingDate || ''),
         // 确保这些字段存在，即使在 values 中没有提供
