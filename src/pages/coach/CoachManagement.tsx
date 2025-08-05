@@ -111,16 +111,8 @@ const CoachManagement: React.FC = () => {
     setTableSortField(field);
     setTableSortOrder(order);
     
-    // 将前端排序字段映射到后端字段
-    let backendSortField = field;
-    if (field === 'age') {
-      backendSortField = 'idNumber'; // 年龄排序基于身份证号
-    } else if (field === 'experience') {
-      backendSortField = 'coachingDate'; // 教龄排序基于执教日期
-    }
-    
-    // 重新加载数据以应用新的排序
-    loadCoaches(currentPage, pageSize, backendSortField, order);
+    // 直接使用字段名，因为表格列定义已经修正
+    loadCoaches(currentPage, pageSize, field, order);
   };
 
   // 处理视图模式变更

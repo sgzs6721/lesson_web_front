@@ -99,16 +99,17 @@ export const useCoachForm = (
     form.setFieldsValue({
       status: 'ACTIVE',
       gender: 'MALE',
-      employmentType: 'FULL_TIME',
+      workType: 'FULLTIME',
       campusId: currentCampusId,
       baseSalary: 0,
+      guaranteedHours: 0,
       socialInsurance: 0,
       classFee: 0,
       performanceBonus: 0,
       commission: 0,
       dividend: 0,
       hireDate: dayjs(),
-      teachingStartDate: dayjs(),
+      coachingDate: dayjs(),
     })
 
     try {

@@ -220,12 +220,12 @@ const CoachTable: React.FC<CoachTableProps> = ({
     {
       title: '年龄',
       dataIndex: 'idNumber',
-      key: 'age',
+      key: 'idNumber',
       width: 80,
       align: 'center',
       sorter: true,
       sortDirections: ['ascend', 'descend'],
-      sortOrder: sortField === 'age' ? sortOrder : null,
+      sortOrder: sortField === 'idNumber' ? sortOrder : null,
       render: (idNumber) => {
         const age = calculateAgeFromIdNumber(idNumber);
         return age > 0 ? `${age}岁` : '-';
@@ -234,11 +234,11 @@ const CoachTable: React.FC<CoachTableProps> = ({
     {
       title: '教龄',
       dataIndex: 'coachingDate',
-      key: 'experience',
+      key: 'coachingDate',
       align: 'center',
       sorter: true,
       sortDirections: ['ascend', 'descend'],
-      sortOrder: sortField === 'experience' ? sortOrder : null,
+      sortOrder: sortField === 'coachingDate' ? sortOrder : null,
       render: (coachingDate) => {
         const years = calculateTeachingExperience(coachingDate);
         return years > 0 ? `${years}年` : '-';
