@@ -143,6 +143,7 @@ export const useCoachForm = (
       const formValues: any = {
         ...coachDetail,
         hireDate: safeDayjs(coachDetail.hireDate),
+        coachingDate: safeDayjs(coachDetail.coachingDate),
         // 设置校区ID
         campusId: currentCampusId,
       };

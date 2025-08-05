@@ -38,14 +38,16 @@ export const convertApiCoachToCoach = (apiCoach: any): Coach => {
     id: String(apiCoach.id), // 确保id是字符串类型
     name: apiCoach.name,
     gender: apiCoach.gender,
-    age: apiCoach.age,
+    workType: apiCoach.workType,
+    idNumber: apiCoach.idNumber,
     phone: apiCoach.phone,
     avatar: apiCoach.avatar,
     jobTitle: apiCoach.jobTitle,
     certifications: certifications,
-    experience: apiCoach.experience, 
+    coachingDate: formatDate(apiCoach.coachingDate),
     status: apiCoach.status,
     hireDate: formatDate(apiCoach.hireDate),
+    guaranteedHours: apiCoach.guaranteedHours || 0,
     // 使用新的薪资提取函数获取薪资信息
     baseSalary: getSalaryValue('baseSalary'),
     socialInsurance: getSalaryValue('socialInsurance'),

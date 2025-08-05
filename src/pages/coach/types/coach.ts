@@ -29,6 +29,8 @@ export interface Coach {
   coachingDate: string; // 修改字段名
   status: CoachStatus;
   hireDate: string;
+  age?: number; // 年龄字段
+  experience?: number; // 教龄字段
   // 可以直接访问的薪资字段
   baseSalary?: number;
   guaranteedHours?: number;
@@ -52,7 +54,7 @@ export type CoachSearchParams = {
   searchText: string;
   selectedStatus?: string;
   selectedJobTitle?: string;
-  sortField?: 'coachingDate' | 'hireDate' | 'status' | 'idNumber' | 'jobTitle' | 'gender';
+  sortField?: 'coachingDate' | 'hireDate' | 'status' | 'idNumber' | 'jobTitle' | 'gender' | 'age' | 'experience';
 };
 
 // 视图模式

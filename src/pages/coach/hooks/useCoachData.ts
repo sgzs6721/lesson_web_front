@@ -42,29 +42,67 @@ export const useCoachData = () => {
       // 将API返回的数据映射到组件状态
       setTotal(response.total);
 
+      // 从身份证号计算年龄的函数
+      const calculateAgeFromIdNumber = (idNumber: string): number => {
+        if (!idNumber || idNumber.length < 6) return 0;
+        
+        try {
+          // 提取出生年份
+          const year = parseInt(idNumber.substring(6, 10));
+          const currentYear = new Date().getFullYear();
+          return currentYear - year;
+        } catch (error) {
+          console.error('计算年龄失败:', error);
+          return 0;
+        }
+      };
+
+      // 从执教日期计算教龄的函数
+      const calculateTeachingExperience = (coachingDate: string): number => {
+        if (!coachingDate) return 0;
+        
+        try {
+          const startDate = new Date(coachingDate);
+          const currentDate = new Date();
+          const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+          const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
+          return diffYears;
+        } catch (error) {
+          console.error('计算教龄失败:', error);
+          return 0;
+        }
+      };
+
       // 将API返回的教练数据映射到组件使用的Coach类型
-      const mappedCoaches = response.list.map(apiCoach => ({
-        id: apiCoach.id.toString(),
-        name: apiCoach.name,
-        gender: apiCoach.gender,
-        workType: apiCoach.workType || 'FULLTIME',
-        idNumber: apiCoach.idNumber || '',
-        phone: apiCoach.phone,
-        avatar: apiCoach.avatar,
-        jobTitle: apiCoach.jobTitle,
-        certifications: apiCoach.certifications,
-        coachingDate: apiCoach.coachingDate || apiCoach.hireDate,
-        status: apiCoach.status,
-        hireDate: apiCoach.hireDate,
-        baseSalary: apiCoach.baseSalary,
-        guaranteedHours: apiCoach.guaranteedHours,
-        socialInsurance: apiCoach.socialInsurance,
-        classFee: apiCoach.classFee,
-        performanceBonus: apiCoach.performanceBonus,
-        commission: apiCoach.commission,
-        dividend: apiCoach.dividend,
-        campusId: apiCoach.campusId
-      }));
+      const mappedCoaches = response.list.map(apiCoach => {
+        const idNumber = apiCoach.idNumber || '';
+        const coachingDate = apiCoach.coachingDate || apiCoach.hireDate;
+        
+        return {
+          id: apiCoach.id.toString(),
+          name: apiCoach.name,
+          gender: apiCoach.gender,
+          workType: apiCoach.workType || 'FULLTIME',
+          idNumber: idNumber,
+          phone: apiCoach.phone,
+          avatar: apiCoach.avatar,
+          jobTitle: apiCoach.jobTitle,
+          certifications: apiCoach.certifications,
+          coachingDate: coachingDate,
+          status: apiCoach.status,
+          hireDate: apiCoach.hireDate,
+          age: calculateAgeFromIdNumber(idNumber),
+          experience: calculateTeachingExperience(coachingDate),
+          baseSalary: apiCoach.baseSalary,
+          guaranteedHours: apiCoach.guaranteedHours,
+          socialInsurance: apiCoach.socialInsurance,
+          classFee: apiCoach.classFee,
+          performanceBonus: apiCoach.performanceBonus,
+          commission: apiCoach.commission,
+          dividend: apiCoach.dividend,
+          campusId: apiCoach.campusId
+        };
+      });
 
       setCoaches(mappedCoaches);
     } catch (error) {
@@ -96,10 +134,43 @@ export const useCoachData = () => {
       // 调用API创建教练
       const id = await API.coach.create(apiParams);
 
-      // 创建新教练对象
+      // 从身份证号计算年龄的函数
+      const calculateAgeFromIdNumber = (idNumber: string): number => {
+        if (!idNumber || idNumber.length < 6) return 0;
+        
+        try {
+          // 提取出生年份
+          const year = parseInt(idNumber.substring(6, 10));
+          const currentYear = new Date().getFullYear();
+          return currentYear - year;
+        } catch (error) {
+          console.error('计算年龄失败:', error);
+          return 0;
+        }
+      };
+
+      // 从执教日期计算教龄的函数
+      const calculateTeachingExperience = (coachingDate: string): number => {
+        if (!coachingDate) return 0;
+        
+        try {
+          const startDate = new Date(coachingDate);
+          const currentDate = new Date();
+          const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+          const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
+          return diffYears;
+        } catch (error) {
+          console.error('计算教龄失败:', error);
+          return 0;
+        }
+      };
+
+      // 创建新教练对象，包含计算出的年龄和教龄
       const newCoach: Coach = {
         ...values,
-        id: String(id)
+        id: String(id),
+        age: calculateAgeFromIdNumber(values.idNumber || ''),
+        experience: calculateTeachingExperience(values.coachingDate || values.hireDate || '')
       };
 
       // 更新本地状态 - 将新教练添加到列表最前面
@@ -163,12 +234,46 @@ export const useCoachData = () => {
       // 调用API更新教练
       await API.coach.update(apiParams);
 
+      // 从身份证号计算年龄的函数
+      const calculateAgeFromIdNumber = (idNumber: string): number => {
+        if (!idNumber || idNumber.length < 6) return 0;
+        
+        try {
+          // 提取出生年份
+          const year = parseInt(idNumber.substring(6, 10));
+          const currentYear = new Date().getFullYear();
+          return currentYear - year;
+        } catch (error) {
+          console.error('计算年龄失败:', error);
+          return 0;
+        }
+      };
+
+      // 从执教日期计算教龄的函数
+      const calculateTeachingExperience = (coachingDate: string): number => {
+        if (!coachingDate) return 0;
+        
+        try {
+          const startDate = new Date(coachingDate);
+          const currentDate = new Date();
+          const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+          const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
+          return diffYears;
+        } catch (error) {
+          console.error('计算教龄失败:', error);
+          return 0;
+        }
+      };
+
       // 更新成功后更新本地状态
       // 创建一个完整的更新后的教练对象
       const updatedCoachForList = {
         ...currentCoach,  // 保留原始教练对象中的其他字段
         ...values,       // 更新提交的字段
         id: id,          // 确保 ID 不变
+        // 计算年龄和教龄
+        age: calculateAgeFromIdNumber(values.idNumber || currentCoach.idNumber || ''),
+        experience: calculateTeachingExperience(values.coachingDate || currentCoach.coachingDate || ''),
         // 确保这些字段存在，即使在 values 中没有提供
         baseSalary: values.baseSalary !== undefined ? values.baseSalary : currentCoach.baseSalary,
         socialInsurance: values.socialInsurance !== undefined ? values.socialInsurance : currentCoach.socialInsurance,

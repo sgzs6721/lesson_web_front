@@ -92,6 +92,77 @@ const validateIdCard = (_: any, value: string) => {
   return Promise.resolve();
 };
 
+// 入职日期验证函数 - 确保不能比执教日期早
+const validateHireDate = (form: FormInstance) => (_: any, value: any) => {
+  if (!value) {
+    return Promise.resolve();
+  }
+
+  const hireDate = value.toDate ? value.toDate() : new Date(value);
+  const coachingDate = form.getFieldValue('coachingDate');
+  
+  if (coachingDate) {
+    const coachingDateObj = coachingDate.toDate ? coachingDate.toDate() : new Date(coachingDate);
+    
+    if (hireDate < coachingDateObj) {
+      return Promise.reject(new Error('入职日期不能比执教日期早'));
+    }
+  }
+
+  return Promise.resolve();
+};
+
+// 执教日期验证函数 - 确保不能比入职日期晚
+const validateCoachingDate = (form: FormInstance) => (_: any, value: any) => {
+  if (!value) {
+    return Promise.resolve();
+  }
+
+  const coachingDate = value.toDate ? value.toDate() : new Date(value);
+  const hireDate = form.getFieldValue('hireDate');
+  
+  if (hireDate) {
+    const hireDateObj = hireDate.toDate ? hireDate.toDate() : new Date(hireDate);
+    
+    if (coachingDate > hireDateObj) {
+      return Promise.reject(new Error('执教日期不能比入职日期晚'));
+    }
+  }
+
+  return Promise.resolve();
+};
+
+// 从身份证号计算年龄
+const calculateAgeFromIdNumber = (idNumber: string): number => {
+  if (!idNumber || idNumber.length < 6) return 0;
+  
+  try {
+    // 提取出生年份
+    const year = parseInt(idNumber.substring(6, 10));
+    const currentYear = new Date().getFullYear();
+    return currentYear - year;
+  } catch (error) {
+    console.error('计算年龄失败:', error);
+    return 0;
+  }
+};
+
+// 从执教日期计算教龄
+const calculateTeachingExperience = (coachingDate: any): number => {
+  if (!coachingDate) return 0;
+  
+  try {
+    const startDate = coachingDate.toDate ? coachingDate.toDate() : new Date(coachingDate);
+    const currentDate = new Date();
+    const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+    const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
+    return diffYears;
+  } catch (error) {
+    console.error('计算教龄失败:', error);
+    return 0;
+  }
+};
+
 interface CoachEditModalProps {
   visible: boolean;
   loading: boolean;
@@ -121,6 +192,19 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
   // 监听gender和workType字段变化
   const gender = Form.useWatch('gender', form);
   const workType = Form.useWatch('workType', form);
+  
+  // 监听身份证号和执教日期字段变化，用于计算年龄和教龄
+  const idNumber = Form.useWatch('idNumber', form);
+  const coachingDate = Form.useWatch('coachingDate', form);
+  
+  // 计算年龄和教龄
+  const calculatedAge = useMemo(() => {
+    return calculateAgeFromIdNumber(idNumber || '');
+  }, [idNumber]);
+  
+  const calculatedExperience = useMemo(() => {
+    return calculateTeachingExperience(coachingDate);
+  }, [coachingDate]);
 
   // 使用useMemo处理头像背景色，避免在表单未准备好时使用form.getFieldValue
   const avatarStyle = useMemo(() => {
@@ -476,12 +560,51 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
+                    label="年龄"
+                    htmlFor="coach_age_display"
+                  >
+                    <Input 
+                      id="coach_age_display" 
+                      value={calculatedAge > 0 ? `${calculatedAge}岁` : '-'}
+                      disabled
+                      style={{ backgroundColor: '#f5f5f5', color: '#666' }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="教龄"
+                    htmlFor="coach_experience_display"
+                  >
+                    <Input 
+                      id="coach_experience_display" 
+                      value={calculatedExperience > 0 ? `${calculatedExperience}年` : '-'}
+                      disabled
+                      style={{ backgroundColor: '#f5f5f5', color: '#666' }}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
                     name="coachingDate"
                     label="执教日期"
                     htmlFor="coach_coaching_date"
-                    rules={[{ required: true, message: '请选择执教日期' }]}
+                    rules={[
+                      { required: true, message: '请选择执教日期' },
+                      { validator: validateCoachingDate(form) }
+                    ]}
                   >
-                    <DatePicker id="coach_coaching_date" style={{ width: '100%' }} />
+                    <DatePicker 
+                      id="coach_coaching_date" 
+                      style={{ width: '100%' }}
+                      onChange={() => {
+                        // 当执教日期改变时，重新验证入职日期
+                        form.validateFields(['hireDate']);
+                      }}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -489,9 +612,19 @@ const CoachEditModal: React.FC<CoachEditModalProps> = ({
                     name="hireDate"
                     label="入职日期"
                     htmlFor="coach_hire_date"
-                    rules={[{ required: true, message: '请选择入职日期' }]}
+                    rules={[
+                      { required: true, message: '请选择入职日期' },
+                      { validator: validateHireDate(form) }
+                    ]}
                   >
-                    <DatePicker id="coach_hire_date" style={{ width: '100%' }} />
+                    <DatePicker 
+                      id="coach_hire_date" 
+                      style={{ width: '100%' }}
+                      onChange={() => {
+                        // 当入职日期改变时，重新验证执教日期
+                        form.validateFields(['coachingDate']);
+                      }}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
