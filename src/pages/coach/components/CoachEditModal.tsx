@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Modal, Form, Input, Radio, Select, DatePicker, Row, Col, Divider, Avatar, Spin } from 'antd';
 import { UserOutlined, PhoneOutlined, IdcardOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
-import { avatarOptions } from '../constants/avatarOptions';
+import { avatarOptions } from '../constants/avatarMap';
 import './CoachEditModal.css';
 
 const { TextArea } = Input;

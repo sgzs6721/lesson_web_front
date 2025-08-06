@@ -62,3 +62,61 @@ export const avatarMap: Record<string, string> = {
   'female_13.jpg': female13,
   'female_14.jpg': female14,
 };
+
+// 反向映射：从import的URL找回对应的文件名
+export const reverseAvatarMap: Record<string, string> = {
+  [male0]: 'male_0.jpg',
+  [male1]: 'male_1.jpg',
+  [male2]: 'male_2.jpg',
+  [male3]: 'male_3.jpg',
+  [male4]: 'male_4.jpg',
+  [male5]: 'male_5.jpg',
+  [male6]: 'male_6.jpg',
+  [male7]: 'male_7.jpg',
+  [male8]: 'male_8.jpg',
+  [male9]: 'male_9.jpg',
+  [male10]: 'male_10.jpg',
+  [male11]: 'male_11.jpg',
+  [male12]: 'male_12.jpg',
+  [male13]: 'male_13.jpg',
+  [male14]: 'male_14.jpg',
+  [female0]: 'female_0.jpg',
+  [female1]: 'female_1.jpg',
+  [female2]: 'female_2.jpg',
+  [female3]: 'female_3.jpg',
+  [female4]: 'female_4.jpg',
+  [female5]: 'female_5.jpg',
+  [female6]: 'female_6.jpg',
+  [female7]: 'female_7.jpg',
+  [female8]: 'female_8.jpg',
+  [female9]: 'female_9.jpg',
+  [female10]: 'female_10.jpg',
+  [female11]: 'female_11.jpg',
+  [female12]: 'female_12.jpg',
+  [female13]: 'female_13.jpg',
+  [female14]: 'female_14.jpg',
+};
+
+// 数组形式的头像选项，用于CoachEditModal
+const maleAvatars = [male0, male1, male2, male3, male4, male5, male6, male7, male8, male9, male10, male11, male12, male13, male14];
+const femaleAvatars = [female0, female1, female2, female3, female4, female5, female6, female7, female8, female9, female10, female11, female12, female13, female14];
+
+export const avatarOptions = {
+  MALE: maleAvatars.map((avatar, index) => ({
+    id: `male_avatar_${index + 1}`,
+    url: avatar
+  })),
+  FEMALE: femaleAvatars.map((avatar, index) => ({
+    id: `female_avatar_${index + 1}`,
+    url: avatar
+  })),
+  // 为了向后兼容而增加的
+  male: maleAvatars.map((avatar, index) => ({
+    id: `male_avatar_${index + 1}`,
+    url: avatar
+  })),
+  female: femaleAvatars.map((avatar, index) => ({
+    id: `female_avatar_${index + 1}`,
+    url: avatar
+  }))
+};

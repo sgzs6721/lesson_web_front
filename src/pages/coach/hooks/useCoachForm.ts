@@ -5,7 +5,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { API } from '@/api';
 import { message } from 'antd';
 import { convertApiCoachToCoach, coachDetailCache } from './useCoachDetail';
-import { avatarOptions } from '../constants/avatarOptions';
+import { avatarOptions, reverseAvatarMap } from '../constants/avatarMap';
 import { safeDayjs } from '@/utils/date';
 
 // 拓展表单值的接口，包含Dayjs类型
@@ -257,7 +257,8 @@ export const useCoachForm = (
           workType: values.workType,
           idNumber: values.idNumber,
           phone: values.phone,
-          avatar: selectedAvatar || values.avatar,
+          // 使用反向映射将import的URL转换为文件名
+          avatar: selectedAvatar ? (reverseAvatarMap[selectedAvatar] || selectedAvatar) : values.avatar,
           jobTitle: values.jobTitle,
           hireDate: safeDayjs(values.hireDate).format('YYYY-MM-DD'),
           coachingDate: safeDayjs(values.coachingDate).format('YYYY-MM-DD'),
