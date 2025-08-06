@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { CoachGender } from '../../../api/coach/types';
 import StandardPagination from '@/components/common/StandardPagination';
+import { avatarMap } from '../constants/avatarMap';
 
 interface CoachTableProps {
   data: Coach[];
@@ -149,7 +150,7 @@ const CoachTable: React.FC<CoachTableProps> = ({
       render: (text, record) => (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
           <Avatar
-            src={record.avatar}
+            src={record.avatar ? (avatarMap[record.avatar] || record.avatar) : undefined}
             style={{
               marginRight: 8,
               backgroundColor: record.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96'

@@ -6,6 +6,7 @@ import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
 import { CoachGender } from '../../../api/coach/types';
 import dayjs from 'dayjs';
 import './CoachCardView.css';
+import { avatarMap } from '../constants/avatarMap';
 
 interface CoachCardViewProps {
   data: Coach[];
@@ -267,7 +268,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                   <div className="coach-avatar-container-premium">
                     <Avatar
                       size={60}
-                      src={coach.avatar}
+                      src={coach.avatar ? (avatarMap[coach.avatar] || coach.avatar) : undefined}
                       className="premium-avatar"
                       style={{
                         backgroundColor: !coach.avatar ? (coach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined,

@@ -4,6 +4,7 @@ import { Coach } from '../types/coach';
 import { getStatusTagInfo, getJobTitleTagInfo } from '../utils/formatters';
 import { CoachGender, CoachStatus, CoachEmploymentType } from '../../../api/coach/types';
 import { UserOutlined } from '@ant-design/icons';
+import { avatarMap } from '../constants/avatarMap';
 
 interface CoachDetailModalProps {
   visible: boolean;
@@ -227,7 +228,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
           }}></div>
           <Avatar
             size={48}
-            src={displayCoach.avatar}
+            src={displayCoach.avatar ? (avatarMap[displayCoach.avatar] || displayCoach.avatar) : undefined}
             style={{
               backgroundColor: !displayCoach.avatar ? (displayCoach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined,
               marginRight: '12px'
