@@ -248,83 +248,135 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
             </div>
 
             <div className="coach-card-content-premium">
-              <div className="coach-header-section">
-                <div className="coach-avatar-container-premium">
-                  <Avatar
-                    size={60}
-                    src={coach.avatar}
-                    className="premium-avatar"
-                    style={{
-                      backgroundColor: !coach.avatar ? (coach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined,
-                    }}
-                    icon={!coach.avatar && <UserOutlined />}
-                  />
-                  <div className="coach-gender-badge">
-                    <span className="gender-icon-badge">
-                      {coach.gender === CoachGender.MALE ?
-                        <span className="gender-icon male">♂</span> :
-                        <span className="gender-icon female">♀</span>
-                      }
-                    </span>
+              <div className="coach-header-section" style={{
+                position: 'absolute',
+                top: '0',
+                left: '0',
+                right: '0',
+                height: '56px',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 16px',
+                zIndex: 2
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}>
+                  <div className="coach-avatar-container-premium">
+                    <Avatar
+                      size={60}
+                      src={coach.avatar}
+                      className="premium-avatar"
+                      style={{
+                        backgroundColor: !coach.avatar ? (coach.gender === CoachGender.MALE ? '#1890ff' : '#eb2f96') : undefined,
+                      }}
+                      icon={!coach.avatar && <UserOutlined />}
+                    />
+                    <div className="coach-gender-badge">
+                      <span className="gender-icon-badge">
+                        {coach.gender === CoachGender.MALE ?
+                          <span className="gender-icon male">♂</span> :
+                          <span className="gender-icon female">♀</span>
+                        }
+                      </span>
+                    </div>
+                    {/* 职位标签放在头像下方 */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '-25px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      zIndex: 3
+                    }}>
+                      {renderJobTitleTag(coach.jobTitle)}
+                    </div>
                   </div>
-                </div>
 
-                <div className="coach-title-section">
-                  <div className="coach-name-row">
+                  <div className="coach-title-section" style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    height: '56px',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginTop: '-20px',
+                    marginLeft: '10px'
+                  }}>
                     <div className="coach-name-premium">
                       {coach.name}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      {/* 工作类型标签 */}
+                      <Tag
+                        color={coach.workType === 'FULLTIME' ? 'purple' : 'blue'}
+                        style={{
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          padding: '0 8px',
+                          fontWeight: 600,
+                          marginRight: 0,
+                          border: 'none',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          height: '22px',
+                          lineHeight: '22px',
+                          display: 'inline-block'
+                        }}
+                      >
+                        {coach.workType === 'FULLTIME' ? '全职' : '兼职'}
+                      </Tag>
+                      {/* 状态标签 */}
+                      {renderStatusTag(coach.status, coach)}
+                    </div>
+                    {/* 编辑删除按钮组 */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginLeft: 'auto',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '6px',
+                      padding: '0 8px',
+                      height: '22px',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      <Tooltip title="编辑">
+                        <Button
+                          type="text"
+                          shape="circle"
+                          size="small"
+                          icon={<EditOutlined style={{ fontSize: '14px' }} />}
+                          className="action-button edit"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(coach);
+                          }}
+                        />
+                      </Tooltip>
+                      <Tooltip title="删除">
+                        <Button
+                          type="text"
+                          shape="circle"
+                          size="small"
+                          icon={<DeleteOutlined style={{ fontSize: '14px' }} />}
+                          className="action-button delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(coach.id);
+                          }}
+                        />
+                      </Tooltip>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="coach-job-title-wrapper" style={{
-                position: 'absolute',
-                top: '75px',
-                left: '0',
-                right: '0',
-                zIndex: 10,
-                transform: 'translateY(-50%)'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                  height: '24px'
-                }}>
-                  {/* 职位标签 */}
-                  <div style={{ marginRight: '20px' }}>
-                    {renderJobTitleTag(coach.jobTitle)}
-                  </div>
-                  {/* 工作类型标签 */}
-                  <div style={{ marginRight: '20px' }}>
-                    <Tag
-                      color={coach.workType === 'FULLTIME' ? 'green' : 'blue'}
-                      style={{
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        padding: '0 8px',
-                        fontWeight: 600,
-                        marginRight: 0,
-                        border: 'none',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        height: '22px',
-                        lineHeight: '22px',
-                        display: 'inline-block'
-                      }}
-                    >
-                      {coach.workType === 'FULLTIME' ? '全职' : '兼职'}
-                    </Tag>
-                  </div>
-                  {/* 状态标签 */}
-                  <div>
-                    {renderStatusTag(coach.status, coach)}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '32px', width: '100%' }}>
+              <div style={{ display: 'flex', gap: '32px', width: '100%', marginTop: '-16px' }}>
                 {/* 左栏：基本信息 */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
@@ -491,7 +543,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                   </div>
                 </div>
                 {/* 右栏：薪资信息 */}
-                <div style={{ flex: 1, minWidth: 0, paddingLeft: 16, borderLeft: '1px solid #f0f0f0' }}>
+                <div style={{ flex: 1, minWidth: 0, paddingLeft: 16, borderLeft: '1px solid #f0f0f0', marginTop: '-24px' }}>
                   <div className="coach-info-item" style={{whiteSpace: 'nowrap', display: 'flex'}}>
                     <span className="info-label" style={{minWidth: 64, flexShrink: 0}}>基本工资：</span>
                     <span className="info-value" style={{textAlign: 'right', flex: 1}}>
@@ -554,34 +606,7 @@ const CoachCardView: React.FC<CoachCardViewProps> = ({
                 </div>
               </div>
 
-              <div className="coach-actions-premium">
-                <Tooltip title="编辑">
-                  <Button
-                    type="text"
-                    shape="circle"
-                    size="small"
-                    icon={<EditOutlined style={{ fontSize: '14px' }} />}
-                    className="action-button edit"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(coach);
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip title="删除">
-                  <Button
-                    type="text"
-                    shape="circle"
-                    size="small"
-                    icon={<DeleteOutlined style={{ fontSize: '14px' }} />}
-                    className="action-button delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(coach.id);
-                    }}
-                  />
-                </Tooltip>
-              </div>
+
             </div>
           </Card>
         </List.Item>

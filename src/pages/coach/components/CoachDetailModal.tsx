@@ -234,29 +234,26 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
             }}
             icon={!displayCoach.avatar && <UserOutlined />}
           />
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '8px' }}>
+            <span style={{ color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
               {displayCoach.name || '-'}
             </span>
             {displayCoach.gender === CoachGender.MALE ?
-              <span style={{ color: '#1890ff', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♂</span> :
-              <span style={{ color: '#eb2f96', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', marginRight: '12px' }}>♀</span>
+              <span style={{ color: '#1890ff', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>♂</span> :
+              <span style={{ color: '#eb2f96', backgroundColor: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>♀</span>
             }
-            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px', marginRight: '12px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>{displayCoach.workType === 'FULLTIME' ? '全职' : '兼职'}</span>
+            {displayCoach.jobTitle && (
+              <Tag color={getJobTitleTagInfo(displayCoach.jobTitle).color} style={{ margin: 0, fontSize: '14px', padding: '2px 8px' }}>
+                {displayCoach.jobTitle}
+              </Tag>
+            )}
+            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>{displayCoach.workType === 'FULLTIME' ? '全职' : '兼职'}</span>
             {displayCoach.status && (
               <Tag color={getStatusTagInfo(displayCoach.status).color} style={{ margin: 0, fontSize: '14px', padding: '2px 8px' }}>
                 {getStatusTagInfo(displayCoach.status).text}
               </Tag>
             )}
           </div>
-          {/* 职位标签放在红框位置 */}
-          {displayCoach.jobTitle && (
-            <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)' }}>
-              <Tag color={getJobTitleTagInfo(displayCoach.jobTitle).color} style={{ fontSize: '14px', padding: '4px 8px' }}>
-                {displayCoach.jobTitle}
-              </Tag>
-            </div>
-          )}
         </div>
         <Descriptions bordered column={2} size="small" style={{ marginTop: '0' }}>
           <Descriptions.Item label="教练ID" span={1}>{displayCoach.id || '-'}</Descriptions.Item>
