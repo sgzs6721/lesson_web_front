@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/ic
 import dayjs from 'dayjs';
 import { Course } from '../types/course';
 import { AlignType } from 'rc-table/lib/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 
 // 获取教练名称
 const getCoachNames = (coaches?: { id: number; name: string }[]) => {
@@ -100,6 +101,7 @@ export const getTableColumns = (
     key: 'totalHours',
     align: 'center' as AlignType,
     render: (hours: number) => `${hours}小时`,
+    sorter: true,
   },
   {
     title: '已销课时',
@@ -107,6 +109,7 @@ export const getTableColumns = (
     key: 'consumedHours',
     align: 'center' as AlignType,
     render: (hours: number) => `${hours}小时`,
+    sorter: true,
   },
   {
     title: '上课教练',
@@ -121,6 +124,7 @@ export const getTableColumns = (
     key: 'price',
     align: 'center' as AlignType,
     render: (price: number) => `¥${price}`,
+    sorter: true,
   },
   {
     title: '状态',

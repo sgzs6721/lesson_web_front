@@ -7,6 +7,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
   const [selectedStatus, setSelectedStatus] = useState<CourseStatus | undefined>(undefined);
   const [selectedCoach, setSelectedCoach] = useState<number[] | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
   const [campusId, setCampusId] = useState<number | undefined>(undefined);
 
   // 从localStorage获取当前校区ID
@@ -25,6 +26,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
       selectedStatus,
       selectedCoach,
       sortOrder,
+      sortField,
       campusId
     };
     try {
@@ -41,6 +43,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
     setSelectedStatus(undefined);
     setSelectedCoach(undefined);
     setSortOrder(undefined);
+    setSortField(undefined);
     // 不重置campusId，保持校区筛选
 
     // 重置后自动搜索
@@ -51,6 +54,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
         selectedStatus: undefined,
         selectedCoach: undefined,
         sortOrder: undefined,
+        sortField: undefined,
         campusId // 保留校区ID
       });
     } catch (error) {
@@ -65,6 +69,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
       selectedStatus,
       selectedCoach,
       sortOrder,
+      sortField,
       campusId
     },
     setSearchText,
@@ -72,6 +77,7 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
     setSelectedStatus,
     setSelectedCoach,
     setSortOrder,
+    setSortField,
     setCampusId,
     handleSearch,
     handleReset

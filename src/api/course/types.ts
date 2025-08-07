@@ -72,6 +72,7 @@ export type CourseSearchParams = {
   selectedStatus: CourseStatus | undefined;
   selectedCoach?: number[] | undefined;
   sortOrder: string | undefined;
+  sortField?: string | undefined;
   campusId?: number | undefined;
 };
 
@@ -79,6 +80,7 @@ export type CourseSearchParams = {
 export type CourseListParams = PaginationParams & Partial<CourseSearchParams> & {
   typeIds?: CourseType[] | undefined;
   coachIds?: number[] | undefined;
+  sortField?: string | undefined;
 };
 
 // 课程列表响应

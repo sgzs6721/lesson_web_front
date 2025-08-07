@@ -168,9 +168,15 @@ export const course = {
       });
     }
 
-    // 添加排序参数，默认按创建时间降序排列（最新的在前面）
+    // 添加排序参数
+    if (params?.sortField) {
+      queryParams.append('sortField', params.sortField);
+    }
     if (params?.sortOrder) {
       queryParams.append('sortOrder', params.sortOrder);
+    } else if (params?.sortField) {
+      // 如果有sortField但没有sortOrder，默认使用desc
+      queryParams.append('sortOrder', 'desc');
     } else {
       // 默认按创建时间降序排列
       queryParams.append('sortField', 'createdTime');

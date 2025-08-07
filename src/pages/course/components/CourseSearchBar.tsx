@@ -44,110 +44,97 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
   }));
 
   return (
-    <Row gutter={[16, 16]} align="middle" style={{ marginBottom: 24 }}>
-      <Col xs={24} sm={12} md={8} lg={4} xl={4}>
-        <Input
-          placeholder="搜索课程名称"
-          value={params.searchText}
-          onChange={e => onTextChange(e.target.value)}
-          prefix={<SearchOutlined />}
-          allowClear
-          onPressEnter={onSearch}
-        />
-      </Col>
-      <Col xs={24} sm={12} md={8} lg={4} xl={4}>
-        <Select
-          placeholder="选择课程分类"
-          style={{ width: '100%' }}
-          value={params.selectedType}
-          onChange={value => onCategoryChange(value)}
-          allowClear
-          loading={typesLoading}
-          popupMatchSelectWidth={true}
-          getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-          mode="multiple"
-          maxTagCount={2}
-        >
-          {typeOptions.map(option => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
-      </Col>
-      <Col xs={24} sm={12} md={8} lg={4} xl={4}>
-        <Select
-          placeholder="选择上课教练"
-          style={{ width: '100%' }}
-          value={params.selectedCoach}
-          onChange={value => onCoachChange && onCoachChange(value)}
-          allowClear
-          loading={coachesLoading}
-          popupMatchSelectWidth={true}
-          getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-          mode="multiple"
-          maxTagCount={2}
-        >
-          {cachedCoaches.map(coach => (
-            <Option key={coach.id} value={coach.id}>
-              {coach.name}
-            </Option>
-          ))}
-        </Select>
-      </Col>
-      <Col xs={24} sm={12} md={8} lg={4} xl={4}>
-        <Select
-          placeholder="选择课程状态"
-          style={{ width: '100%' }}
-          value={params.selectedStatus}
-          onChange={value => onStatusChange(value)}
-          allowClear
-          popupMatchSelectWidth={true}
-          getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-        >
-          {statusOptions.map(option => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
-      </Col>
-      <Col xs={24} sm={12} md={8} lg={4} xl={4}>
-        <Select
-          placeholder="排序方式"
-          style={{ width: '100%' }}
-          value={params.sortOrder}
-          onChange={value => onSortOrderChange(value)}
-          allowClear
-          suffixIcon={<SortAscendingOutlined />}
-          popupMatchSelectWidth={true}
-          getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-        >
-          {sortOptions.map(option => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
-      </Col>
-      <Col xs={24} sm={12} md={8} lg={4} xl={4} style={{ display: 'flex', justifyContent: 'center' }}>
-        <Space size="middle">
-          <Button
-            type="primary"
-            icon={<SearchOutlined />}
-            onClick={onSearch}
+    <div style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} align="middle" style={{ width: '100%' }}>
+        <Col xs={24} sm={12} md={8} lg={6} xl={5}>
+          <Input
+            placeholder="搜索课程名称"
+            value={params.searchText}
+            onChange={e => onTextChange(e.target.value)}
+            prefix={<SearchOutlined />}
+            allowClear
+            onPressEnter={onSearch}
+            style={{ width: '100%' }}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={6} xl={5}>
+          <Select
+            placeholder="选择课程分类"
+            style={{ width: '100%' }}
+            value={params.selectedType}
+            onChange={value => onCategoryChange(value)}
+            allowClear
+            loading={typesLoading}
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+            mode="multiple"
+            maxTagCount={2}
           >
-            查询
-          </Button>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={onReset}
+            {typeOptions.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={6} xl={5}>
+          <Select
+            placeholder="选择上课教练"
+            style={{ width: '100%' }}
+            value={params.selectedCoach}
+            onChange={value => onCoachChange && onCoachChange(value)}
+            allowClear
+            loading={coachesLoading}
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+            mode="multiple"
+            maxTagCount={2}
           >
-            重置
-          </Button>
-        </Space>
-      </Col>
-    </Row>
+            {cachedCoaches.map(coach => (
+              <Option key={coach.id} value={coach.id}>
+                {coach.name}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={6} xl={5}>
+          <Select
+            placeholder="选择课程状态"
+            style={{ width: '100%' }}
+            value={params.selectedStatus}
+            onChange={value => onStatusChange(value)}
+            allowClear
+            popupMatchSelectWidth={true}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          >
+            {statusOptions.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={6} xl={4}>
+          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              onClick={onSearch}
+              style={{ flex: 1 }}
+            >
+              查询
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={onReset}
+              style={{ flex: 1 }}
+            >
+              重置
+            </Button>
+          </div>
+        </Col>
+      </Row>
+    </div>
   );
 };
 

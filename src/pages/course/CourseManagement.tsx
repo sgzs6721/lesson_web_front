@@ -47,6 +47,7 @@ const CourseManagement: React.FC = () => {
     setSelectedStatus,
     setSelectedCoach,
     setSortOrder,
+    setSortField,
     handleSearch,
     handleReset
   } = useCourseSearch(async (params) => {
@@ -226,6 +227,50 @@ const CourseManagement: React.FC = () => {
     setDeletingCourse(null);
   };
 
+  // 处理表格排序变化
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    console.log('表格排序变化 - 原始sorter:', sorter);
+    
+    // 字段映射
+    let orderField = sorter?.field;
+    if (orderField === 'price') {
+      orderField = 'unitHours';
+    } else if (orderField === 'totalHours') {
+      orderField = 'totalHours';
+    } else if (orderField === 'consumedHours') {
+      orderField = 'consumedHours';
+    }
+
+    const order = sorter.order === 'ascend' ? 'asc' : sorter.order === 'descend' ? 'desc' : undefined;
+    console.log('排序字段:', orderField, '排序顺序:', order);
+
+    if (sorter && sorter.field && sorter.order) {
+      console.log('设置排序参数 - sortField:', orderField, 'sortOrder:', order);
+      setSortField(orderField);
+      setSortOrder(order);
+      // 直接调用filterCourses，传入最新的排序参数
+      const searchParamsWithSort = {
+        ...searchParams,
+        sortField: orderField,
+        sortOrder: order
+      };
+      console.log('调用filterCourses，参数:', searchParamsWithSort);
+      filterCourses(1, pageSize, searchParamsWithSort);
+    } else {
+      console.log('清除排序参数');
+      setSortField(undefined);
+      setSortOrder(undefined);
+      // 清除排序时也直接调用filterCourses
+      const searchParamsWithoutSort = {
+        ...searchParams,
+        sortField: undefined,
+        sortOrder: undefined
+      };
+      console.log('调用filterCourses（清除排序），参数:', searchParamsWithoutSort);
+      filterCourses(1, pageSize, searchParamsWithoutSort);
+    }
+  };
+
   return (
     <div className="course-management">
       <Card className="course-management-card">
@@ -265,6 +310,7 @@ const CourseManagement: React.FC = () => {
             onEdit={handleEdit}
             onDelete={showDeleteConfirm}
             onPageChange={handlePageChange}
+            onTableChange={handleTableChange} // 传递排序字段
           />
         ) : (
           <CourseCardList

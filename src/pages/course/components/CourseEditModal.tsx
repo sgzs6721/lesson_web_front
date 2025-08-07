@@ -489,7 +489,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
       maskClosable={!loading}
       keyboard={!loading}
       closable={!loading}
-      destroyOnClose={false}
+      destroyOnHidden={false}
       forceRender={true}
       footer={[
         <Button key="cancel" onClick={onCancel} disabled={loading}>
@@ -512,7 +512,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           form={form}
           layout="vertical"
           name="courseForm"
-          preserve={false}
+          preserve={true}
           initialValues={{ status: CourseStatus.PUBLISHED, consume: 1 }}
           onValuesChange={(changedValues) => {
             if ('status' in changedValues) {
@@ -652,26 +652,19 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
             <Card
               size="small"
               title={
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
                   <span style={{ fontSize: '14px', fontWeight: 500 }}>
                     各个教练课时费
                   </span>
                   <span style={{ fontSize: '12px', color: '#666', fontWeight: 400 }}>
-                    平均课时费: ¥{(() => {
-                      const coachFees = form.getFieldValue('coachFees') || {};
-                      const fees = selectedCoaches.map(coach => {
-                        const fee = coachFees[coach.id];
-                        return typeof fee === 'number' && !isNaN(fee) ? fee : (coach.classFee || 0);
-                      });
-                      if (fees.length > 0) {
-                        const totalFee = fees.reduce((sum, fee) => sum + fee, 0);
-                        return (totalFee / fees.length).toFixed(2);
-                      }
-                      return '0';
-                    })()}
+                    总课时费：¥{selectedCoaches.reduce((sum, coach) => sum + (form.getFieldValue('coachFees')?.[coach.id] ? Number(form.getFieldValue('coachFees')[coach.id]) : 0), 0)}/课时
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#666', fontWeight: 400 }}>
+                    平均课时费：¥{selectedCoaches.length > 0 ? (selectedCoaches.reduce((sum, coach) => sum + (form.getFieldValue('coachFees')?.[coach.id] ? Number(form.getFieldValue('coachFees')[coach.id]) : 0), 0) / selectedCoaches.length).toFixed(2) : '0.00'}/课时
                   </span>
                 </div>
               }
+              style={{ marginBottom: '20px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
               className="coach-fee-card"
             >
               <Row gutter={[16, 16]}>

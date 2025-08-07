@@ -207,21 +207,35 @@ export const useCourseData = () => {
       const apiParams: any = {
         pageNum: page,
         pageSize,
-        searchText: params.searchText,
-        selectedStatus: params.selectedStatus,
-        sortOrder: params.sortOrder,
+        keyword: params.searchText, // searchText -> keyword
+        status: params.selectedStatus, // selectedStatus -> status
         campusId: params.campusId
       };
 
-      // 添加课程类型过滤（支持多选）
+      // 课程类型
       if (params.selectedType && params.selectedType.length > 0) {
-        apiParams.typeIds = params.selectedType;
+        if (params.selectedType.length === 1) {
+          apiParams.typeId = params.selectedType[0];
+        } else {
+          apiParams.typeIds = params.selectedType;
+        }
       }
 
-      // 添加教练过滤（支持多选）
+      // 教练
       if (params.selectedCoach && params.selectedCoach.length > 0) {
-        apiParams.coachIds = params.selectedCoach;
+        if (params.selectedCoach.length === 1) {
+          apiParams.coachId = params.selectedCoach[0];
+        } else {
+          apiParams.coachIds = params.selectedCoach;
+        }
       }
+
+      // 排序参数，始终传递
+      apiParams.sortField = params.sortField || '';
+      apiParams.sortOrder = params.sortOrder || '';
+
+      console.log('课程列表API参数:', apiParams);
+      console.log('排序参数详情 - sortField:', params.sortField, 'sortOrder:', params.sortOrder);
 
       // 调用API获取课程列表
       const result = await courseAPI.getList(apiParams);
