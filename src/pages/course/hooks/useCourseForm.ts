@@ -16,10 +16,11 @@ export const useCourseForm = (
   // 显示添加表单
   const handleAdd = () => {
     form.resetFields();
-    // 设置当前校区ID
+    // 设置当前校区ID和默认值
     form.setFieldsValue({
       coachIds: [],
-      campusId: Number(localStorage.getItem('currentCampusId') || '1')
+      campusId: Number(localStorage.getItem('currentCampusId') || '1'),
+      consume: 1 // 每次消耗课时默认值为1
     });
     setEditingCourse(null);
     setVisible(true);
@@ -49,19 +50,34 @@ export const useCourseForm = (
     try {
       setLoading(true);
       const values = await form.validateFields();
-      
-      console.log('提交表单，表单值:', values);
+      // 处理status字段，保证为字符串枚举
+      let status = values.status;
+      if (status === 1 || status === '1') {
+        status = 'PUBLISHED';
+      } else if (status === 2 || status === '2' || status === 'SUSPENDED') {
+        status = 'SUSPENDED';
+      } else if (status === 3 || status === '3' || status === 'TERMINATED') {
+        status = 'TERMINATED';
+      }
+      // 处理isMultiTeacher字段
+      let isMultiTeacher = values.isMultiTeacher;
+      if (typeof isMultiTeacher !== 'boolean') {
+        isMultiTeacher = !!isMultiTeacher;
+      }
+      const submitValues = {
+        ...values,
+        status,
+        isMultiTeacher
+      };
+      console.log('提交表单，最终表单值:', submitValues);
       console.log('可用教练列表:', coaches);
-
       if (editingCourse) {
         // 更新操作
-        await onUpdateCourse(editingCourse.id, values, coaches);
+        await onUpdateCourse(editingCourse.id, submitValues, coaches);
       } else {
         // 添加操作
-        await onAddCourse(values, coaches);
+        await onAddCourse(submitValues, coaches);
       }
-      
-      // 提交成功后关闭模态框
       setVisible(false);
       setEditingCourse(null);
       form.resetFields();

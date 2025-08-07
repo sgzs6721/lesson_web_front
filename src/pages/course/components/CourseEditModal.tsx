@@ -324,6 +324,8 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
         form.validateFields().catch(() => {});
         console.log('单教师模式 - 表单值设置完成，当前coachFees:', form.getFieldValue('coachFees'));
         console.log('单教师模式 - 表单所有值:', form.getFieldsValue());
+        // 主动触发一次平均值刷新
+        handleCoachFeeChange(selectedCoach.id, classFee);
       }, 0);
     } else if (values.length === 0) {
       // 清空选择时也要清空课时费
@@ -501,7 +503,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           layout="vertical"
           name="courseForm"
           preserve={false}
-          initialValues={{ status: CourseStatus.PUBLISHED }}
+          initialValues={{ status: CourseStatus.PUBLISHED, consume: 1 }}
           onValuesChange={(changedValues) => {
             if ('status' in changedValues) {
               console.log('状态值变更为:', changedValues.status);
@@ -636,21 +638,32 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
             </Col>
           </Row>
 
-          {isMultiTeacher && selectedCoaches.length > 0 && (
-                          <Card
-                size="small"
-                title={
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 500 }}>
-                      各个教练课时费
-                    </span>
-                    <span style={{ fontSize: '12px', color: '#666', fontWeight: 400 }}>
-                      平均课时费: ¥{form.getFieldValue('coachFee') || 0}
-                    </span>
-                  </div>
-                }
-                className="coach-fee-card"
-              >
+                    {isMultiTeacher && selectedCoaches.length > 0 && (
+            <Card
+              size="small"
+              title={
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 500 }}>
+                    各个教练课时费
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#666', fontWeight: 400 }}>
+                    平均课时费: ¥{(() => {
+                      const coachFees = form.getFieldValue('coachFees') || {};
+                      const fees = selectedCoaches.map(coach => {
+                        const fee = coachFees[coach.id];
+                        return typeof fee === 'number' && !isNaN(fee) ? fee : (coach.classFee || 0);
+                      });
+                      if (fees.length > 0) {
+                        const totalFee = fees.reduce((sum, fee) => sum + fee, 0);
+                        return (totalFee / fees.length).toFixed(2);
+                      }
+                      return '0';
+                    })()}
+                  </span>
+                </div>
+              }
+              className="coach-fee-card"
+            >
               <Row gutter={[16, 16]}>
                 {selectedCoaches.map((coach) => (
                   <Col span={8} key={coach.id}>
