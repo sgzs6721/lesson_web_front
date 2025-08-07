@@ -148,7 +148,7 @@ export const useUserData = () => {
   };
 
   // 更新用户
-  const updateUser = async (id: string, values: Partial<User>) => {
+  const updateUser = async (id: string, values: any) => {
     try {
       setLoading(true);
 
@@ -164,8 +164,62 @@ export const useUserData = () => {
 
       console.log('当前用户是否超级管理员:', isSuperAdmin);
 
-      // 处理角色ID - 只有当values中包含角色信息时才处理
-      const roleId = !isSuperAdmin && values.role ? (typeof values.role === 'object' ? values.role.id : values.role) : undefined;
+      // 处理角色ID - 使用表单中的角色值
+      let roleValue: UserRole;
+      if (values.role) {
+        // 如果表单中有角色值，使用表单的值
+        if (typeof values.role === 'object' && values.role !== null) {
+          // 如果是对象，尝试获取角色枚举值
+          if (values.role.id === 1 || values.role.id === '1') {
+            roleValue = UserRole.SUPER_ADMIN;
+          } else if (values.role.id === 2 || values.role.id === '2') {
+            roleValue = UserRole.COLLABORATOR;
+          } else if (values.role.id === 3 || values.role.id === '3') {
+            roleValue = UserRole.CAMPUS_ADMIN;
+          } else {
+            roleValue = UserRole.COLLABORATOR; // 默认值
+          }
+        } else {
+          // 如果是数字或字符串，转换为枚举
+          const roleId = Number(values.role);
+          if (roleId === 1) {
+            roleValue = UserRole.SUPER_ADMIN;
+          } else if (roleId === 2) {
+            roleValue = UserRole.COLLABORATOR;
+          } else if (roleId === 3) {
+            roleValue = UserRole.CAMPUS_ADMIN;
+          } else {
+            roleValue = UserRole.COLLABORATOR; // 默认值
+          }
+        }
+      } else {
+        // 如果没有角色值，使用当前用户的角色
+        if (currentUser && typeof currentUser.role === 'object' && currentUser.role !== null) {
+          if (currentUser.role.id === 1 || currentUser.role.id === '1') {
+            roleValue = UserRole.SUPER_ADMIN;
+          } else if (currentUser.role.id === 2 || currentUser.role.id === '2') {
+            roleValue = UserRole.COLLABORATOR;
+          } else if (currentUser.role.id === 3 || currentUser.role.id === '3') {
+            roleValue = UserRole.CAMPUS_ADMIN;
+          } else {
+            roleValue = UserRole.COLLABORATOR;
+          }
+        } else if (currentUser) {
+          const roleId = Number(currentUser.role);
+          if (roleId === 1) {
+            roleValue = UserRole.SUPER_ADMIN;
+          } else if (roleId === 2) {
+            roleValue = UserRole.COLLABORATOR;
+          } else if (roleId === 3) {
+            roleValue = UserRole.CAMPUS_ADMIN;
+          } else {
+            roleValue = UserRole.COLLABORATOR;
+          }
+        } else {
+          // 如果找不到当前用户，使用默认值
+          roleValue = UserRole.COLLABORATOR;
+        }
+      }
 
       // 处理校区ID
       const campusId = typeof values.campus === 'object' ? values.campus.id : values.campus;
@@ -180,45 +234,21 @@ export const useUserData = () => {
         id: Number(id) || 0,  // 确保是数字
         realName: values.name || '',
         phone: values.phone || '',
-        // institutionId 不需要传递
-        status: status
+        status: status,
+        role: roleValue // 使用正确的角色枚举值
       };
 
-      // 强制添加role字段，无论是否是超级管理员
-      if (currentUser && currentUser.role) {
-        // 使用当前用户的角色ID
-        if (typeof currentUser.role === 'object' && currentUser.role !== null) {
-          // 如果是对象，尝试获取角色枚举值
-          if (currentUser.role.id === 1 || currentUser.role.id === '1') {
-            updateParams.role = UserRole.SUPER_ADMIN;
-          } else if (currentUser.role.id === 2 || currentUser.role.id === '2') {
-            updateParams.role = UserRole.COLLABORATOR;
-          } else if (currentUser.role.id === 3 || currentUser.role.id === '3') {
-            updateParams.role = UserRole.CAMPUS_ADMIN;
-          } else {
-            updateParams.role = UserRole.COLLABORATOR; // 默认值
-          }
+      // 当角色为校区管理员时，必须传递campusId
+      if (roleValue === UserRole.CAMPUS_ADMIN) {
+        if (campusId && campusId !== '' && campusId !== null && campusId !== undefined) {
+          updateParams.campusId = Number(campusId) || 0;
         } else {
-          // 如果是数字或字符串，转换为枚举
-          if (String(currentUser.role) === '1' || String(currentUser.role) === 'SUPER_ADMIN') {
-            updateParams.role = UserRole.SUPER_ADMIN;
-          } else if (String(currentUser.role) === '2' || String(currentUser.role) === 'COLLABORATOR') {
-            updateParams.role = UserRole.COLLABORATOR;
-          } else if (String(currentUser.role) === '3' || String(currentUser.role) === 'CAMPUS_ADMIN') {
-            updateParams.role = UserRole.CAMPUS_ADMIN;
-          } else {
-            updateParams.role = currentUser.role as UserRole;
-          }
+          // 如果没有选择校区，使用默认值或抛出错误
+          console.warn('校区管理员必须选择校区，使用默认校区ID');
+          updateParams.campusId = 1; // 使用默认校区ID
         }
-        console.log('强制添加角色枚举:', updateParams.role);
-      } else {
-        // 如果无法获取当前用户的角色ID，使用默认值（协同管理员）
-        updateParams.role = UserRole.COLLABORATOR;
-        console.log('无法获取角色ID，使用默认值:', updateParams.role);
-      }
-
-      // 只有当提供了校区信息时才添加campusId字段
-      if (campusId) {
+      } else if (campusId && campusId !== '' && campusId !== null && campusId !== undefined) {
+        // 其他角色如果有校区信息也传递
         updateParams.campusId = Number(campusId) || 0;
       }
 
