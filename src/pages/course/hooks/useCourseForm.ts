@@ -66,11 +66,19 @@ export const useCourseForm = (
       }
       // 只包含选中的教练
       let coachFeesArr: { coachId: number; coachFee: number }[] = [];
-      if (Array.isArray(values.coachIds) && values.coachFees && typeof values.coachFees === 'object') {
-        coachFeesArr = values.coachIds.map((id: number) => ({
-          coachId: id,
-          coachFee: Number(values.coachFees[id])
-        }));
+      if (Array.isArray(values.coachIds)) {
+        if (values.coachFees && typeof values.coachFees === 'object' && Object.keys(values.coachFees).length > 0) {
+          coachFeesArr = values.coachIds.map((id: number) => ({
+            coachId: id,
+            coachFee: Number(values.coachFees[id])
+          }));
+        } else {
+          // coachFees为空对象时兜底处理
+          coachFeesArr = values.coachIds.map((id: number) => ({
+            coachId: id,
+            coachFee: Number(values.coachFee) || 0
+          }));
+        }
       }
       // 移除coachFee字段
       const { coachFee, ...restValues } = values;

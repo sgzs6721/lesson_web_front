@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Row, Col, Typography, Space, Card, Divider } from 'antd';
+import { Modal, Button, Row, Col, Typography, Space, Card, Divider, Tag } from 'antd';
 import { 
   ClockCircleOutlined, 
   FileTextOutlined, 
@@ -7,7 +7,9 @@ import {
   TeamOutlined, 
   TagOutlined,
   DollarOutlined,
-  BookOutlined
+  BookOutlined,
+  CheckCircleOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Course } from '../types/course';
@@ -43,6 +45,14 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   const getCoachNames = (coaches: { id: number; name: string }[] | undefined) => {
     if (!coaches || coaches.length === 0) return '暂无教练';
     return coaches.map(coach => coach.name).join(', ');
+  };
+
+  // 计算平均课时费
+  const getAverageCoachFee = (coachFees: Record<number, number> | undefined) => {
+    if (!coachFees || Object.keys(coachFees).length === 0) return 0;
+    const fees = Object.values(coachFees);
+    const total = fees.reduce((sum, fee) => sum + fee, 0);
+    return total / fees.length;
   };
 
   if (!course) return null;
@@ -95,7 +105,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
       open={visible}
       onCancel={onCancel}
       footer={null}
-      width={700}
+      width={800}
       centered
       bodyStyle={{ padding: '14px', maxHeight: '75vh', overflowY: 'auto' }}
     >
@@ -141,9 +151,23 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           
           <Col span={12}>
             <div>
-              <span style={{ ...labelStyle, marginBottom: '6px' }}>上课教练</span>
+              <span style={{ ...labelStyle, marginBottom: '6px' }}>是否多教师教学</span>
               <div style={{ fontSize: '14px' }}>
                 <TeamOutlined style={{ marginRight: '8px', color: '#8c8c8c' }} />
+                {course.isMultiTeacher ? (
+                  <Tag color="blue" icon={<CheckCircleOutlined />}>是</Tag>
+                ) : (
+                  <Tag color="default">否</Tag>
+                )}
+              </div>
+            </div>
+          </Col>
+          
+          <Col span={12}>
+            <div>
+              <span style={{ ...labelStyle, marginBottom: '6px' }}>上课教练</span>
+              <div style={{ fontSize: '14px' }}>
+                <UserOutlined style={{ marginRight: '8px', color: '#8c8c8c' }} />
                 {getCoachNames(course.coaches)}
               </div>
             </div>
@@ -194,7 +218,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div style={courseInfoItemStyle}>
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>每次消耗</div>
             <div style={{ fontSize: '18px', color: '#1890ff', fontWeight: 600, textAlign: 'center' }}>
-              0.5 小时
+              {course.unitHours || 0} 小时
             </div>
           </div>
           
@@ -203,7 +227,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div style={courseInfoItemStyle}>
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>总课时</div>
             <div style={{ fontSize: '18px', color: '#52c41a', fontWeight: 600, textAlign: 'center' }}>
-              {course.totalHours} 小时
+              {course.totalHours || 0} 小时
             </div>
           </div>
           
@@ -212,7 +236,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div style={courseInfoItemStyle}>
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>课程价格</div>
             <div style={{ fontSize: '18px', color: '#fa8c16', fontWeight: 600, textAlign: 'center' }}>
-              ¥{course.price}
+              ¥{course.price || 0}
             </div>
           </div>
           
@@ -221,36 +245,83 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div style={courseInfoItemStyle}>
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>课时费</div>
             <div style={{ fontSize: '18px', fontWeight: 600, color: '#f5222d', textAlign: 'center' }}>
-              ¥{course.coachFee}
+              ¥{course.coachFee || 0}
             </div>
           </div>
         </div>
       </Card>
 
-      {/* 课程描述 */}
-      {course.description && (
+      {/* 教练课时费详情 - 仅当是多教师教学时显示 */}
+      {course.isMultiTeacher && course.coachFees && Object.keys(course.coachFees).length > 0 && (
         <>
           <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>
             <Space>
-              <FileTextOutlined />
-              <span>课程描述</span>
+              <DollarOutlined />
+              <span>教练课时费详情</span>
             </Space>
           </div>
           
           <Card
-            style={{ marginBottom: '14px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
-            bodyStyle={{ padding: '16px' }}
+            size="small"
+            title={
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 500 }}>
+                  各个教练课时费
+                </span>
+                <span style={{ fontSize: '12px', color: '#666', fontWeight: 400 }}>
+                  平均课时费: ¥{getAverageCoachFee(course.coachFees).toFixed(2)}
+                </span>
+              </div>
+            }
+            style={{ marginBottom: '20px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
+            className="coach-fee-card"
           >
-            <div style={{ 
-              minHeight: '40px',
-              lineHeight: '22px',
-              fontSize: '14px'
-            }}>
-              {course.description}
+            <div style={{ padding: '8px 0' }}>
+              {course.coaches && course.coaches.map((coach) => {
+                const coachFee = course.coachFees?.[coach.id] || 0;
+                return (
+                  <div key={coach.id} style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    padding: '8px 0',
+                    borderBottom: '1px solid #f5f5f5'
+                  }}>
+                    <span style={{ fontSize: '14px', color: '#262626' }}>
+                      {coach.name}
+                    </span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#f5222d' }}>
+                      ¥{coachFee}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </Card>
         </>
       )}
+
+      {/* 课程描述 - 始终显示 */}
+      <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>
+        <Space>
+          <FileTextOutlined />
+          <span>课程描述</span>
+        </Space>
+      </div>
+      
+      <Card
+        style={{ marginBottom: '14px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
+        bodyStyle={{ padding: '16px' }}
+      >
+        <div style={{ 
+          minHeight: '40px',
+          lineHeight: '22px',
+          fontSize: '14px',
+          color: course.description ? '#262626' : '#8c8c8c'
+        }}>
+          {course.description || '暂无描述'}
+        </div>
+      </Card>
     </Modal>
   );
 };

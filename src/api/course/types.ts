@@ -35,6 +35,9 @@ export interface Course {
     id: number;
     name: string;
   }[];
+  isMultiTeacher?: boolean;
+  consume?: number;
+  coachFees?: Record<number, number>;
 }
 
 // 课程创建请求

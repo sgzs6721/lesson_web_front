@@ -103,10 +103,20 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
 
           // 准备教练课时费数据
           const coachFees: Record<number, number> = {};
-          selectedCoachList.forEach(coach => {
-            // 使用课程实际的课时费，如果没有则使用教练的默认课时费
-            coachFees[coach.id] = currentEditingCourse.coachFee || coach.classFee || 0;
-          });
+          if (currentEditingCourse.coachFees && Object.keys(currentEditingCourse.coachFees).length > 0) {
+            // 优先使用已有的coachFees
+            Object.entries(currentEditingCourse.coachFees).forEach(([id, fee]) => {
+              coachFees[Number(id)] = Number(fee);
+            });
+          } else if (selectedCoachList.length === 1) {
+            // 单教练优先用coachFee
+            coachFees[selectedCoachList[0].id] = currentEditingCourse.coachFee || selectedCoachList[0].classFee || 0;
+          } else {
+            // 多教练用classFee
+            selectedCoachList.forEach(coach => {
+              coachFees[coach.id] = coach.classFee || 0;
+            });
+          }
           console.log('编辑模式 - 教练课时费数据:', coachFees);
 
           // 查找匹配的课程类型 ID
