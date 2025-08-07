@@ -23,6 +23,9 @@ export enum CoachEmploymentType {
 export interface CoachSimple {
   id: number; // 修改为数字类型
   name: string;
+  classFee?: number; // 教练课时费
+  baseSalary?: number; // 基本工资
+  performanceBonus?: number; // 绩效奖金
 }
 
 // 教练类型

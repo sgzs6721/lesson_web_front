@@ -68,7 +68,7 @@ function suppressReactWarnings(): Plugin {
 }
 
 // 定义API主机常量
-const LESSON_API_HOST = 'http://lesson.devtesting.top';
+const LESSON_API_HOST = 'http://jufeng.devtesting.top';
 const LOCAL_API_HOST = 'http://localhost:8080';
 
 // 配置代理日志记录函数
