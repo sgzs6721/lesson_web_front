@@ -104,8 +104,8 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           // 准备教练课时费数据
           const coachFees: Record<number, number> = {};
           selectedCoachList.forEach(coach => {
-            // 使用教练的默认课时费
-            coachFees[coach.id] = coach.classFee || 0;
+            // 使用课程实际的课时费，如果没有则使用教练的默认课时费
+            coachFees[coach.id] = currentEditingCourse.coachFee || coach.classFee || 0;
           });
           console.log('编辑模式 - 教练课时费数据:', coachFees);
 

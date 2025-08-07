@@ -64,10 +64,21 @@ export const useCourseForm = (
       if (typeof isMultiTeacher !== 'boolean') {
         isMultiTeacher = !!isMultiTeacher;
       }
+      // 只包含选中的教练
+      let coachFeesArr: { coachId: number; coachFee: number }[] = [];
+      if (Array.isArray(values.coachIds) && values.coachFees && typeof values.coachFees === 'object') {
+        coachFeesArr = values.coachIds.map((id: number) => ({
+          coachId: id,
+          coachFee: Number(values.coachFees[id])
+        }));
+      }
+      // 移除coachFee字段
+      const { coachFee, ...restValues } = values;
       const submitValues = {
-        ...values,
+        ...restValues,
         status,
-        isMultiTeacher
+        isMultiTeacher,
+        coachFees: coachFeesArr
       };
       console.log('提交表单，最终表单值:', submitValues);
       console.log('可用教练列表:', coaches);
