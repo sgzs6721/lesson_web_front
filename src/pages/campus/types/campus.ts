@@ -17,6 +17,7 @@ export interface Campus {
   coachCount?: number;
   courseCount?: number;
   pendingLessonCount?: number;
+  totalLessonHours?: number;
   monthlyRent?: number; // 月租金
   propertyFee?: number; // 物业费
   utilityFee?: number; // 固定水电费
