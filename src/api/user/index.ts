@@ -95,13 +95,13 @@ export const user = {
     if (params?.keyword) queryParams.append('keyword', params.keyword);
 
     // 角色筛选 - 支持多选
-    if (params?.roleIds && params.roleIds.length > 0) {
+    if (params?.role && params.role.length > 0) {
       // 对于多选参数，需要多次添加同名参数
-      params.roleIds.forEach(roleId => {
-        queryParams.append('roleIds', String(roleId));
+      params.role.forEach(roleId => {
+        queryParams.append('role', String(roleId));
       });
     } else if (params?.roleId) {
-      queryParams.append('roleIds', String(params.roleId));
+      queryParams.append('role', String(params.roleId));
     }
 
     // 校区筛选 - 支持多选

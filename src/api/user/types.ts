@@ -50,7 +50,8 @@ export interface UserQueryParams {
   realName?: string;
   keyword?: string; // 关键字搜索
   roleId?: number | string;
-  roleIds?: (number | string)[]; // 多选角色ID
+  roleIds?: (number | string)[]; // 多选角色ID（兼容旧版本）
+  role?: (number | string)[]; // 多选角色ID（新版本）
   campusId?: number | string;
   campusIds?: (number | string)[]; // 多选校区ID
   status?: string; // 状态：ENABLED 或 DISABLED

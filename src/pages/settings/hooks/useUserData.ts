@@ -319,7 +319,7 @@ export const useUserData = () => {
       // 角色筛选 - 支持多选
       if (params.selectedRole.length > 0) {
         // 将角色ID数组添加到查询参数中
-        queryParams.roleIds = params.selectedRole;
+        queryParams.role = params.selectedRole;
       }
 
       // 校区筛选 - 支持多选

@@ -33,7 +33,7 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
     <Row gutter={[16, 16]} style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 16 }}>
       <Col style={{ flex: 1, minWidth: '180px' }}>
         <Input
-          placeholder="搜索电话/姓名/ID"
+          placeholder="搜索电话/姓名"
           value={params.searchText}
           onChange={e => onTextChange(e.target.value)}
           prefix={<SearchOutlined />}
