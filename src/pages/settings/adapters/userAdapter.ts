@@ -1,5 +1,5 @@
 import { User as ApiUser, UserStatus } from '@/api/user/types';
-import { User, UserRole } from '../types/user';
+import { User, UserRole, UserRoleItem } from '../types/user';
 
 // 将API用户角色映射到前端用户角色
 const mapRoleToUserRole = (role: string | { id: number | string; name: string }): UserRole => {
@@ -68,6 +68,33 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
 
   // 保留原始的 role 对象
   const roleObj = apiUser.role && typeof apiUser.role === 'object' ? apiUser.role : undefined;
+
+  // 处理多角色数据
+  let rolesData: UserRoleItem[] = [];
+  if (apiUser.roles && Array.isArray(apiUser.roles)) {
+    // 如果API返回了多角色数据，直接使用
+    rolesData = apiUser.roles.map((roleItem: any) => ({
+      name: roleItem.name as UserRole,
+      campusId: roleItem.campusId
+    }));
+  } else {
+    // 兼容旧版本的单角色数据，转换为多角色格式
+    const roleType = mapRoleToUserRole(roleName);
+    let campusId: number | null = null;
+    
+    // 获取校区ID
+    if (apiUser.campus) {
+      if (typeof apiUser.campus === 'object' && apiUser.campus !== null) {
+        campusId = Number(apiUser.campus.id);
+      } else {
+        campusId = Number(apiUser.campus);
+      }
+    } else if (apiUser.campusId) {
+      campusId = Number(apiUser.campusId);
+    }
+
+    rolesData = [{ name: roleType, campusId }];
+  }
 
   // 处理校区数据，确保它是一个包含 id 和 name 的对象
   let campusData;
@@ -148,6 +175,7 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
     name: apiUser.realName,
     realName: apiUser.realName, // 保留原始的realName字段
     role: roleObj || mapRoleToUserRole(roleName),
+    roles: rolesData, // 新增：多角色数据
     roleName: roleName,
     campus: campusData, // 使用处理后的校区数据
     status: statusValue, // 使用处理后的状态值

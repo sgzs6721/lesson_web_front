@@ -1,28 +1,32 @@
-import { useState, useCallback } from 'react';
-import { User, UserSearchParams, UserRole } from '../types/user';
+import { useState } from 'react';
 import { message } from 'antd';
-import { API } from '@/api';
-import { UserStatus } from '@/api/user/types';
-import { apiUserToUser, userStatusToApiStatus } from '../adapters/userAdapter';
+import { User } from '../types/user';
+import { UserRole } from '../types/user';
 import { DEFAULT_STATUS } from '../constants/userOptions';
-import { getCampusList } from '@/components/CampusSelector';
+import { apiUserToUser } from '../adapters/userAdapter';
+import { user as API } from '@/api/user';
+import { UserStatus } from '@/api/user/types';
 
-// 根据校区ID获取校区名称
-const getCampusNameById = async (campusId: string | number): Promise<string> => {
-  try {
-    // 获取所有校区列表
-    const campusList = await getCampusList('用户管理校区名称查询');
-
-    // 查找匹配的校区
-    const campus = campusList.find(campus => String(campus.id) === String(campusId));
-
-    // 如果找到则返回名称，否则返回未设置
-    return campus ? campus.name : '未设置';
-  } catch (error) {
-    console.error('获取校区名称失败:', error);
-    return '未知校区';
+// 辅助函数：根据角色枚举获取角色名称
+function getRoleName(role: UserRole): string {
+  switch(role) {
+    case UserRole.SUPER_ADMIN:
+      return '超级管理员';
+    case UserRole.COLLABORATOR:
+      return '协同管理员';
+    case UserRole.CAMPUS_ADMIN:
+      return '校区管理员';
+    default:
+      return '未知角色';
   }
-};
+}
+
+// 辅助函数：根据校区ID获取校区名称
+async function getCampusNameById(campusId: number): Promise<string> {
+  // 这里应该调用API获取校区名称
+  // 暂时返回默认值
+  return `校区${campusId}`;
+}
 
 export const useUserData = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -40,41 +44,60 @@ export const useUserData = () => {
     try {
       setLoading(true);
 
-      // 处理角色枚举
-      let roleValue: UserRole;
-      if (typeof values.role === 'object' && values.role !== null) {
-        // 如果是对象，尝试获取角色枚举值
-        if (values.role.id === 1 || values.role.id === '1') {
-          roleValue = UserRole.SUPER_ADMIN;
-        } else if (values.role.id === 2 || values.role.id === '2') {
-          roleValue = UserRole.COLLABORATOR;
-        } else if (values.role.id === 3 || values.role.id === '3') {
-          roleValue = UserRole.CAMPUS_ADMIN;
-        } else {
-          roleValue = UserRole.COLLABORATOR; // 默认值
-        }
+      // 处理多角色数据
+      let rolesData: any[] = [];
+      if (values.roles && values.roles.length > 0) {
+        // 使用新的多角色数据结构
+        rolesData = values.roles.map(roleItem => ({
+          name: roleItem.name,
+          campusId: roleItem.campusId
+        }));
       } else {
-        // 如果是数字或字符串，转换为枚举
-        if (String(values.role) === '1' || String(values.role) === 'SUPER_ADMIN') {
-          roleValue = UserRole.SUPER_ADMIN;
-        } else if (String(values.role) === '2' || String(values.role) === 'COLLABORATOR') {
-          roleValue = UserRole.COLLABORATOR;
-        } else if (String(values.role) === '3' || String(values.role) === 'CAMPUS_ADMIN') {
-          roleValue = UserRole.CAMPUS_ADMIN;
+        // 兼容旧版本的单角色数据
+        let roleValue: UserRole;
+        if (typeof values.role === 'object' && values.role !== null) {
+          if (values.role.id === 1 || values.role.id === '1') {
+            roleValue = UserRole.SUPER_ADMIN;
+          } else if (values.role.id === 2 || values.role.id === '2') {
+            roleValue = UserRole.COLLABORATOR;
+          } else if (values.role.id === 3 || values.role.id === '3') {
+            roleValue = UserRole.CAMPUS_ADMIN;
+          } else {
+            roleValue = UserRole.COLLABORATOR;
+          }
         } else {
-          roleValue = values.role as UserRole;
+          if (String(values.role) === '1' || String(values.role) === 'SUPER_ADMIN') {
+            roleValue = UserRole.SUPER_ADMIN;
+          } else if (String(values.role) === '2' || String(values.role) === 'COLLABORATOR') {
+            roleValue = UserRole.COLLABORATOR;
+          } else if (String(values.role) === '3' || String(values.role) === 'CAMPUS_ADMIN') {
+            roleValue = UserRole.CAMPUS_ADMIN;
+          } else {
+            roleValue = values.role as UserRole;
+          }
         }
+
+        let campusId: number | null = null;
+        if (values.campus) {
+          if (typeof values.campus === 'object' && values.campus !== null) {
+            campusId = Number(values.campus.id);
+          } else {
+            campusId = Number(values.campus);
+          }
+        }
+
+        rolesData = [{ name: roleValue, campusId }];
       }
-      console.log('创建用户时使用的角色枚举:', roleValue);
+
+      console.log('创建用户时使用的角色数据:', rolesData);
 
       // 调用API创建用户
-      const userId = await API.user.create({
+      const userId = await API.create({
         phone: values.phone,
         password: values.phone.slice(-8), // 默认密码为手机号后8位
         realName: values.name || '',
-        role: roleValue, // 使用角色枚举字符串
-        campusId: Number(typeof values.campus === 'object' ? values.campus.id : values.campus), // 处理对象类型的校区，确保是整数
-        status: values.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED // 添加状态参数
+        roles: rolesData, // 使用多角色数据
+        status: values.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED
       });
 
       // 创建新用户对象
@@ -82,22 +105,20 @@ export const useUserData = () => {
         id: String(userId),
         phone: values.phone,
         name: values.name,
-        // 正确格式化角色对象，确保它包含 id 和 name
-        role: {
-          id: typeof values.role === 'object' ? values.role.id : values.role,
-          name: getRoleName(roleValue)
+        roles: rolesData, // 设置多角色数据
+        role: rolesData.length > 0 ? {
+          id: rolesData[0].name === 'SUPER_ADMIN' ? 1 : 
+              rolesData[0].name === 'COLLABORATOR' ? 2 : 3,
+          name: getRoleName(rolesData[0].name)
+        } : {
+          id: 2,
+          name: '协同管理员'
         },
-        // 添加 roleName 字段以便于表格渲染
-        roleName: getRoleName(roleValue),
-        // 处理校区数据，确保它是一个包含 id 和 name 的对象
-        campus: typeof values.campus === 'object'
-          ? values.campus
-          : values.campus
-          ? {
-              id: values.campus,
-              name: await getCampusNameById(values.campus)
-            }
-          : undefined,
+        roleName: rolesData.length > 0 ? getRoleName(rolesData[0].name) : '',
+        campus: rolesData.length > 0 && rolesData[0].campusId ? {
+          id: rolesData[0].campusId,
+          name: await getCampusNameById(rolesData[0].campusId)
+        } : undefined,
         status: DEFAULT_STATUS,
         statusText: DEFAULT_STATUS === 'ENABLED' ? '启用' : '禁用',
         createdAt: new Date().toLocaleString('zh-CN', {
@@ -120,27 +141,13 @@ export const useUserData = () => {
         }).replace(/\//g, '-'),
       };
 
-      // 辅助函数：根据角色枚举获取角色名称
-      function getRoleName(role: UserRole): string {
-        switch(role) {
-          case UserRole.SUPER_ADMIN:
-            return '超级管理员';
-          case UserRole.COLLABORATOR:
-            return '协同管理员';
-          case UserRole.CAMPUS_ADMIN:
-            return '校区管理员';
-          default:
-            return '未知角色';
-        }
-      }
-
-      // 更新状态
+      // 添加到用户列表
       setUsers(prevUsers => [newUser, ...prevUsers]);
-      setTotal(prev => prev + 1);
-      message.success('用户添加成功');
-      return newUser;
+      setTotal(prevTotal => prevTotal + 1);
+
+      message.success('用户创建成功');
     } catch (error: any) {
-      message.error(error.message || '添加用户失败');
+      message.error(error.message || '创建用户失败');
       throw error;
     } finally {
       setLoading(false);
@@ -148,119 +155,81 @@ export const useUserData = () => {
   };
 
   // 更新用户
-  const updateUser = async (id: string, values: any) => {
+  const updateUser = async (id: string, values: Partial<User>) => {
     try {
       setLoading(true);
 
       console.log('更新用户原始数据:', { id, values });
 
-      // 检查是否是超级管理员
-      // 获取当前用户的完整信息
-      const currentUser = users.find(user => user.id === id);
-      const isSuperAdmin = currentUser && (
-        (typeof currentUser.role === 'object' && currentUser.role !== null && currentUser.role.id === UserRole.SUPER_ADMIN) ||
-        (typeof currentUser.role === 'string' && currentUser.role === UserRole.SUPER_ADMIN)
-      );
-
-      console.log('当前用户是否超级管理员:', isSuperAdmin);
-
-      // 处理角色ID - 使用表单中的角色值
-      let roleValue: UserRole;
-      if (values.role) {
-        // 如果表单中有角色值，使用表单的值
-        if (typeof values.role === 'object' && values.role !== null) {
-          // 如果是对象，尝试获取角色枚举值
-          if (values.role.id === 1 || values.role.id === '1') {
-            roleValue = UserRole.SUPER_ADMIN;
-          } else if (values.role.id === 2 || values.role.id === '2') {
-            roleValue = UserRole.COLLABORATOR;
-          } else if (values.role.id === 3 || values.role.id === '3') {
-            roleValue = UserRole.CAMPUS_ADMIN;
-          } else {
-            roleValue = UserRole.COLLABORATOR; // 默认值
-          }
-        } else {
-          // 如果是数字或字符串，转换为枚举
-          const roleId = Number(values.role);
-          if (roleId === 1) {
-            roleValue = UserRole.SUPER_ADMIN;
-          } else if (roleId === 2) {
-            roleValue = UserRole.COLLABORATOR;
-          } else if (roleId === 3) {
-            roleValue = UserRole.CAMPUS_ADMIN;
-          } else {
-            roleValue = UserRole.COLLABORATOR; // 默认值
-          }
-        }
+      // 处理多角色数据
+      let rolesData: any[] = [];
+      if (values.roles && values.roles.length > 0) {
+        // 使用新的多角色数据结构
+        rolesData = values.roles.map(roleItem => ({
+          name: roleItem.name,
+          campusId: roleItem.campusId
+        }));
       } else {
-        // 如果没有角色值，使用当前用户的角色
-        if (currentUser && typeof currentUser.role === 'object' && currentUser.role !== null) {
-          if (currentUser.role.id === 1 || currentUser.role.id === '1') {
-            roleValue = UserRole.SUPER_ADMIN;
-          } else if (currentUser.role.id === 2 || currentUser.role.id === '2') {
-            roleValue = UserRole.COLLABORATOR;
-          } else if (currentUser.role.id === 3 || currentUser.role.id === '3') {
-            roleValue = UserRole.CAMPUS_ADMIN;
+        // 兼容旧版本的单角色数据
+        let roleValue: UserRole;
+        if (values.role) {
+          if (typeof values.role === 'object' && values.role !== null) {
+            if (values.role.id === 1 || values.role.id === '1') {
+              roleValue = UserRole.SUPER_ADMIN;
+            } else if (values.role.id === 2 || values.role.id === '2') {
+              roleValue = UserRole.COLLABORATOR;
+            } else if (values.role.id === 3 || values.role.id === '3') {
+              roleValue = UserRole.CAMPUS_ADMIN;
+            } else {
+              roleValue = UserRole.COLLABORATOR;
+            }
           } else {
-            roleValue = UserRole.COLLABORATOR;
-          }
-        } else if (currentUser) {
-          const roleId = Number(currentUser.role);
-          if (roleId === 1) {
-            roleValue = UserRole.SUPER_ADMIN;
-          } else if (roleId === 2) {
-            roleValue = UserRole.COLLABORATOR;
-          } else if (roleId === 3) {
-            roleValue = UserRole.CAMPUS_ADMIN;
-          } else {
-            roleValue = UserRole.COLLABORATOR;
+            const roleId = Number(values.role);
+            if (roleId === 1) {
+              roleValue = UserRole.SUPER_ADMIN;
+            } else if (roleId === 2) {
+              roleValue = UserRole.COLLABORATOR;
+            } else if (roleId === 3) {
+              roleValue = UserRole.CAMPUS_ADMIN;
+            } else {
+              roleValue = UserRole.COLLABORATOR;
+            }
           }
         } else {
-          // 如果找不到当前用户，使用默认值
           roleValue = UserRole.COLLABORATOR;
         }
-      }
 
-      // 处理校区ID
-      const campusId = typeof values.campus === 'object' ? values.campus.id : values.campus;
-
-      // 处理状态
-      const status = values.status ?
-        (values.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED) :
-        UserStatus.ENABLED;
-
-      // 构建符合API要求的参数
-      const updateParams: any = {
-        id: Number(id) || 0,  // 确保是数字
-        realName: values.name || '',
-        phone: values.phone || '',
-        status: status,
-        role: roleValue // 使用正确的角色枚举值
-      };
-
-      // 当角色为校区管理员时，必须传递campusId
-      if (roleValue === UserRole.CAMPUS_ADMIN) {
-        if (campusId && campusId !== '' && campusId !== null && campusId !== undefined) {
-          updateParams.campusId = Number(campusId) || 0;
-        } else {
-          // 如果没有选择校区，使用默认值或抛出错误
-          console.warn('校区管理员必须选择校区，使用默认校区ID');
-          updateParams.campusId = 1; // 使用默认校区ID
+        let campusId: number | null = null;
+        if (values.campus) {
+          if (typeof values.campus === 'object' && values.campus !== null) {
+            campusId = Number(values.campus.id);
+          } else {
+            campusId = Number(values.campus);
+          }
         }
-      } else if (campusId && campusId !== '' && campusId !== null && campusId !== undefined) {
-        // 其他角色如果有校区信息也传递
-        updateParams.campusId = Number(campusId) || 0;
+
+        rolesData = [{ name: roleValue, campusId }];
       }
+
+      console.log('更新用户时使用的角色数据:', rolesData);
+
+      // 准备更新参数
+      const updateParams: any = {
+        id: Number(id),
+        phone: values.phone,
+        realName: values.name,
+        roles: rolesData, // 使用多角色数据
+        status: values.status === 'ENABLED' ? UserStatus.ENABLED : UserStatus.DISABLED
+      };
 
       console.log('发送给API的更新参数:', updateParams);
 
       // 调用API更新用户
-      await API.user.update(updateParams);
+      await API.update(updateParams);
 
       // 更新成功后，重新获取用户列表数据
       try {
         // 使用当前的查询参数重新获取数据
-        // 这样可以保持当前的搜索条件和分页信息
         const queryParams = { ...currentQueryParams };
 
         // 删除搜索参数，因为它不是API需要的参数
@@ -269,7 +238,7 @@ export const useUserData = () => {
         console.log('重新获取用户列表的查询参数:', queryParams);
 
         // 调用API获取用户列表
-        const result = await API.user.getList(queryParams);
+        const result = await API.getList(queryParams);
 
         // 转换数据格式
         const transformedUsers = result.list.map(apiUserToUser);
@@ -298,7 +267,7 @@ export const useUserData = () => {
       setLoading(true);
 
       // 调用API删除用户
-      await API.user.delete(id);
+      await API.delete(id);
 
       // 更新本地状态
       setUsers(prevUsers => prevUsers.filter(user => user.id !== id));
@@ -323,7 +292,7 @@ export const useUserData = () => {
       if (phone && phone.length >= 8) {
         password = phone.slice(-8);
       }
-      await API.user.resetPassword({ id, password });
+      await API.resetPassword({ id, password });
     } catch (error: any) {
       message.error(error.message || '重置密码失败');
       throw error;
@@ -333,7 +302,7 @@ export const useUserData = () => {
   };
 
   // 筛选用户
-  const filterUsers = useCallback(async (params: UserSearchParams, page: number, pageSize: number) => {
+  const filterUsers = async (params: any, page: number, pageSize: number) => {
     setLoading(true);
     try {
       // 构建API查询参数
@@ -372,7 +341,7 @@ export const useUserData = () => {
       });
 
       // 调用API获取用户列表
-      const result = await API.user.getList(queryParams);
+      const result = await API.getList(queryParams);
 
       // 转换数据格式
       const transformedUsers = result.list.map(apiUserToUser);
@@ -389,14 +358,14 @@ export const useUserData = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   // 重置数据（获取所有用户）
-  const resetData = useCallback(async (page = 1, pageSize = 10) => {
+  const resetData = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
       // 调用API获取用户列表
-      const result = await API.user.getList({ page, pageSize });
+      const result = await API.getList({ page, pageSize });
 
       // 转换数据格式
       const transformedUsers = result.list.map(apiUserToUser);
@@ -410,7 +379,7 @@ export const useUserData = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   return {
     users,

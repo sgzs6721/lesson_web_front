@@ -1,11 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Row, Col, Divider, Button, Spin, Select, Tooltip } from 'antd';
-import { UserOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { User, UserRole } from '../types/user';
+import { Modal, Form, Input, Row, Col, Divider, Button, Spin, Select, Tooltip, Space, Tag, message } from 'antd';
+import { UserOutlined, InfoCircleOutlined, PlusOutlined, CloseOutlined } from '@ant-design/icons';
+import { User, UserRole, UserRoleItem } from '../types/user';
 import { roleOptions, statusOptions, DEFAULT_STATUS } from '../constants/userOptions';
 
 import { useRealCampusOptions } from '../hooks/useRealCampusOptions';
 import './UserEditModal.css';
+
+// 添加自定义样式
+const customStyles = `
+  .role-select-dropdown .ant-select-dropdown {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+  .campus-select-dropdown .ant-select-dropdown {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+  .role-select-dropdown .ant-select-item {
+    padding: 8px 12px !important;
+  }
+  .campus-select-dropdown .ant-select-item {
+    padding: 8px 12px !important;
+  }
+`;
 
 // 获取角色的中文名称
 const getRoleName = (role: UserRole | undefined): string => {
@@ -36,6 +54,9 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   // 使用真实校区列表
   const { campusOptions, loading: campusLoading, error: campusError, refreshCampusOptions } = useRealCampusOptions();
 
+  // 多角色状态
+  const [selectedRoles, setSelectedRoles] = useState<UserRoleItem[]>([]);
+
   // 当模态框打开时加载校区列表
   useEffect(() => {
     // 只在模态框可见时加载校区列表
@@ -60,6 +81,41 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           form.setFieldsValue({ status: statusValue });
         }, 300);
       }
+
+      // 初始化多角色数据
+      if (editingUser?.roles && editingUser.roles.length > 0) {
+        setSelectedRoles(editingUser.roles);
+      } else if (editingUser?.role) {
+        // 兼容旧版本的单角色数据
+        let roleName: UserRole;
+        if (typeof editingUser.role === 'object' && editingUser.role !== null) {
+          const roleId = Number(editingUser.role.id);
+          if (roleId === 1) roleName = UserRole.SUPER_ADMIN;
+          else if (roleId === 2) roleName = UserRole.COLLABORATOR;
+          else if (roleId === 3) roleName = UserRole.CAMPUS_ADMIN;
+          else roleName = UserRole.COLLABORATOR;
+        } else {
+          const roleId = Number(editingUser.role);
+          if (roleId === 1) roleName = UserRole.SUPER_ADMIN;
+          else if (roleId === 2) roleName = UserRole.COLLABORATOR;
+          else if (roleId === 3) roleName = UserRole.CAMPUS_ADMIN;
+          else roleName = UserRole.COLLABORATOR;
+        }
+
+        // 获取校区ID
+        let campusId: number | null = null;
+        if (editingUser.campus) {
+          if (typeof editingUser.campus === 'object' && editingUser.campus !== null) {
+            campusId = Number(editingUser.campus.id);
+          } else {
+            campusId = Number(editingUser.campus);
+          }
+        }
+
+        setSelectedRoles([{ name: roleName, campusId }]);
+      } else {
+        setSelectedRoles([]);
+      }
     }
   }, [visible, refreshCampusOptions, editingUser, form]);
 
@@ -73,28 +129,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       return editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
     }
     // 如果是添加模式，不预选状态，显示占位符
-    return undefined;
-  });
-
-  // 使用角色值作为依赖项的状态变量，强制重新渲染
-  const [roleValue, setRoleValue] = useState<UserRole | undefined>(() => {
-    // 如果是编辑模式，使用用户的角色
-    if (editingUser?.role) {
-      if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-        // 将数字ID转换为对应的UserRole枚举值
-        const roleId = Number(editingUser.role.id);
-        if (roleId === 1) return UserRole.SUPER_ADMIN;
-        if (roleId === 2) return UserRole.COLLABORATOR;
-        if (roleId === 3) return UserRole.CAMPUS_ADMIN;
-        return undefined;
-      }
-      // 将数字角色转换为对应的UserRole枚举值
-      const roleId = Number(editingUser.role);
-      if (roleId === 1) return UserRole.SUPER_ADMIN;
-      if (roleId === 2) return UserRole.COLLABORATOR;
-      if (roleId === 3) return UserRole.CAMPUS_ADMIN;
-    }
-    // 如果是添加模式，不预选角色，显示占位符
     return undefined;
   });
 
@@ -115,7 +149,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
     return '';
   });
 
-  // 当编辑用户变化时，更新状态值、角色值、密码值和校区值
+  // 当编辑用户变化时，更新状态值和密码值
   useEffect(() => {
     if (editingUser) {
       // 处理状态值
@@ -127,25 +161,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           newStatusValue = editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
         }
         setStatusValue(newStatusValue);
-      }
-
-      // 处理角色值
-      if (editingUser.role) {
-        let newRoleValue: UserRole | undefined;
-        if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-          const roleId = Number(editingUser.role.id);
-          if (roleId === 1) newRoleValue = UserRole.SUPER_ADMIN;
-          else if (roleId === 2) newRoleValue = UserRole.COLLABORATOR;
-          else if (roleId === 3) newRoleValue = UserRole.CAMPUS_ADMIN;
-          else newRoleValue = undefined;
-        } else {
-          const roleId = Number(editingUser.role);
-          if (roleId === 1) newRoleValue = UserRole.SUPER_ADMIN;
-          else if (roleId === 2) newRoleValue = UserRole.COLLABORATOR;
-          else if (roleId === 3) newRoleValue = UserRole.CAMPUS_ADMIN;
-          else newRoleValue = undefined;
-        }
-        setRoleValue(newRoleValue);
       }
 
       // 处理密码值 - 设置为手机号的后8位
@@ -170,18 +185,55 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
     }
   }, [editingUser, form]);
 
+  // 添加角色
+  const handleAddRole = () => {
+    // 限制最多两个角色
+    if (selectedRoles.length >= 2) {
+      message.warning('最多只能设置两个角色');
+      return;
+    }
+    
+    const newRole: UserRoleItem = { name: UserRole.COLLABORATOR, campusId: null };
+    setSelectedRoles([...selectedRoles, newRole]);
+  };
+
+  // 删除角色
+  const handleRemoveRole = (index: number) => {
+    const newRoles = selectedRoles.filter((_, i) => i !== index);
+    setSelectedRoles(newRoles);
+  };
+
+  // 更新角色
+  const handleRoleChange = (index: number, field: 'name' | 'campusId', value: any) => {
+    const newRoles = [...selectedRoles];
+    newRoles[index] = { ...newRoles[index], [field]: value };
+    setSelectedRoles(newRoles);
+  };
+
+  // 检查是否为超级管理员
+  const isSuperAdmin = selectedRoles.some(role => role.name === UserRole.SUPER_ADMIN);
+
+  // 在提交前设置多角色数据到表单
+  const handleSubmit = () => {
+    // 设置多角色数据到隐藏的表单字段
+    form.setFieldsValue({ roles: selectedRoles });
+    onSubmit();
+  };
+
   return (
     <Modal
       title={<div style={{ fontSize: '18px', fontWeight: 'bold' }}>{editingUser ? '编辑用户' : '添加用户'}</div>}
       open={visible}
-      onOk={onSubmit}
+      onOk={handleSubmit}
       onCancel={onCancel}
-      width={700}
+      width={800}
       okText={editingUser ? '保存' : '添加'}
       cancelText="取消"
       confirmLoading={loading}
     >
-      <Divider style={{ margin: '0 0 24px 0' }} />
+      {/* 注入自定义样式 */}
+      <style>{customStyles}</style>
+      
       <Form
         form={form}
         layout="vertical"
@@ -189,18 +241,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         preserve={false}
         initialValues={{
           status: editingUser ? (typeof editingUser.status === 'string' ? editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED' : (editingUser.status === 1 ? 'ENABLED' : 'DISABLED')) : undefined,
-          role: editingUser?.role ? (
-            typeof editingUser.role === 'object' ?
-              Number(editingUser.role.id) :
-              Number(editingUser.role)
-          ) : undefined,
-          campus: editingUser?.campus ? (
-            typeof editingUser.campus === 'object' ?
-              (editingUser.campus.id && String(editingUser.campus.id) !== '-1' && String(editingUser.campus.id) !== 'null' && editingUser.campus.id !== null ?
-                String(editingUser.campus.id) : undefined) :
-              (editingUser.campus && String(editingUser.campus) !== '-1' && String(editingUser.campus) !== 'null' && editingUser.campus !== null ?
-                String(editingUser.campus) : undefined)
-          ) : undefined
+          roles: selectedRoles
         }}
         key={`user-form-${editingUser?.id || 'new'}`}
       >
@@ -251,9 +292,46 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               />
             </Form.Item>
           </Col>
+          <Col span={8}>
+            <Form.Item
+              label="密码"
+              name="password"
+            >
+              <div style={{ position: 'relative', width: '100%' }}>
+                <Input.Password
+                  style={{
+                    width: '100%'
+                  }}
+                  disabled={true}
+                  value={passwordValue} // 直接使用密码状态变量作为值
+                  visibilityToggle={false} // 移除显示/隐藏密码的切换按钮
+                />
+                {editingUser && (
+                  <Button
+                    type="link"
+                    size="small"
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      padding: '0',
+                      height: 'auto',
+                      lineHeight: '1',
+                      color: '#1890ff',
+                      zIndex: 1
+                    }}
+                    onClick={onResetPassword}
+                  >
+                    重置密码
+                  </Button>
+                )}
+              </div>
+            </Form.Item>
+          </Col>
         </Row>
 
-        {/* 状态和角色字段 */}
+        {/* 状态字段 */}
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item
@@ -290,188 +368,117 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     }
                   }
                 }}
-                disabled={!!editingUser && String(roleValue) === String(UserRole.SUPER_ADMIN)}
+                disabled={isSuperAdmin}
               />
             </Form.Item>
           </Col>
+        </Row>
 
-          <Col span={8}>
-            <Form.Item
-              name="role"
-              label="角色"
-              rules={[{ required: true, message: '请选择角色' }]}
-            >
-              <Select
-                placeholder={editingUser ? '请选择角色' : '请选择用户角色'}
-                style={{ width: '100%' }}
-                options={roleOptions
-                  .filter(option => {
-                    if (!editingUser) return option.value !== UserRole.SUPER_ADMIN;
-                    if (String(roleValue) === String(UserRole.SUPER_ADMIN)) return true;
-                    return option.value !== UserRole.SUPER_ADMIN;
-                  })
-                  .map(option => ({
-                    // 将枚举值映射为数字值，以便与表单值匹配
-                    value: option.value === UserRole.SUPER_ADMIN ? 1 :
-                           option.value === UserRole.COLLABORATOR ? 2 :
-                           option.value === UserRole.CAMPUS_ADMIN ? 3 : undefined,
-                    label: (
-                      <div>
-                        {option.label}
-                        {option.description && (
-                          <Tooltip title={option.description}>
-                            <InfoCircleOutlined style={{ marginLeft: 8 }} />
-                          </Tooltip>
-                        )}
-                      </div>
-                    )
-                  }))}
-                popupMatchSelectWidth
-                className="role-select"
-                popupClassName="role-select-dropdown"
-                getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                value={roleValue === UserRole.SUPER_ADMIN ? 1 :
-                       roleValue === UserRole.COLLABORATOR ? 2 :
-                       roleValue === UserRole.CAMPUS_ADMIN ? 3 : undefined}
-                labelRender={(selectedOption) => {
-                  // 如果有选中的选项，显示选项的标签
-                  if (selectedOption && selectedOption.label) {
-                    return selectedOption.label;
-                  }
-                  // 否则，根据roleValue显示角色名称
-                  return getRoleName(roleValue);
-                }}
-                key={`role-select-${roleValue || 'default'}`}
-                disabled={!!editingUser && String(roleValue) === String(UserRole.SUPER_ADMIN)}
-                onChange={(value) => {
-                  // 将数字值转换为 UserRole 枚举值
-                  let roleEnum: UserRole | undefined;
-                  const numValue = Number(value);
-                  if (numValue === 1) roleEnum = UserRole.SUPER_ADMIN;
-                  else if (numValue === 2) roleEnum = UserRole.COLLABORATOR;
-                  else if (numValue === 3) roleEnum = UserRole.CAMPUS_ADMIN;
-                  else roleEnum = undefined;
-
-                  setRoleValue(roleEnum);
-                  form.setFieldsValue({ role: value });
-                  form.resetFields(['campus']);
-                  form.setFields([{ name: 'campus', value: undefined }]);
-                  setTimeout(() => {
-                    if (form.getFieldValue('campus') === null || form.getFieldValue('campus') === 'null') {
-                      form.setFields([{ name: 'campus', value: undefined }]);
-                    }
-                  }, 0);
-                  if (roleEnum === UserRole.CAMPUS_ADMIN) {
-                    if (campusOptions.length === 0) {
-                      refreshCampusOptions();
-                    }
-                  }
-                }}
-                onDropdownVisibleChange={(open) => {
-                  // 仅在需要时加载数据，不进行不必要的状态更新
-                  // 移除了在下拉框打开时更新表单和状态的代码
-                }}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              noStyle
-              shouldUpdate={(prevValues, currentValues) => prevValues.role !== currentValues.role}
-            >
-              {({ getFieldValue }) => {
-                const roleValue = getFieldValue('role');
-                // 检查当前角色值
-                // 当角色为校区管理员时显示校区选择框
-                return roleValue === 3 || String(roleValue) === String(UserRole.CAMPUS_ADMIN) ? (
-                  <Form.Item
-                    name="campus"
-                    label="所属校区"
-                    rules={[{ required: true, message: '请选择所属校区' }]}
-                    help={campusOptions.length === 0 ? '暂无可选校区，请先添加校区' : ''}
-                  >
+        {/* 多角色选择 */}
+        <Form.Item
+          label="用户角色"
+          required
+          help="可以为用户设置多个角色（除超级管理员之外），最多两个角色"
+        >
+          <div style={{ marginBottom: 16 }}>
+            {selectedRoles.map((role, index) => (
+              <div key={index} style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                marginBottom: 12,
+                padding: '12px',
+                border: '1px solid #d9d9d9',
+                borderRadius: '6px',
+                backgroundColor: '#fafafa'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                  <div style={{ width: '50%' }}>
                     <Select
-                      placeholder="请选择所属校区"
-                      loading={campusLoading}
+                      value={role.name}
+                      onChange={(value) => handleRoleChange(index, 'name', value)}
                       style={{ width: '100%' }}
-                      options={campusOptions.map(option => ({ value: option.value, label: option.label }))}
-                      notFoundContent={
-                        campusLoading ? <Spin size="small" /> :
-                        campusError ? <div style={{ color: 'red' }}>加载失败</div> :
-                        <div>暂无校区</div>
-                      }
-                      popupMatchSelectWidth
+                      placeholder="选择角色"
+                      popupMatchSelectWidth={false}
                       getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                      // 显式设置 value 属性，确保在值为 null 时显示占位符文本
-                      value={form.getFieldValue('campus') === null || form.getFieldValue('campus') === 'null' ? undefined : form.getFieldValue('campus')}
-                      key="campus-select" // 使用固定的key，避免在campusValue变化时组件重新渲染
-                      onChange={(value) => {
-                        // 处理 null 值，确保显示占位符文本
-                        const finalValue = value === null || value === 'null' ? undefined : value;
-
-                        // 使用单一的方式更新表单值，避免循环引用
-                        form.setFields([{
-                          name: 'campus',
-                          value: finalValue,
-                          errors: []
-                        }]);
-                      }}
-                      onDropdownVisibleChange={(open) => {
-                        // 当下拉菜单打开时，确保校区列表已加载
-                        if (open && campusOptions.length === 0) {
-                          refreshCampusOptions();
+                      popupClassName="role-select-dropdown"
+                      options={roleOptions
+                        .filter(option => option.value !== UserRole.SUPER_ADMIN)
+                        .map(option => ({
+                          value: option.value,
+                          label: (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{option.label}</span>
+                              {option.description && (
+                                <Tooltip title={option.description}>
+                                  <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                                </Tooltip>
+                              )}
+                            </div>
+                          )
+                        }))}
+                      labelRender={(selectedOption) => {
+                        // 选中后只显示角色名称，不显示信息图标
+                        if (selectedOption && selectedOption.label) {
+                          const roleOption = roleOptions.find(opt => opt.value === selectedOption.value);
+                          return roleOption ? roleOption.label : selectedOption.label;
                         }
+                        return selectedOption?.label || '';
                       }}
                     />
-                  </Form.Item>
-                ) : null;
-              }}
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={16}>
-            <Form.Item
-              label="密码"
-              name="password"
-            >
-              <div style={{ position: 'relative', width: '100%' }}>
-                <Input.Password
-                  style={{
-                    width: '100%'
-                  }}
-                  disabled={true}
-                  value={passwordValue} // 直接使用密码状态变量作为值
-                  visibilityToggle={false} // 移除显示/隐藏密码的切换按钮
-                />
-                {editingUser && (
-                  <Button
-                    type="link"
-                    style={{ position: 'absolute', right: '-100px', top: '0', height: '32px' }}
-                    onClick={() => {
-                      const phone = editingUser?.phone || '';
-                      Modal.confirm({
-                        title: '确认重置密码',
-                        content: `是否重置手机号为${phone}的密码？密码将被重置为手机号后8位。`,
-                        okText: '确认',
-                        cancelText: '取消',
-                        onOk: () => {
-                          if (typeof onResetPassword === 'function') {
-                            onResetPassword();
-                          }
+                  </div>
+                  
+                  {role.name === UserRole.CAMPUS_ADMIN && (
+                    <div style={{ width: '50%' }}>
+                      <Select
+                        value={role.campusId ? String(role.campusId) : undefined}
+                        onChange={(value) => handleRoleChange(index, 'campusId', value ? Number(value) : null)}
+                        style={{ width: '100%' }}
+                        placeholder="选择校区"
+                        popupMatchSelectWidth={false}
+                        getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                        popupClassName="campus-select-dropdown"
+                        loading={campusLoading}
+                        options={campusOptions.map(option => ({ 
+                          value: option.value, 
+                          label: option.label
+                        }))}
+                        notFoundContent={
+                          campusLoading ? <Spin size="small" /> :
+                          campusError ? <div style={{ color: 'red' }}>加载失败</div> :
+                          <div>暂无校区</div>
                         }
-                      });
-                    }}
-                  >
-                    重置密码
-                  </Button>
-                )}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                <Button
+                  type="text"
+                  icon={<CloseOutlined />}
+                  onClick={() => handleRemoveRole(index)}
+                  style={{ marginLeft: 8 }}
+                  size="small"
+                />
               </div>
-            </Form.Item>
-          </Col>
-        </Row>
+            ))}
+            
+            {selectedRoles.length < 2 && (
+              <Button
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={handleAddRole}
+                style={{ width: '100%' }}
+              >
+                添加角色
+              </Button>
+            )}
+          </div>
+        </Form.Item>
+
+        {/* 隐藏的角色字段，用于表单提交 */}
+        <Form.Item name="roles" hidden>
+          <Input />
+        </Form.Item>
       </Form>
     </Modal>
   );

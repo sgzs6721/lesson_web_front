@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Form } from 'antd';
-import { User, UserRole } from '../types/user';
+import { User, UserRole, UserRoleItem } from '../types/user';
 import { DEFAULT_STATUS } from '../constants/userOptions';
 
 export const useUserForm = (
@@ -24,7 +24,8 @@ export const useUserForm = (
     setTimeout(() => {
       form.setFieldsValue({
         status: DEFAULT_STATUS,
-        password: '' // 初始化密码字段为空，等待电话号码输入后自动设置
+        password: '', // 初始化密码字段为空，等待电话号码输入后自动设置
+        roles: [] // 初始化多角色为空数组
       });
     }, 200);
   };
@@ -39,39 +40,40 @@ export const useUserForm = (
     // 打印记录信息，便于调试
     console.log('编辑用户记录:', JSON.stringify(record, null, 2));
 
-    // 处理角色数据
-    let roleValue: UserRole;
-    if (typeof record.role === 'object' && record.role !== null) {
-      // 如果是对象，尝试获取角色枚举值
-      if (record.role.id === 1 || record.role.id === '1') {
-        roleValue = UserRole.SUPER_ADMIN;
-      } else if (record.role.id === 2 || record.role.id === '2') {
-        roleValue = UserRole.COLLABORATOR;
-      } else if (record.role.id === 3 || record.role.id === '3') {
-        roleValue = UserRole.CAMPUS_ADMIN;
+    // 处理多角色数据
+    let rolesValue: UserRoleItem[] = [];
+    if (record.roles && record.roles.length > 0) {
+      // 如果已经有新的多角色数据，直接使用
+      rolesValue = record.roles;
+    } else if (record.role) {
+      // 兼容旧版本的单角色数据
+      let roleName: UserRole;
+      if (typeof record.role === 'object' && record.role !== null) {
+        const roleId = Number(record.role.id);
+        if (roleId === 1) roleName = UserRole.SUPER_ADMIN;
+        else if (roleId === 2) roleName = UserRole.COLLABORATOR;
+        else if (roleId === 3) roleName = UserRole.CAMPUS_ADMIN;
+        else roleName = UserRole.COLLABORATOR;
       } else {
-        roleValue = UserRole.COLLABORATOR; // 默认值
+        const roleId = Number(record.role);
+        if (roleId === 1) roleName = UserRole.SUPER_ADMIN;
+        else if (roleId === 2) roleName = UserRole.COLLABORATOR;
+        else if (roleId === 3) roleName = UserRole.CAMPUS_ADMIN;
+        else roleName = UserRole.COLLABORATOR;
       }
-    } else {
-      // 如果是数字或字符串，转换为枚举
-      if (String(record.role) === '1' || String(record.role) === 'SUPER_ADMIN') {
-        roleValue = UserRole.SUPER_ADMIN;
-      } else if (String(record.role) === '2' || String(record.role) === 'COLLABORATOR') {
-        roleValue = UserRole.COLLABORATOR;
-      } else if (String(record.role) === '3' || String(record.role) === 'CAMPUS_ADMIN') {
-        roleValue = UserRole.CAMPUS_ADMIN;
-      } else {
-        roleValue = record.role as UserRole;
-      }
-    }
-    console.log('处理后的角色值:', roleValue);
 
-    // 处理校区数据
-    let campusValue = record.campus;
-    if (typeof record.campus === 'object' && record.campus !== null) {
-      campusValue = String(record.campus.id);
+      // 获取校区ID
+      let campusId: number | null = null;
+      if (record.campus) {
+        if (typeof record.campus === 'object' && record.campus !== null) {
+          campusId = Number(record.campus.id);
+        } else {
+          campusId = Number(record.campus);
+        }
+      }
+
+      rolesValue = [{ name: roleName, campusId }];
     }
-    console.log('处理后的校区值:', campusValue);
 
     // 处理状态数据
     let statusValue = record.status;
@@ -79,41 +81,16 @@ export const useUserForm = (
       statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
     }
     console.log('处理后的状态值:', statusValue);
+    console.log('处理后的角色值:', rolesValue);
 
-    // 使用setTimeout确保在模态框渲染后设置表单值
+    // 使用setTimeout确保在模态框渲染后设置值
     setTimeout(() => {
-      // 设置表单值
-      const formValues: any = {
-        name: record.name,
-        phone: record.phone,
-        role: roleValue,
-        status: statusValue || DEFAULT_STATUS
-      };
-
-      // 设置密码字段为手机号的后8位
-      if (record.phone && record.phone.length >= 8) {
-        formValues.password = record.phone.slice(-8);
-      } else if (record.phone) {
-        formValues.password = record.phone;
-      } else {
-        formValues.password = '';
-      }
-      console.log('设置密码为手机号后8位:', formValues.password);
-
-      // 如果有校区数据且角色是校区管理员，添加校区字段
-      if (roleValue === UserRole.CAMPUS_ADMIN) {
-        formValues.campus = campusValue || '';
-      }
-
-      console.log('设置表单值:', formValues);
-      form.setFieldsValue(formValues);
-
-      // 强制触发表单重新渲染
-      setTimeout(() => {
-        // 再次检查表单值
-        const currentValues = form.getFieldsValue();
-        console.log('设置后的表单值:', currentValues);
-      }, 100);
+      form.setFieldsValue({
+        name: record.name || record.realName || '',
+        phone: record.phone || '',
+        status: statusValue,
+        roles: rolesValue
+      });
     }, 300);
   };
 
@@ -137,45 +114,19 @@ export const useUserForm = (
           name: values.name || editingUser.name,
           phone: values.phone || editingUser.phone,
           // 确保状态字段存在
-          status: values.status || editingUser.status || 'ENABLED'
+          status: values.status || editingUser.status || 'ENABLED',
+          // 处理多角色数据
+          roles: values.roles || []
         };
 
         // 确保角色字段存在，无论是否是超级管理员
-        if (!updateValues.role) {
-          // 如果没有角色字段，使用原始用户的角色
-          if (typeof editingUser.role === 'object' && editingUser.role !== null) {
-            // 如果是对象，尝试获取角色枚举值
-            if (editingUser.role.id === 1 || editingUser.role.id === '1') {
-              updateValues.role = UserRole.SUPER_ADMIN;
-            } else if (editingUser.role.id === 2 || editingUser.role.id === '2') {
-              updateValues.role = UserRole.COLLABORATOR;
-            } else if (editingUser.role.id === 3 || editingUser.role.id === '3') {
-              updateValues.role = UserRole.CAMPUS_ADMIN;
-            } else {
-              updateValues.role = UserRole.COLLABORATOR; // 默认值
-            }
-          } else {
-            // 如果是数字或字符串，转换为枚举
-            if (String(editingUser.role) === '1' || String(editingUser.role) === 'SUPER_ADMIN') {
-              updateValues.role = UserRole.SUPER_ADMIN;
-            } else if (String(editingUser.role) === '2' || String(editingUser.role) === 'COLLABORATOR') {
-              updateValues.role = UserRole.COLLABORATOR;
-            } else if (String(editingUser.role) === '3' || String(editingUser.role) === 'CAMPUS_ADMIN') {
-              updateValues.role = UserRole.CAMPUS_ADMIN;
-            } else {
-              updateValues.role = editingUser.role as UserRole;
-            }
-          }
-          console.log('使用原始用户的角色:', updateValues.role);
+        if (!updateValues.roles || updateValues.roles.length === 0) {
+          // 如果没有设置角色，使用默认的协同管理员角色
+          updateValues.roles = [{ name: UserRole.COLLABORATOR, campusId: null }];
         }
 
-        // 如果角色不是校区管理员，删除校区字段
-        if (updateValues.role !== UserRole.CAMPUS_ADMIN) {
-          delete updateValues.campus;
-        }
-
-        console.log('更新用户的处理后的值:', updateValues);
-        onUpdateUser(editingUser.id, updateValues);
+        console.log('编辑用户的处理后的值:', updateValues);
+        await onUpdateUser(editingUser.id, updateValues);
       } else {
         // 添加新用户
         // 确保密码字段被设置为手机号的后8位
@@ -186,6 +137,13 @@ export const useUserForm = (
         } else if (addValues.phone) {
           addValues.password = addValues.phone;
         }
+
+        // 确保角色字段存在
+        if (!addValues.roles || addValues.roles.length === 0) {
+          // 如果没有设置角色，使用默认的协同管理员角色
+          addValues.roles = [{ name: UserRole.COLLABORATOR, campusId: null }];
+        }
+
         console.log('添加用户时设置密码为手机号后8位:', addValues.password);
         console.log('添加用户的处理后的值:', addValues);
         onAddUser(addValues);

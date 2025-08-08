@@ -5,6 +5,12 @@ export enum UserRole {
   CAMPUS_ADMIN = 'CAMPUS_ADMIN'
 }
 
+// 用户角色结构
+export interface UserRoleItem {
+  name: UserRole;
+  campusId: number | null;
+}
+
 export interface User {
   id: string;
   phone: string;
@@ -14,6 +20,7 @@ export interface User {
     id: number | string;
     name: string;
   };
+  roles?: UserRoleItem[]; // 新增：多角色支持
   roleName?: string; // 角色名称，用于显示
   campus?: string | {
     id: number | string;

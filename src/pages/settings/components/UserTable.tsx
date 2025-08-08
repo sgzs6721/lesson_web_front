@@ -40,63 +40,86 @@ const UserTable: React.FC<UserTableProps> = ({
       align: 'center' as const,
     },
     {
-      title: '角色',
+      title: '角色/校区',
       dataIndex: 'role',
       key: 'role',
       align: 'center' as const,
       render: (role: any, record: User) => {
-        // 如果 role 是对象并且有 name 属性，直接返回 name
+        // 优先显示多角色信息
+        if (record.roles && record.roles.length > 0) {
+          return (
+            <div>
+              {record.roles.map((roleItem, index) => {
+                const roleOption = roleOptions.find(option => option.value === roleItem.name);
+                const roleName = roleOption ? roleOption.label : roleItem.name;
+                
+                // 获取校区信息
+                let campusInfo = '';
+                if (roleItem.name === 'CAMPUS_ADMIN' && roleItem.campusId) {
+                  const campusOption = campusOptions.find(option => Number(option.value) === roleItem.campusId);
+                  campusInfo = campusOption ? campusOption.label : `校区${roleItem.campusId}`;
+                } else if (roleItem.name !== 'CAMPUS_ADMIN') {
+                  // 非校区管理员显示"全部"
+                  campusInfo = '全部';
+                }
+                
+                return (
+                  <div key={index} style={{ marginBottom: index < (record.roles?.length || 0) - 1 ? '8px' : '0' }}>
+                    <Tag 
+                      color={roleItem.name === 'SUPER_ADMIN' ? 'red' : 
+                             roleItem.name === 'CAMPUS_ADMIN' ? 'blue' : 'green'}
+                    >
+                      {roleName} | {campusInfo}
+                    </Tag>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        }
+
+        // 兼容旧版本的单角色数据
+        let roleName = '';
+        let campusInfo = '';
+        
+        // 处理角色信息
         if (role && typeof role === 'object' && role.name) {
-          return role.name;
-        }
-
-        // 兼容旧的数据结构，如果 role 是字符串，尝试从 roleOptions 中查找对应的标签
-        if (typeof role === 'string') {
+          const roleOption = roleOptions.find(option => option.value === role.name);
+          roleName = roleOption ? roleOption.label : role.name;
+        } else if (typeof role === 'string') {
           const roleOption = roleOptions.find(option => option.value === role);
-          return roleOption ? roleOption.label : role;
+          roleName = roleOption ? roleOption.label : role;
         }
 
-        return '-';
-      }
-    },
-    {
-      title: '所属校区',
-      dataIndex: 'campus',
-      key: 'campus',
-      align: 'center' as const,
-      render: (campus: any, record: User) => {
-        console.log('渲染校区数据:', campus);
-
-        // 如果 campus 是对象并且有 name 属性
-        if (campus && typeof campus === 'object') {
-          // 如果 name 为 null，返回横线
-          if (campus.name === null) {
-            return '-';
+        // 处理校区信息
+        if (record.campus && typeof record.campus === 'object') {
+          if (record.campus.name === null) {
+            campusInfo = '全部';
+          } else {
+            campusInfo = record.campus.name;
           }
-          return campus.name;
-        }
-
-        // 兼容旧的数据结构，如果 campus 是字符串
-        if (typeof campus === 'string') {
-          if (!campus) return '-';
-
-          // 先尝试从静态选项中查找
-          const campusOption = campusOptions.find(option => option.value === campus);
-          if (campusOption) {
-            return campusOption.label;
+        } else if (typeof record.campus === 'string') {
+          if (!record.campus) {
+            campusInfo = '全部';
+          } else {
+            const campusOption = campusOptions.find(option => option.value === record.campus);
+            campusInfo = campusOption ? campusOption.label : record.campus;
           }
-
-          // 如果是数字字符串，可能是校区 ID，直接显示原始值
-          // 在实际应用中，这里应该调用一个函数根据 ID 获取校区名称
-          return campus;
+        } else if (typeof record.campus === 'number') {
+          const campusOption = campusOptions.find(option => Number(option.value) === Number(record.campus));
+          campusInfo = campusOption ? campusOption.label : `校区${record.campus}`;
+        } else {
+          campusInfo = '全部';
         }
 
-        // 如果是数字，可能是校区 ID
-        if (typeof campus === 'number') {
-          return String(campus);
-        }
-
-        return '-';
+                 return (
+           <div>
+             <Tag color={roleName.includes('超级管理员') ? 'red' : 
+                        roleName.includes('校区管理员') ? 'blue' : 'green'}>
+               {roleName} | {campusInfo}
+             </Tag>
+           </div>
+         );
       }
     },
     {

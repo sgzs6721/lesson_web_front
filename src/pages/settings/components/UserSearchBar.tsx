@@ -56,14 +56,7 @@ const UserSearchBar: React.FC<UserSearchBarProps> = ({
           >
             {roleOptions.map(option => (
               <Option key={option.value} value={option.value}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>{option.label}</span>
-                  {option.description && (
-                    <Tooltip title={option.description}>
-                      <InfoCircleOutlined style={{ marginLeft: 8 }} />
-                    </Tooltip>
-                  )}
-                </div>
+                {option.label}
               </Option>
             ))}
           </Select>
