@@ -587,7 +587,11 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                     总课时费：¥{selectedCoaches.reduce((sum, coach) => sum + (form.getFieldValue('coachFees')?.[coach.id] ? Number(form.getFieldValue('coachFees')[coach.id]) : 0), 0)}/课时
                   </span>
                   <span style={{ fontSize: '12px', color: '#666', fontWeight: 400 }}>
-                    平均课时费：¥{selectedCoaches.length > 0 ? (selectedCoaches.reduce((sum, coach) => sum + (form.getFieldValue('coachFees')?.[coach.id] ? Number(form.getFieldValue('coachFees')[coach.id]) : 0), 0) / selectedCoaches.length).toFixed(2) : '0.00'}/课时
+                    共计支出课时费：¥{(() => {
+                      const total = selectedCoaches.reduce((sum, coach) => sum + (form.getFieldValue('coachFees')?.[coach.id] ? Number(form.getFieldValue('coachFees')[coach.id]) : 0), 0);
+                      const unit = Number(form.getFieldValue('unitHours') || 1);
+                      return (total * unit).toFixed(2);
+                    })()}/每次
                   </span>
                 </div>
               }

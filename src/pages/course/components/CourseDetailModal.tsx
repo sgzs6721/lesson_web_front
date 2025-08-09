@@ -1,16 +1,6 @@
 import React from 'react';
 import { Modal, Button, Row, Col, Typography, Space, Card, Divider, Tag } from 'antd';
-import { 
-  ClockCircleOutlined, 
-  FileTextOutlined, 
-  CalendarOutlined, 
-  TeamOutlined, 
-  TagOutlined,
-  DollarOutlined,
-  BookOutlined,
-  CheckCircleOutlined,
-  UserOutlined
-} from '@ant-design/icons';
+import { CalendarOutlined, TeamOutlined, TagOutlined, CheckCircleOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Course } from '../types/course';
 import { categoryOptions } from '../constants/courseOptions';
@@ -47,6 +37,24 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     return coaches.map(coach => coach.name).join(', ');
   };
 
+  // 统一获取教练课时费列表（适配多数据来源）
+  const getCoachFeeList = () => {
+    if (!course) return [] as { id: number; name: string; fee: number }[];
+    const list: { id: number; name: string; fee: number }[] = [];
+    const coaches = course.coaches || [];
+    if (coaches.length > 0) {
+      coaches.forEach((c: any) => {
+        const fee = (course.coachFees && course.coachFees[c.id] !== undefined)
+          ? Number(course.coachFees[c.id])
+          : (c.coachFee !== undefined ? Number(c.coachFee) : (c.classFee !== undefined ? Number(c.classFee) : (course.coachFee || 0)));
+        list.push({ id: c.id, name: c.name, fee: isNaN(fee) ? 0 : fee });
+      });
+      return list;
+    }
+    // 单教练且coaches未填充时，回退用course.coachFee显示一个汇总
+    return course.coachFee !== undefined ? [{ id: 0, name: '课时费', fee: Number(course.coachFee) }] : [];
+  };
+
   // 计算平均课时费
   const getAverageCoachFee = (coachFees: Record<number, number> | undefined) => {
     if (!coachFees || Object.keys(coachFees).length === 0) return 0;
@@ -54,6 +62,16 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     const total = fees.reduce((sum, fee) => sum + fee, 0);
     return total / fees.length;
   };
+
+  // 计算总课时费（多教师）
+  const getTotalCoachFee = (coachFees: Record<number, number> | undefined, coaches?: { id: number; name: string; classFee?: number }[]) => {
+    if (coaches && coaches.length > 0) {
+      return coaches.reduce((sum, c: any) => sum + (coachFees?.[c.id] ?? c.coachFee ?? c.classFee ?? 0), 0);
+    }
+    if (!coachFees || Object.keys(coachFees).length === 0) return 0;
+    return Object.values(coachFees).reduce((sum, fee) => sum + (fee || 0), 0);
+  };
+
 
   if (!course) return null;
 
@@ -95,13 +113,29 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     width: '100%'
   };
 
+  // coach tag color palette (pastel)
+  const pastelColors = [
+    { bg: '#fff7e6', text: '#ad4e00', border: '#ffd591' },
+    { bg: '#e6f7ff', text: '#095cb5', border: '#91d5ff' },
+    { bg: '#f6ffed', text: '#237804', border: '#b7eb8f' },
+    { bg: '#f0f5ff', text: '#2f54eb', border: '#adc6ff' },
+    { bg: '#fff0f6', text: '#c41d7f', border: '#ffadd2' }
+  ];
+  const getCoachTagStyle = (index: number) => {
+    const c = pastelColors[index % pastelColors.length];
+    return {
+      backgroundColor: c.bg,
+      color: c.text,
+      border: `1px solid ${c.border}`,
+      borderRadius: 10,
+      padding: '2px 8px',
+      fontSize: 12
+    } as React.CSSProperties;
+  };
+
   return (
     <Modal
-      title={
-        <div style={{ fontSize: '20px', fontWeight: 500, lineHeight: '28px' }}>
-          课程详情
-        </div>
-      }
+      title={<div style={{ fontSize: '20px', fontWeight: 500, lineHeight: '28px' }}>课程详情</div>}
       open={visible}
       onCancel={onCancel}
       footer={null}
@@ -110,98 +144,78 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
       bodyStyle={{ padding: '14px', maxHeight: '75vh', overflowY: 'auto' }}
     >
       {/* 基本信息标题 */}
-      <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>
-        <Space>
-          <BookOutlined />
-          <span>基本信息</span>
-        </Space>
-      </div>
+      <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>基本信息</div>
       
       {/* 基本信息内容 */}
       <Card 
-        style={{ marginBottom: '20px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
-        bodyStyle={{ padding: '20px' }}
+        style={{ marginBottom: '12px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
+        bodyStyle={{ padding: '12px 16px' }}
       >
-        <Row gutter={[0, 16]}>
-          <Col span={24}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '4px'
-            }}>
-              <div style={{ fontSize: '20px', fontWeight: 600 }}>
-                {course.name}
-              </div>
-              <div>
-                {renderStatusTag(course.status)}
-              </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <div style={{ fontSize: '22px', fontWeight: 700, lineHeight: '30px' }}>{course.name}</div>
+          <div>{renderStatusTag(course.status)}</div>
+        </div>
+        <Row gutter={[16, 12]}>
+          <Col span={8}>
+            <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>课程类型</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#262626' }}>{getTypeName(course.type)}</div>
             </div>
           </Col>
-          
-          <Col span={12}>
-            <div>
-              <span style={{ ...labelStyle, marginBottom: '6px' }}>课程类型</span>
-              <div style={{ fontSize: '14px' }}>
-                <TagOutlined style={{ marginRight: '8px', color: '#8c8c8c' }} />
-                {getTypeName(course.type)}
-              </div>
+          <Col span={8}>
+            <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>上课教练</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#262626' }}>{getCoachNames(course.coaches)}</div>
             </div>
           </Col>
-          
-          <Col span={12}>
-            <div>
-              <span style={{ ...labelStyle, marginBottom: '6px' }}>是否多教师教学</span>
-              <div style={{ fontSize: '14px' }}>
-                <TeamOutlined style={{ marginRight: '8px', color: '#8c8c8c' }} />
-                {course.isMultiTeacher ? (
-                  <Tag color="blue" icon={<CheckCircleOutlined />}>是</Tag>
-                ) : (
-                  <Tag color="default">否</Tag>
-                )}
-              </div>
+          <Col span={8}>
+            <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>是否多教师教学</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#262626' }}>{course.isMultiTeacher ? '是' : '否'}</div>
             </div>
           </Col>
-          
-          <Col span={12}>
-            <div>
-              <span style={{ ...labelStyle, marginBottom: '6px' }}>上课教练</span>
-              <div style={{ fontSize: '14px' }}>
-                <UserOutlined style={{ marginRight: '8px', color: '#8c8c8c' }} />
-                {getCoachNames(course.coaches)}
+          {/* 创建/更新时间移动到课时费区块之后 */}
+          {/* 课时费展示（统一适配单/多教练） */}
+          {(getCoachFeeList().length > 0) && (
+            <Col span={24}>
+              <span style={{ ...labelStyle }}>课时费</span>
+              <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '10px 12px' }}>
+                <Space size={[8, 8]} wrap>
+                  {getCoachFeeList().map((item, idx) => (
+                    <Tag key={item.id} style={getCoachTagStyle(idx)}>
+                      <span>{item.name}</span>
+                      <span style={{ marginLeft: 8 }}>¥{item.fee}/课时</span>
+                    </Tag>
+                  ))}
+                </Space>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                  <div style={{ background: '#f5f5f5', border: '1px solid #eee', borderRadius: 12, padding: '2px 8px', fontSize: 12 }}>
+                    总课时费 <strong style={{ color: '#f5222d' }}>¥{getTotalCoachFee(course.coachFees, course.coaches).toFixed(2)}</strong> /课时
+                  </div>
+                  <div style={{ background: '#f5f5f5', border: '1px solid #eee', borderRadius: 12, padding: '2px 8px', fontSize: 12 }}>
+                    共计支出（每次） <strong style={{ color: '#fa8c16' }}>¥{(getTotalCoachFee(course.coachFees, course.coaches) * (course.unitHours || 1)).toFixed(2)}</strong>
+                  </div>
+                </div>
               </div>
+            </Col>
+          )}
+          <Col span={12}>
+            <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>创建时间</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#262626' }}>{dayjs(course.createdTime).format('YYYY-MM-DD HH:mm')}</div>
             </div>
           </Col>
-          
           <Col span={12}>
-            <div>
-              <span style={{ ...labelStyle, marginBottom: '6px' }}>创建时间</span>
-              <div style={{ fontSize: '14px' }}>
-                <CalendarOutlined style={{ marginRight: '8px', color: '#8c8c8c' }} />
-                {dayjs(course.createdTime).format('YYYY-MM-DD HH:mm')}
-              </div>
-            </div>
-          </Col>
-          
-          <Col span={12}>
-            <div>
-              <span style={{ ...labelStyle, marginBottom: '6px' }}>更新时间</span>
-              <div style={{ fontSize: '14px' }}>
-                <CalendarOutlined style={{ marginRight: '8px', color: '#8c8c8c' }} />
-                {dayjs(course.updateTime).format('YYYY-MM-DD HH:mm')}
-              </div>
+            <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>更新时间</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#262626' }}>{dayjs(course.updateTime).format('YYYY-MM-DD HH:mm')}</div>
             </div>
           </Col>
         </Row>
       </Card>
 
       {/* 课时信息标题 */}
-      <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>
-        <Space>
-          <ClockCircleOutlined />
-          <span>课时信息</span>
-        </Space>
-      </div>
+      <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>课时信息</div>
       
       {/* 课时信息内容 */}
       <Card
@@ -213,101 +227,42 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           justifyContent: 'center', 
           borderRadius: '4px',
           background: '#f7f9fc',
-          padding: '16px'
+          padding: '10px',
+          alignItems: 'center'
         }}>
           <div style={courseInfoItemStyle}>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>每次消耗</div>
-            <div style={{ fontSize: '18px', color: '#1890ff', fontWeight: 600, textAlign: 'center' }}>
-              {course.unitHours || 0} 小时
-            </div>
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>课程价格</div>
+            <div style={{ fontSize: '18px', color: '#fa8c16', fontWeight: 600, textAlign: 'center' }}>¥{course.price || 0}</div>
           </div>
-          
-          <Divider type="vertical" style={{ height: '45px', margin: '0 16px', background: '#e8e8e8' }} />
-          
+
+          <Divider type="vertical" style={{ height: '36px', margin: '0 16px', background: '#e8e8e8', alignSelf: 'center' }} />
+
+          <div style={courseInfoItemStyle}>
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>每次消耗</div>
+            <div style={{ fontSize: '18px', color: '#1890ff', fontWeight: 600, textAlign: 'center' }}>{course.unitHours || 0} 小时</div>
+          </div>
+
+          <Divider type="vertical" style={{ height: '36px', margin: '0 16px', background: '#e8e8e8', alignSelf: 'center' }} />
+
           <div style={courseInfoItemStyle}>
             <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>总课时</div>
-            <div style={{ fontSize: '18px', color: '#52c41a', fontWeight: 600, textAlign: 'center' }}>
-              {course.totalHours || 0} 小时
-            </div>
+            <div style={{ fontSize: '18px', color: '#52c41a', fontWeight: 600, textAlign: 'center' }}>{course.totalHours || 0} 小时</div>
           </div>
-          
-          <Divider type="vertical" style={{ height: '45px', margin: '0 16px', background: '#e8e8e8' }} />
-          
+
+          <Divider type="vertical" style={{ height: '36px', margin: '0 16px', background: '#e8e8e8', alignSelf: 'center' }} />
+
           <div style={courseInfoItemStyle}>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>课程价格</div>
-            <div style={{ fontSize: '18px', color: '#fa8c16', fontWeight: 600, textAlign: 'center' }}>
-              ¥{course.price || 0}
-            </div>
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>已销课时</div>
+            <div style={{ fontSize: '18px', color: '#fa541c', fontWeight: 600, textAlign: 'center' }}>{course.consumedHours || 0} 小时</div>
           </div>
-          
-          <Divider type="vertical" style={{ height: '45px', margin: '0 16px', background: '#e8e8e8' }} />
-          
-          <div style={courseInfoItemStyle}>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px', textAlign: 'center' }}>课时费</div>
-            <div style={{ fontSize: '18px', fontWeight: 600, color: '#f5222d', textAlign: 'center' }}>
-              ¥{course.coachFee || 0}
-            </div>
-          </div>
+          {/* 课时费总览从指标中移除，放在下方多教师详情区域 */}
         </div>
       </Card>
 
-      {/* 教练课时费详情 - 仅当是多教师教学时显示 */}
-      {course.isMultiTeacher && course.coachFees && Object.keys(course.coachFees).length > 0 && (
-        <>
-          <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>
-            <Space>
-              <DollarOutlined />
-              <span>教练课时费详情</span>
-            </Space>
-          </div>
-          
-          <Card
-            size="small"
-            title={
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 500 }}>
-                  各个教练课时费
-                </span>
-                <span style={{ fontSize: '12px', color: '#666', fontWeight: 400 }}>
-                  平均课时费: ¥{getAverageCoachFee(course.coachFees).toFixed(2)}
-                </span>
-              </div>
-            }
-            style={{ marginBottom: '20px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
-            className="coach-fee-card"
-          >
-            <div style={{ padding: '8px 0' }}>
-              {course.coaches && course.coaches.map((coach) => {
-                const coachFee = course.coachFees?.[coach.id] || 0;
-                return (
-                  <div key={coach.id} style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    padding: '8px 0',
-                    borderBottom: '1px solid #f5f5f5'
-                  }}>
-                    <span style={{ fontSize: '14px', color: '#262626' }}>
-                      {coach.name}
-                    </span>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#f5222d' }}>
-                      ¥{coachFee}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        </>
-      )}
+      {/* 已在基本信息区域展示课时费明细与汇总，这里不再重复 */}
 
       {/* 课程描述 - 始终显示 */}
-      <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>
-        <Space>
-          <FileTextOutlined />
-          <span>课程描述</span>
-        </Space>
-      </div>
+      <div style={{ ...sectionTitleStyle, marginBottom: '16px' }}>课程描述</div>
       
       <Card
         style={{ marginBottom: '14px', borderRadius: '8px', border: '1px solid #f0f0f0' }}
