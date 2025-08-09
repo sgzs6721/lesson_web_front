@@ -113,31 +113,29 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const getStatusInfo = (status?: string) => {
     if (!status) return { color: 'green', text: '学习中' };
     
-    const statusUpper = status.toUpperCase();
-    switch (statusUpper) {
+    const statusUpperCase = status.toUpperCase();
+    switch (statusUpperCase) {
       case 'STUDYING':
       case 'NORMAL':
         return { color: 'green', text: '学习中' };
       case 'EXPIRED':
-        return { color: 'error', text: '过期' };
+        return { color: 'red', text: '过期' };
       case 'GRADUATED':
         return { color: 'blue', text: '结业' };
       case 'WAITING_PAYMENT':
         return { color: 'orange', text: '待缴费' };
-      case 'WAITING_CLASS':
-        return { color: 'purple', text: '待上课' };
       case 'WAITING_RENEWAL':
         return { color: 'cyan', text: '待续费' };
       case 'REFUNDED':
         return { color: 'red', text: '已退费' };
       default:
         // 兼容旧的状态映射方式
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('expire') || statusLower === 'expired') {
-      return { color: 'orange', text: '过期' };
-    } else if (statusLower.includes('graduate') || statusLower === 'graduated') {
-      return { color: 'blue', text: '结业' };
-    }
+        const statusLower = status.toLowerCase();
+        if (statusLower.includes('expire') || statusLower === 'expired') {
+          return { color: 'red', text: '过期' };
+        } else if (statusLower.includes('graduate') || statusLower === 'graduated') {
+          return { color: 'blue', text: '结业' };
+        }
         return { color: 'green', text: '学习中' };
     }
   };
@@ -528,9 +526,97 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   <Typography.Text strong style={{ fontSize: '16px' }}>
                     {selectedCourseInfo?.name || selectedCourseName || '-'}
                   </Typography.Text>
-                  <Tag color={getStatusInfo(selectedCourseInfo?.status || student?.status).color} style={{ marginLeft: 'auto' }}>
-                    {getStatusInfo(selectedCourseInfo?.status || student?.status).text}
-                  </Tag>
+                  {(() => {
+                    const status = selectedCourseInfo?.status || student?.status;
+                    const statusUpperCase = (status || '').toUpperCase();
+                    
+                    let statusText = '学习中';
+                    let backgroundColor = '#f6ffed';
+                    let color = '#52c41a';
+                    let borderColor = '#52c41a';
+                    
+                    switch (statusUpperCase) {
+                      case 'STUDYING':
+                      case 'NORMAL':
+                        statusText = '学习中';
+                        backgroundColor = '#f6ffed';
+                        color = '#52c41a';
+                        borderColor = '#52c41a';
+                        break;
+                      case 'EXPIRED':
+                        statusText = '过期';
+                        backgroundColor = '#fff';
+                        color = '#ff4d4f';
+                        borderColor = '#ff4d4f';
+                        break;
+                      case 'GRADUATED':
+                        statusText = '结业';
+                        backgroundColor = '#fff';
+                        color = '#1890ff';
+                        borderColor = '#1890ff';
+                        break;
+                      case 'WAITING_PAYMENT':
+                        statusText = '待缴费';
+                        backgroundColor = '#f9f0ff';
+                        color = '#722ed1';
+                        borderColor = '#722ed1';
+                        break;
+                      case 'WAITING_RENEWAL':
+                        statusText = '待续费';
+                        backgroundColor = '#f9f0ff';
+                        color = '#722ed1';
+                        borderColor = '#722ed1';
+                        break;
+                      case 'REFUNDED':
+                        statusText = '已退费';
+                        backgroundColor = '#fff';
+                        color = '#ff4d4f';
+                        borderColor = '#ff4d4f';
+                        break;
+                      default:
+                        // 兼容旧的状态映射方式
+                        const statusLower = (status || '').toLowerCase();
+                        if (statusLower.includes('expire') || statusLower === 'expired') {
+                          statusText = '过期';
+                          backgroundColor = '#fff';
+                          color = '#ff4d4f';
+                          borderColor = '#ff4d4f';
+                        } else if (statusLower.includes('graduate') || statusLower === 'graduated') {
+                          statusText = '结业';
+                          backgroundColor = '#fff';
+                          color = '#1890ff';
+                          borderColor = '#1890ff';
+                        } else {
+                          statusText = '学习中';
+                          backgroundColor = '#f6ffed';
+                          color = '#52c41a';
+                          borderColor = '#52c41a';
+                        }
+                    }
+                    
+                    return (
+                      <Tag 
+                        style={{
+                          height: '22px',
+                          textAlign: 'center',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: 0,
+                          padding: '0 4px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          borderRadius: '4px',
+                          lineHeight: '1',
+                          backgroundColor,
+                          color,
+                          border: `1px solid ${borderColor}`,
+                        }}
+                      >
+                        {statusText}
+                      </Tag>
+                    );
+                  })()}
                 </div>
 
                 <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>

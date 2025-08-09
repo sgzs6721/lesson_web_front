@@ -214,24 +214,11 @@ export const getStudentColumns = (
               case 'WAITING_PAYMENT':
                 statusText = '待缴费';
                 break;
-              case 'WAITING_CLASS':
-                statusText = '待上课';
-                break;
               case 'WAITING_RENEWAL':
                 statusText = '待续费';
                 break;
               case 'REFUNDED':
                 statusText = '已退费';
-                break;
-              // 兼容其他旧状态
-              case 'PUBLISHED':
-                statusText = '学习中';
-                break;
-              case 'PENDING':
-                statusText = '待开课';
-                break;
-              case 'INACTIVE':
-                statusText = '停课';
                 break;
               default:
                 statusText = course.status || '未知';

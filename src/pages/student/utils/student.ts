@@ -20,16 +20,10 @@ export const getStatusInfo = (status: string) => {
       return { text: '结业', color: 'blue' };
     case 'WAITING_PAYMENT':
       return { text: '待缴费', color: 'orange' };
-    case 'WAITING_CLASS':
-      return { text: '待上课', color: 'purple' };
     case 'WAITING_RENEWAL':
       return { text: '待续费', color: 'cyan' };
     case 'REFUNDED':
       return { text: '已退费', color: 'red' };
-    case 'PENDING':
-      return { text: '待开课', color: 'orange' };
-    case 'INACTIVE':
-      return { text: '停课', color: 'gray' };
     default:
       // 兼容旧的状态映射方式
       const statusLower = status.toLowerCase();
@@ -57,8 +51,6 @@ const mapCourseStatusToText = (status: string | undefined): string => {
       return '结业';
     case 'WAITING_PAYMENT':
       return '待缴费';
-    case 'WAITING_CLASS':
-      return '待上课';
     case 'WAITING_RENEWAL':
       return '待续费';
     case 'REFUNDED':
@@ -98,7 +90,7 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
         name: course.courseName || `课程${courseId}`, // 确保课程名称有值
         type: course.courseTypeName || '',
         coach: course.coachName || '',
-        status: mapCourseStatusToText(course.status),
+        status: course.status || '', // 保留原始状态值，不转换为中文
         enrollDate: course.enrollmentDate || student.enrollDate || '',
         expireDate: course.endDate || '',
         remainingClasses: course.remainingHours !== undefined ? `${course.remainingHours}/${course.totalHours || 0}` : (student.remainingClasses || '0/0')
@@ -128,7 +120,7 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
         name: courseName, // 确保这里是课程名称
         type: group.courseType || '',
         coach: group.coach || '',
-        status: mapCourseStatusToText(group.status),
+        status: group.status || '', // 保留原始状态值，不转换为中文
         enrollDate: group.enrollDate || '',
         expireDate: group.expireDate || '',
         remainingClasses: student.remainingClasses || '0/0'
@@ -156,7 +148,7 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
         name: courseName, // 确保这是课程名称
         type: student.courseType || '',
         coach: student.coach || '',
-        status: mapCourseStatusToText(student.status),
+        status: student.status || '', // 保留原始状态值，不转换为中文
         enrollDate: student.enrollDate || '',
         expireDate: student.expireDate || '',
         remainingClasses: student.remainingClasses || '0/0'
@@ -185,7 +177,7 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
       name: courseName, // 确保这是课程名称
       type: student.courseType || '',
       coach: student.coach || '',
-      status: mapCourseStatusToText(student.status),
+      status: student.status || '', // 保留原始状态值，不转换为中文
       enrollDate: student.enrollDate || '',
       expireDate: student.expireDate || '',
       remainingClasses: student.remainingClasses || '0/0'
@@ -218,7 +210,7 @@ export const getStudentAllCourses = (student: Student | null): CourseSummary[] =
       name: courseName,
       type: student.courseType || '一对一',
       coach: student.coach || '杨教练',
-      status: mapCourseStatusToText(student.status),
+      status: student.status || '', // 保留原始状态值，不转换为中文
       enrollDate: student.enrollDate || '',
       expireDate: student.expireDate || '',
       remainingClasses: student.remainingClasses || '0/0'
