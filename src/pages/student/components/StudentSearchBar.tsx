@@ -8,11 +8,32 @@ import {
 import { StudentSearchParams } from '@/pages/student/types/student';
 import { studentStatusOptions } from '@/pages/student/constants/options';
 import { SimpleCourse } from '@/api/course/types';
+import { CourseStatus } from '@/api/course/types';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { MonthPicker } = DatePicker;
+
+// 课程状态转换为中文文本
+const getCourseStatusText = (status: string): string => {
+  switch (status) {
+    case CourseStatus.PUBLISHED:
+    case '1':
+    case 'PUBLISHED':
+      return '已发布';
+    case CourseStatus.DRAFT:
+    case '0':
+    case 'DRAFT':
+      return '草稿';
+    case CourseStatus.SUSPENDED:
+      return '已暂停';
+    case CourseStatus.TERMINATED:
+      return '已终止';
+    default:
+      return '未知状态';
+  }
+};
 
 interface StudentSearchBarProps {
   params: StudentSearchParams;
@@ -108,7 +129,12 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
               >
                 {sortedCourseList.map(course => (
                   <Option key={course.id} value={course.id as any}>
-                    {course.name}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{course.name}</span>
+                      <span style={{ fontSize: '12px', color: '#888' }}>
+                        {getCourseStatusText(course.status)}
+                      </span>
+                    </div>
                   </Option>
                 ))}
               </Select>
