@@ -273,6 +273,9 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
 
     setSelectedCoaches(selectedCoachList);
 
+    // 标准化为数组，写回表单，避免单选时校验器拿到 number 类型
+    form.setFieldValue('selectedCoaches', coachIds);
+
     // 如果是单教师模式，自动设置教练课时费
     if (!isMultiTeacher && coachIds.length === 1) {
       const coachId = coachIds[0];
@@ -286,16 +289,13 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
     }
 
     // 如果是多教师模式，为每个教练设置默认课时费
-    if (isMultiTeacher && coachIds.length > 0) {
+    if (isMultiTeacher) {
       const currentCoachFees = form.getFieldValue('coachFees') || {};
-      const newCoachFees = { ...currentCoachFees };
-      
+      const newCoachFees: Record<number, number> = {} as any;
+      // 仅保留当前选中的教练，并为新增的教练设置默认费率
       coachIds.forEach(coachId => {
-        if (!newCoachFees[coachId]) {
-          newCoachFees[coachId] = 100; // 默认课时费
-        }
+        newCoachFees[coachId] = currentCoachFees[coachId] ?? (cachedCoaches.find(c => c.id === coachId)?.classFee ?? 100);
       });
-      
       form.setFieldValue('coachFees', newCoachFees);
       console.log('多教师模式，设置教练课时费:', newCoachFees);
     }
@@ -307,6 +307,8 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
     console.log('多教师教学切换:', newIsMultiTeacher);
     
     setIsMultiTeacher(newIsMultiTeacher);
+    // 同步到表单值，确保提交时为真实勾选值
+    form.setFieldValue('isMultiTeacher', newIsMultiTeacher);
 
     if (!newIsMultiTeacher) {
       // 切换到单教师模式
@@ -337,14 +339,12 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
         const selectedCoachList = cachedCoaches.filter(coach => currentSelectedCoaches.includes(coach.id));
         setSelectedCoaches(selectedCoachList);
         
-        // 为每个教练设置默认课时费
+        // 为每个教练设置默认课时费（优先读取教练的 classFee）
         const currentCoachFees = form.getFieldValue('coachFees') || {};
-        const newCoachFees = { ...currentCoachFees };
+        const newCoachFees: Record<number, number> = {} as any;
         
         selectedCoachList.forEach(coach => {
-          if (!newCoachFees[coach.id]) {
-            newCoachFees[coach.id] = 100; // 默认课时费
-          }
+          newCoachFees[coach.id] = currentCoachFees[coach.id] ?? (coach.classFee ?? 100);
         });
         
         form.setFieldValue('coachFees', newCoachFees);
@@ -500,36 +500,47 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                 label={
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span>上课教练</span>
-                    <Checkbox
-                      checked={isMultiTeacher}
-                      onChange={handleMultiTeacherChange}
-                      disabled={loading}
-                      style={{ fontSize: '12px', fontWeight: 'normal' }}
-                    >
-                      多教师教学
-                    </Checkbox>
+                                         <Checkbox
+                       checked={isMultiTeacher}
+                       onChange={handleMultiTeacherChange}
+                       disabled={loading}
+                       style={{ fontSize: '12px', fontWeight: 'normal' }}
+                     >
+                       多教师教学
+                     </Checkbox>
+                     <Form.Item name="isMultiTeacher" hidden initialValue={false}>
+                       <input type="hidden" />
+                     </Form.Item>
                   </div>
                 }
-                rules={[{ required: true, message: '请选择上课教练', type: 'array', min: 1 }]}
-              >
-                <Select
-                  mode={isMultiTeacher ? 'multiple' : undefined}
-                  placeholder="请选择上课教练"
-                  options={cachedCoaches.map(coach => ({
-                    label: coach.name,
-                    value: coach.id,
-                  }))}
-                  disabled={loading}
-                  onChange={handleCoachChange}
-                  showSearch
-                  allowClear
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                rules={[{
+                  validator: (_, value) => {
+                    const arr = Array.isArray(value) ? value : (value == null ? [] : [value]);
+                    return arr.length > 0 ? Promise.resolve() : Promise.reject(new Error('请选择上课教练'));
                   }
-                  value={isMultiTeacher ? form.getFieldValue('selectedCoaches') : (form.getFieldValue('selectedCoaches')?.[0] || undefined)}
-                  getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-                  popupMatchSelectWidth={true}
-                />
+                }]}
+                validateTrigger="onChange"
+                getValueFromEvent={(val) => (Array.isArray(val) ? val : (val == null ? [] : [val]))}
+               >
+                                 <Select
+                   mode={isMultiTeacher ? 'multiple' : undefined}
+                   placeholder="请选择上课教练"
+                   options={cachedCoaches.map(coach => ({
+                     label: coach.name,
+                     value: coach.id,
+                   }))}
+                   disabled={loading}
+                   onChange={handleCoachChange}
+                   showSearch
+                   allowClear
+                   filterOption={(input, option) =>
+                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                   }
+                   value={isMultiTeacher ? form.getFieldValue('selectedCoaches') : (form.getFieldValue('selectedCoaches')?.[0] ?? form.getFieldValue('selectedCoaches') ?? undefined)}
+                   getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                   popupMatchSelectWidth={true}
+                   dropdownMatchSelectWidth={false}
+                 />
               </Form.Item>
             </Col>
             {!isMultiTeacher && (

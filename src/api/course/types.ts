@@ -63,6 +63,7 @@ export interface CourseUpdateRequest {
   coachIds: number[]; // 教练ID列表
   campusId: number;
   description?: string;
+  coachFees?: Record<number, number>; // 允许前端在编辑时携带，用于派生教练显示
 }
 
 // 课程搜索参数

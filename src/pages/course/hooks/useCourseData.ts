@@ -53,7 +53,7 @@ export const useCourseData = () => {
         type: typeName, // 使用类型名称而不是ID
         status: values.status,
         unitHours: values.unitHours,
-        totalHours: values.unitHours, // 默认与单课时相同
+                 totalHours: 0, // 新建课程总课时默认为0
         consumedHours: 0, // 新课程消耗课时为0
         price: values.price,
         coachFee: 0, // 设置默认的教练费用
@@ -121,20 +121,27 @@ export const useCourseData = () => {
         console.log('类型ID未变化，保持原类型名称:', typeName);
       }
 
-      // 使用提交的表单值更新课程，从教练列表中获取真实姓名
-      const coachesWithNames = values.coachIds ? values.coachIds.map((id: any) => {
-        // 先尝试从原教练信息中获取
-        const originalCoach = originalCourse.coaches?.find(coach => coach.id === Number(id));
-        if (originalCoach?.name) {
-          return originalCoach;
+      // 使用提交的表单值或保留原教练信息（编辑时不依赖 coachIds）
+      const coachesWithNames = (() => {
+        const cf: any = (values as any).coachFees;
+        let ids: number[] = [];
+        if (Array.isArray(cf)) {
+          // 兼容数组形式 [{ coachId, coachFee }]
+          ids = cf.map((x: any) => Number(x?.coachId)).filter((n: number) => !isNaN(n));
+        } else if (cf && typeof cf === 'object') {
+          // 兼容对象形式 { [coachId]: fee }
+          ids = Object.keys(cf).map(id => Number(id)).filter((n: number) => !isNaN(n));
         }
-        // 如果找不到，从教练列表中查找
-        const coach = coaches.find(c => c.id === Number(id));
-        return {
-          id: Number(id),
-          name: coach ? coach.name : `教练${id}` // 优先使用真实姓名
-        };
-      }) : (originalCourse.coaches || []);
+        if (ids.length > 0) {
+          return ids.map(id => {
+            const originalCoach = originalCourse.coaches?.find(coach => coach.id === id);
+            if (originalCoach?.name) return originalCoach;
+            const coach = coaches.find(c => c.id === id);
+            return { id, name: coach ? coach.name : `教练${id}` };
+          });
+        }
+        return originalCourse.coaches || [];
+      })();
 
       // 获取最新的状态值，确保它是正确的格式
       let statusValue = values.status;
@@ -146,9 +153,9 @@ export const useCourseData = () => {
         name: values.name || originalCourse.name,
         type: typeName, // 使用课程类型名称而不是ID
         status: statusValue, // 使用新的状态值
-        unitHours: values.unitHours || originalCourse.unitHours,
-        totalHours: values.unitHours || originalCourse.unitHours, // 与单课时相同
-        price: values.price || originalCourse.price,
+                 unitHours: values.unitHours || originalCourse.unitHours,
+         totalHours: originalCourse.totalHours, // 更新不改总课时
+         price: values.price || originalCourse.price,
         campusId: campusId, // 更新校区ID
         description: values.description !== undefined ? values.description : originalCourse.description,
         updateTime: new Date().toISOString(),

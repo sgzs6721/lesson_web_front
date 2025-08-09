@@ -58,22 +58,26 @@ export const useCourseForm = (
       } else if (status === 3 || status === '3' || status === 'TERMINATED') {
         status = 'TERMINATED';
       }
-      // 处理isMultiTeacher字段
-      let isMultiTeacher = values.isMultiTeacher;
+      // 处理isMultiTeacher字段（使用表单当前值，确保未注册字段也能取到）
+      let isMultiTeacher = form.getFieldValue('isMultiTeacher');
       if (typeof isMultiTeacher !== 'boolean') {
         isMultiTeacher = !!isMultiTeacher;
       }
-      // 只包含选中的教练
+      // 只包含选中的教练 + 计算 coachIds
+      const selectedIds: number[] = Array.isArray(values.selectedCoaches)
+        ? (values.selectedCoaches as number[])
+        : (values.selectedCoaches != null ? [Number(values.selectedCoaches)] : []);
+
       let coachFeesArr: { coachId: number; coachFee: number }[] = [];
-      if (Array.isArray(values.selectedCoaches)) {
+      if (selectedIds.length > 0) {
         if (values.coachFees && typeof values.coachFees === 'object' && Object.keys(values.coachFees).length > 0) {
-          coachFeesArr = values.selectedCoaches.map((id: number) => ({
+          coachFeesArr = selectedIds.map((id: number) => ({
             coachId: id,
             coachFee: Number(values.coachFees[id])
           }));
         } else {
           // coachFees为空对象时兜底处理
-          coachFeesArr = values.selectedCoaches.map((id: number) => ({
+          coachFeesArr = selectedIds.map((id: number) => ({
             coachId: id,
             coachFee: Number(values.coachFee) || 0
           }));
@@ -81,12 +85,13 @@ export const useCourseForm = (
       }
       // 移除coachFee和selectedCoaches字段
       const { coachFee, selectedCoaches, ...restValues } = values;
-      const submitValues = {
+      const baseValues = {
         ...restValues,
         status,
         isMultiTeacher,
         coachFees: coachFeesArr
-      };
+      } as any;
+      const submitValues = editingCourse ? baseValues : { ...baseValues, coachIds: selectedIds };
       console.log('提交表单，最终表单值:', submitValues);
       console.log('可用教练列表:', coaches);
       if (editingCourse) {
