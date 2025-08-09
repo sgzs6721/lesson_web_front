@@ -280,14 +280,6 @@ export const course = {
       return newCourse.id;
     }
 
-    // 确保 coachIds 是数字数组
-    let coachIds = data.coachIds || [];
-    if (!Array.isArray(coachIds)) {
-      coachIds = [coachIds].filter(Boolean);
-    }
-    // 确保所有元素都是数字
-    coachIds = coachIds.map(id => Number(id));
-
     // 确保课程描述为空字符串而不是undefined
     const description = data.description || '';
 
@@ -301,7 +293,6 @@ export const course = {
 
     const requestData = {
       ...data,
-      coachIds: coachIds,
       description: description,
       typeId: typeId // 使用处理后的 typeId
     };
@@ -349,14 +340,6 @@ export const course = {
       return;
     }
 
-    // 确保 coachIds 是数字数组
-    let coachIds = data.coachIds || [];
-    if (!Array.isArray(coachIds)) {
-      coachIds = [coachIds].filter(Boolean);
-    }
-    // 确保所有元素都是数字
-    coachIds = coachIds.map(id => Number(id));
-
     // 确保课程描述为空字符串而不是undefined
     const description = data.description || '';
 
@@ -370,7 +353,6 @@ export const course = {
 
     const requestData = {
       ...data,
-      coachIds: coachIds,
       description: description,
       typeId: typeId // 使用处理后的 typeId
     };

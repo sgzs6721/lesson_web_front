@@ -5,17 +5,17 @@ import StudentTable from './StudentTable';
 import { Student as UiStudent } from '@/pages/student/types/student';
 import { SimpleCourse } from '@/api/course/types';
 
-// 定义排序类型
-type SortOrderType = 
-  | 'enrollDateAsc' 
-  | 'enrollDateDesc' 
-  | 'ageAsc' 
-  | 'ageDesc' 
-  | 'remainingClassesAsc' 
-  | 'remainingClassesDesc' 
-  | 'lastClassDateAsc' 
-  | 'lastClassDateDesc' 
-  | undefined;
+// 定义排序类型（已不再使用，但保留类型注释以避免破坏其他引用）
+// type SortOrderType =
+//   | 'enrollDateAsc'
+//   | 'enrollDateDesc'
+//   | 'ageAsc'
+//   | 'ageDesc'
+//   | 'remainingClassesAsc'
+//   | 'remainingClassesDesc'
+//   | 'lastClassDateAsc'
+//   | 'lastClassDateDesc'
+//   | undefined;
 
 interface StudentContentProps {
   // 数据和状态
@@ -39,7 +39,6 @@ interface StudentContentProps {
   onStatusChange: (status: string | undefined) => void;
   onCourseChange: (course: string | undefined) => void;
   onMonthChange: (month: any) => void;
-  onSortOrderChange: Dispatch<SetStateAction<SortOrderType>>;
   
   // 操作函数
   onEdit: (record: UiStudent) => void;
@@ -73,7 +72,6 @@ const StudentContent: React.FC<StudentContentProps> = ({
   onStatusChange,
   onCourseChange,
   onMonthChange,
-  onSortOrderChange,
   onEdit,
   onClassRecord,
   onPayment,
@@ -96,7 +94,6 @@ const StudentContent: React.FC<StudentContentProps> = ({
         onStatusChange={onStatusChange}
         onCourseChange={onCourseChange}
         onMonthChange={onMonthChange}
-        onSortOrderChange={onSortOrderChange}
         courseList={courseList}
         loadingCourses={loadingCourses}
       />

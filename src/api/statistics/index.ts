@@ -14,6 +14,18 @@ export interface CourseAnalysisRequestParams extends StatisticsRequestParams {
   limit?: number;
 }
 
+// 学员管理页面统计摘要响应类型
+export interface StudentManagementSummary {
+  totalStudents: number;      // 学员总数 (只统计状态为"STUDYING"的在学学员)
+  totalCourses: number;       // 课程总数 (只统计状态为"PUBLISHED"的已发布课程)
+  totalStudentCourses: number; // 学员报名课程总数 (所有学员课程关系记录)
+  studyingStudents: number;   // 在学学员数量 (学员课程关系状态为"STUDYING")
+  graduatedStudents: number;  // 结业学员数量 (学员课程关系状态为"GRADUATED")
+  expiredStudents: number;    // 过期学员数量 (学员课程关系状态为"EXPIRED")
+  refundedStudents: number;   // 退费学员数量 (学员课程关系状态为"REFUNDED")
+  pendingRenewalStudents: number; // 待续学员数量 (学员课程关系状态为"PENDING_RENEWAL")
+}
+
 // 学员分析统计接口
 export const studentAnalysisApi = {
   // 获取学员指标统计
@@ -204,10 +216,14 @@ export const financeAnalysisApi = {
 // 其他统计接口
 export const statisticsApi = {
   // 获取学员管理页面统计数据
-  getStudentManagementSummary: () =>
-    request('/lesson/api/statistics/student-management/summary', {
+  getStudentManagementSummary: (campusId?: number) => {
+    const url = campusId 
+      ? `/lesson/api/statistics/student-management/summary?campusId=${campusId}`
+      : '/lesson/api/statistics/student-management/summary';
+    return request(url, {
       method: 'GET'
-    }),
+    });
+  },
 
   // 刷新统计数据
   refreshStats: () =>

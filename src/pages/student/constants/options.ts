@@ -81,7 +81,6 @@ export const studentStatusOptions = [
   { value: 'EXPIRED', label: '过期' },
   { value: 'GRADUATED', label: '结业' },
   { value: 'WAITING_PAYMENT', label: '待缴费' },
-  { value: 'WAITING_CLASS', label: '待上课' },
   { value: 'WAITING_RENEWAL', label: '待续费' },
   { value: 'REFUNDED', label: '已退费' },
 ];
@@ -92,7 +91,6 @@ export const statusMap = {
   'EXPIRED': '过期',
   'GRADUATED': '结业',
   'WAITING_PAYMENT': '待缴费',
-  'WAITING_CLASS': '待上课',
   'WAITING_RENEWAL': '待续费',
   'REFUNDED': '已退费',
   // 兼容旧状态

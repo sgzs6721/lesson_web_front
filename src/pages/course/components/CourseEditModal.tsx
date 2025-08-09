@@ -79,7 +79,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
 
           // 如果状态值不是 CourseStatus 枚举中定义的值，尝试转换
           const statusStr = String(statusValue).toUpperCase();
-          if (statusStr === '1' || statusStr === 'PUBLISHED') {
+          if (statusStr === CourseStatus.PUBLISHED || statusStr === 'PUBLISHED') {
             statusValue = CourseStatus.PUBLISHED;
           } else if (statusStr === 'SUSPENDED') {
             statusValue = CourseStatus.SUSPENDED;
@@ -158,7 +158,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
             unitHours: currentEditingCourse.unitHours,
             price: currentEditingCourse.price,
             coachFee: currentEditingCourse.coachFee,
-            coachIds: coachIds,
+            selectedCoaches: coachIds, // 添加选中的教练ID列表
             coachFees: coachFees, // 添加教练课时费数据
             campusId: currentEditingCourse.campusId,
             description: currentEditingCourse.description || '',
@@ -166,7 +166,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           };
 
           console.log('设置表单初始值:', JSON.stringify(formValues, null, 2));
-          console.log('coachIds值:', formValues.coachIds);
           console.log('typeId值:', formValues.typeId);
           console.log('status值:', formValues.status, '类型:', typeof formValues.status);
 
@@ -176,7 +175,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           // 获取并输出当前表单值，以确认设置是否成功
           const currentValues = form.getFieldsValue();
           console.log('设置后的表单实际值:', JSON.stringify(currentValues, null, 2));
-          console.log('表单中的coachIds实际值:', currentValues.coachIds);
           console.log('表单中的typeId实际值:', currentValues.typeId);
           console.log('表单中的status实际值:', currentValues.status, '类型:', typeof currentValues.status);
 
@@ -213,7 +211,6 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
               unitHours: 1,
               price: 100,
               coachFee: 100,
-              coachIds: [],
               campusId: Number(localStorage.getItem('currentCampusId') || '1'),
               description: '',
               isMultiTeacher: false
@@ -259,184 +256,103 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
 
   // 处理教练选择变化
   const handleCoachChange = async (value: number | number[] | undefined) => {
-    // 处理清空的情况
-    if (value === undefined || value === null) {
+    console.log('教练选择变化:', value);
+    
+    if (!value) {
       setSelectedCoaches([]);
-      setTimeout(() => {
-        form.setFieldsValue({
-          coachIds: [],
-          coachFee: 0,
-          coachFees: {}
-        });
-        console.log('清空教练选择 - 表单值设置完成');
-      }, 0);
       return;
     }
 
-    // 确保值始终是数组格式
-    const values = Array.isArray(value) ? value : (value ? [value] : []);
-    console.log('教练选择变化:', values);
-    console.log('当前缓存的教练列表:', cachedCoaches);
-    console.log('教练列表中的课时费信息:', cachedCoaches.map(c => ({ id: c.id, name: c.name, classFee: c.classFee })));
+    // 确保value是数组
+    const coachIds = Array.isArray(value) ? value : [value];
+    console.log('选中的教练ID:', coachIds);
 
-    const selectedCoachList = cachedCoaches.filter(coach => values.includes(coach.id));
+    // 根据选中的教练ID获取教练信息
+    const selectedCoachList = cachedCoaches.filter(coach => coachIds.includes(coach.id));
     console.log('选中的教练列表:', selectedCoachList);
 
-    // 立即更新状态
     setSelectedCoaches(selectedCoachList);
 
-    if (isMultiTeacher) {
-      // 多教师模式：直接从cachedCoaches获取课时费，计算平均值
-      const classFees = selectedCoachList.map(coach => coach.classFee || 0);
-      const averageFee = classFees.length > 0 ? classFees.reduce((sum, fee) => sum + fee, 0) / classFees.length : 0;
-      const roundedAverageFee = Math.round(averageFee * 100) / 100;
+    // 如果是单教师模式，自动设置教练课时费
+    if (!isMultiTeacher && coachIds.length === 1) {
+      const coachId = coachIds[0];
+      const currentCoachFee = form.getFieldValue('coachFee');
+      console.log('单教师模式，设置教练课时费:', currentCoachFee);
+      
+      // 如果教练课时费为空，设置默认值
+      if (!currentCoachFee) {
+        form.setFieldValue('coachFee', 100);
+      }
+    }
 
-      console.log('多教师模式 - 选中教练课时费:', classFees, '平均课时费:', roundedAverageFee);
-
-      // 为多教师模式设置各个教练的课时费
-      const coachFees: Record<number, number> = {};
-      selectedCoachList.forEach(coach => {
-        coachFees[coach.id] = coach.classFee || 0;
+    // 如果是多教师模式，为每个教练设置默认课时费
+    if (isMultiTeacher && coachIds.length > 0) {
+      const currentCoachFees = form.getFieldValue('coachFees') || {};
+      const newCoachFees = { ...currentCoachFees };
+      
+      coachIds.forEach(coachId => {
+        if (!newCoachFees[coachId]) {
+          newCoachFees[coachId] = 100; // 默认课时费
+        }
       });
-      console.log('准备设置的coachFees:', coachFees);
-
-      // 使用setTimeout确保状态更新后再设置表单值
-      setTimeout(() => {
-        form.setFieldsValue({
-          coachIds: values,
-          coachFee: roundedAverageFee,
-          coachFees: coachFees
-        });
-        // 强制重新渲染表单
-        form.validateFields().catch(() => {});
-        console.log('多教师模式 - 表单值设置完成，当前coachFees:', form.getFieldValue('coachFees'));
-        console.log('多教师模式 - 表单所有值:', form.getFieldsValue());
-      }, 0);
-
-    } else if (values.length === 1) {
-      // 单教师模式：直接从cachedCoaches获取课时费
-      const selectedCoach = selectedCoachList[0];
-      const classFee = selectedCoach?.classFee || 0;
-
-      console.log('单教师模式 - 选中教练:', selectedCoach?.name, '课时费:', classFee);
-
-      const coachFeesObj = { [selectedCoach.id]: classFee };
-      console.log('准备设置的coachFees:', coachFeesObj);
-
-      // 使用setTimeout确保状态更新后再设置表单值
-      setTimeout(() => {
-        form.setFieldsValue({
-          coachIds: values,
-          coachFee: classFee,
-          coachFees: coachFeesObj
-        });
-        // 强制重新渲染表单
-        form.validateFields().catch(() => {});
-        console.log('单教师模式 - 表单值设置完成，当前coachFees:', form.getFieldValue('coachFees'));
-        console.log('单教师模式 - 表单所有值:', form.getFieldsValue());
-        // 主动触发一次平均值刷新
-        handleCoachFeeChange(selectedCoach.id, classFee);
-      }, 0);
-    } else if (values.length === 0) {
-      // 清空选择时也要清空课时费
-      setTimeout(() => {
-        form.setFieldsValue({
-          coachIds: values,
-          coachFee: 0,
-          coachFees: {}
-        });
-        console.log('清空模式 - 表单值设置完成');
-      }, 0);
+      
+      form.setFieldValue('coachFees', newCoachFees);
+      console.log('多教师模式，设置教练课时费:', newCoachFees);
     }
   };
 
-  // 处理多教师教学开关变化
+  // 处理多教师教学切换
   const handleMultiTeacherChange = async (e: CheckboxChangeEvent) => {
-    const { checked } = e.target;
-    setIsMultiTeacher(checked);
-    form.setFieldValue('isMultiTeacher', checked);
+    const newIsMultiTeacher = e.target.checked;
+    console.log('多教师教学切换:', newIsMultiTeacher);
+    
+    setIsMultiTeacher(newIsMultiTeacher);
 
-    if (!checked) {
-      // 切换到单教师模式，只保留第一个选中的教练
-      const currentCoachIds = form.getFieldValue('coachIds') || [];
-      console.log('切换到单教师模式 - 当前选中的教练ID:', currentCoachIds);
-
-      if (currentCoachIds.length > 0) {
-        const firstCoachId = currentCoachIds[0];
-
+    if (!newIsMultiTeacher) {
+      // 切换到单教师模式
+      const currentSelectedCoaches = form.getFieldValue('selectedCoaches') || [];
+      console.log('切换到单教师模式 - 当前选中的教练:', currentSelectedCoaches);
+      
+      if (currentSelectedCoaches.length > 0) {
+        const firstCoachId = currentSelectedCoaches[0];
+        console.log('保留第一个教练:', firstCoachId);
+        
+        // 设置单教师模式的值
+        form.setFieldsValue({
+          selectedCoaches: [firstCoachId],
+          coachFee: form.getFieldValue('coachFees')?.[firstCoachId] || 100
+        });
+        
         // 更新选中的教练列表
         const firstCoach = cachedCoaches.find(coach => coach.id === firstCoachId);
-        console.log('切换到单教师模式 - 找到的第一个教练:', firstCoach);
-
-        if (firstCoach) {
-          setSelectedCoaches([firstCoach]);
-
-          // 直接从cachedCoaches获取课时费
-          const classFee = firstCoach.classFee || 0;
-
-          console.log('切换到单教师模式 - 选中教练:', firstCoach.name, '课时费:', classFee);
-
-          // 使用setTimeout确保状态更新后再设置表单值
-          setTimeout(() => {
-            form.setFieldsValue({
-              coachIds: [firstCoachId],
-              coachFee: classFee,
-              coachFees: { [firstCoach.id]: classFee } // 为单教师也设置coachFees，用于显示卡片
-            });
-
-            // 强制重新渲染表单
-            form.validateFields().catch(() => {});
-            console.log('切换到单教师模式 - 表单值设置完成，当前coachFee:', form.getFieldValue('coachFee'));
-            console.log('切换到单教师模式 - 表单所有值:', form.getFieldsValue());
-          }, 0);
-        }
-      } else {
-        console.log('切换到单教师模式 - 但没有选中的教练');
+        setSelectedCoaches(firstCoach ? [firstCoach] : []);
       }
     } else {
-      // 切换到多教师模式，处理已选中的教练
-      const currentCoachIds = form.getFieldValue('coachIds') || [];
-      console.log('切换到多教师模式 - 当前选中的教练ID:', currentCoachIds);
-      console.log('切换到多教师模式 - 缓存的教练列表:', cachedCoaches);
-
-      if (currentCoachIds.length > 0) {
-        // 获取当前选中的教练列表
-        const selectedCoachList = cachedCoaches.filter(coach => currentCoachIds.includes(coach.id));
-        console.log('切换到多教师模式 - 找到的教练列表:', selectedCoachList);
+      // 切换到多教师模式
+      const currentSelectedCoaches = form.getFieldValue('selectedCoaches') || [];
+      console.log('切换到多教师模式 - 当前选中的教练:', currentSelectedCoaches);
+      
+      if (currentSelectedCoaches.length > 0) {
+        // 获取选中的教练列表
+        const selectedCoachList = cachedCoaches.filter(coach => currentSelectedCoaches.includes(coach.id));
         setSelectedCoaches(selectedCoachList);
-
-        // 为多教师模式设置各个教练的课时费
-        const coachFees: Record<number, number> = {};
+        
+        // 为每个教练设置默认课时费
+        const currentCoachFees = form.getFieldValue('coachFees') || {};
+        const newCoachFees = { ...currentCoachFees };
+        
         selectedCoachList.forEach(coach => {
-          coachFees[coach.id] = coach.classFee || 0;
+          if (!newCoachFees[coach.id]) {
+            newCoachFees[coach.id] = 100; // 默认课时费
+          }
         });
-
-        // 计算平均课时费
-        const classFees = selectedCoachList.map(coach => coach.classFee || 0);
-        const averageFee = classFees.length > 0 ? classFees.reduce((sum, fee) => sum + fee, 0) / classFees.length : 0;
-        const roundedAverageFee = Math.round(averageFee * 100) / 100;
-
-        console.log('切换到多教师模式 - 选中教练课时费:', classFees, '平均课时费:', roundedAverageFee);
-        console.log('切换到多教师模式 - 准备设置的coachFees:', coachFees);
-
-        // 使用setTimeout确保状态更新后再设置表单值
-        setTimeout(() => {
-          form.setFieldsValue({
-            coachFee: roundedAverageFee,
-            coachFees: coachFees
-          });
-
-          // 强制重新渲染表单
-          form.validateFields().catch(() => {});
-          console.log('切换到多教师模式 - 表单值设置完成，当前coachFees:', form.getFieldValue('coachFees'));
-          console.log('切换到多教师模式 - 表单所有值:', form.getFieldsValue());
-        }, 0);
-      } else {
-        console.log('切换到多教师模式 - 但没有选中的教练');
+        
+        form.setFieldValue('coachFees', newCoachFees);
       }
     }
-
-    setTimeout(() => form.validateFields(['coachIds']), 0);
+    
+    // 强制重新验证表单
+    setTimeout(() => form.validateFields(['selectedCoaches']), 0);
   };
 
   const handleCoachFeeChange = (coachId: number, value: any) => {
@@ -569,7 +485,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
             <Col span={8}>
               <Form.Item
                 label="每次消耗课时"
-                name="consume"
+                name="unitHours"
                 rules={[{ required: true, message: '请输入每次消耗课时' }]}
               >
                 <InputNumber style={{ width: '100%' }} placeholder="请输入每次消耗课时" disabled={loading} />
@@ -580,7 +496,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
           <Row gutter={16}>
             <Col span={isMultiTeacher ? 16 : 8}>
               <Form.Item
-                name="coachIds"
+                name="selectedCoaches"
                 label={
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span>上课教练</span>
@@ -610,7 +526,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
                   filterOption={(input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
-                  value={isMultiTeacher ? form.getFieldValue('coachIds') : (form.getFieldValue('coachIds')?.[0] || undefined)}
+                  value={isMultiTeacher ? form.getFieldValue('selectedCoaches') : (form.getFieldValue('selectedCoaches')?.[0] || undefined)}
                   getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
                   popupMatchSelectWidth={true}
                 />

@@ -11,6 +11,7 @@ interface StudentHeaderProps {
   graduatedStudents: number;
   expiredStudents: number;
   refundedStudents: number;
+  pendingRenewalStudents: number;
   courseCount: number;
   loadingStats: boolean;
   loadingCourses: boolean;
@@ -26,6 +27,7 @@ const StudentHeader: React.FC<StudentHeaderProps> = ({
   graduatedStudents,
   expiredStudents,
   refundedStudents,
+  pendingRenewalStudents,
   courseCount,
   loadingStats,
   loadingCourses,
@@ -42,6 +44,7 @@ const StudentHeader: React.FC<StudentHeaderProps> = ({
           graduatedStudents={graduatedStudents}
           expiredStudents={expiredStudents}
           refundedStudents={refundedStudents}
+          pendingRenewalStudents={pendingRenewalStudents}
           courseCount={courseCount}
           loadingStats={loadingStats}
           loadingCourses={loadingCourses}

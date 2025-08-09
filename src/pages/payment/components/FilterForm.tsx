@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Input, Select, DatePicker, Button, Row, Col, Space } from 'antd';
 import { SearchOutlined, ReloadOutlined, ExportOutlined } from '@ant-design/icons';
-import type { SimpleCourse } from '@/api/course/types';
+import { CourseStatus, type SimpleCourse } from '@/api/course/types';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import './FilterForm.css';
 import type { CustomTagProps } from 'rc-select/lib/BaseSelect';
@@ -26,20 +26,20 @@ interface FilterFormProps {
 // 获取课程状态的中文文本
 const getCourseStatusText = (status: string): string => {
   const normalizedStatus = status?.toString().toUpperCase() || '';
-  if (normalizedStatus === '1' || normalizedStatus === 'PUBLISHED') return '已发布';
-  if (normalizedStatus === 'SUSPENDED') return '已暂停';
-  if (normalizedStatus === 'TERMINATED') return '已终止';
-  if (normalizedStatus === '0' || normalizedStatus === 'DRAFT') return '草稿';
+  if (normalizedStatus === CourseStatus.PUBLISHED || normalizedStatus === 'PUBLISHED') return '已发布';
+  if (normalizedStatus === CourseStatus.SUSPENDED) return '已暂停';
+  if (normalizedStatus === CourseStatus.TERMINATED) return '已终止';
+  if (normalizedStatus === CourseStatus.DRAFT || normalizedStatus === 'DRAFT') return '草稿';
   return '未知状态';
 };
 
 // 获取课程状态的颜色
 const getCourseStatusColor = (status: string): string => {
   const normalizedStatus = status?.toString().toUpperCase() || '';
-  if (normalizedStatus === '1' || normalizedStatus === 'PUBLISHED') return '#52c41a';
-  if (normalizedStatus === 'SUSPENDED') return '#fa8c16';
-  if (normalizedStatus === 'TERMINATED') return '#ff4d4f';
-  if (normalizedStatus === '0' || normalizedStatus === 'DRAFT') return '#d9d9d9';
+  if (normalizedStatus === CourseStatus.PUBLISHED || normalizedStatus === 'PUBLISHED') return '#52c41a';
+  if (normalizedStatus === CourseStatus.SUSPENDED) return '#fa8c16';
+  if (normalizedStatus === CourseStatus.TERMINATED) return '#ff4d4f';
+  if (normalizedStatus === CourseStatus.DRAFT || normalizedStatus === 'DRAFT') return '#d9d9d9';
   return '#d9d9d9';
 };
 

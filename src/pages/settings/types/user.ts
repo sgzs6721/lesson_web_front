@@ -7,8 +7,9 @@ export enum UserRole {
 
 // 用户角色结构
 export interface UserRoleItem {
-  name: UserRole;
+  name: UserRole | string; // 支持枚举值和API返回的中文字符串
   campusId: number | null;
+  campusName?: string; // API返回的校区名称
 }
 
 export interface User {

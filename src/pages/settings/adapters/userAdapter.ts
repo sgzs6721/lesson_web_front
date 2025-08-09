@@ -75,7 +75,8 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
     // 如果API返回了多角色数据，直接使用
     rolesData = apiUser.roles.map((roleItem: any) => ({
       name: roleItem.name as UserRole,
-      campusId: roleItem.campusId
+      campusId: roleItem.campusId,
+      campusName: roleItem.campusName // 添加campusName字段
     }));
   } else {
     // 兼容旧版本的单角色数据，转换为多角色格式
@@ -93,7 +94,11 @@ export const apiUserToUser = (apiUser: ApiUser): User => {
       campusId = Number(apiUser.campusId);
     }
 
-    rolesData = [{ name: roleType, campusId }];
+    rolesData = [{ 
+      name: roleType, 
+      campusId,
+      campusName: apiUser.campusName // 添加campusName字段
+    }];
   }
 
   // 处理校区数据，确保它是一个包含 id 和 name 的对象

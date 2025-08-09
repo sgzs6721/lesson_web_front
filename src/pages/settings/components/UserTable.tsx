@@ -3,6 +3,7 @@ import { Table, Button, Tooltip, Space, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { User } from '../types/user';
 import { roleOptions, campusOptions } from '../constants/userOptions';
+import { UserRole } from '../types/user';
 import StandardPagination from '@/components/common/StandardPagination';
 
 interface UserTableProps {
@@ -16,6 +17,51 @@ interface UserTableProps {
   onPageChange: (page: number, pageSize: number) => void;
 }
 
+// 将各种可能的角色标识统一到标准键，并返回颜色
+const getRoleKeyAndColor = (raw: string | undefined) => {
+  const value = (raw || '').toString().toUpperCase();
+  // 中文到英文键的宽松映射
+  const mapLabelToKey: Record<string, UserRole> = {
+    '超级管理员': UserRole.SUPER_ADMIN,
+    '校区管理员': UserRole.CAMPUS_ADMIN,
+    '协同管理员': UserRole.COLLABORATOR,
+  };
+
+  const normalizedKey: UserRole | undefined =
+    (Object.keys(mapLabelToKey).find(lbl => value.includes(lbl))
+      ? mapLabelToKey[Object.keys(mapLabelToKey).find(lbl => value.includes(lbl)) as keyof typeof mapLabelToKey]
+      : (Object.values(UserRole).find(k => value.includes(k)) as UserRole | undefined));
+
+  const roleKey = normalizedKey || (value as UserRole);
+
+  // 统一的颜色映射：确保不同角色不同颜色
+  const colorMap: Record<UserRole, string> = {
+    [UserRole.SUPER_ADMIN]: 'red',       // 超级管理员
+    [UserRole.CAMPUS_ADMIN]: 'purple',   // 校区管理员 - 改为紫色
+    [UserRole.COLLABORATOR]: 'gold',     // 协同管理员
+  };
+
+  const color = colorMap[(roleKey as UserRole)] || 'green';
+  return { roleKey, color };
+};
+
+// 根据校区名称返回稳定颜色（相同校区同色，不同校区不同色）
+const campusColorMap = (() => {
+  const preset = ['geekblue','cyan','purple','volcano','green','magenta','orange','gold','lime','blue'];
+  const map = new Map<string, string>();
+  // 预填已知校区
+  campusOptions.forEach((c, idx) => map.set(c.label, preset[idx % preset.length]));
+  return (label?: string) => {
+    if (!label) return undefined;
+    if (label === '全部') return 'cyan'; // 为"全部"设置特定颜色
+    if (!map.has(label)) {
+      const idx = map.size % preset.length;
+      map.set(label, preset[idx]);
+    }
+    return map.get(label);
+  };
+})();
+
 const UserTable: React.FC<UserTableProps> = ({
   users,
   loading,
@@ -26,6 +72,65 @@ const UserTable: React.FC<UserTableProps> = ({
   onDelete,
   onPageChange
 }) => {
+  // 计算整个表格中所有角色和校区的最大长度，用于等宽显示
+  const allRoleNames: string[] = [];
+  const allCampusNames: string[] = [];
+  
+  users.forEach(user => {
+    if (user.roles && user.roles.length > 0) {
+      user.roles.forEach(roleItem => {
+        const roleOption = roleOptions.find(option => option.value === roleItem.name);
+        const roleName = roleOption ? roleOption.label : roleItem.name;
+        allRoleNames.push(roleName);
+        
+        let campusInfo = '';
+        const isCampusAdmin = roleItem.name === 'CAMPUS_ADMIN' || roleItem.name === '校区管理员';
+        if (isCampusAdmin && roleItem.campusId) {
+          campusInfo = roleItem.campusName || `校区${roleItem.campusId}`;
+        } else if (!isCampusAdmin) {
+          campusInfo = '全部';
+        }
+        allCampusNames.push(campusInfo);
+      });
+    } else {
+      // 处理单角色数据
+      let roleName = '';
+      let campusInfo = '';
+      
+      if (user.role && typeof user.role === 'object') {
+        const roleObj = user.role as { id: number | string; name: string };
+        const roleOption = roleOptions.find(option => option.value === roleObj.name);
+        roleName = roleOption ? roleOption.label : (user.roleName || roleObj.name || '');
+      } else if (typeof user.role === 'string') {
+        const roleOption = roleOptions.find(option => option.value === user.role as UserRole);
+        roleName = roleOption ? roleOption.label : (user.roleName || user.role);
+      } else if (user.roleName) {
+        roleName = user.roleName;
+      }
+      
+      if (user.campus && typeof user.campus === 'object') {
+        campusInfo = user.campus.name === null ? '全部' : user.campus.name;
+      } else if (typeof user.campus === 'string') {
+        campusInfo = !user.campus ? '全部' : user.campus;
+      } else if (typeof user.campus === 'number') {
+        const campusOption = campusOptions.find(option => Number(option.value) === Number(user.campus));
+        campusInfo = campusOption ? campusOption.label : `校区${user.campus}`;
+      } else {
+        campusInfo = '全部';
+      }
+      
+      allRoleNames.push(roleName);
+      allCampusNames.push(campusInfo);
+    }
+  });
+  
+  const maxRoleNameLength = Math.max(...allRoleNames.map(name => name.length));
+  const maxCampusNameLength = Math.max(...allCampusNames.map(name => name.length));
+
+  // 使用固定宽度，确保真正的等宽效果
+  const roleTagWidth = '80px';  // 固定角色标签宽度
+  const campusTagWidth = '60px'; // 固定校区标签宽度
+
   const columns = [
     {
       title: '姓名',
@@ -48,29 +153,47 @@ const UserTable: React.FC<UserTableProps> = ({
         // 优先显示多角色信息
         if (record.roles && record.roles.length > 0) {
           return (
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               {record.roles.map((roleItem, index) => {
                 const roleOption = roleOptions.find(option => option.value === roleItem.name);
                 const roleName = roleOption ? roleOption.label : roleItem.name;
-                
+
                 // 获取校区信息
                 let campusInfo = '';
-                if (roleItem.name === 'CAMPUS_ADMIN' && roleItem.campusId) {
-                  const campusOption = campusOptions.find(option => Number(option.value) === roleItem.campusId);
-                  campusInfo = campusOption ? campusOption.label : `校区${roleItem.campusId}`;
-                } else if (roleItem.name !== 'CAMPUS_ADMIN') {
+                // 检查是否为校区管理员角色（支持中文和英文名称）
+                const isCampusAdmin = roleItem.name === 'CAMPUS_ADMIN' || roleItem.name === '校区管理员';
+                if (isCampusAdmin && roleItem.campusId) {
+                  // 直接使用API返回的campusName
+                  campusInfo = roleItem.campusName || `校区${roleItem.campusId}`;
+                } else if (!isCampusAdmin) {
                   // 非校区管理员显示"全部"
                   campusInfo = '全部';
                 }
-                
+
+                const { color: roleColor } = getRoleKeyAndColor(roleItem.name);
+                const campusColor = campusColorMap(campusInfo);
+                // 校区管理员优先使用角色颜色，其他角色使用校区颜色或角色颜色
+                const tagColor = isCampusAdmin ? roleColor : (campusColor || roleColor);
+
                 return (
                   <div key={index} style={{ marginBottom: index < (record.roles?.length || 0) - 1 ? '8px' : '0' }}>
-                    <Tag 
-                      color={roleItem.name === 'SUPER_ADMIN' ? 'red' : 
-                             roleItem.name === 'CAMPUS_ADMIN' ? 'blue' : 'green'}
-                    >
-                      {roleName} | {campusInfo}
-                    </Tag>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center' }}>
+                        {roleName}
+                      </Tag>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        width: '16px',
+                        margin: '0 8px'
+                      }}>
+                        <span style={{ color: '#666', fontSize: '12px' }}>|</span>
+                      </div>
+                      <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center' }}>
+                        {campusInfo}
+                      </Tag>
+                    </div>
                   </div>
                 );
               })}
@@ -81,14 +204,20 @@ const UserTable: React.FC<UserTableProps> = ({
         // 兼容旧版本的单角色数据
         let roleName = '';
         let campusInfo = '';
-        
+        let roleKeyRaw: string | undefined;
+
         // 处理角色信息
-        if (role && typeof role === 'object' && role.name) {
-          const roleOption = roleOptions.find(option => option.value === role.name);
-          roleName = roleOption ? roleOption.label : role.name;
+        if (role && typeof role === 'object') {
+          roleKeyRaw = (role.name ?? role.value ?? role.key) as string | undefined;
+          const roleOption = roleOptions.find(option => option.value === roleKeyRaw);
+          roleName = roleOption ? roleOption.label : (record.roleName || roleKeyRaw || '');
         } else if (typeof role === 'string') {
-          const roleOption = roleOptions.find(option => option.value === role);
-          roleName = roleOption ? roleOption.label : role;
+          roleKeyRaw = role; // 可能是英文键或中文名称
+          const roleOption = roleOptions.find(option => option.value === role as UserRole);
+          roleName = roleOption ? roleOption.label : (record.roleName || role);
+        } else if (record.roleName) {
+          roleKeyRaw = record.roleName;
+          roleName = record.roleName;
         }
 
         // 处理校区信息
@@ -112,14 +241,34 @@ const UserTable: React.FC<UserTableProps> = ({
           campusInfo = '全部';
         }
 
-                 return (
-           <div>
-             <Tag color={roleName.includes('超级管理员') ? 'red' : 
-                        roleName.includes('校区管理员') ? 'blue' : 'green'}>
-               {roleName} | {campusInfo}
-             </Tag>
-           </div>
-         );
+        const { color: roleColor } = getRoleKeyAndColor(roleKeyRaw || roleName);
+        const campusColor = campusColorMap(campusInfo);
+        // 检查是否为校区管理员角色
+        const isCampusAdmin = roleKeyRaw === 'CAMPUS_ADMIN' || roleName === '校区管理员';
+        // 校区管理员优先使用角色颜色，其他角色使用校区颜色或角色颜色
+        const tagColor = isCampusAdmin ? roleColor : (campusColor || roleColor);
+
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center' }}>
+                {roleName}
+              </Tag>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                width: '16px',
+                margin: '0 8px'
+              }}>
+                <span style={{ color: '#666', fontSize: '12px' }}>|</span>
+              </div>
+              <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center' }}>
+                {campusInfo}
+              </Tag>
+            </div>
+          </div>
+        );
       }
     },
     {

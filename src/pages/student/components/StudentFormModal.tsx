@@ -32,6 +32,7 @@ import { useStudentSourceOptions } from '@/pages/student/hooks/useStudentSourceO
 import dayjs from 'dayjs';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import './EnrollmentModal.css';
+import { CourseStatus } from '@/api/course/types';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -288,8 +289,15 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
     const selectedCourseId = group.courses && group.courses.length > 0 ? String(group.courses[0]) : '';
     // 确保即使课程已暂停，也能在下拉列表中选择
     const currentCourse = courseList.find(c => String(c.id) === selectedCourseId);
+    console.log('编辑模式课程列表调试:', courseList);
     const options = courseList
-      .filter(c => c.status === 'PUBLISHED' || String(c.id) === selectedCourseId)
+      .filter(c => {
+        // 显示已发布状态的课程，支持字符串和枚举值
+        const isPublished = c.status === CourseStatus.PUBLISHED || c.status === 'PUBLISHED' || c.status === '1';
+        // 如果是当前选中的课程，也要显示（即使不是已发布状态，因为用户可能正在编辑）
+        const isCurrentSelected = selectedCourseId && String(c.id) === selectedCourseId;
+        return isPublished || isCurrentSelected;
+      })
       .filter((c, i, arr) => arr.findIndex(item => String(item.id) === String(c.id)) === i); // 去重
 
     return (
@@ -595,8 +603,16 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
   const renderTempCourseEditForm = () => {
     if (!tempCourseGroup) return null;
     
-    // 对于新增的表单，只显示已发布的课程
-    const options = courseList.filter(c => c.status === 'PUBLISHED');
+    // 临时显示所有课程用于调试
+    console.log('课程列表调试:', courseList);
+    console.log('课程状态详情:', courseList.map(c => ({ id: c.id, name: c.name, status: c.status, statusType: typeof c.status })));
+    const options = courseList
+      .filter(c => {
+        // 只显示已发布状态的课程，支持字符串和枚举值
+        const isPublished = c.status === CourseStatus.PUBLISHED || c.status === 'PUBLISHED' || c.status === '1';
+        return isPublished;
+      })
+      .filter((c, i, arr) => arr.findIndex(item => String(item.id) === String(c.id)) === i); // 去重
 
     return (
       <div
@@ -1000,6 +1016,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               <Form.Item
                 name="sourceId"
                 label="学员来源"
+                rules={[{ required: true, message: '请选择学员来源' }]}
               >
                 <Select
                   placeholder="请选择学员来源"

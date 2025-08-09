@@ -2,7 +2,7 @@ import React from 'react';
 import { Space, Button, Tooltip, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { Course } from '../types/course';
+import { Course, CourseStatus } from '../types/course';
 import { AlignType } from 'rc-table/lib/interface';
 import type { SortOrder } from 'antd/es/table/interface';
 
@@ -54,16 +54,16 @@ export const renderStatusTag = (status: string) => {
   const normalizedStatus = status?.toString().toUpperCase() || '';
   console.log('表格渲染状态标签, 原始状态:', status, '标准化后:', normalizedStatus);
 
-  if (normalizedStatus === '1' || normalizedStatus === 'PUBLISHED') {
+  if (normalizedStatus === CourseStatus.PUBLISHED || normalizedStatus === 'PUBLISHED') {
     color = 'green';
     text = '已发布';
-  } else if (normalizedStatus === 'SUSPENDED') {
+  } else if (normalizedStatus === CourseStatus.SUSPENDED) {
     color = 'orange';
     text = '已暂停';
-  } else if (normalizedStatus === 'TERMINATED') {
+  } else if (normalizedStatus === CourseStatus.TERMINATED) {
     color = 'red';
     text = '已终止';
-  } else if (normalizedStatus === '0' || normalizedStatus === 'DRAFT') {
+  } else if (normalizedStatus === CourseStatus.DRAFT || normalizedStatus === 'DRAFT') {
     color = 'default';
     text = '草稿';
   } else {

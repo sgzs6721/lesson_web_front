@@ -18,9 +18,8 @@ export const useCourseForm = (
     form.resetFields();
     // 设置当前校区ID和默认值
     form.setFieldsValue({
-      coachIds: [],
       campusId: Number(localStorage.getItem('currentCampusId') || '1'),
-      consume: 1 // 每次消耗课时默认值为1
+      unitHours: 1 // 每次消耗课时默认值为1
     });
     setEditingCourse(null);
     setVisible(true);
@@ -66,22 +65,22 @@ export const useCourseForm = (
       }
       // 只包含选中的教练
       let coachFeesArr: { coachId: number; coachFee: number }[] = [];
-      if (Array.isArray(values.coachIds)) {
+      if (Array.isArray(values.selectedCoaches)) {
         if (values.coachFees && typeof values.coachFees === 'object' && Object.keys(values.coachFees).length > 0) {
-          coachFeesArr = values.coachIds.map((id: number) => ({
+          coachFeesArr = values.selectedCoaches.map((id: number) => ({
             coachId: id,
             coachFee: Number(values.coachFees[id])
           }));
         } else {
           // coachFees为空对象时兜底处理
-          coachFeesArr = values.coachIds.map((id: number) => ({
+          coachFeesArr = values.selectedCoaches.map((id: number) => ({
             coachId: id,
             coachFee: Number(values.coachFee) || 0
           }));
         }
       }
-      // 移除coachFee字段
-      const { coachFee, ...restValues } = values;
+      // 移除coachFee和selectedCoaches字段
+      const { coachFee, selectedCoaches, ...restValues } = values;
       const submitValues = {
         ...restValues,
         status,

@@ -112,7 +112,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           }
         }
 
-        setSelectedRoles([{ name: roleName, campusId }]);
+        setSelectedRoles([{ 
+          name: roleName, 
+          campusId,
+          campusName: editingUser.campus && typeof editingUser.campus === 'object' ? (editingUser.campus.name || undefined) : undefined
+        }]);
       } else {
         setSelectedRoles([]);
       }

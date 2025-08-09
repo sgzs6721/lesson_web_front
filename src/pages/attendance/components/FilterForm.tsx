@@ -6,6 +6,7 @@ import { STATUS_TEXT_MAP } from '../constants';
 import { getCourseSimpleList } from '@/api/course';
 import type { SimpleCourse } from '@/api/course/types';
 import locale from 'antd/es/date-picker/locale/zh_CN';
+import { CourseStatus } from '@/api/course/types';
 
 const { RangePicker } = DatePicker;
 
@@ -18,13 +19,13 @@ interface FilterFormProps {
 // 获取课程状态的中文文本
 const getCourseStatusText = (status: string): string => {
   const normalizedStatus = status?.toString().toUpperCase() || '';
-  if (normalizedStatus === '1' || normalizedStatus === 'PUBLISHED') {
+  if (normalizedStatus === CourseStatus.PUBLISHED || normalizedStatus === 'PUBLISHED') {
     return '已发布';
-  } else if (normalizedStatus === 'SUSPENDED') {
+  } else if (normalizedStatus === CourseStatus.SUSPENDED) {
     return '已暂停';
-  } else if (normalizedStatus === 'TERMINATED') {
+  } else if (normalizedStatus === CourseStatus.TERMINATED) {
     return '已终止';
-  } else if (normalizedStatus === '0' || normalizedStatus === 'DRAFT') {
+  } else if (normalizedStatus === CourseStatus.DRAFT || normalizedStatus === 'DRAFT') {
     return '草稿';
   } else {
     return '未知状态';
@@ -34,13 +35,13 @@ const getCourseStatusText = (status: string): string => {
 // 获取课程状态的颜色
 const getCourseStatusColor = (status: string): string => {
   const normalizedStatus = status?.toString().toUpperCase() || '';
-  if (normalizedStatus === '1' || normalizedStatus === 'PUBLISHED') {
+  if (normalizedStatus === CourseStatus.PUBLISHED || normalizedStatus === 'PUBLISHED') {
     return '#52c41a'; // 绿色
-  } else if (normalizedStatus === 'SUSPENDED') {
+  } else if (normalizedStatus === CourseStatus.SUSPENDED) {
     return '#fa8c16'; // 橙色
-  } else if (normalizedStatus === 'TERMINATED') {
+  } else if (normalizedStatus === CourseStatus.TERMINATED) {
     return '#ff4d4f'; // 红色
-  } else if (normalizedStatus === '0' || normalizedStatus === 'DRAFT') {
+  } else if (normalizedStatus === CourseStatus.DRAFT || normalizedStatus === 'DRAFT') {
     return '#d9d9d9'; // 灰色
   } else {
     return '#d9d9d9'; // 默认灰色

@@ -8,6 +8,7 @@ interface StatisticsPanelProps {
   graduatedStudents: number;
   expiredStudents: number;
   refundedStudents: number;
+  pendingRenewalStudents: number;
   courseCount: number;
   loadingStats: boolean;
   loadingCourses: boolean;
@@ -22,6 +23,7 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
   graduatedStudents,
   expiredStudents,
   refundedStudents,
+  pendingRenewalStudents,
   courseCount,
   loadingStats,
   loadingCourses
@@ -102,7 +104,7 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
         </div>
       </div>
       
-      {/* 过期学员 */}
+      {/* 待续学员 */}
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
@@ -116,18 +118,18 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
           justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <UserOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+            <UserOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
             <span style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.65)' }}>
-              过期学员
+              待续学员
             </span>
           </div>
-          <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#faad14' }}>
-            {loadingStats ? <Spin size="small" /> : expiredStudents}
+          <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#1890ff' }}>
+            {loadingStats ? <Spin size="small" /> : pendingRenewalStudents}
           </span>
         </div>
       </div>
       
-      {/* 退费学员 */}
+      {/* 过期学员 */}
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 

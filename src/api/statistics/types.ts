@@ -253,6 +253,12 @@ export interface FinanceAnalysisData {
 export interface StudentManagementSummary {
   totalStudents: number;
   totalCourses: number;
+  totalStudentCourses: number;
+  studyingStudents: number;
+  graduatedStudents: number;
+  expiredStudents: number;
+  refundedStudents: number;
+  pendingRenewalStudents: number;
 }
 
 // API响应类型
