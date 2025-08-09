@@ -192,6 +192,7 @@ export interface CreateStudentRequest {
   address?: string;
   parentName?: string;
   parentPhone?: string;
+  sourceId?: number; // 学员来源ID
   courseId?: string;
   coachId?: string;
   enrollDate: string;
@@ -211,6 +212,7 @@ export interface UpdateStudentRequest {
   address?: string;
   parentName?: string;
   parentPhone?: string;
+  sourceId?: number; // 学员来源ID
   courseId?: string;
   coachId?: string;
   enrollDate?: string;
