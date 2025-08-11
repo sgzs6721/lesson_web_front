@@ -47,7 +47,11 @@ export interface CourseCreateRequest {
   status: CourseStatus;
   unitHours: number;
   price: number;
-  coachIds: number[]; // 教练ID列表
+  coachFee: number; // 单教师或平均课时费
+  // 不再强制要求 coachIds，由后端根据 coachFees 内的 coachId 解析
+  coachIds?: number[];
+  // 多教师时的明细费用（可选）
+  coachFees?: { coachId: number; coachFee: number }[];
   campusId: number;
   description?: string;
 }

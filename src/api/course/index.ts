@@ -262,17 +262,19 @@ export const course = {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const now = new Date().toISOString();
-      const newCourse: Course = {
+      const newCourse: any = {
         ...data,
         id: String(mockCourses.length + 1),
         type: CourseType.PRIVATE.toString(),
         institutionId: 1,
         consumedHours: 0,
-        coachFee: 0, // 添加默认教练费用
+        coachFee: Number((data as any).coachFee ?? 0),
         totalHours: data.unitHours, // 设置 totalHours 与 unitHours 相同
         createdTime: now,
         updateTime: now,
-        coaches: data.coachIds ? data.coachIds.map(id => ({ id: Number(id), name: `教练${id}` })) : []
+        coaches: Array.isArray((data as any).coachIds)
+          ? (data as any).coachIds.map((id: any) => ({ id: Number(id), name: `教练${id}` }))
+          : []
       };
 
       mockCourses.push(newCourse);
@@ -281,10 +283,10 @@ export const course = {
     }
 
     // 确保课程描述为空字符串而不是undefined
-    const description = data.description || '';
+    const description = (data as any).description || '';
 
     // 处理 typeId，可能是字符串或数字
-    let typeId = data.typeId;
+    let typeId = (data as any).typeId as any;
 
     // 如果 typeId 是字符串但可以转换为数字，则转换
     if (typeof typeId === 'string' && !isNaN(Number(typeId))) {
@@ -295,12 +297,11 @@ export const course = {
       ...data,
       description: description,
       typeId: typeId // 使用处理后的 typeId
-    };
+    } as any;
 
     console.log('发送课程创建请求数据:', requestData);
     console.log('课程类型 ID (typeId):', requestData.typeId);
 
-    // Use imported config and path constants
     // 使用导入的 request 和 API 路径常量
     const response = await request(`${COURSE_API_PATHS.ADD}`, {
       method: 'POST',

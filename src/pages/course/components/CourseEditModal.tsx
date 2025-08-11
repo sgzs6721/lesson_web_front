@@ -279,13 +279,9 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({
     // 如果是单教师模式，自动设置教练课时费
     if (!isMultiTeacher && coachIds.length === 1) {
       const coachId = coachIds[0];
-      const currentCoachFee = form.getFieldValue('coachFee');
-      console.log('单教师模式，设置教练课时费:', currentCoachFee);
-      
-      // 如果教练课时费为空，设置默认值
-      if (!currentCoachFee) {
-        form.setFieldValue('coachFee', 100);
-      }
+      const selectedCoach = cachedCoaches.find(c => c.id === coachId);
+      const autoFee = Number((selectedCoach as any)?.classFee ?? (selectedCoach as any)?.coachFee ?? 0);
+      form.setFieldValue('coachFee', isNaN(autoFee) ? 0 : autoFee);
     }
 
     // 如果是多教师模式，为每个教练设置默认课时费

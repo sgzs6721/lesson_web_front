@@ -33,33 +33,36 @@ export const useCourseData = () => {
       // 调用API添加课程
       const courseId = await courseAPI.add(createData);
 
-      // 对于教练信息，从教练列表中获取真实姓名
-      const courseCoaches = values.coachIds ? values.coachIds.map((id: any) => {
-        const coach = coaches.find(c => c.id === Number(id));
-        return {
-          id: Number(id),
-          name: coach ? coach.name : `教练${id}` // 优先使用真实姓名，找不到时使用简单名称
-        };
-      }) : [];
+      // 对于教练信息，优先从 coachFees 明细中推导；否则尝试 coachIds（兼容旧值）
+      const courseCoaches = Array.isArray((values as any).coachFees) && (values as any).coachFees.length > 0
+        ? (values as any).coachFees.map((x: any) => {
+            const coach = coaches.find(c => c.id === Number(x.coachId));
+            const id = Number(x.coachId);
+            return { id, name: coach ? coach.name : `教练${id}` };
+          })
+        : (Array.isArray((values as any).coachIds) ? (values as any).coachIds.map((id: any) => {
+            const coach = coaches.find(c => c.id === Number(id));
+            return { id: Number(id), name: coach ? coach.name : `教练${id}` };
+          }) : []);
 
       // 获取类型名称
-      let typeName = getTypeNameById(values.typeId);
+      let typeName = getTypeNameById((values as any).typeId);
       console.log('添加课程使用的类型名称:', typeName);
 
       // 构造新课程对象，直接使用提交的表单数据
       const newCourse: Course = {
         id: courseId,
-        name: values.name,
+        name: (values as any).name,
         type: typeName, // 使用类型名称而不是ID
-        status: values.status,
-        unitHours: values.unitHours,
-                 totalHours: 0, // 新建课程总课时默认为0
+        status: (values as any).status,
+        unitHours: (values as any).unitHours,
+        totalHours: 0, // 新建课程总课时默认为0
         consumedHours: 0, // 新课程消耗课时为0
-        price: values.price,
-        coachFee: 0, // 设置默认的教练费用
+        price: (values as any).price,
+        coachFee: Number((values as any).coachFee ?? 0),
         campusId: campusId, // 使用确保有值的campusId
         institutionId: 1, // 默认机构ID
-        description: values.description || '',
+        description: (values as any).description || '',
         createdTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
         coaches: courseCoaches
@@ -153,9 +156,9 @@ export const useCourseData = () => {
         name: values.name || originalCourse.name,
         type: typeName, // 使用课程类型名称而不是ID
         status: statusValue, // 使用新的状态值
-                 unitHours: values.unitHours || originalCourse.unitHours,
-         totalHours: originalCourse.totalHours, // 更新不改总课时
-         price: values.price || originalCourse.price,
+        unitHours: values.unitHours || originalCourse.unitHours,
+        totalHours: originalCourse.totalHours, // 更新不改总课时
+        price: values.price || originalCourse.price,
         campusId: campusId, // 更新校区ID
         description: values.description !== undefined ? values.description : originalCourse.description,
         updateTime: new Date().toISOString(),

@@ -63,7 +63,7 @@ export const useCourseForm = (
       if (typeof isMultiTeacher !== 'boolean') {
         isMultiTeacher = !!isMultiTeacher;
       }
-      // 只包含选中的教练 + 计算 coachIds
+      // 只包含选中的教练
       const selectedIds: number[] = Array.isArray(values.selectedCoaches)
         ? (values.selectedCoaches as number[])
         : (values.selectedCoaches != null ? [Number(values.selectedCoaches)] : []);
@@ -91,7 +91,8 @@ export const useCourseForm = (
         isMultiTeacher,
         coachFees: coachFeesArr
       } as any;
-      const submitValues = editingCourse ? baseValues : { ...baseValues, coachIds: selectedIds };
+      // 创建时不再传 coachIds，后端按 coachFees 内的 coachId 处理
+      const submitValues = baseValues;
       console.log('提交表单，最终表单值:', submitValues);
       console.log('可用教练列表:', coaches);
       if (editingCourse) {
