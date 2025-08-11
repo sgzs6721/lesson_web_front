@@ -84,7 +84,9 @@ export const useCoachForm = (
 
     // 清除编辑状态和头像
     setEditingCoach(null);
-    setSelectedAvatar('');
+    // 设置默认头像（默认性别为 MALE）
+    const defaultMaleAvatar = (avatarOptions as any).MALE?.[0]?.url || (avatarOptions as any).male?.[0]?.url;
+    setSelectedAvatar(defaultMaleAvatar || '');
   };
 
   // 显示编辑教练模态框
@@ -251,14 +253,24 @@ export const useCoachForm = (
     form.validateFields()
       .then(values => {
         // 根据后端API要求构造数据对象
+        // 如果未选择头像，按当前性别填一个默认头像
+        const currentGender = values.gender || form.getFieldValue('gender') || 'MALE';
+        const fallbackAvatar = currentGender === 'FEMALE'
+          ? ((avatarOptions as any).FEMALE?.[0]?.url || (avatarOptions as any).female?.[0]?.url)
+          : ((avatarOptions as any).MALE?.[0]?.url || (avatarOptions as any).male?.[0]?.url);
+
+        const finalAvatar = selectedAvatar && selectedAvatar !== ''
+          ? (reverseAvatarMap[selectedAvatar] || selectedAvatar)
+          : (values.avatar || fallbackAvatar);
+
         const formattedValues: any = {
           name: values.name,
           gender: values.gender,
           workType: values.workType,
           idNumber: values.idNumber,
           phone: values.phone,
-          // 使用反向映射将import的URL转换为文件名
-          avatar: selectedAvatar ? (reverseAvatarMap[selectedAvatar] || selectedAvatar) : values.avatar,
+          // 使用反向映射将import的URL转换为文件名，并确保有兜底
+          avatar: finalAvatar,
           jobTitle: values.jobTitle,
           hireDate: safeDayjs(values.hireDate).format('YYYY-MM-DD'),
           coachingDate: safeDayjs(values.coachingDate).format('YYYY-MM-DD'),
