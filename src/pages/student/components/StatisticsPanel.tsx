@@ -256,7 +256,7 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({
               课程总数
             </span>
             <span style={{ fontSize: '17px', fontWeight: 'bold', color: '#52c41a' }}>
-              {loadingCourses ? <Spin size="small" /> : courseCount}
+              {loadingStats ? <Spin size="small" /> : courseCount}
             </span>
           </div>
         </div>

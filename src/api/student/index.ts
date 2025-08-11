@@ -93,6 +93,9 @@ const convertDtoToStudent = (dto: StudentDTO): Student => {
     status: (dto.status || 'normal') as 'normal' | 'expired' | 'graduated' | 'STUDYING',
     campusId: (dto.campusId || 0),
     campusName: dto.campusName,
+    sourceId: (dto as any).sourceId, // 学员来源ID（来自列表/详情接口）
+    // 可选：如果需要显示来源名称，可在UI层扩展类型再使用
+    // sourceName: (dto as any).sourceName,
     createdTime: dto.createdTime,
     updatedTime: dto.updatedTime,
     // 新增字段

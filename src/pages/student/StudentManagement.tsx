@@ -18,6 +18,7 @@ import 'dayjs/locale/zh-cn';
 import './student.css';
 import './components/StudentManagement.css';
 import './index.css'; // 引入全局样式
+import { attendance as attendanceApi } from '@/api/attendance';
 
 // 设置 dayjs 使用中文
 dayjs.locale('zh-cn');
@@ -235,10 +236,22 @@ const StudentManagement: React.FC = () => {
       handleStudentCreated(event as CustomEvent);
     };
 
+    const handleRefreshEvent = () => {
+      // 刷新列表
+      df.data.fetchStudents({
+        pageNum: ui.pagination.currentPage,
+        pageSize: ui.pagination.pageSize
+      });
+      // 刷新统计摘要
+      fetchSummaryData();
+    };
+
     window.addEventListener('studentCreated', handleStudentCreatedEvent);
+    window.addEventListener('student:list-summary:refresh', handleRefreshEvent);
 
     return () => {
       window.removeEventListener('studentCreated', handleStudentCreatedEvent);
+      window.removeEventListener('student:list-summary:refresh', handleRefreshEvent);
     };
   }, [ui.pagination.currentPage, ui.pagination.pageSize]);
 
@@ -287,6 +300,22 @@ const StudentManagement: React.FC = () => {
       
       // 刷新统计摘要数据
       fetchSummaryData();
+
+      // 触发出勤记录列表与统计刷新（使用当前校区与简单默认分页）
+      try {
+        const campusId = Number(localStorage.getItem('currentCampusId')) || 1;
+        // 并行触发，无需等待
+        attendanceApi.getList({ campusId, pageNum: 1, pageSize: 10 });
+        attendanceApi.getStatistics({ campusId, pageNum: 1, pageSize: 10 });
+      } catch {}
+
+      // 并行刷新学生列表（不阻塞 UI）
+      df.data.fetchStudents({
+        pageNum: ui.pagination.currentPage,
+        pageSize: ui.pagination.pageSize
+      });
+      // 同时广播一下，便于其他模块监听
+      try { window.dispatchEvent(new Event('student:list-summary:refresh')); } catch {}
     } catch (error) {
       console.error('[handleAttendanceOk] 本地更新课时调用失败:', error);
       message.error('更新课时信息失败，请尝试刷新页面');

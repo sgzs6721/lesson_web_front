@@ -442,6 +442,9 @@ export const useStudentForm = (
           });
         }
 
+        // 立刻关闭编辑模态框，让列表自行异步刷新
+        setVisible(false);
+
       } else {
         // --- 添加逻辑 --- 
         // 重新构建 courseInfoList 以包含 coachName
@@ -503,7 +506,6 @@ export const useStudentForm = (
         message.success('学员添加成功');
       }
 
-      setVisible(false);
       return true; // 提交成功
     } catch (errorInfo) {
       console.log('表单验证或提交失败:', errorInfo);

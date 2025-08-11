@@ -156,6 +156,14 @@ export const useStudentData = () => {
         console.log('学员更新成功，更新本地状态');
         updateStudentLocally(Number(id), updatedData);
       }
+
+      // 统一：更新成功后刷新列表（异步触发，不阻塞模态框关闭）
+      fetchStudents({
+        pageNum: currentPage,
+        pageSize: pageSize
+      });
+      // 统一：广播刷新摘要事件
+      try { window.dispatchEvent(new Event('student:list-summary:refresh')); } catch {}
     } catch (error) {
       console.error('更新学员失败:', error);
       message.error('更新学员失败');
@@ -176,6 +184,9 @@ export const useStudentData = () => {
         pageNum: currentPage,
         pageSize: pageSize
       });
+
+      // 广播刷新摘要事件
+      try { window.dispatchEvent(new Event('student:list-summary:refresh')); } catch {}
 
       message.success('学员已删除');
     } catch (error) {

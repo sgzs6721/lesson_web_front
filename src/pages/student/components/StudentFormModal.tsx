@@ -954,7 +954,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
           initialValues={{
             gender: 'male',
             status: undefined,
-            sourceId: defaultSourceId
+            sourceId: editingStudent?.sourceId ?? defaultSourceId
           }}
         >
           <Title level={5}>基本信息</Title>
@@ -1024,7 +1024,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                   loading={loadingStudentSource}
                   getPopupContainer={triggerNode => triggerNode.parentElement}
                   allowClear
-                  defaultValue={defaultSourceId}
                 >
                   {studentSourceOptions.map(option => (
                     <Option key={option.id} value={option.id}>

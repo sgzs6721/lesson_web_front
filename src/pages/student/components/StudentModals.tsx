@@ -137,6 +137,12 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         onCourseChange={ui.payment.handlePaymentCourseChange}
         onClassHoursChange={ui.payment.handleClassHoursChange}
         onValidUntilChange={ui.payment.handleValidUntilChange}
+        onRefreshListAndSummary={() => {
+          // 刷新列表
+          df.data.fetchStudents({ pageNum: ui.pagination.currentPage, pageSize: ui.pagination.pageSize });
+          // 刷新摘要（由父容器监听全局事件或自行提供方法，这里使用全局事件）
+          try { window.dispatchEvent(new Event('student:list-summary:refresh')); } catch {}
+        }}
       />
 
       {/* 退费模态框 */}

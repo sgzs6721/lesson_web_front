@@ -16,7 +16,8 @@
 /* 修复下拉选择框样式 */
 .attendance-form .ant-select-selector {
   width: 100% !important;
-  height: 32px !important;
+  height: 38px !important;
+  line-height: 38px !important;
   padding: 0 11px !important;
   border-radius: 6px !important;
   display: flex !important;
@@ -42,16 +43,16 @@
 
 /* 第一行：课程、日期、类型 - 精确对齐布局 */
 .course-date-row {
-  display: flex !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 16px !important;
-  align-items: flex-start !important;
+  align-items: start !important;
   margin-bottom: 0 !important;
 }
 
 .course-date-row .course-item,
 .course-date-row .date-item,
 .course-date-row .type-item {
-  flex: 1 !important;
   min-width: 0 !important;
 }
 
@@ -59,15 +60,15 @@
 
 /* 第二行：开始时间、结束时间、课时 - 精确对齐布局 */
 .time-duration-row {
-  display: flex !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 16px !important;
-  align-items: flex-start !important;
+  align-items: start !important;
   margin-bottom: 0 !important;
 }
 
 .time-duration-row .time-item,
 .time-duration-row .duration-item {
-  flex: 1 !important;
   min-width: 0 !important;
 }
 
@@ -132,12 +133,12 @@
 }
 
 .course-date-row .type-item .ant-select-selection-item {
-  line-height: 36px !important;
+  line-height: 38px !important;
   padding: 0 !important;
 }
 
 .course-date-row .type-item .ant-select-selection-placeholder {
-  line-height: 36px !important;
+  line-height: 38px !important;
   color: rgba(0, 0, 0, 0.25) !important;
 }
 
@@ -281,7 +282,7 @@
   margin-left: 0;
   font-size: 14px;
   color: rgba(0, 0, 0, 0.85);
-  line-height: 32px;
+  line-height: 38px;
   white-space: nowrap;
 }
 
@@ -290,7 +291,7 @@
   margin-left: 0;
   font-size: 14px;
   color: rgba(0, 0, 0, 0.85);
-  line-height: 32px;
+  line-height: 38px;
   white-space: nowrap;
   text-align: left;
 }
@@ -298,15 +299,13 @@
 /* 通用行样式 */
 .course-date-row,
 .time-duration-row {
-  display: flex;
-  flex-wrap: nowrap;
-  margin: 0 -8px;
-  align-items: flex-start;
+  margin: 0;
 }
 
 /* 通用项样式 */
 .course-date-row .course-item,
 .course-date-row .date-item,
+.course-date-row .type-item,
 .time-duration-row .time-item,
 .time-duration-row .duration-item {
   flex: 1;
@@ -697,4 +696,25 @@
   color: rgba(0, 0, 0, 0.25) !important;
   line-height: 1.5715 !important;
   vertical-align: top !important;
+}
+
+/* 统一Select内文本与占位符的行高，保证垂直居中 */
+.attendance-form .ant-select-single .ant-select-selector .ant-select-selection-item,
+.attendance-form .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+  line-height: 38px !important;
+}
+
+/* 统一Input高度 */
+.attendance-form .ant-input {
+  height: 38px !important;
+  line-height: 38px !important;
+}
+
+/* 统一DatePicker/TimePicker高度 */
+.attendance-form .ant-picker {
+  height: 38px !important;
+}
+.attendance-form .ant-picker .ant-picker-input > input {
+  height: 38px !important;
+  line-height: 38px !important;
 }

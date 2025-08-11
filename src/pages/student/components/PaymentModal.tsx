@@ -50,6 +50,7 @@ interface PaymentModalProps {
   onCourseChange: (courseId: string | number) => void;
   onClassHoursChange: () => void;
   onValidUntilChange: (date: dayjs.Dayjs | null) => void;
+  onRefreshListAndSummary?: () => void; // 新增：缴费成功后的刷新回调
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -68,7 +69,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onSuccess,
   onCourseChange,
   onClassHoursChange,
-  onValidUntilChange
+  onValidUntilChange,
+  onRefreshListAndSummary, // 新增
 }) => {
   const selectedGifts = Form.useWatch('giftItems', form);
   const regularClasses = Form.useWatch('regularClasses', form) || 0;
@@ -260,6 +262,17 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       }
 
       message.success('缴费成功');
+
+      // 调用可能传入的刷新回调（刷新列表 + 摘要）
+      try {
+        onRefreshListAndSummary?.();
+      } catch (e) {
+        console.warn('[PaymentModal] onRefreshListAndSummary 调用失败或未提供:', e);
+      }
+      // 广播全局事件，供页面监听统一刷新
+      try {
+        window.dispatchEvent(new Event('student:list-summary:refresh'));
+      } catch {}
       
       console.log('[PaymentModal] handleOk: Checking if onSuccess is a function...');
       if (typeof onSuccess === 'function') {

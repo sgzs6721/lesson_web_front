@@ -257,13 +257,11 @@
   margin: 0; /* 确保没有外边距 */
 }
 
-/* 行布局样式 */
+/* 行布局样式 - 使用基础样式中的 grid，不在此覆盖 */
 .course-date-row,
 .time-duration-row {
-  display: flex;
-  flex-wrap: nowrap;
-  margin: 0 -8px;
-  align-items: flex-start;
+  margin: 0;
+  align-items: start;
 }
 
 /* 行中的项目样式 */
