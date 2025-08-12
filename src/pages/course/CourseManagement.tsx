@@ -21,6 +21,7 @@ import { student as studentApi } from '@/api/student';
 import AttendanceModal from '@/pages/student/components/AttendanceModal';
 import { Form } from 'antd';
 import { getStatusInfo } from '@/pages/student/utils/student';
+import { clearCourseListCache } from '@/api/course';
 
 const { Title } = Typography;
 
@@ -60,6 +61,8 @@ const CourseManagement: React.FC = () => {
     handleReset
   } = useCourseSearch(async (params) => {
     setCurrentPage(1); // 重置到第一页
+    // 搜索时强制清空缓存，确保每次点“查询/重置”都会走新请求
+    clearCourseListCache();
     // 搜索时合并当前排序
     const merged = {
       ...params,

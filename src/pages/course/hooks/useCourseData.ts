@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { message } from 'antd';
 import { Course, CourseSearchParams, CourseType, CourseStatus } from '../types/course';
-import { course as courseAPI } from '@/api/course';
+import { course as courseAPI, clearCourseListCache } from '@/api/course';
 import { CourseCreateRequest, CourseUpdateRequest } from '@/api/course/types';
 import { CoachSimple } from '@/api/coach/types';
 import { constants } from '@/api/constants';
@@ -129,10 +129,8 @@ export const useCourseData = () => {
         const cf: any = (values as any).coachFees;
         let ids: number[] = [];
         if (Array.isArray(cf)) {
-          // 兼容数组形式 [{ coachId, coachFee }]
           ids = cf.map((x: any) => Number(x?.coachId)).filter((n: number) => !isNaN(n));
         } else if (cf && typeof cf === 'object') {
-          // 兼容对象形式 { [coachId]: fee }
           ids = Object.keys(cf).map(id => Number(id)).filter((n: number) => !isNaN(n));
         }
         if (ids.length > 0) {
@@ -213,6 +211,9 @@ export const useCourseData = () => {
     setLoading(true);
 
     try {
+      // 每次过滤查询前清理列表缓存，避免被缓存命中
+      clearCourseListCache();
+
       // 构建 API 请求参数
       const apiParams: any = {
         pageNum: page,
@@ -275,6 +276,9 @@ export const useCourseData = () => {
   const resetFilters = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
+      // 重置也清理缓存，防止旧条件残留
+      clearCourseListCache();
+
       // 获取当前校区ID
       const currentCampusId = localStorage.getItem('currentCampusId');
       const campusId = currentCampusId ? Number(currentCampusId) : undefined;

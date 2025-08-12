@@ -192,7 +192,7 @@ const StudentManagement: React.FC = () => {
       try {
         // 同步获取数据，让两个请求一起发出
         const [courseData, studentData] = await Promise.all([
-          getCourseSimpleList(undefined, false), // 获取所有状态的课程，用于筛选
+          getCourseSimpleList(), // 获取课程下拉（内部会带上 campusId）
           df.data.fetchStudents({
             pageNum: ui.pagination.currentPage,
             pageSize: ui.pagination.pageSize

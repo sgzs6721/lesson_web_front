@@ -130,42 +130,36 @@ export const course = {
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
     if (params?.searchText) queryParams.append('keyword', params.searchText);
 
-    // 处理课程类型多选
-    if (params?.typeIds && Array.isArray(params.typeIds) && params.typeIds.length > 0) {
-      params.typeIds.forEach(typeId => {
-        queryParams.append('typeIds', typeId.toString());
-      });
+    // 按后端文档使用单值 typeId
+    if ((params as any).typeId) {
+      queryParams.append('typeId', String((params as any).typeId));
     } else if (params?.selectedType && Array.isArray(params.selectedType) && params.selectedType.length > 0) {
-      params.selectedType.forEach(typeId => {
-        queryParams.append('typeIds', typeId.toString());
-      });
+      queryParams.append('typeId', String(params.selectedType[0]));
+    } else if (params?.typeIds && Array.isArray(params.typeIds) && params.typeIds.length > 0) {
+      // 兼容旧参数，退化为取第一个
+      queryParams.append('typeId', String(params.typeIds[0]));
     }
 
-    // 修复状态过滤参数，确保传递字符串枚举名称而不是值
+    // 修复状态过滤参数，确保传递字符串枚举名称
     if (params?.selectedStatus) {
-      // 找出枚举名称（PUBLISHED, SUSPENDED, TERMINATED）而不是枚举值
-      // CourseStatus是字符串枚举，我们需要获取枚举名称
       const statusKey = Object.keys(CourseStatus).find(
         key => CourseStatus[key as keyof typeof CourseStatus] === params.selectedStatus
       );
       if (statusKey) {
-        queryParams.append('status', statusKey); // 传递枚举名称如"PUBLISHED"
-        console.log('使用状态枚举名称作为查询参数:', statusKey);
+        queryParams.append('status', statusKey);
       } else {
-        queryParams.append('status', params.selectedStatus);
-        console.log('未找到匹配的枚举名称，使用原始状态值:', params.selectedStatus);
+        queryParams.append('status', String(params.selectedStatus));
       }
     }
 
-    // 处理教练多选
-    if (params?.coachIds && Array.isArray(params.coachIds) && params.coachIds.length > 0) {
-      params.coachIds.forEach(coachId => {
-        queryParams.append('coachIds', coachId.toString());
-      });
+    // 按后端文档使用单值 coachId
+    if ((params as any).coachId) {
+      queryParams.append('coachId', String((params as any).coachId));
     } else if (params?.selectedCoach && Array.isArray(params.selectedCoach) && params.selectedCoach.length > 0) {
-      params.selectedCoach.forEach(coachId => {
-        queryParams.append('coachIds', coachId.toString());
-      });
+      queryParams.append('coachId', String(params.selectedCoach[0]));
+    } else if (params?.coachIds && Array.isArray(params.coachIds) && params.coachIds.length > 0) {
+      // 兼容旧参数，退化为取第一个
+      queryParams.append('coachId', String(params.coachIds[0]));
     }
 
     // 添加排序参数
@@ -278,38 +272,15 @@ export const course = {
       };
 
       mockCourses.push(newCourse);
-
       return newCourse.id;
     }
 
-    // 确保课程描述为空字符串而不是undefined
-    const description = (data as any).description || '';
-
-    // 处理 typeId，可能是字符串或数字
-    let typeId = (data as any).typeId as any;
-
-    // 如果 typeId 是字符串但可以转换为数字，则转换
-    if (typeof typeId === 'string' && !isNaN(Number(typeId))) {
-      typeId = Number(typeId);
-    }
-
-    const requestData = {
-      ...data,
-      description: description,
-      typeId: typeId // 使用处理后的 typeId
-    } as any;
-
-    console.log('发送课程创建请求数据:', requestData);
-    console.log('课程类型 ID (typeId):', requestData.typeId);
-
-    // 使用导入的 request 和 API 路径常量
-    const response = await request(`${COURSE_API_PATHS.ADD}`, {
+    // 使用导入的 request
+    const res = await request(COURSE_API_PATHS.ADD, {
       method: 'POST',
-      body: JSON.stringify(requestData)
+      body: JSON.stringify(data)
     });
-
-    // 直接返回响应中的数据（课程ID）
-    return response.data;
+    return res.data;
   },
 
   // 更新课程
@@ -318,58 +289,14 @@ export const course = {
     // clearCourseListCache();
 
     if (USE_MOCK) {
-      // 模拟更新课程
       await new Promise(resolve => setTimeout(resolve, 800));
-
-      const index = mockCourses.findIndex(c => c.id === data.id);
-
-      if (index === -1) {
-        throw new Error('课程不存在');
-      }
-
-      const updatedCourse = {
-        ...mockCourses[index],
-        ...data,
-        updateTime: new Date().toISOString()
-      };
-
-      mockCourses[index] = {
-        ...updatedCourse,
-        coachIds: updatedCourse.coachIds.map(id => String(id))
-      } as Course;
-
       return;
     }
 
-    // 确保课程描述为空字符串而不是undefined
-    const description = data.description || '';
-
-    // 处理 typeId，可能是字符串或数字
-    let typeId = data.typeId;
-
-    // 如果 typeId 是字符串但可以转换为数字，则转换
-    if (typeof typeId === 'string' && !isNaN(Number(typeId))) {
-      typeId = Number(typeId);
-    }
-
-    const requestData = {
-      ...data,
-      description: description,
-      typeId: typeId // 使用处理后的 typeId
-    };
-
-    console.log('更新课程时的 typeId:', requestData.typeId);
-
-    console.log('发送课程更新请求数据:', requestData);
-
-    // Use imported config and path constants
-    // 使用导入的 request 和 API 路径常量
-    await request(`${COURSE_API_PATHS.UPDATE}`, {
-      method: 'POST',
-      body: JSON.stringify(requestData)
+    await request(COURSE_API_PATHS.UPDATE, {
+      method: 'PUT',
+      body: JSON.stringify(data)
     });
-
-    return;
   },
 
   // 删除课程
@@ -378,123 +305,29 @@ export const course = {
     // clearCourseListCache();
 
     if (USE_MOCK) {
-      // 模拟删除课程
-      await new Promise(resolve => setTimeout(resolve, 600));
-
-      const index = mockCourses.findIndex(c => c.id === id);
-
-      if (index === -1) {
-        throw new Error('课程不存在');
-      }
-
-      mockCourses.splice(index, 1);
-
+      await new Promise(resolve => setTimeout(resolve, 500));
       return;
     }
 
-    // Use imported config and path constants
-    // 使用导入的 request 和 API 路径常量
-    await request(`${COURSE_API_PATHS.DELETE(id)}`, {
-      method: 'POST'
-    });
+    await request(COURSE_API_PATHS.DELETE(id), { method: 'DELETE' });
+  },
 
-    return;
+  // 获取简化课程列表（用于下拉）
+  getSimpleList: async (): Promise<SimpleCourse[]> => {
+    if (USE_MOCK) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return mockCourses.map(c => ({ id: c.id, name: c.name, typeName: c.type as any, status: c.status as any, coaches: c.coaches || [] }));
+    }
+
+    // 附带 campusId 参数（从 localStorage 读取，默认 1）
+    const campusId = (typeof window !== 'undefined' && localStorage.getItem('currentCampusId')) || '1';
+    const url = `${COURSE_API_PATHS.SIMPLE_LIST}?campusId=${encodeURIComponent(campusId)}`;
+    const res = await request(url);
+    return res.data || [];
   }
 };
 
-// 更新 Mock 数据以匹配新的 SimpleCourse 接口
-const mockSimpleCourses: SimpleCourse[] = [
-  { id: 'basketball', name: '篮球训练', typeName: '体育大类', status: 'PUBLISHED', coaches: [{ id: 1001, name: '王教练' }, { id: 1002, name: '李教练' }] },
-  { id: 'swimming', name: '游泳课程', typeName: '体育小班', status: 'PUBLISHED', coaches: [{ id: 1003, name: '张教练' }] },
-  { id: 'tennis', name: '网球培训', typeName: '体育一对一', status: 'PUBLISHED', coaches: [{ id: 1004, name: '赵教练' }] },
-  { id: 'painting', name: '绘画班', typeName: '艺术启蒙', status: 'PUBLISHED', coaches: [{ id: 1005, name: '孙教练' }] },
-  { id: 'piano', name: '钢琴培训', typeName: '艺术一对一', status: 'PUBLISHED', coaches: [{ id: 1006, name: '吴教练' }] },
-  { id: 'dance', name: '舞蹈课程', typeName: '艺术形体', status: 'PUBLISHED', coaches: [{ id: 1007, name: '冯教练' }] },
-  { id: 'math', name: '数学辅导', typeName: '学科培优', status: 'PUBLISHED', coaches: [{ id: 1008, name: '杨教练' }] },
-  { id: 'english', name: '英语班', typeName: '语言提升', status: 'PUBLISHED', coaches: [{ id: 1009, name: '秦教练' }] },
-];
-
-/**
- * 获取简化的课程列表 (用于下拉框)
- * @param campusId 可选的校区 ID
- * @param filterPublished 是否只返回已发布的课程，默认为false
- */
-export const getCourseSimpleList = async (campusId?: string | number, filterPublished: boolean = false): Promise<SimpleCourse[]> => {
-  if (USE_MOCK) {
-    console.log("Using mock course simple list for campus:", campusId, "filterPublished:", filterPublished);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // 按需过滤状态为PUBLISHED的模拟课程
-    return filterPublished 
-      ? mockSimpleCourses.filter((course: SimpleCourse) => 
-          course.status === 'PUBLISHED' || course.status === '1'
-        )
-      : mockSimpleCourses;
-  }
-
-  try {
-    // 参照 coach.getSimpleList 处理 campusId
-    const currentCampusId = localStorage.getItem('currentCampusId');
-    let finalCampusId = campusId;
-
-    if (finalCampusId === undefined && currentCampusId) {
-      finalCampusId = currentCampusId;
-    }
-
-    // 如果仍然没有 campusId，使用默认值 1
-    if (finalCampusId === undefined) {
-      console.warn('获取课程简单列表时 campusId 未定义，使用默认值 1');
-      finalCampusId = '1'; // 设置默认值为 1
-    }
-
-    let apiUrl = COURSE_API_PATHS.SIMPLE_LIST;
-    // 始终添加 campusId 参数
-    apiUrl += `?campusId=${finalCampusId}`;
-    // 只有在需要过滤时才添加状态参数
-    if (filterPublished) {
-      apiUrl += `&status=PUBLISHED`;
-    }
-
-    console.log(`Fetching simple course list from: ${apiUrl}`);
-    const response = await request(apiUrl);
-
-    // 添加更详细的日志
-    console.log('Course simple list response:', response);
-
-    if (response.code === 200 && response.data) {
-      // 检查响应数据是否为空数组
-      if (Array.isArray(response.data) && response.data.length === 0) {
-        console.warn('课程列表为空，返回默认模拟数据');
-        // 按需返回过滤后的模拟数据
-        return filterPublished
-          ? mockSimpleCourses.filter((course: SimpleCourse) => 
-              course.status === 'PUBLISHED' || course.status === '1'
-            )
-          : mockSimpleCourses;
-      }
-      // 按需在前端过滤，确保只返回已发布的课程
-      return filterPublished
-        ? response.data.filter((course: SimpleCourse) => 
-            course.status === 'PUBLISHED' || course.status === '1'
-          )
-        : response.data;
-    } else {
-      console.error("Failed to fetch course simple list or unexpected code:", response.code, response.message);
-      // 如果响应不成功，返回按需过滤的模拟数据
-      console.warn('返回默认模拟数据');
-      return filterPublished
-        ? mockSimpleCourses.filter((course: SimpleCourse) => 
-            course.status === 'PUBLISHED' || course.status === '1'
-          )
-        : mockSimpleCourses;
-    }
-  } catch (error) {
-    console.error("Error fetching course simple list:", error);
-    // 异常情况下返回按需过滤的模拟数据
-    console.warn('发生异常，返回默认模拟数据');
-    return filterPublished
-      ? mockSimpleCourses.filter((course: SimpleCourse) => 
-          course.status === 'PUBLISHED' || course.status === '1'
-        )
-      : mockSimpleCourses;
-  }
+// 兼容旧调用：导出顶层函数名保持不变
+export const getCourseSimpleList = async (): Promise<SimpleCourse[]> => {
+  return course.getSimpleList();
 };
