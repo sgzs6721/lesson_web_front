@@ -65,22 +65,16 @@
   justify-content: center;
   width: var(--icon-size);
   height: var(--icon-size);
-  border-radius: 50%;
+  /* 取消圆形背景，仅保留图标 */
+  background-color: transparent !important;
   margin-right: 8px;
   flex-shrink: 0;
 }
 
-.scale-icon-student {
-  background-color: rgba(52, 152, 219, 0.15);
-}
-
-.scale-icon-coach {
-  background-color: rgba(46, 204, 113, 0.15);
-}
-
-.scale-icon-lesson {
-  background-color: rgba(243, 156, 18, 0.15);
-}
+/* 取消三类图标的淡色背景 */
+.scale-icon-student { background-color: transparent !important; }
+.scale-icon-coach { background-color: transparent !important; }
+.scale-icon-lesson { background-color: transparent !important; }
 
 .scale-label {
   font-size: 14px;

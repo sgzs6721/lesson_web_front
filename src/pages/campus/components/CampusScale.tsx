@@ -1,4 +1,5 @@
 import React from 'react';
+import { UserOutlined, TeamOutlined } from '@ant-design/icons';
 import './CampusScale.css';
 
 interface CampusScaleProps {
@@ -16,9 +17,7 @@ const CampusScale: React.FC<CampusScaleProps> = ({
         {/* Student count item */}
         <div className="scale-combined-item">
           <div className="scale-icon-wrapper scale-icon-student">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="#3498db">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-            </svg>
+            <UserOutlined style={{ color: '#3498db', fontSize: 16 }} />
           </div>
           <div className="scale-label">学员数</div>
           <div className="scale-value scale-value-student">{studentCount}</div>
@@ -27,9 +26,7 @@ const CampusScale: React.FC<CampusScaleProps> = ({
         {/* Coach count item */}
         <div className="scale-combined-item">
           <div className="scale-icon-wrapper scale-icon-coach">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="#2ecc71">
-              <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V5h2v6zm0 4h-2v-2h2v2z" />
-            </svg>
+            <TeamOutlined style={{ color: '#2ecc71', fontSize: 16 }} />
           </div>
           <div className="scale-label">教练数</div>
           <div className="scale-value scale-value-coach">{coachCount}</div>

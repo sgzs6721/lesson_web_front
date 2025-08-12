@@ -149,11 +149,12 @@ const UserTable: React.FC<UserTableProps> = ({
       dataIndex: 'role',
       key: 'role',
       align: 'center' as const,
+      onCell: () => ({ style: { paddingTop: 16, paddingBottom: 16 } }),
       render: (role: any, record: User) => {
         // 优先显示多角色信息
         if (record.roles && record.roles.length > 0) {
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
               {record.roles.map((roleItem, index) => {
                 const roleOption = roleOptions.find(option => option.value === roleItem.name);
                 const roleName = roleOption ? roleOption.label : roleItem.name;
@@ -176,7 +177,7 @@ const UserTable: React.FC<UserTableProps> = ({
                 const tagColor = isCampusAdmin ? roleColor : (campusColor || roleColor);
 
                 return (
-                  <div key={index} style={{ marginBottom: index < (record.roles?.length || 0) - 1 ? '8px' : '0' }}>
+                  <div key={index}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center', margin: 0 }}>
                         {roleName}
