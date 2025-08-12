@@ -13,62 +13,72 @@ export const useUserForm = (
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // 将后端返回的角色名称/枚举规范化为前端使用的枚举键
+  const normalizeRoleName = (rawName?: string, roleEnum?: string): UserRole => {
+    const upperEnum = (roleEnum || '').toString().toUpperCase();
+    if (upperEnum === UserRole.SUPER_ADMIN) return UserRole.SUPER_ADMIN;
+    if (upperEnum === UserRole.CAMPUS_ADMIN) return UserRole.CAMPUS_ADMIN;
+    if (upperEnum === UserRole.COLLABORATOR) return UserRole.COLLABORATOR;
+
+    const name = (rawName || '').toString();
+    if (name.includes('超级')) return UserRole.SUPER_ADMIN;
+    if (name.includes('校区')) return UserRole.CAMPUS_ADMIN;
+    return UserRole.COLLABORATOR;
+  };
+
   // 显示添加用户模态框
   const showAddModal = () => {
-    // 重置表单字段
     form.resetFields();
     setEditingUser(null);
     setIsModalVisible(true);
 
-    // 使用setTimeout确保在模态框渲染后设置默认值
     setTimeout(() => {
       form.setFieldsValue({
         status: DEFAULT_STATUS,
-        password: '', // 初始化密码字段为空，等待电话号码输入后自动设置
-        roles: [] // 初始化多角色为空数组
+        password: '',
+        roles: []
       });
     }, 200);
   };
 
   // 显示编辑用户模态框
   const showEditModal = (record: User) => {
-    // 先重置表单
     form.resetFields();
     setEditingUser(record);
     setIsModalVisible(true);
 
-    // 打印记录信息，便于调试
     console.log('编辑用户记录:', JSON.stringify(record, null, 2));
 
     // 处理多角色数据
     let rolesValue: UserRoleItem[] = [];
     if (record.roles && record.roles.length > 0) {
-      // 如果已经有新的多角色数据，直接使用
-      rolesValue = record.roles;
+      rolesValue = (record.roles as any[]).map((r: any) => ({
+        name: normalizeRoleName(r.name as string | undefined, r.roleEnum as string | undefined),
+        campusId: r.campusId ?? null,
+        campusName: r.campusName,
+      }));
     } else if (record.role) {
-      // 兼容旧版本的单角色数据
       let roleName: UserRole;
       if (typeof record.role === 'object' && record.role !== null) {
-        const roleId = Number(record.role.id);
+        const roleId = Number((record.role as any).id);
         if (roleId === 1) roleName = UserRole.SUPER_ADMIN;
         else if (roleId === 2) roleName = UserRole.COLLABORATOR;
         else if (roleId === 3) roleName = UserRole.CAMPUS_ADMIN;
         else roleName = UserRole.COLLABORATOR;
       } else {
-        const roleId = Number(record.role);
+        const roleId = Number(record.role as any);
         if (roleId === 1) roleName = UserRole.SUPER_ADMIN;
         else if (roleId === 2) roleName = UserRole.COLLABORATOR;
         else if (roleId === 3) roleName = UserRole.CAMPUS_ADMIN;
         else roleName = UserRole.COLLABORATOR;
       }
 
-      // 获取校区ID
       let campusId: number | null = null;
-      if (record.campus) {
-        if (typeof record.campus === 'object' && record.campus !== null) {
-          campusId = Number(record.campus.id);
+      if ((record as any).campus) {
+        if (typeof (record as any).campus === 'object' && (record as any).campus !== null) {
+          campusId = Number((record as any).campus.id);
         } else {
-          campusId = Number(record.campus);
+          campusId = Number((record as any).campus);
         }
       }
 
@@ -76,25 +86,23 @@ export const useUserForm = (
     }
 
     // 处理状态数据
-    let statusValue = record.status;
+    let statusValue: any = (record as any).status;
     if (typeof statusValue === 'number') {
       statusValue = statusValue === 1 ? 'ENABLED' : 'DISABLED';
     }
     console.log('处理后的状态值:', statusValue);
     console.log('处理后的角色值:', rolesValue);
 
-    // 使用setTimeout确保在模态框渲染后设置值
     setTimeout(() => {
       form.setFieldsValue({
-        name: record.name || record.realName || '',
-        phone: record.phone || '',
+        name: (record as any).name || (record as any).realName || '',
+        phone: (record as any).phone || '',
         status: statusValue,
         roles: rolesValue
       });
     }, 300);
   };
 
-  // 处理模态框确认
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
@@ -102,45 +110,32 @@ export const useUserForm = (
 
       console.log('表单提交的原始值:', values);
 
-      // 模拟API调用
       await new Promise(resolve => setTimeout(resolve, 500));
 
       if (editingUser) {
-        // 编辑现有用户
-        // 准备更新数据
         const updateValues: any = {
           ...values,
-          // 确保姓名和电话字段存在
           name: values.name || editingUser.name,
           phone: values.phone || editingUser.phone,
-          // 确保状态字段存在
-          status: values.status || editingUser.status || 'ENABLED',
-          // 处理多角色数据
+          status: values.status || (editingUser as any).status || 'ENABLED',
           roles: values.roles || []
         };
 
-        // 确保角色字段存在，无论是否是超级管理员
         if (!updateValues.roles || updateValues.roles.length === 0) {
-          // 如果没有设置角色，使用默认的协同管理员角色
           updateValues.roles = [{ name: UserRole.COLLABORATOR, campusId: null }];
         }
 
         console.log('编辑用户的处理后的值:', updateValues);
         await onUpdateUser(editingUser.id, updateValues);
       } else {
-        // 添加新用户
-        // 确保密码字段被设置为手机号的后8位
-        const addValues = { ...values };
-        // 无论是否设置了密码，都使用手机号的后8位
+        const addValues = { ...values } as any;
         if (addValues.phone && addValues.phone.length >= 8) {
           addValues.password = addValues.phone.slice(-8);
         } else if (addValues.phone) {
           addValues.password = addValues.phone;
         }
 
-        // 确保角色字段存在
         if (!addValues.roles || addValues.roles.length === 0) {
-          // 如果没有设置角色，使用默认的协同管理员角色
           addValues.roles = [{ name: UserRole.COLLABORATOR, campusId: null }];
         }
 
@@ -157,7 +152,6 @@ export const useUserForm = (
     }
   };
 
-  // 处理模态框取消
   const handleModalCancel = () => {
     setIsModalVisible(false);
     setTimeout(() => {
@@ -165,14 +159,12 @@ export const useUserForm = (
     }, 100);
   };
 
-  // 处理重置密码
   const handleResetPassword = async () => {
     if (editingUser && onResetPassword) {
       try {
         setLoading(true);
         await onResetPassword(editingUser.id, editingUser.phone);
 
-        // 重置密码后，更新密码输入框的值为手机号的后8位
         if (editingUser.phone && editingUser.phone.length >= 8) {
           form.setFieldsValue({ password: editingUser.phone.slice(-8) });
         } else if (editingUser.phone) {

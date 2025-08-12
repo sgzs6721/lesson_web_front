@@ -15,6 +15,7 @@ interface CourseTableProps {
   onDelete: (id: string, name: string) => void;
   onPageChange: (page: number, pageSize: number) => void;
   onTableChange?: (pagination: any, filters: any, sorter: any) => void;
+  onShowEnrollments?: (record: Course) => void;
 }
 
 const CourseTable: React.FC<CourseTableProps> = ({
@@ -27,9 +28,10 @@ const CourseTable: React.FC<CourseTableProps> = ({
   onEdit,
   onDelete,
   onPageChange,
-  onTableChange
+  onTableChange,
+  onShowEnrollments
 }) => {
-  const columns = getTableColumns(onEdit, onShowDetail, onDelete);
+  const columns = getTableColumns(onEdit, onShowDetail, onDelete, onShowEnrollments);
 
   return (
     <>

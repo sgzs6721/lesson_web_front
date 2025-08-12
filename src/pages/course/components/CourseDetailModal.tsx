@@ -193,7 +193,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     总课时费 <strong style={{ color: '#f5222d' }}>¥{getTotalCoachFee(course.coachFees, course.coaches).toFixed(2)}</strong> /课时
                   </div>
                   <div style={{ background: '#f5f5f5', border: '1px solid #eee', borderRadius: 12, padding: '2px 8px', fontSize: 12 }}>
-                    共计支出（每次） <strong style={{ color: '#fa8c16' }}>¥{(getTotalCoachFee(course.coachFees, course.coaches) * (course.unitHours || 1)).toFixed(2)}</strong>
+                    每节课支出 <strong style={{ color: '#fa8c16' }}>¥{(getTotalCoachFee(course.coachFees, course.coaches) * (course.unitHours || 1)).toFixed(2)}</strong>
                   </div>
                 </div>
               </div>

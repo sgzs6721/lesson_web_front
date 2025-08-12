@@ -32,6 +32,19 @@ const getRoleName = (role: UserRole | undefined): string => {
   return option ? option.label : String(role);
 };
 
+// 规范化角色名称，兼容中文/roleEnum
+const normalizeRoleName = (rawName?: string, roleEnum?: string): UserRole => {
+  const upperEnum = (roleEnum || '').toString().toUpperCase();
+  if (upperEnum === UserRole.SUPER_ADMIN) return UserRole.SUPER_ADMIN;
+  if (upperEnum === UserRole.CAMPUS_ADMIN) return UserRole.CAMPUS_ADMIN;
+  if (upperEnum === UserRole.COLLABORATOR) return UserRole.COLLABORATOR;
+
+  const name = (rawName || '').toString();
+  if (name.includes('超级')) return UserRole.SUPER_ADMIN;
+  if (name.includes('校区')) return UserRole.CAMPUS_ADMIN;
+  return UserRole.COLLABORATOR;
+};
+
 interface UserEditModalProps {
   visible: boolean;
   loading: boolean;
@@ -82,9 +95,14 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         }, 300);
       }
 
-      // 初始化多角色数据
+      // 初始化多角色数据（规范化）
       if (editingUser?.roles && editingUser.roles.length > 0) {
-        setSelectedRoles(editingUser.roles);
+        const normalized = (editingUser.roles as any[]).map((r: any) => ({
+          name: normalizeRoleName(r.name as string | undefined, r.roleEnum as string | undefined),
+          campusId: r.campusId != null ? Number(r.campusId) : null,
+          campusName: r.campusName,
+        }));
+        setSelectedRoles(normalized);
       } else if (editingUser?.role) {
         // 兼容旧版本的单角色数据
         let roleName: UserRole;
@@ -125,20 +143,17 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
 
   // 使用状态值作为依赖项的状态变量，强制重新渲染
   const [statusValue, setStatusValue] = useState<'ENABLED' | 'DISABLED' | undefined>(() => {
-    // 如果是编辑模式，使用用户的状态
     if (editingUser?.status) {
       if (typeof editingUser.status === 'string') {
         return editingUser.status.toUpperCase() as 'ENABLED' | 'DISABLED';
       }
       return editingUser.status === 1 ? 'ENABLED' : 'DISABLED';
     }
-    // 如果是添加模式，不预选状态，显示占位符
     return undefined;
   });
 
   // 使用密码值作为依赖项的状态变量，强制重新渲染
   const [passwordValue, setPasswordValue] = useState<string>(() => {
-    // 如果是编辑模式，使用用户手机号的后8位
     if (editingUser?.phone) {
       if (editingUser.phone.length >= 8) {
         const last8 = editingUser.phone.slice(-8);
@@ -148,7 +163,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       console.log('手机号不足8位，使用全部:', editingUser.phone);
       return editingUser.phone;
     }
-    // 如果是添加模式，初始化为空
     console.log('添加模式，初始化密码为空');
     return '';
   });
@@ -156,7 +170,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   // 当编辑用户变化时，更新状态值和密码值
   useEffect(() => {
     if (editingUser) {
-      // 处理状态值
       if (editingUser.status) {
         let newStatusValue: 'ENABLED' | 'DISABLED';
         if (typeof editingUser.status === 'string') {
@@ -167,36 +180,30 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         setStatusValue(newStatusValue);
       }
 
-      // 处理密码值 - 设置为手机号的后8位
       if (editingUser.phone) {
         console.log('useEffect 中设置密码，手机号:', editingUser.phone, '长度:', editingUser.phone.length);
         if (editingUser.phone.length >= 8) {
           const last8 = editingUser.phone.slice(-8);
           console.log('useEffect 中设置密码为手机号后8位:', last8);
           setPasswordValue(last8);
-          // 同时设置表单字段
           form.setFieldsValue({ password: last8 });
         } else {
           console.log('useEffect 中手机号不足8位，设置密码为全部手机号:', editingUser.phone);
           setPasswordValue(editingUser.phone);
-          // 同时设置表单字段
           form.setFieldsValue({ password: editingUser.phone });
         }
       }
     } else {
-      // 如果是添加模式，初始化密码为空
       setPasswordValue('');
     }
   }, [editingUser, form]);
 
   // 添加角色
   const handleAddRole = () => {
-    // 限制最多两个角色
     if (selectedRoles.length >= 2) {
       message.warning('最多只能设置两个角色');
       return;
     }
-    
     const newRole: UserRoleItem = { name: UserRole.COLLABORATOR, campusId: null };
     setSelectedRoles([...selectedRoles, newRole]);
   };
@@ -219,7 +226,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
 
   // 在提交前设置多角色数据到表单
   const handleSubmit = () => {
-    // 设置多角色数据到隐藏的表单字段
     form.setFieldsValue({ roles: selectedRoles });
     onSubmit();
   };
@@ -279,7 +285,6 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 onChange={(e) => {
                   const phone = e.target.value;
 
-                  // 当不在编辑模式时，设置默认密码为手机号的后8位
                   if (!editingUser && phone) {
                     if (phone.length >= 8) {
                       const last8 = phone.slice(-8);
@@ -307,8 +312,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     width: '100%'
                   }}
                   disabled={true}
-                  value={passwordValue} // 直接使用密码状态变量作为值
-                  visibilityToggle={false} // 移除显示/隐藏密码的切换按钮
+                  value={passwordValue}
+                  visibilityToggle={false}
                 />
                 {editingUser && (
                   <Button
@@ -405,8 +410,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                       popupMatchSelectWidth={false}
                       getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
                       popupClassName="role-select-dropdown"
-                      options={roleOptions
-                        .filter(option => option.value !== UserRole.SUPER_ADMIN)
+                      options={(role.name === UserRole.SUPER_ADMIN ? roleOptions : roleOptions
+                        .filter(option => option.value !== UserRole.SUPER_ADMIN))
                         .map(option => ({
                           value: option.value,
                           label: (
@@ -421,13 +426,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                           )
                         }))}
                       labelRender={(selectedOption) => {
-                        // 选中后只显示角色名称，不显示信息图标
                         if (selectedOption && selectedOption.label) {
                           const roleOption = roleOptions.find(opt => opt.value === selectedOption.value);
                           return roleOption ? roleOption.label : selectedOption.label;
                         }
                         return selectedOption?.label || '';
                       }}
+                      disabled={role.name === UserRole.SUPER_ADMIN}
                     />
                   </div>
                   
@@ -456,17 +461,19 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                   )}
                 </div>
                 
-                <Button
-                  type="text"
-                  icon={<CloseOutlined />}
-                  onClick={() => handleRemoveRole(index)}
-                  style={{ marginLeft: 8 }}
-                  size="small"
-                />
+                {role.name !== UserRole.SUPER_ADMIN && (
+                  <Button
+                    type="text"
+                    icon={<CloseOutlined />}
+                    onClick={() => handleRemoveRole(index)}
+                    style={{ marginLeft: 8 }}
+                    size="small"
+                  />
+                )}
               </div>
             ))}
             
-            {selectedRoles.length < 2 && (
+            {selectedRoles.length < 2 && !isSuperAdmin && (
               <Button
                 type="dashed"
                 icon={<PlusOutlined />}

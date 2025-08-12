@@ -78,6 +78,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [giftItemsOptions, setGiftItemsOptions] = useState<Constant[]>([]);
   const [loadingGiftItems, setLoadingGiftItems] = useState(false);
+  const [validityOptions, setValidityOptions] = useState<Constant[]>([]);
+  const [loadingValidity, setLoadingValidity] = useState(false);
 
   const selectedCourseInfo = useMemo(() => {
     if (!coursesList || coursesList.length === 0 || !selectedCourse) {
@@ -108,7 +110,21 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           setLoadingGiftItems(false);
         }
       };
+      const fetchValidity = async () => {
+        setLoadingValidity(true);
+        try {
+          const options = await constants.getListByType('VALIDITY_PERIOD');
+          setValidityOptions(options || []);
+        } catch (error) {
+          console.error('获取有效期(月)列表失败:', error);
+          message.error('获取有效期选项失败');
+          setValidityOptions([]);
+        } finally {
+          setLoadingValidity(false);
+        }
+      };
       fetchGiftItems();
+      fetchValidity();
     }
   }, [visible]);
 
@@ -205,16 +221,21 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       }
       console.log('[PaymentModal] handleOk: Student data check passed.');
 
+      // 将有效期(月)转换为具体日期（按月数加到交易日期）
+      const months = Number(values.validityMonths || 0);
+      const baseDate = values.transactionDate || dayjs();
+      const validUntilDate = months > 0 ? baseDate.add(months, 'month') : baseDate;
+
       const paymentData = {
         studentId: Number(student.id), 
         courseId: Number(values.courseId), 
         paymentType: values.paymentType,
         amount: Number(values.amount), 
         paymentMethod: values.paymentMethod,
-        transactionDate: values.transactionDate.format('YYYY-MM-DD'),
+        transactionDate: baseDate.format('YYYY-MM-DD'),
         courseHours: Number(values.regularClasses) || 0, 
         giftHours: Number(values.bonusClasses) || 0, 
-        validUntil: values.validUntil.format('YYYY-MM-DD'),
+        validUntil: validUntilDate.format('YYYY-MM-DD'),
         giftItems: values.giftItems || [], 
         notes: values.remarks 
       };
@@ -225,36 +246,21 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       const result = await studentApi.addPayment(paymentData); 
       console.log('[PaymentModal] handleOk: studentApi.addPayment successful.');
 
-      // 处理学生对象中的课程信息，更新剩余课时数据
+      // 更新本地剩余课时（保持原逻辑）
       if (student.courses && student.courses.length > 0) {
-        // 找到当前修改的课程
         const courseIndex = student.courses.findIndex(
           course => String(course.courseId) === String(values.courseId)
         );
 
         if (courseIndex >= 0) {
-          // 更新课程的剩余课时
           const currentRemainingHours = student.courses[courseIndex].remainingHours || 0;
           const newRemainingHours = currentRemainingHours + Number(values.regularClasses || 0) + Number(values.bonusClasses || 0);
-          
-          // 创建一个更新后的对象
           const updatedCourse = {
             ...student.courses[courseIndex],
             remainingHours: newRemainingHours
           };
-          
-          console.log('[PaymentModal] 更新剩余课时:', {
-            课程ID: values.courseId,
-            原剩余课时: currentRemainingHours,
-            添加课时: Number(values.regularClasses || 0) + Number(values.bonusClasses || 0),
-            新剩余课时: newRemainingHours
-          });
-
-          // 更新学生对象中的课程数据
           const updatedCourses = [...student.courses];
           updatedCourses[courseIndex] = updatedCourse;
-          
-          // 修改学生对象
           if (student) {
             student.courses = updatedCourses;
           }
@@ -263,24 +269,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
       message.success('缴费成功');
 
-      // 调用可能传入的刷新回调（刷新列表 + 摘要）
       try {
         onRefreshListAndSummary?.();
       } catch (e) {
         console.warn('[PaymentModal] onRefreshListAndSummary 调用失败或未提供:', e);
       }
-      // 广播全局事件，供页面监听统一刷新
       try {
         window.dispatchEvent(new Event('student:list-summary:refresh'));
       } catch {}
       
-      console.log('[PaymentModal] handleOk: Checking if onSuccess is a function...');
       if (typeof onSuccess === 'function') {
-        console.log('[PaymentModal] handleOk: onSuccess is a function, calling it...');
         onSuccess(); 
-        console.log('[PaymentModal] handleOk: onSuccess called successfully.');
       } else {
-        console.log('[PaymentModal] handleOk: onSuccess is not a function, skipping call.');
         onCancel();
       }
 
@@ -324,7 +324,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               layout="vertical"
               initialValues={{
                 transactionDate: dayjs(),
-                validUntil: dayjs().add(180, 'day'),
+                validityMonths: undefined,
                 regularClasses: 0,
                 bonusClasses: 0,
               }}
@@ -475,14 +475,21 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 </Col>
                 <Col span={8}>
                   <Form.Item
-                    name="validUntil"
-                    label="有效期至"
-                    rules={[{ required: true, message: '请选择有效期' }]}
+                    name="validityMonths"
+                    label="有效期(月)"
+                    rules={[{ required: true, message: '请选择有效期(月)' }]}
                   >
-                    <DatePicker
-                      style={{ width: '160px' }}
-                      format="YYYY年MM月DD日"
-                      onChange={onValidUntilChange}
+                    <Select
+                      placeholder="请选择有效期(月)"
+                      loading={loadingValidity}
+                      options={validityOptions.map(opt => ({ value: opt.id, label: opt.constantValue }))}
+                      getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+                      onChange={(val) => {
+                        const months = Number(val || 0);
+                        const base = form.getFieldValue('transactionDate') || dayjs();
+                        const date = months > 0 ? base.add(months, 'month') : base;
+                        try { onValidUntilChange(date); } catch {}
+                      }}
                     />
                   </Form.Item>
                 </Col>

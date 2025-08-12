@@ -36,7 +36,8 @@ const getTypeName = (type: string) => {
 
 // 渲染课程类型标签
 const renderCourseTypeTag = (type: string) => {
-  const color = courseTypeColorMap[type] || 'default';
+  // 仅改颜色：无映射时使用 processing（蓝色）替代默认灰色
+  const color = courseTypeColorMap[type] || 'processing';
   return (
     <Tag color={color} style={{ minWidth: '65px', textAlign: 'center' }}>
       {type || '未知类型'}
@@ -80,13 +81,17 @@ export const renderStatusTag = (status: string) => {
 export const getTableColumns = (
   onEdit: (record: Course) => void,
   onShowDetail: (record: Course) => void,
-  onDelete: (id: string, name: string) => void
+  onDelete: (id: string, name: string) => void,
+  onShowEnrollments?: (record: Course) => void,
 ) => [
   {
     title: '课程名称',
     dataIndex: 'name',
     key: 'name',
     align: 'center' as AlignType,
+    render: (name: string, record: Course) => (
+      <a onClick={() => onShowEnrollments && onShowEnrollments(record)}>{name}</a>
+    )
   },
   {
     title: '课程类型',

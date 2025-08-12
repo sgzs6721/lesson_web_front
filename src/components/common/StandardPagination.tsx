@@ -1,9 +1,7 @@
 import React from 'react';
-import { Pagination, Select } from 'antd';
+import { Pagination } from 'antd';
 import type { PaginationProps } from 'antd';
 import './StandardPagination.css';
-
-const { Option } = Select;
 
 interface StandardPaginationProps extends Omit<PaginationProps, 'showTotal'> {
   current: number;
@@ -29,66 +27,18 @@ const StandardPagination: React.FC<StandardPaginationProps> = ({
 }) => {
   return (
     <div className="standard-pagination-container">
-      <div className="pagination-left">
-        {/* 左侧为空 */}
-      </div>
+      <div className="pagination-left"></div>
       <div className="pagination-right">
         <span className="pagination-total">共 {total} {totalText}</span>
-        {showSizeChanger && (
-                  <Select
-          size="middle"
-          value={pageSize}
-          onChange={(value) => onChange(current, value)}
-          className="pagination-size-selector"
-          classNames={{
-            popup: {
-              root: "pagination-size-dropdown"
-            }
-          }}
-          popupMatchSelectWidth={false}
-          styles={{
-            popup: {
-              root: { 
-                width: '120px',
-                minWidth: '120px',
-                maxWidth: '120px'
-              }
-            }
-          }}
-          getPopupContainer={(trigger) => trigger.parentNode}
-        >
-            {pageSizeOptions.map(option => (
-              <Option 
-                key={option} 
-                value={Number(option)}
-                style={{ 
-                  textAlign: 'center',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '120px',
-                  height: '32px',
-                  padding: '0'
-                }}
-              >
-                <span style={{ 
-                  textAlign: 'center', 
-                  width: '100%',
-                  display: 'block'
-                }}>
-                  {option}条/页
-                </span>
-              </Option>
-            ))}
-          </Select>
-        )}
         <Pagination
           current={current}
           pageSize={pageSize}
           total={total}
-          showSizeChanger={false}
+          showSizeChanger={showSizeChanger}
+          pageSizeOptions={pageSizeOptions}
           showQuickJumper={false}
           onChange={(page, size) => onChange(page, size || pageSize)}
+          onShowSizeChange={(page, size) => onChange(1, size)}
           locale={{
             items_per_page: '条/页',
             jump_to: '跳至',

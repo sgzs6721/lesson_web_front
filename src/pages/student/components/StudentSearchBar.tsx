@@ -83,6 +83,7 @@ const StudentSearchBar: React.FC<StudentSearchBarProps> = ({
               placeholder="搜索学员名称/ID/电话"
               value={params.searchText}
               onChange={e => onTextChange(e.target.value)}
+              onPressEnter={() => onSearch()}
               prefix={<SearchOutlined />}
               allowClear
             />

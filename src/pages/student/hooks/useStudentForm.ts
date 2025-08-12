@@ -504,6 +504,14 @@ export const useStudentForm = (
         console.log('准备提交的最终 Payload (Create):', JSON.stringify(createPayload, null, 2));
         const newStudent = await onAddStudent(createPayload);
         message.success('学员添加成功');
+        // 关闭新增模态框并清理表单与临时状态
+        setVisible(false);
+        form.resetFields();
+        setCourseGroups([]);
+        setCurrentEditingGroupIndex(null);
+        setTempCourseGroup(null);
+        setOriginalCourseGroup(null);
+        setIsEditing(false);
       }
 
       return true; // 提交成功

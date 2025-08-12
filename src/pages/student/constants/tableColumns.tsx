@@ -121,7 +121,7 @@ export const getStudentColumns = (
   {
     title: '学员ID',
     dataIndex: 'studentId',
-    key: 'studentId',
+    key: 'id',
     width: '8%', // 增加ID列宽度
     align: 'center' as const,
     onHeaderCell: () => ({
@@ -146,7 +146,7 @@ export const getStudentColumns = (
     onHeaderCell: () => ({
       style: { ...columnStyle, whiteSpace: 'nowrap', padding: '8px 8px' },
     }),
-    sorter: (a: any, b: any) => a.name.localeCompare(b.name),
+    // 取消姓名排序
   },
   {
     title: '年龄',

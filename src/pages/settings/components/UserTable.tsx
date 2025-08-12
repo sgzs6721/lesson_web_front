@@ -178,7 +178,7 @@ const UserTable: React.FC<UserTableProps> = ({
                 return (
                   <div key={index} style={{ marginBottom: index < (record.roles?.length || 0) - 1 ? '8px' : '0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center' }}>
+                      <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center', margin: 0 }}>
                         {roleName}
                       </Tag>
                       <div style={{ 
@@ -190,7 +190,7 @@ const UserTable: React.FC<UserTableProps> = ({
                       }}>
                         <span style={{ color: '#666', fontSize: '12px' }}>|</span>
                       </div>
-                      <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center' }}>
+                      <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center', margin: 0 }}>
                         {campusInfo}
                       </Tag>
                     </div>
@@ -251,7 +251,7 @@ const UserTable: React.FC<UserTableProps> = ({
         return (
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center' }}>
+              <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center', margin: 0 }}>
                 {roleName}
               </Tag>
               <div style={{ 
@@ -263,7 +263,7 @@ const UserTable: React.FC<UserTableProps> = ({
               }}>
                 <span style={{ color: '#666', fontSize: '12px' }}>|</span>
               </div>
-              <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center' }}>
+              <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center', margin: 0 }}>
                 {campusInfo}
               </Tag>
             </div>

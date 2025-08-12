@@ -90,6 +90,9 @@ const StudentManagement: React.FC = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   // 添加统计摘要数据
   const [summaryData, setSummaryData] = useState<StudentManagementSummary | null>(null);
+  // 新增：记录当前表格排序（用于分页与过滤时透传）
+  const [tableSortField, setTableSortField] = useState<string | undefined>('id');
+  const [tableSortOrder, setTableSortOrder] = useState<'ascend' | 'descend' | null>('descend');
 
   // --- Pass student.createWithCourse as the API function ---
   // 使用类型断言解决类型不兼容问题
@@ -255,18 +258,28 @@ const StudentManagement: React.FC = () => {
     };
   }, [ui.pagination.currentPage, ui.pagination.pageSize]);
 
-  // 自定义分页处理函数
+  // 监听表头排序变化，仅更新本地排序状态
+  const handleTableSortChange = useCallback((field?: string, order?: 'ascend' | 'descend' | null) => {
+    // 如果传入的是 name（已取消排序），忽略
+    if (field === 'name') return;
+    setTableSortField(field || 'id');
+    setTableSortOrder(order ?? 'descend');
+  }, []);
+
+  // 自定义分页处理函数（携带当前排序）
   const handleCustomPaginationChange = (page: number, pageSize?: number) => {
     console.log('分页变化:', { page, pageSize });
     
     // 更新UI状态
     ui.pagination.handlePaginationChange(page, pageSize);
     
-    // 重新获取数据
+    // 重新获取数据，合并当前排序
     df.data.fetchStudents({
       pageNum: page,
-      pageSize: pageSize || ui.pagination.pageSize
-    });
+      pageSize: pageSize || ui.pagination.pageSize,
+      sortField: tableSortField,
+      sortOrder: tableSortOrder === 'ascend' ? 'asc' : 'desc'
+    } as any);
   };
 
   // 学员打卡处理函数
@@ -366,7 +379,10 @@ const StudentManagement: React.FC = () => {
             pageSize={ui.pagination.pageSize}
             onPageChange={handleCustomPaginationChange}
             searchParams={df.search.params}
-            onSearch={df.search.handleSearch}
+            onSearch={() => {
+              // 使用当前排序进行搜索
+              df.search.handleSearch();
+            }}
             onReset={df.search.handleReset}
             onExport={() => ui.export.handleExport(df.data.students as UiStudent[])}
             onTextChange={df.search.setSearchText}
@@ -382,6 +398,7 @@ const StudentManagement: React.FC = () => {
             onDelete={(record) => ui.deleteConfirm.showDeleteConfirm(record)}
             onAttendance={handleAttendance}
             onDetails={handleStudentDetails}
+            onSortChange={handleTableSortChange}
           />
         </Card>
 

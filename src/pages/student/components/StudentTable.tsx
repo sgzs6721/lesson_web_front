@@ -23,6 +23,8 @@ interface StudentTableProps {
   onDelete?: (student: Student) => void;
   onAttendance?: (student: Student & { selectedCourseIdForAttendance?: number | string }) => void;
   onDetails?: (record: Student) => void;
+  // 新增：排序变化回调（记录当前排序，供分页时使用）
+  onSortChange?: (field?: string, order?: 'ascend' | 'descend' | null) => void;
 }
 
 // 使用React.memo包装组件以避免不必要的重渲染
@@ -39,6 +41,7 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
   onDelete,
   onAttendance,
   onDetails,
+  onSortChange,
 }) => {
   // 创建各个回调函数的安全版本，避免undefined错误
   const safeOnPayment = onPayment || (() => {});
@@ -61,11 +64,13 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
     safeOnDetails,
   );
 
-  // 彻底禁用表格的onChange事件处理
-  const handleTableChange = useCallback(() => {
-    // 什么都不做，彻底禁用表格的默认onChange行为
-    console.log("[TABLE] 表格变化事件被拦截，不执行任何操作");
-  }, []);
+  // 监听表格的排序变化，仅记录状态，不触发请求
+  const handleTableChange = useCallback((_: any, __: any, sorter: any) => {
+    const s = Array.isArray(sorter) ? sorter[0] : sorter;
+    const fieldFromSorter: string | undefined = s?.columnKey || s?.field;
+    const order: 'ascend' | 'descend' | null | undefined = s?.order ?? null;
+    onSortChange?.(fieldFromSorter, order ?? null);
+  }, [onSortChange]);
 
   return (
     <div className="student-table-container">
@@ -74,7 +79,7 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
         dataSource={data}
         rowKey="id"
         loading={loading}
-        onChange={handleTableChange} // 使用空函数拦截表格变化事件
+        onChange={handleTableChange}
         pagination={false} // 禁用内置分页
         locale={{
           emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" />

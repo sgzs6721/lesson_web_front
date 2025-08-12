@@ -15,6 +15,8 @@ export const useStudentData = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  // 新增：保存最近一次应用到列表的筛选条件（不包含分页），以便分页时携带
+  const [lastApiFilters, setLastApiFilters] = useState<Partial<StudentSearchParams> | null>(null);
 
   // 获取学员列表
   const fetchStudents = async (params?: StudentSearchParams) => {
@@ -46,19 +48,26 @@ export const useStudentData = () => {
         return [];
       }
 
-      // 添加默认的倒序排序参数
-      const defaultParams: StudentSearchParams = {
-        ...params,
-        // 强制按ID倒序排序，确保新增学员总是显示在最前面
-        sortField: 'id',
-        sortOrder: 'desc',
-        // 添加校区ID
-        campusId: Number(currentCampusId)
-      };
+      // 合并最近一次筛选条件与本次传入的参数，优先使用本次传入
+      const mergedParams: StudentSearchParams = {
+        ...(lastApiFilters || {}),
+        ...(params || {})
+      } as StudentSearchParams;
 
-      console.log(`[fetchStudents ${requestId}] 准备调用API，参数:`, defaultParams);
+      // 填充分页默认值
+      if (!mergedParams.pageNum) mergedParams.pageNum = currentPage;
+      if (!mergedParams.pageSize) mergedParams.pageSize = pageSize;
+
+      // 补充默认排序
+      if (!mergedParams.sortField) mergedParams.sortField = 'id';
+      if (!mergedParams.sortOrder) mergedParams.sortOrder = 'desc';
+
+      // 强制携带当前校区ID
+      mergedParams.campusId = Number(currentCampusId);
+
+      console.log(`[fetchStudents ${requestId}] 准备调用API，参数:`, mergedParams);
       // 调用API获取学员列表
-      const response = await API.student.getList(defaultParams);
+      const response = await API.student.getList(mergedParams);
       console.log(`[fetchStudents ${requestId}] API调用成功，获取到 ${response?.list?.length || 0} 条记录`);
 
       if (response && response.list) {
@@ -101,7 +110,7 @@ export const useStudentData = () => {
       setLoading(true);
       const newStudent = await API.student.add(student);
 
-      // 重新获取学员列表，确保数据最新
+      // 重新获取学员列表，确保数据最新（携带最近的筛选条件）
       await fetchStudents({
         pageNum: currentPage,
         pageSize: pageSize
@@ -179,7 +188,7 @@ export const useStudentData = () => {
       setLoading(true);
       await API.student.delete(id);
 
-      // 重新获取学员列表，确保数据最新
+      // 重新获取学员列表，确保数据最新（携带最近的筛选条件）
       await fetchStudents({
         pageNum: currentPage,
         pageSize: pageSize
@@ -202,8 +211,8 @@ export const useStudentData = () => {
     const apiParams: StudentSearchParams = {
       pageNum: currentPage,
       pageSize: pageSize,
-      // 默认按创建时间倒序排序
-      sortField: 'createdTime',
+      // 与列表默认保持一致：按ID倒序
+      sortField: 'id',
       sortOrder: 'desc'
     };
 
@@ -308,6 +317,10 @@ export const useStudentData = () => {
       // 添加校区ID
       apiParams.campusId = Number(currentCampusId);
 
+      // 保存最近一次筛选条件（不保存分页字段）
+      const { pageNum: _pn, pageSize: _ps, ...filtersOnly } = apiParams;
+      setLastApiFilters(filtersOnly);
+
       // 调用API获取过滤后的学员列表
       const response = await API.student.getList(apiParams);
 
@@ -340,6 +353,8 @@ export const useStudentData = () => {
   // 重置数据
   const resetData = async () => {
     setCurrentPage(1);
+    // 清空最近一次筛选条件
+    setLastApiFilters(null);
 
     try {
       await fetchStudents({
@@ -357,7 +372,7 @@ export const useStudentData = () => {
     setCurrentPage(page);
     if (size) setPageSize(size);
 
-    // 使用fetchStudents获取数据，让重复请求检测机制生效
+    // 使用fetchStudents获取数据，让重复请求检测机制生效（自动合并最近一次筛选条件）
     return fetchStudents({
       pageNum: page,
       pageSize: size || pageSize

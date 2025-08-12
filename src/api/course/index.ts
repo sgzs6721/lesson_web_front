@@ -126,7 +126,7 @@ export const course = {
     // Use imported config and path constants
     const queryParams = new URLSearchParams();
 
-    if (params?.pageNum) queryParams.append('page', params.pageNum.toString());
+    if (params?.pageNum) queryParams.append('pageNum', params.pageNum.toString());
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
     if (params?.searchText) queryParams.append('keyword', params.searchText);
 

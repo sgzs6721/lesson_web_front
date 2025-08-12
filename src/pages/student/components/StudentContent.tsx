@@ -50,6 +50,8 @@ interface StudentContentProps {
   onDelete: (record: UiStudent) => void;
   onAttendance: (record: UiStudent & { attendanceCourse?: { id: number | string; name: string } }) => void;
   onDetails: (record: UiStudent) => void;
+  // 新增：表头排序变化
+  onSortChange?: (field?: string, order?: 'ascend' | 'descend' | null) => void;
 }
 
 /**
@@ -80,7 +82,8 @@ const StudentContent: React.FC<StudentContentProps> = ({
   onTransferClass,
   onDelete,
   onAttendance,
-  onDetails
+  onDetails,
+  onSortChange
 }) => {
   return (
     <>
@@ -117,6 +120,7 @@ const StudentContent: React.FC<StudentContentProps> = ({
         onDelete={onDelete}
         onAttendance={onAttendance}
         onDetails={onDetails}
+        onSortChange={onSortChange}
       />
     </>
   );

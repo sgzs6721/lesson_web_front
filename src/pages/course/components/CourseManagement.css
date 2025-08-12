@@ -33,6 +33,113 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* 报名学员抽屉 */
+.enroll-drawer-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.enroll-drawer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.enroll-drawer-summary {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+}
+
+.enroll-student-list .ant-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.enroll-student-item {
+  padding: 10px 12px !important;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  transition: box-shadow .2s ease, transform .1s ease;
+  background: #fff;
+}
+
+.enroll-student-item:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.enroll-student-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.gender-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+.gender-icon.male { color: #1677ff; }
+.gender-icon.female { color: #eb2f96; }
+
+.enroll-student-phone {
+  color: rgba(0,0,0,0.45);
+}
+
+/* 课时胶囊标签 */
+.hours-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  height: 20px;
+  line-height: 20px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: 12px;
+}
+
+.hours-pill.ok {
+  background: #f6ffed;
+  color: #389e0d;
+  border-color: #b7eb8f;
+}
+
+.hours-pill.warn {
+  background: #fff7e6;
+  color: #d48806;
+  border-color: #ffe58f;
+}
+
+.hours-pill.danger {
+  background: #fff1f0;
+  color: #cf1322;
+  border-color: #ffa39e;
+}
+
+.hours-pill .hours-badge {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.06);
+  text-align: center;
+  line-height: 16px;
+  font-size: 10px;
+}
+
+/* 低剩余课时数字红色显示 */
+.hours-pill .hours-badge.low {
+  color: #cf1322;
+  background: #fff1f0;
+  border: 1px solid #ffa39e;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
   .course-management {
