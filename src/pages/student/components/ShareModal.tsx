@@ -102,6 +102,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       onOk={onOk}
       confirmLoading={loading}
       destroyOnClose
+      style={{ zIndex: 1000 }}
     >
       <Form form={form} layout="vertical">
         <Row gutter={16}>
@@ -128,6 +129,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                   placeholder="请选择课程"
                   onChange={handleCourseChange}
                   getPopupContainer={(trigger) => trigger.parentElement || document.body}
+                  placement="bottomLeft"
                 >
                   {filteredCourseList.map(c => (
                     <Select.Option key={String(c.id)} value={String(c.id)}>
