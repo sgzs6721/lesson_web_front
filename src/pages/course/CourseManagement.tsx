@@ -61,13 +61,11 @@ const CourseManagement: React.FC = () => {
     handleReset
   } = useCourseSearch(async (params) => {
     setCurrentPage(1); // 重置到第一页
-    // 搜索时强制清空缓存，确保每次点“查询/重置”都会走新请求
-    clearCourseListCache();
     // 搜索时合并当前排序
     const merged = {
       ...params,
-      sortField: tableSortField ?? params.sortField,
-      sortOrder: (tableSortOrder ? (tableSortOrder === 'ascend' ? 'asc' : 'desc') : params.sortOrder)
+      sortField: tableSortField ?? params.sortField ?? 'status',
+      sortOrder: (tableSortOrder ? (tableSortOrder === 'ascend' ? 'asc' : 'desc') : (params.sortOrder ?? 'asc'))
     } as any;
     return filterCourses(1, pageSize, merged);
   })
@@ -314,8 +312,8 @@ const CourseManagement: React.FC = () => {
       console.log('加载课程数据, 页码:', page, '页大小:', size);
       const merged = {
         ...searchParams,
-        sortField: tableSortField ?? searchParams.sortField,
-        sortOrder: tableSortOrder ? (tableSortOrder === 'ascend' ? 'asc' : 'desc') : searchParams.sortOrder
+        sortField: tableSortField ?? searchParams.sortField ?? 'status',
+        sortOrder: tableSortOrder ? (tableSortOrder === 'ascend' ? 'asc' : 'desc') : (searchParams.sortOrder ?? 'asc')
       } as any;
       await filterCourses(page, size, merged);
     } catch (error) {
@@ -345,8 +343,8 @@ const CourseManagement: React.FC = () => {
     setPageSize(size);
     const merged = {
       ...searchParams,
-      sortField: tableSortField ?? searchParams.sortField,
-      sortOrder: tableSortOrder ? (tableSortOrder === 'ascend' ? 'asc' : 'desc') : searchParams.sortOrder
+      sortField: tableSortField ?? searchParams.sortField ?? 'status',
+      sortOrder: tableSortOrder ? (tableSortOrder === 'ascend' ? 'asc' : 'desc') : (searchParams.sortOrder ?? 'asc')
     } as any;
     await filterCourses(page, size, merged);
   };
@@ -410,28 +408,28 @@ const CourseManagement: React.FC = () => {
 
     if (sorter && sorter.field && sorter.order) {
       console.log('设置排序参数 - sortField:', orderField, 'sortOrder:', order);
-      setSortField(orderField);
-      setSortOrder(order);
+      setSortField(orderField || 'status');
+      setSortOrder(order || 'asc');
       // 直接调用filterCourses，传入最新的排序参数
       const searchParamsWithSort = {
         ...searchParams,
-        sortField: orderField,
-        sortOrder: order
+        sortField: orderField || 'status',
+        sortOrder: order || 'asc'
       } as any;
       console.log('调用filterCourses，参数:', searchParamsWithSort);
       filterCourses(1, pageSize, searchParamsWithSort);
       setCurrentPage(1);
     } else {
-      console.log('清除排序参数');
-      setSortField(undefined);
-      setSortOrder(undefined);
+      console.log('清除排序参数，回到默认 status asc');
+      setSortField('status');
+      setSortOrder('asc');
       setTableSortField(undefined);
       setTableSortOrder(undefined);
-      // 清除排序时也直接调用filterCourses
+      // 清除排序时也直接调用filterCourses（恢复默认 status asc）
       const searchParamsWithoutSort = {
         ...searchParams,
-        sortField: undefined,
-        sortOrder: undefined
+        sortField: 'status',
+        sortOrder: 'asc'
       } as any;
       console.log('调用filterCourses（清除排序），参数:', searchParamsWithoutSort);
       filterCourses(1, pageSize, searchParamsWithoutSort);

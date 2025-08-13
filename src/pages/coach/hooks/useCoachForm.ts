@@ -5,7 +5,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { API } from '@/api';
 import { message } from 'antd';
 import { convertApiCoachToCoach, coachDetailCache } from './useCoachDetail';
-import { avatarOptions, reverseAvatarMap } from '../constants/avatarMap';
+import { avatarOptions, reverseAvatarMap, avatarMap } from '../constants/avatarMap';
 import { safeDayjs } from '@/utils/date';
 
 // 拓展表单值的接口，包含Dayjs类型
@@ -210,7 +210,9 @@ export const useCoachForm = (
       form.setFieldsValue(formValues);
 
       if (coachDetail.avatar) {
-        setSelectedAvatar(coachDetail.avatar);
+        // 如果后端返回的是文件名，映射为URL；若已是URL则直接使用
+        const previewUrl = avatarMap[coachDetail.avatar] || coachDetail.avatar;
+        setSelectedAvatar(previewUrl);
       }
     } catch (error) {
       console.error('加载教练编辑信息失败:', error);

@@ -137,6 +137,8 @@ export const getTableColumns = (
     key: 'status',
     align: 'center' as AlignType,
     render: (status: string) => renderStatusTag(status),
+    sorter: true,
+    defaultSortOrder: 'ascend' as SortOrder,
   },
   {
     title: '更新时间',

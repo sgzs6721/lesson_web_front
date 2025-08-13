@@ -6,8 +6,9 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
   const [selectedType, setSelectedType] = useState<CourseType[] | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<CourseStatus | undefined>(undefined);
   const [selectedCoach, setSelectedCoach] = useState<number[] | undefined>(undefined);
-  const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
-  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  // 默认走接口排序：状态升序
+  const [sortOrder, setSortOrder] = useState<string | undefined>('asc');
+  const [sortField, setSortField] = useState<string | undefined>('status');
   const [campusId, setCampusId] = useState<number | undefined>(undefined);
 
   // 从localStorage获取当前校区ID
@@ -36,14 +37,14 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
     }
   };
 
-  // 重置搜索条件
+  // 重置搜索条件（保留接口默认排序：status asc）
   const handleReset = async () => {
     setSearchText('');
     setSelectedType(undefined);
     setSelectedStatus(undefined);
     setSelectedCoach(undefined);
-    setSortOrder(undefined);
-    setSortField(undefined);
+    setSortOrder('asc');
+    setSortField('status');
     // 不重置campusId，保持校区筛选
 
     // 重置后自动搜索
@@ -53,8 +54,8 @@ export const useCourseSearch = (onSearch: (params: CourseSearchParams) => Promis
         selectedType: undefined,
         selectedStatus: undefined,
         selectedCoach: undefined,
-        sortOrder: undefined,
-        sortField: undefined,
+        sortOrder: 'asc',
+        sortField: 'status',
         campusId // 保留校区ID
       });
     } catch (error) {
