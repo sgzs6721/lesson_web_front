@@ -13,9 +13,11 @@ import {
   Divider,
   Spin,
   message,
-  Button
+  Button,
+  Tooltip
 } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { InfoCircleOutlined, GiftOutlined } from '@ant-design/icons';
 import { Student, CourseSummary } from '@/pages/student/types/student';
 import {
   courseTypeOptions,
@@ -80,6 +82,20 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [loadingGiftItems, setLoadingGiftItems] = useState(false);
   const [validityOptions, setValidityOptions] = useState<Constant[]>([]);
   const [loadingValidity, setLoadingValidity] = useState(false);
+  const watchedValidityMonths = Form.useWatch('validityMonths', form);
+  const watchedAmount = Form.useWatch('amount', form);
+  const selectedValidityLabel = useMemo(() => {
+    const match = validityOptions.find(opt => String(opt.id) === String(watchedValidityMonths));
+    return match?.constantValue || '-';
+  }, [watchedValidityMonths, validityOptions]);
+  const selectedValidityDisplay = useMemo(() => {
+    if (!selectedValidityLabel || selectedValidityLabel === '-') return '-';
+    return /月/.test(String(selectedValidityLabel)) ? String(selectedValidityLabel) : `${selectedValidityLabel} 个月`;
+  }, [selectedValidityLabel]);
+  const amountDisplay = useMemo(() => {
+    const n = Number(watchedAmount);
+    return Number.isFinite(n) ? n.toFixed(2) : '0.00';
+  }, [watchedAmount]);
 
   const selectedCourseInfo = useMemo(() => {
     if (!coursesList || coursesList.length === 0 || !selectedCourse) {
@@ -163,13 +179,39 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       return '无';
     }
     
+    const palettes = [
+      { bg: '#e6f4ff', border: '#91caff', color: '#1677ff' },
+      { bg: '#f9f0ff', border: '#d3adf7', color: '#722ed1' },
+      { bg: '#e6fffb', border: '#87e8de', color: '#13c2c2' },
+      { bg: '#f6ffed', border: '#b7eb8f', color: '#52c41a' },
+      { bg: '#fff7e6', border: '#ffd591', color: '#fa8c16' },
+    ];
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '4px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: '8px' }}>
         {values.map((value, index) => {
           const option = giftItemsOptions.find(opt => opt.id === value);
+          const palette = palettes[index % palettes.length];
           return (
-            <Tag key={index} style={{ margin: '2px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {option?.constantValue || `选项${value}`}
+            <Tag
+              key={index}
+              style={{
+                margin: 0,
+                maxWidth: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: palette.bg,
+                color: palette.color,
+                border: `1px solid ${palette.border}`,
+                borderRadius: 16,
+                padding: '2px 10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontWeight: 500,
+              }}
+            >
+              <GiftOutlined style={{ fontSize: 12 }} />
+              <span>{option?.constantValue || `选项${value}`}</span>
             </Tag>
           );
         })}
@@ -476,7 +518,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 <Col span={8}>
                   <Form.Item
                     name="validityMonths"
-                    label="有效期(月)"
+                    label={
+                      <span>
+                        有效期(月)
+                        <Tooltip title="有效期从开始第一节课后开始计算">
+                          <InfoCircleOutlined style={{ marginLeft: 6, color: 'rgba(0,0,0,0.45)' }} />
+                        </Tooltip>
+                      </span>
+                    }
                     rules={[{ required: true, message: '请选择有效期(月)' }]}
                   >
                     <Select
@@ -681,7 +730,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次缴费金额：</div>
                 <div style={{ color: '#f5222d', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
-                  ¥{visible ? (form.getFieldValue('amount') || '0.00') : '0.00'}
+                  ¥{amountDisplay}
                 </div>
               </div>
 
@@ -727,12 +776,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
 
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>新有效期至：</div>
+                <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>有效期：</div>
                 <div style={{ color: '#1890ff', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
-                  {newValidUntil}
+                  {selectedValidityDisplay}
                 </div>
               </div>
-
               <div style={{ marginBottom: '12px' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', marginBottom: '8px' }}>赠品：</div>
                 <div style={{ color: 'rgba(0, 0, 0, 0.85)', width: '100%', minHeight: '30px' }}>
