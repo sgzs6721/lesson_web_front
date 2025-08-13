@@ -10,6 +10,7 @@ import { useExport } from './useExport';
 import { Student } from '../types/student';
 import { useState, useCallback } from 'react';
 import { SimpleCourse } from '@/api/course/types'; // 导入SimpleCourse类型
+import useShareModal from './useShareModal';
 
 /**
  * 学员管理UI相关钩子的整合
@@ -74,6 +75,9 @@ export const useStudentUI = (
     // 添加刷新回调函数，通过重新获取第一页数据刷新列表
     () => handlePaginationChange(1, pageSize)
   );
+
+  // 共享模态框功能
+  const shareProps = useShareModal(courseList);
   
   // 导出功能
   const exportProps = useExport();
@@ -175,6 +179,18 @@ export const useStudentUI = (
       handleTransferClass: transferClassProps.handleTransferClass,
       handleCancel: transferClassProps.handleCancel,
       handleSubmit: transferClassProps.handleSubmit
+    },
+
+    // 共享相关
+    share: {
+      visible: shareProps.visible,
+      form: shareProps.form,
+      currentStudent: shareProps.currentStudent,
+      loading: shareProps.loading,
+      setLoading: shareProps.setLoading,
+      handleShare: shareProps.handleShare,
+      handleCancel: shareProps.handleCancel,
+      handleSubmit: shareProps.handleSubmit
     },
     
     // 导出相关

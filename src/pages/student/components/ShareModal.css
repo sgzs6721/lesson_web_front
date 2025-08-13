@@ -1,0 +1,40 @@
+/* 共享课程模态框 - 仅作用于该模态 */
+.share-modal .ant-select,
+.share-modal .ant-select-selector {
+	width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+/* 让弹层跟随触发器宽度 */
+.share-modal .ant-select-dropdown {
+	min-width: auto !important;
+	width: var(--share-select-width, 100%) !important;
+}
+
+/* 两列布局的对齐微调 */
+.share-modal .ant-form-item {
+	margin-bottom: 16px;
+}
+
+.share-modal .ant-form-item-label > label {
+	font-weight: 500;
+}
+
+/* 下拉项内容右侧对齐类型标签 */
+.share-modal .ant-select-dropdown .ant-select-item-option-content {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.share-modal .ant-select-dropdown .ant-select-item-option-content .course-name {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.share-modal .ant-select-dropdown .ant-select-item-option-content .course-type-tag {
+	margin-left: 8px;
+} 

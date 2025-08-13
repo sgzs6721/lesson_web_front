@@ -36,29 +36,68 @@ const getRoleKeyAndColor = (raw: string | undefined) => {
 
   // 统一的颜色映射：确保不同角色不同颜色
   const colorMap: Record<UserRole, string> = {
-    [UserRole.SUPER_ADMIN]: 'red',       // 超级管理员
-    [UserRole.CAMPUS_ADMIN]: 'purple',   // 校区管理员 - 改为紫色
-    [UserRole.COLLABORATOR]: 'gold',     // 协同管理员
+    [UserRole.SUPER_ADMIN]: '#ff4d4f',      // 红
+    [UserRole.CAMPUS_ADMIN]: '#722ed1',     // 紫
+    [UserRole.COLLABORATOR]: '#13c2c2',     // 青
   };
 
-  const color = colorMap[(roleKey as UserRole)] || 'green';
+  const color = colorMap[(roleKey as UserRole)] || '#1677ff';
   return { roleKey, color };
 };
 
-// 根据校区名称返回稳定颜色（相同校区同色，不同校区不同色）
+// 生成浅色背景+边框的样式（保持默认圆角，不自定义）
+const buildTagStyle = (mainColor: string): React.CSSProperties => {
+  const bgColor = mainColor.startsWith('#')
+    ? `${mainColor}33` // 20% 透明度
+    : mainColor.replace('hsl', 'hsla').replace(')', ', 0.2)');
+  return {
+    backgroundColor: bgColor,
+    color: mainColor,
+    border: `1px solid ${mainColor}`,
+    padding: '2px 10px',
+    textAlign: 'center',
+    margin: 0,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+};
+
+// 基于固定高对比度调色板为校区生成稳定且彼此不同的颜色，相同校区始终同色
 const campusColorMap = (() => {
-  const preset = ['geekblue','cyan','purple','volcano','green','magenta','orange','gold','lime','blue'];
   const map = new Map<string, string>();
-  // 预填已知校区
-  campusOptions.forEach((c, idx) => map.set(c.label, preset[idx % preset.length]));
+  const palette = [
+    '#f5222d', // red
+    '#fa541c', // volcano
+    '#fa8c16', // orange
+    '#faad14', // gold
+    '#a0d911', // lime
+    '#52c41a', // green
+    '#13c2c2', // cyan
+    '#1677ff', // blue
+    '#2f54eb', // geekblue
+    '#722ed1', // purple
+    '#eb2f96', // magenta
+    '#08979c', // teal
+  ];
+  const hashToIndex = (text: string) => {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) hash = (hash << 5) - hash + text.charCodeAt(i);
+    return Math.abs(hash);
+  };
   return (label?: string) => {
     if (!label) return undefined;
-    if (label === '全部') return 'cyan'; // 为"全部"设置特定颜色
-    if (!map.has(label)) {
-      const idx = map.size % preset.length;
-      map.set(label, preset[idx]);
+    const key = label.trim();
+    if (!map.has(key)) {
+      if (key === '全部') {
+        map.set(key, '#1677ff');
+      } else {
+        const base = hashToIndex(key);
+        const color = palette[base % palette.length];
+        map.set(key, color);
+      }
     }
-    return map.get(label);
+    return map.get(key);
   };
 })();
 
@@ -172,14 +211,12 @@ const UserTable: React.FC<UserTableProps> = ({
                 }
 
                 const { color: roleColor } = getRoleKeyAndColor(roleItem.name);
-                const campusColor = campusColorMap(campusInfo);
-                // 校区管理员优先使用角色颜色，其他角色使用校区颜色或角色颜色
-                const tagColor = isCampusAdmin ? roleColor : (campusColor || roleColor);
-
+                const campusMainColor = campusColorMap(campusInfo);
+ 
                 return (
                   <div key={index}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center', margin: 0 }}>
+                      <Tag style={{ ...buildTagStyle(roleColor), minWidth: roleTagWidth }}>
                         {roleName}
                       </Tag>
                       <div style={{ 
@@ -191,7 +228,7 @@ const UserTable: React.FC<UserTableProps> = ({
                       }}>
                         <span style={{ color: '#666', fontSize: '12px' }}>|</span>
                       </div>
-                      <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center', margin: 0 }}>
+                      <Tag style={{ ...buildTagStyle(campusMainColor || '#1677ff'), minWidth: campusTagWidth }}>
                         {campusInfo}
                       </Tag>
                     </div>
@@ -243,16 +280,12 @@ const UserTable: React.FC<UserTableProps> = ({
         }
 
         const { color: roleColor } = getRoleKeyAndColor(roleKeyRaw || roleName);
-        const campusColor = campusColorMap(campusInfo);
-        // 检查是否为校区管理员角色
-        const isCampusAdmin = roleKeyRaw === 'CAMPUS_ADMIN' || roleName === '校区管理员';
-        // 校区管理员优先使用角色颜色，其他角色使用校区颜色或角色颜色
-        const tagColor = isCampusAdmin ? roleColor : (campusColor || roleColor);
-
+        const campusMainColor = campusColorMap(campusInfo);
+ 
         return (
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Tag color={tagColor} style={{ minWidth: roleTagWidth, textAlign: 'center', margin: 0 }}>
+              <Tag style={{ ...buildTagStyle(roleColor), minWidth: roleTagWidth }}>
                 {roleName}
               </Tag>
               <div style={{ 
@@ -264,7 +297,7 @@ const UserTable: React.FC<UserTableProps> = ({
               }}>
                 <span style={{ color: '#666', fontSize: '12px' }}>|</span>
               </div>
-              <Tag color={campusColor || 'default'} style={{ minWidth: campusTagWidth, textAlign: 'center', margin: 0 }}>
+              <Tag style={{ ...buildTagStyle(campusMainColor || '#1677ff'), minWidth: campusTagWidth }}>
                 {campusInfo}
               </Tag>
             </div>

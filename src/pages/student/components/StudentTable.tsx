@@ -25,6 +25,8 @@ interface StudentTableProps {
   onDetails?: (record: Student) => void;
   // 新增：排序变化回调（记录当前排序，供分页时使用）
   onSortChange?: (field?: string, order?: 'ascend' | 'descend' | null) => void;
+  // 新增：共享回调
+  onShare?: (student: Student & { selectedCourseId?: string }) => void;
 }
 
 // 使用React.memo包装组件以避免不必要的重渲染
@@ -42,6 +44,7 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
   onAttendance,
   onDetails,
   onSortChange,
+  onShare,
 }) => {
   // 创建各个回调函数的安全版本，避免undefined错误
   const safeOnPayment = onPayment || (() => {});
@@ -51,6 +54,7 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
   const safeOnDelete = onDelete || (() => {});
   const safeOnAttendance = onAttendance || ((_: Student & { selectedCourseIdForAttendance?: number | string }) => {});
   const safeOnDetails = onDetails || (() => {});
+  const safeOnShare = onShare || (() => {});
 
   const columns = getStudentColumns(
     onEdit,
@@ -62,6 +66,7 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
     safeOnDelete,
     safeOnAttendance,
     safeOnDetails,
+    safeOnShare,
   );
 
   // 监听表格的排序变化，仅记录状态，不触发请求

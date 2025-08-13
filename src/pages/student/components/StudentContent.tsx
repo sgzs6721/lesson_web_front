@@ -52,6 +52,8 @@ interface StudentContentProps {
   onDetails: (record: UiStudent) => void;
   // 新增：表头排序变化
   onSortChange?: (field?: string, order?: 'ascend' | 'descend' | null) => void;
+  // 新增：共享
+  onShare?: (record: UiStudent & { selectedCourseId?: string }) => void;
 }
 
 /**
@@ -83,7 +85,8 @@ const StudentContent: React.FC<StudentContentProps> = ({
   onDelete,
   onAttendance,
   onDetails,
-  onSortChange
+  onSortChange,
+  onShare
 }) => {
   return (
     <>
@@ -121,6 +124,7 @@ const StudentContent: React.FC<StudentContentProps> = ({
         onAttendance={onAttendance}
         onDetails={onDetails}
         onSortChange={onSortChange}
+        onShare={onShare}
       />
     </>
   );

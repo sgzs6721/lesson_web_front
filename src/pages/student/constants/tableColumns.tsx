@@ -11,12 +11,29 @@ import {
   DeleteOutlined,
   CheckCircleOutlined,
   InfoCircleOutlined,
-  MoreOutlined
+  MoreOutlined,
+  ShareAltOutlined
 } from '@ant-design/icons';
 import { Student, CourseInfo } from '@/pages/student/types/student';
 import dayjs from 'dayjs';
 // 不再需要 FixedWidthTag，使用统一的 Tag 样式
 // import FixedWidthTag from '../components/FixedWidthTag';
+
+// 在模块级别添加一次事件监听：用于共享后的本地预览渲染
+if (typeof window !== 'undefined' && !(window as any).__student_share_preview_bound) {
+  (window as any).__student_share_preview_bound = true;
+  window.addEventListener('student:share:preview', (e: any) => {
+    const { studentId, fromCourseId, toCourseName } = e.detail || {};
+    try {
+      const key = `share-preview-${studentId}-${fromCourseId}`;
+      const el = document.querySelector(`[data-share-preview-key="${key}"]`);
+      if (el) {
+        (el as HTMLElement).textContent = toCourseName ? `共享至：${toCourseName}` : '';
+        (el as HTMLElement).style.display = toCourseName ? 'block' : 'none';
+      }
+    } catch {}
+  });
+}
 
 // 表头居中样式
 const columnStyle: React.CSSProperties = {
@@ -117,6 +134,7 @@ export const getStudentColumns = (
   onDelete: (student: Student) => void,
   onAttendance: (student: Student & { attendanceCourse?: { id: number | string; name: string } }) => void,
   onDetails?: (record: Student) => void, // 添加详情查看回调
+  onShare?: (student: Student) => void, // 新增：共享回调
 ): ColumnsType<Student> => [
   {
     title: '学员ID',
@@ -241,7 +259,7 @@ export const getStudentColumns = (
             // 判断是否为已结业状态
             const isGraduated = statusUpperCase === 'GRADUATED';
 
-            // 定义剩余操作的菜单项（退费、转课、转班）
+            // 定义剩余操作的菜单项（退费、转课、转班、共享）
             const remainingMenuItems = [
               {
                 key: 'refund',
@@ -303,6 +321,23 @@ export const getStudentColumns = (
                 disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用转班
                 style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
+              {
+                key: 'share',
+                label: '共享',
+                icon: <ShareAltOutlined style={{ color: '#13c2c2' }} />,
+                onClick: () => {
+                  if (onShare) {
+                    const infoForShare = {
+                      ...record,
+                      selectedCourseId: course.courseId ? String(course.courseId) : undefined,
+                      selectedCourseName: course.courseName
+                    } as any;
+                    console.log('共享 - 传递的完整信息:', infoForShare);
+                    onShare(infoForShare);
+                  }
+                },
+                disabled: false,
+              },
             ];
 
             return (
@@ -338,19 +373,7 @@ export const getStudentColumns = (
                   justifySelf: 'center'
                 }}></div>
                 
-                {/* 课程名称 - 左对齐，通过CSS控制 */}
-                <div style={{ 
-                  color: 'rgba(0, 0, 0, 0.85)',
-                  fontWeight: 500,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  lineHeight: '22px',
-                }} title={course.courseName}>
-                  {course.courseName || '-'}
-                </div>
-                
-                {/* 课程类型 - 居中对齐，通过CSS控制 */}
+                {/* 课程类型 - 先显示标签 */}
                 <div>
                   <Tag
                     style={{
@@ -361,6 +384,18 @@ export const getStudentColumns = (
                   >
                     {course.courseTypeName || '未知'}
                   </Tag>
+                </div>
+                
+                {/* 课程名称 - 后显示 */}
+                <div style={{ 
+                  color: 'rgba(0, 0, 0, 0.85)',
+                  fontWeight: 500,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: '22px',
+                }} title={course.courseName}>
+                  {course.courseName || '-'}
                 </div>
                 
                 {/* 教练 - 居中对齐，通过CSS控制 */}
@@ -473,6 +508,11 @@ export const getStudentColumns = (
                     </Dropdown>
                   )}
                 </div>
+                {/* 共享预览行（提交后即时展示） */}
+                <div
+                  data-share-preview-key={`share-preview-${record.studentId || record.id}-${course.courseId || course.studentCourseId}`}
+                  style={{ display: 'none', marginTop: 6, color: '#8c8c8c', gridColumn: '1 / -1' }}
+                />
               </div>
             );
           })}

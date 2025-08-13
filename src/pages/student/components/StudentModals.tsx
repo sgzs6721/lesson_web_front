@@ -11,6 +11,7 @@ import TransferClassModal from './TransferClassModal';
 import AttendanceModal from './AttendanceModal';
 import QuickAddStudentModal from './QuickAddStudentModal';
 import StudentDetailsModal from './StudentDetailsModal';
+import ShareModal from './ShareModal';
 import { SimpleCourse } from '@/api/course/types';
 import { Student as UiStudent } from '@/pages/student/types/student';
 import { getStudentAllCourses } from '../utils/student';
@@ -190,6 +191,17 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         setLoading={ui.transferClass.setLoading}
         courseList={filteredCourseList}
         loading={ui.transferClass.loading}
+      />
+
+      {/* 共享模态框 */}
+      <ShareModal
+        visible={ui.share.visible}
+        form={ui.share.form}
+        loading={ui.share.loading}
+        student={ui.share.currentStudent}
+        courseList={filteredCourseList}
+        onCancel={ui.share.handleCancel}
+        onOk={ui.share.handleSubmit}
       />
 
       {/* 学员打卡模态框 */}

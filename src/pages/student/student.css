@@ -278,7 +278,7 @@
 /* 课程信息网格布局 */
 .course-info-grid {
   display: grid;
-  grid-template-columns: 4px 110px 80px 80px 85px 80px 1fr !important; /* 重新设计列宽：竖线+课程名称+课程类型+教练+课时+状态+操作按钮 */
+  grid-template-columns: 4px 80px 150px 80px 85px 80px 1fr !important; /* 竖线 + 课程类型标签 + 课程名称(至少6字空间) + 教练 + 课时 + 状态 + 操作 */
   column-gap: 16px !important; /* 统一16px间距 */
   align-items: center;
   width: 100% !important;
@@ -288,16 +288,21 @@
   box-sizing: border-box !important;
 }
 
-/* 课程名称列左对齐样式 */
+/* 课程标签列居中（现为第2列） */
 .course-info-grid > div:nth-child(2) {
-  text-align: left !important;
-  padding-left: 8px !important; /* 增加左边距，与竖线保持合适距离 */
-}
-
-/* 课程类型列居中 */
-.course-info-grid > div:nth-child(3) {
   text-align: center !important;
 }
+
+/* 课程名称列左对齐样式（现为第3列），并保证至少6字空间 */
+.course-info-grid > div:nth-child(3) {
+  text-align: left !important;
+  padding-left: 8px !important; /* 与竖线保持合适距离 */
+  min-width: 150px !important; /* 至少容纳6个汉字 */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* 课程类型列已前移为第2列，样式在上方设置 */
 
 /* 教练列居中 */
 .course-info-grid > div:nth-child(4) {
@@ -406,10 +411,10 @@
 
   /* 课程信息网格容器样式 - 确保可以水平滚动 */
   .student-table-container .course-info-grid {
-    min-width: 600px; /* 调整最小宽度适应新布局 */
+    min-width: 650px; /* 调整最小宽度适应新布局（课程名更宽） */
     width: 100% !important;
     display: grid;
-    grid-template-columns: 4px 110px 80px 80px 85px 80px 1fr !important; /* 与基础样式保持一致 */
+    grid-template-columns: 4px 80px 150px 80px 85px 80px 1fr !important; /* 与基础样式保持一致 */
     column-gap: 16px !important; /* 与基础样式保持一致 */
     position: relative;
     margin-right: 0;
@@ -476,8 +481,6 @@
 }
 
 .ant-select-dropdown {
-  min-width: 100% !important;
-  width: 100% !important;
   box-sizing: border-box !important;
 }
 

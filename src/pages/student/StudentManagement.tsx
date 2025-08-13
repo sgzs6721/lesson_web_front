@@ -399,6 +399,7 @@ const StudentManagement: React.FC = () => {
             onAttendance={handleAttendance}
             onDetails={handleStudentDetails}
             onSortChange={handleTableSortChange}
+            onShare={(record) => ui.share.handleShare(record as any)}
           />
         </Card>
 
