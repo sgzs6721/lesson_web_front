@@ -123,6 +123,19 @@ const renderCourseType = (text: string | undefined) => {
 };
 */
 
+// 教练名颜色映射（稳定且均匀）
+const coachPalette = ['#1677ff', '#fa541c', '#52c41a', '#722ed1', '#13c2c2', '#eb2f96', '#faad14', '#2f54eb', '#a0d911', '#73d13d'];
+const getCoachColor = (name?: string) => {
+  if (!name) return '#8c8c8c';
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash << 5) - hash + name.charCodeAt(i);
+    hash |= 0;
+  }
+  const idx = Math.abs(hash) % coachPalette.length;
+  return coachPalette[idx];
+};
+
 // 生成学员表格列定义
 export const getStudentColumns = (
   onEdit: (record: Student) => void,
@@ -386,7 +399,7 @@ export const getStudentColumns = (
                   </Tag>
                 </div>
                 
-                {/* 课程名称 - 后显示 */}
+                {/* 课程名称 + 教练 - 合并显示 */}
                 <div style={{ 
                   color: 'rgba(0, 0, 0, 0.85)',
                   fontWeight: 500,
@@ -394,19 +407,14 @@ export const getStudentColumns = (
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   lineHeight: '22px',
-                }} title={course.courseName}>
-                  {course.courseName || '-'}
-                </div>
-                
-                {/* 教练 - 居中对齐，通过CSS控制 */}
-                <div style={{
-                    color: 'rgba(0, 0, 0, 0.65)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    lineHeight: '22px',
-                }}>
-                  {course.coachName || '-'}
+                  display: 'inline-block',
+                  maxWidth: '100%'
+                }} title={`${course.courseName || '-'} | ${course.coachName || '-'}`}>
+                  <span>{course.courseName || '-'}</span>
+                  <span style={{ margin: '0 6px', color: '#d9d9d9' }}>|</span>
+                  <span style={{ color: getCoachColor(course.coachName) }}>
+                    {course.coachName || '-'}
+                  </span>
                 </div>
                 
                 {/* 课时 - 居中对齐，通过CSS控制 */}

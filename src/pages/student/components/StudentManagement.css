@@ -1,6 +1,6 @@
 /* 学员管理页面样式 */
 .student-management {
-  padding: 0 4px;
+  padding: 0 4px; /* 恢复原始左右留白，避免影响表头宽度 */
 }
 
 .student-management-card {
