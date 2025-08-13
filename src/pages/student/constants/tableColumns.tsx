@@ -12,7 +12,9 @@ import {
   CheckCircleOutlined,
   InfoCircleOutlined,
   MoreOutlined,
-  ShareAltOutlined
+  ShareAltOutlined,
+  ManOutlined,
+  WomanOutlined
 } from '@ant-design/icons';
 import { Student, CourseInfo } from '@/pages/student/types/student';
 import dayjs from 'dayjs';
@@ -178,6 +180,22 @@ export const getStudentColumns = (
       style: { ...columnStyle, whiteSpace: 'nowrap', padding: '8px 8px' },
     }),
     // 取消姓名排序
+    render: (text: string, record: Student) => {
+      const genderValue = String((record as any)?.gender || '').toUpperCase();
+      const isMale = genderValue === 'MALE';
+      const isFemale = genderValue === 'FEMALE';
+      const IconComp = isMale ? ManOutlined : WomanOutlined;
+      const color = isMale ? '#1890ff' : '#eb2f96';
+
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          {(isMale || isFemale) && (
+            <IconComp style={{ fontSize: 12, color, opacity: 0.9, marginRight: 4, lineHeight: 1 }} />
+          )}
+          <span>{text}</span>
+        </span>
+      );
+    }
   },
   {
     title: '年龄',

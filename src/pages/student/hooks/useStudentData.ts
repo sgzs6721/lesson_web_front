@@ -54,6 +54,10 @@ export const useStudentData = () => {
         ...(params || {})
       } as StudentSearchParams;
 
+      // 当显式传入分页时，同步内部分页状态，避免后续刷新回到首页
+      if (params?.pageNum && params.pageNum !== currentPage) setCurrentPage(params.pageNum);
+      if (params?.pageSize && params.pageSize !== pageSize) setPageSize(params.pageSize);
+
       // 填充分页默认值
       if (!mergedParams.pageNum) mergedParams.pageNum = currentPage;
       if (!mergedParams.pageSize) mergedParams.pageSize = pageSize;

@@ -48,7 +48,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
 }) => {
   const selectWrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // 源课程类型名称（如 “一对一”）
+  // 源课程ID与类型名称
+  const sourceCourseId = useMemo(() => String((student as any)?.selectedCourseId ?? ''), [student]);
   const sourceTypeName = useMemo(() => {
     try {
       const sid = (student as any)?.selectedCourseId;
@@ -60,11 +61,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
     }
   }, [student]);
 
-  // 仅展示同类型课程；若无法判定类型则展示全部
+  // 仅展示同类型课程，并排除源课程本身；若无法判定类型则展示全部但同样排除源课程
   const filteredCourseList = useMemo(() => {
-    if (!sourceTypeName) return courseList;
-    return courseList.filter(c => c.typeName === sourceTypeName);
-  }, [courseList, sourceTypeName]);
+    const excludeSelf = (c: SimpleCourse) => String(c.id) !== sourceCourseId;
+    if (!sourceTypeName) return courseList.filter(excludeSelf);
+    return courseList.filter(c => c.typeName === sourceTypeName && excludeSelf(c));
+  }, [courseList, sourceTypeName, sourceCourseId]);
 
   // 将弹层宽度与选择器对齐
   useEffect(() => {
@@ -120,7 +122,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
             <Form.Item
               name="targetCourseId"
               label="共享给的课程"
-              rules={[{ required: true, message: '请选择共享目标课程' }]}>
+              rules={[{ required: true, message: '请选择共享目标课程' }]}> 
               <div ref={selectWrapperRef}>
                 <Select
                   placeholder="请选择课程"
@@ -141,7 +143,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
           </Col>
           <Col span={12}>
             <Form.Item name="coachNames" label="教练">
-              <Input placeholder="-" disabled />
+              <Input disabled />
             </Form.Item>
           </Col>
         </Row>
