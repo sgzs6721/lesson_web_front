@@ -264,15 +264,15 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
             style={{ 
               borderRadius: '12px',
               background: gender === 'MALE' ? '#e6f7ff' : '#fff0f6',
-              padding: '24px',
-              marginBottom: '24px',
+              padding: '12px 16px',
+              marginBottom: '16px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Avatar 
-                  size={80} 
+                  size={56} 
                   icon={<UserOutlined />} 
                   style={{ 
                     backgroundColor: gender === 'MALE' ? '#1890ff' : '#eb2f96',
@@ -280,28 +280,26 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    fontSize: '32px'
+                    fontSize: '22px'
                   }}
                 />
-                <div style={{ marginLeft: 24 }}>
+                <div style={{ marginLeft: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Title level={3} style={{ margin: 0, fontSize: '24px', fontWeight: '600' }}>
+                    <Title level={4} style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
                       {name}
                     </Title>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-                    <Text style={{ fontSize: '15px', marginRight: 24, display: 'flex', alignItems: 'center', color: '#555' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' }}>
+                    <Text style={{ fontSize: '13px', marginRight: 16, display: 'flex', alignItems: 'center', color: '#555' }}>
                       <IdcardOutlined style={{ marginRight: 8 }} />
                       {student.id}
                     </Text>
-                    <Text style={{ fontSize: '15px', marginRight: 24, display: 'flex', alignItems: 'center', color: '#555' }}>
-                      {gender === 'MALE' ? 
-                        <span style={{ color: '#1890ff', marginRight: 8, fontSize: '16px' }}>♂</span> : 
-                        <span style={{ color: '#eb2f96', marginRight: 8, fontSize: '16px' }}>♀</span>}
+                    <Text style={{ fontSize: '13px', marginRight: 16, display: 'flex', alignItems: 'center', color: '#555' }}>
+                      {gender === 'MALE' ? <span style={{ color: '#1890ff', marginRight: 6, fontSize: '14px' }}>♂</span> : <span style={{ color: '#eb2f96', marginRight: 6, fontSize: '14px' }}>♀</span>}
                       {ageText}
                     </Text>
-                    <Text style={{ fontSize: '15px', display: 'flex', alignItems: 'center', color: '#555' }}>
-                      <PhoneOutlined style={{ marginRight: 8 }} />
+                    <Text style={{ fontSize: '13px', display: 'flex', alignItems: 'center', color: '#555' }}>
+                      <PhoneOutlined style={{ marginRight: 6 }} />
                       {getPhone()}
                     </Text>
                   </div>
@@ -510,23 +508,6 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                             <Text strong>{student.campusName || '-'}</Text>
                           </div>
                         </Col>
-                        <Col span={12}>
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <CalendarOutlined style={{ fontSize: '14px', color: '#8c8c8c', marginRight: 8 }} />
-                            <Text type="secondary" style={{ marginRight: 8 }}>开始日期:</Text>
-                            <Text strong>
-                              {('enrollmentDate' in course) ? course.enrollmentDate : 
-                                ('startDate' in course) ? course.startDate : '-'}
-                            </Text>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <CalendarOutlined style={{ fontSize: '14px', color: '#8c8c8c', marginRight: 8 }} />
-                            <Text type="secondary" style={{ marginRight: 8 }}>结束日期:</Text>
-                            <Text strong>{('endDate' in course) ? course.endDate : '-'}</Text>
-                          </div>
-                        </Col>
                       </Row>
                     </div>
                     
@@ -615,6 +596,31 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
               </Col>
             </Row>
           )}
+
+          {/* 缴费记录 */}
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>缴费记录</div>
+            {student && Array.isArray((student as any).payments) && (student as any).payments.length > 0 ? (
+              <div style={{ border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: '#fafafa', padding: '8px 12px', fontWeight: 600, color: '#555' }}>
+                  <div>类型</div>
+                  <div>方式</div>
+                  <div>金额</div>
+                  <div>时间</div>
+                </div>
+                {(student as any).payments.map((p: any, idx: number) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', padding: '10px 12px', borderTop: '1px solid #f5f5f5', fontSize: 14, color: '#262626' }}>
+                    <div>{p.paymentType || '-'}</div>
+                    <div>{p.paymentMethod || '-'}</div>
+                    <div>{typeof p.amount === 'number' ? `¥${p.amount}` : (p.amount || '-')}</div>
+                    <div>{p.paymentTime || p.createdTime || '-'}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '12px', color: '#8c8c8c', border: '1px dashed #f0f0f0', borderRadius: 8 }}>暂无缴费记录</div>
+            )}
+          </div>
           
           <style dangerouslySetInnerHTML={{
             __html: `
