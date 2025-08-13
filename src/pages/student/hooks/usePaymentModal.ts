@@ -286,7 +286,7 @@ export const usePaymentModal = () => {
         transactionDate: values.transactionDate.format('YYYY-MM-DD'),
         courseHours: values.regularClasses || 0,
         giftHours: values.bonusClasses || 0,
-        validUntil: values.validUntil.format('YYYY-MM-DD'),
+        validityPeriodId: values.validityPeriodId, // 添加有效期ID
         giftItems: values.gift || [], // 保持数组格式，不再使用join
         notes: values.remarks || ''
       };

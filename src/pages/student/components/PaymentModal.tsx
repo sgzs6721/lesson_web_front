@@ -82,12 +82,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [loadingGiftItems, setLoadingGiftItems] = useState(false);
   const [validityOptions, setValidityOptions] = useState<Constant[]>([]);
   const [loadingValidity, setLoadingValidity] = useState(false);
-  const watchedValidityMonths = Form.useWatch('validityMonths', form);
+  const watchedValidityPeriodId = Form.useWatch('validityPeriodId', form);
   const watchedAmount = Form.useWatch('amount', form);
   const selectedValidityLabel = useMemo(() => {
-    const match = validityOptions.find(opt => String(opt.id) === String(watchedValidityMonths));
+    const match = validityOptions.find(opt => String(opt.id) === String(watchedValidityPeriodId));
     return match?.constantValue || '-';
-  }, [watchedValidityMonths, validityOptions]);
+  }, [watchedValidityPeriodId, validityOptions]);
   const selectedValidityDisplay = useMemo(() => {
     if (!selectedValidityLabel || selectedValidityLabel === '-') return '-';
     return /月/.test(String(selectedValidityLabel)) ? String(selectedValidityLabel) : `${selectedValidityLabel} 个月`;
@@ -263,21 +263,16 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       }
       console.log('[PaymentModal] handleOk: Student data check passed.');
 
-      // 将有效期(月)转换为具体日期（按月数加到交易日期）
-      const months = Number(values.validityMonths || 0);
-      const baseDate = values.transactionDate || dayjs();
-      const validUntilDate = months > 0 ? baseDate.add(months, 'month') : baseDate;
-
       const paymentData = {
         studentId: Number(student.id), 
         courseId: Number(values.courseId), 
         paymentType: values.paymentType,
         amount: Number(values.amount), 
         paymentMethod: values.paymentMethod,
-        transactionDate: baseDate.format('YYYY-MM-DD'),
+        transactionDate: (values.transactionDate || dayjs()).format('YYYY-MM-DD'),
         courseHours: Number(values.regularClasses) || 0, 
         giftHours: Number(values.bonusClasses) || 0, 
-        validUntil: validUntilDate.format('YYYY-MM-DD'),
+        validityPeriodId: Number(values.validityPeriodId || 0),
         giftItems: values.giftItems || [], 
         notes: values.remarks 
       };
@@ -366,7 +361,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               layout="vertical"
               initialValues={{
                 transactionDate: dayjs(),
-                validityMonths: undefined,
+                validityPeriodId: undefined,
                 regularClasses: 0,
                 bonusClasses: 0,
               }}
@@ -517,7 +512,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 </Col>
                 <Col span={8}>
                   <Form.Item
-                    name="validityMonths"
+                    name="validityPeriodId"
                     label={
                       <span>
                         有效期(月)
@@ -534,7 +529,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                       options={validityOptions.map(opt => ({ value: opt.id, label: opt.constantValue }))}
                       getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
                       onChange={(val) => {
-                        const months = Number(val || 0);
+                        // 根据选中的有效期ID获取对应的月数
+                        const selectedOption = validityOptions.find(opt => String(opt.id) === String(val));
+                        const months = selectedOption ? Number(selectedOption.constantValue.replace(/[^\d]/g, '')) : 0;
                         const base = form.getFieldValue('transactionDate') || dayjs();
                         const date = months > 0 ? base.add(months, 'month') : base;
                         try { onValidUntilChange(date); } catch {}

@@ -601,7 +601,7 @@ export const student = {
     transactionDate: string;
     courseHours: number;
     giftHours: number;
-    validUntil: string;
+    validityPeriodId: number;
     giftItems?: any[];
     notes?: string;
   }): Promise<any> => {
