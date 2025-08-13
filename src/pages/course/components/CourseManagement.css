@@ -83,9 +83,21 @@
   justify-content: center;
   width: 18px;
   height: 18px;
+  background: transparent !important;
 }
-.gender-icon.male { color: #1677ff; }
-.gender-icon.female { color: #eb2f96; }
+.gender-icon.male { 
+  color: #1677ff; 
+  background: transparent !important;
+}
+.gender-icon.female { 
+  color: #eb2f96; 
+  background: transparent !important;
+}
+
+/* 确保Ant Design图标没有背景色 */
+.gender-icon .anticon {
+  background: transparent !important;
+}
 
 .enroll-student-phone {
   color: rgba(0,0,0,0.45);
