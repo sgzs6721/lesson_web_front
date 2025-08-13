@@ -407,13 +407,24 @@ export const getStudentColumns = (
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   lineHeight: '22px',
-                  display: 'inline-block',
                   maxWidth: '100%'
                 }} title={`${course.courseName || '-'} | ${course.coachName || '-'}`}>
-                  <span>{course.courseName || '-'}</span>
-                  <span style={{ margin: '0 6px', color: '#d9d9d9' }}>|</span>
-                  <span style={{ color: getCoachColor(course.coachName) }}>
-                    {course.coachName || '-'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, maxWidth: '100%' }}>
+                    <Tooltip title={isDisabled ? getAttendanceDisabledReason() : '打卡请假'}>
+                      <Button 
+                        type="link"
+                        icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
+                        size="small"
+                        onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
+                        disabled={isDisabled}
+                        style={{ padding: 0, margin: 0 }}
+                      />
+                    </Tooltip>
+                    <span>{course.courseName || '-'}</span>
+                    <span style={{ margin: '0 6px', color: '#d9d9d9' }}>|</span>
+                    <span style={{ color: getCoachColor(course.coachName) }}>
+                      {course.coachName || '-'}
+                    </span>
                   </span>
                 </div>
                 
@@ -467,18 +478,7 @@ export const getStudentColumns = (
                   justifyContent: 'center',
                   gap: '8px',
                 }}>
-                  {/* 打卡请假按钮 */}
-                  <Tooltip title={isDisabled ? getAttendanceDisabledReason() : "打卡请假"}>
-                    <Button 
-                      type="link"
-                      icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
-                      size="small"
-                      onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
-                      disabled={isDisabled}
-                      style={{ padding: '0', margin: '0' }}
-                    />
-                  </Tooltip>
-
+ 
                   {/* 课程记录按钮 */}
                   <Button 
                     type="link"

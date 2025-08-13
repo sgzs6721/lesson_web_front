@@ -278,7 +278,7 @@
 /* 课程信息网格布局 */
 .course-info-grid {
   display: grid;
-  grid-template-columns: 4px 80px minmax(160px, max-content) 85px 80px 1fr !important; /* 竖线 + 课程类型标签 + 课程名称|教练(自适应) + 课时 + 状态 + 操作 */
+  grid-template-columns: 4px 80px 220px 85px 80px 1fr !important; /* 竖线 + 课程类型标签 + 课程名称|教练(固定) + 课时 + 状态 + 操作 */
   column-gap: 16px !important; /* 统一16px间距 */
   align-items: center;
   width: 100% !important;
@@ -414,7 +414,7 @@
     min-width: 650px; /* 调整最小宽度适应新布局（课程名更宽） */
     width: 100% !important;
     display: grid;
-    grid-template-columns: 4px 80px minmax(160px, max-content) 85px 80px 1fr !important; /* 与基础样式保持一致 */
+    grid-template-columns: 4px 80px 220px 85px 80px 1fr !important; /* 与基础样式保持一致 */
     column-gap: 16px !important; /* 与基础样式保持一致 */
     position: relative;
     margin-right: 0;
