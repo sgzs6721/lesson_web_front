@@ -329,13 +329,13 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                 {processedCourses.map((course, index) => (
                   <Card 
                     key={course.studentCourseId || course.courseId || index} 
-                    bordered={false}
+                    variant="borderless"
                     style={{
                       marginBottom: index !== processedCourses.length - 1 ? 16 : 0,
                       borderRadius: '10px',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                     }}
-                    bodyStyle={{ padding: '20px 24px' }}
+                    styles={{ body: { padding: '20px 24px' } }}
                   >
                     <div style={{ marginBottom: 16 }}>
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
