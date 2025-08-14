@@ -213,7 +213,7 @@ export const useStudentData = () => {
   // 将前端搜索参数转换为API搜索参数
   const convertToApiSearchParams = (uiParams: StudentUISearchParams): StudentSearchParams => {
     const apiParams: StudentSearchParams = {
-      pageNum: currentPage,
+      pageNum: 1, // 过滤查询时重置为第1页
       pageSize: pageSize,
       // 与列表默认保持一致：按ID倒序
       sortField: 'id',
@@ -320,6 +320,9 @@ export const useStudentData = () => {
       const apiParams = convertToApiSearchParams(uiParams);
       // 添加校区ID
       apiParams.campusId = Number(currentCampusId);
+
+      // 过滤查询时重置页码为1
+      setCurrentPage(1);
 
       // 保存最近一次筛选条件（不保存分页字段）
       const { pageNum: _pn, pageSize: _ps, ...filtersOnly } = apiParams;

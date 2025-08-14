@@ -45,7 +45,7 @@ export const usePaymentData = () => {
       remark: '',
       operator: '系统',
       lessonType: apiRecord.lessonType,
-      lessonChange: apiRecord.lessonChange,
+      lessonChange: apiRecord.hours ? `${apiRecord.hours}课时` : (apiRecord.lessonChange || '-'),
       payType: apiRecord.payType,
     };
   };

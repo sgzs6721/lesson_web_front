@@ -554,7 +554,7 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
               listHeight={256}
               className="course-select"
               dropdownStyle={{ borderRadius: '8px' }}
-              disabled={!!(student?.courseId && student?.courseName)}
+              disabled={true}
             >
               {studentCourses.map(course => {
                 const courseId = course.id ? String(course.id) : '';

@@ -48,6 +48,7 @@ export interface PaymentRecordItem {
   student: string;
   course: string;
   amount: string;
+  hours?: number; // 课时数
   lessonType: string;
   lessonChange: string;
   paymentType: string;
