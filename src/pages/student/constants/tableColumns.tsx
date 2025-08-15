@@ -438,7 +438,25 @@ export const getStudentColumns = (
                         style={{ padding: 0, margin: 0 }}
                       />
                     </Tooltip>
-                    <span>{course.courseName || '-'}</span>
+                    <span style={{ 
+                      width: '84px', // 固定宽度为6个中文字符（每个中文字符约14px）
+                      display: 'inline-block',
+                      textAlign: 'left',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {(() => {
+                        const courseName = course.courseName || '-';
+                        if (courseName.length <= 6) {
+                          // 不足6个字符，用空格补齐
+                          return courseName + ' '.repeat(6 - courseName.length);
+                        } else {
+                          // 超过6个字符，显示前6个字符加省略号
+                          return courseName.substring(0, 6) + '…';
+                        }
+                      })()}
+                    </span>
                     <span style={{ margin: '0 6px', color: '#d9d9d9' }}>|</span>
                     <span style={{ color: getCoachColor(course.coachName) }}>
                       {course.coachName || '-'}
@@ -459,7 +477,18 @@ export const getStudentColumns = (
                 
                 {/* 状态 - 居中对齐，通过CSS控制 */}
                 <div>
-                  <Tooltip title={`有效期至: ${course.endDate ? dayjs(course.endDate).format('YYYY-MM-DD') : '未设置'}`}>
+                  <Tooltip title={(() => {
+                    const end = course.endDate;
+                    if (end) {
+                      return `有效期至: ${dayjs(end).format('YYYY-MM-DD')}`;
+                    }
+                    const raw = (course as any).validityPeriod ?? (course as any).validity ?? (course as any).expireType ?? (course as any).validityMonths ?? (course as any).expireMonths ?? '';
+                    const months = Number(String(raw).toString().replace(/[^\d]/g, ''));
+                    if (!isNaN(months) && months > 0) {
+                      return `有效期：${months}个月`;
+                    }
+                    return '有效期：未设置';
+                  })()}>
                     <Tag
                       style={{
                         height: '22px',
