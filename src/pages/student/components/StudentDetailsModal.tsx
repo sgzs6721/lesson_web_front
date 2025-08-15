@@ -472,7 +472,7 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                   let typeText = paymentType;
                   const upper = paymentType.toUpperCase();
                   if (upper === 'NEW' || paymentType === '新增') { typeColor = 'green'; typeText = '新增'; }
-                  else if (upper === 'RENEWAL' || upper === 'RENEW' || paymentType === '续费') { typeColor = 'blue'; typeText = '续费'; }
+                  else if (upper === 'RENEW' || paymentType === '续费') { typeColor = 'blue'; typeText = '续费'; }
                   else if (upper === 'MAKEUP' || upper === 'SUPPLEMENT' || paymentType === '补费') { typeColor = 'orange'; typeText = '补费'; }
                   else if (upper === 'REFUND' || paymentType === '退费') { typeColor = 'red'; typeText = '退费'; }
 

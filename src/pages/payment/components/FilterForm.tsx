@@ -71,16 +71,28 @@ const renderPaymentTypeTag = (props: CustomTagProps) => {
         padding: '0 6px',
         margin: '0 2px',
         fontSize: '12px',
-        maxWidth: '90%',
-        whiteSpace: 'nowrap'
+        maxWidth: 'none',
+        minWidth: '40px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        flexShrink: 0,
+        flexBasis: 'auto'
       }}
       title={tagTitle}
     >
-      <span style={{ whiteSpace: 'nowrap', marginRight: '4px' }}>
+      <span style={{ 
+        whiteSpace: 'nowrap', 
+        marginRight: '4px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        flex: 1,
+        minWidth: 0
+      }}>
         {label}
       </span>
       {closable && (
-        <span onClick={onClose} style={{ cursor: 'pointer', fontSize: '10px', color: '#999', lineHeight: 1 }}>
+        <span onClick={onClose} style={{ cursor: 'pointer', fontSize: '10px', color: '#999', lineHeight: 1, flexShrink: 0 }}>
           ×
         </span>
       )}
@@ -122,11 +134,13 @@ const renderCustomTag = (props: CustomTagProps) => {
         padding: '0 6px',
         margin: '0 2px',
         fontSize: '12px',
-        maxWidth: displayText.length <= 3 ? '40px' : '200px',
-        minWidth: displayText.length <= 3 ? '30px' : '80px',
+        maxWidth: 'none',
+        minWidth: '40px',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
-        textOverflow: 'ellipsis'
+        textOverflow: 'ellipsis',
+        flexShrink: 0,
+        flexBasis: 'auto'
       }}
       title={tagTitle}
     >
@@ -199,7 +213,7 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, co
                 options={courseOptions}
                 allowClear
                 style={{ width: '100%' }}
-                maxTagCount={3}
+                maxTagCount="responsive"
                 maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
                 tagRender={renderCustomTag}
                 getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
@@ -216,14 +230,14 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, co
                   width: '100%',
                   minHeight: '32px'
                 }}
-                maxTagCount={3}
+                maxTagCount="responsive"
                 maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
                 tagRender={renderPaymentTypeTag}
                 getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               >
                 <Option value="NEW">新增</Option>
                 <Option value="REFUND">退费</Option>
-                <Option value="RENEWAL">续费</Option>
+                <Option value="RENEW">续费</Option>
               </Select>
             </Form.Item>
           </Col>

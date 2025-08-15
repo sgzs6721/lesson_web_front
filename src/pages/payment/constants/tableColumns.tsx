@@ -34,7 +34,6 @@ const getPaymentTypeText = (paymentType: string): string => {
     case 'NEW':
     case '新增':
       return '新增';
-    case 'RENEWAL':
     case 'RENEW':
     case '续费':
       return '续费';

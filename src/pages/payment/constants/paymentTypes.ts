@@ -7,7 +7,7 @@ export const PAYMENT_STATUS = {
 
 export const PAYMENT_METHOD = {
   NEW: '新增',
-  RENEWAL: '续费',
+  RENEW: '续费',
   SUPPLEMENT: '补费',
   REFUND: '退费',
 };

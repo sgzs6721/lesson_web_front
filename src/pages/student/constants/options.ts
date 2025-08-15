@@ -53,7 +53,7 @@ export const weekdayOptions = [
 // 缴费类型选项
 export const paymentTypeOptions = [
   { value: 'NEW', label: '新报名' },
-  { value: 'RENEWAL', label: '续费' },
+  { value: 'RENEW', label: '续费' },
   { value: 'TRANSFER', label: '转课' },
 ];
 
