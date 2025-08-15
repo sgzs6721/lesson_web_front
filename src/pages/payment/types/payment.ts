@@ -15,6 +15,7 @@ export interface Payment {
   lessonType?: string;
   lessonChange?: string;
   payType?: string;
+  giftHours?: number; // 赠课课时
 }
 
 export type PaymentSearchParams = {
@@ -47,4 +48,6 @@ export interface PaymentFilterParams {
   endDate?: string;
   pageNum: number;
   pageSize: number;
+  sortField?: string; // 排序字段
+  sortOrder?: 'asc' | 'desc'; // 排序方向
 } 

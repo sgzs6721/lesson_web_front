@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Descriptions, Tag, Typography, Space } from 'antd';
+import { Modal, Descriptions, Tag, Typography, Space, Tooltip } from 'antd';
 import { 
   WechatOutlined, 
   AlipayOutlined, 
@@ -136,6 +136,50 @@ const getPayTypeIconAndText = (payType: string): React.ReactNode => {
   }
 };
 
+// 获取支付类型图标（仅图标，不包含文字）
+const getPayTypeIcon = (payType: string): React.ReactNode => {
+  switch (payType) {
+    case 'WECHAT':
+    case '微信支付':
+      return <WechatOutlined style={{ color: '#07C160', fontSize: '16px' }} />;
+    case 'CASH':
+    case '现金支付':
+      return <DollarOutlined style={{ color: '#faad14', fontSize: '16px' }} />;
+    case 'ALIPAY':
+    case '支付宝支付':
+      return <AlipayOutlined style={{ color: '#1677ff', fontSize: '16px' }} />;
+    case 'CARD':
+    case 'BANK_TRANSFER':
+    case '银行卡转账':
+    case '银行卡':
+      return <CreditCardOutlined style={{ color: '#722ed1', fontSize: '16px' }} />;
+    default:
+      return null;
+  }
+};
+
+// 获取支付类型中文文本
+const getPaymentMethodText = (payType: string): string => {
+  switch (payType) {
+    case 'WECHAT':
+    case '微信支付':
+      return '微信支付';
+    case 'CASH':
+    case '现金支付':
+      return '现金支付';
+    case 'ALIPAY':
+    case '支付宝支付':
+      return '支付宝支付';
+    case 'CARD':
+    case 'BANK_TRANSFER':
+    case '银行卡转账':
+    case '银行卡':
+      return '银行卡';
+    default:
+      return payType || '-';
+  }
+};
+
 const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({
   visible,
   payment,
@@ -159,12 +203,12 @@ const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({
         labelStyle={{ textAlign: 'center', width: '120px' }}
         contentStyle={{ textAlign: 'center' }}
       >
-        <Descriptions.Item label="日期">
-          {payment.date}
-        </Descriptions.Item>
-
         <Descriptions.Item label="学员">
           {payment.studentId ? `${payment.studentName} (${payment.studentId})` : payment.studentName}
+        </Descriptions.Item>
+
+        <Descriptions.Item label="日期">
+          {payment.date}
         </Descriptions.Item>
 
         <Descriptions.Item label="课程名称">
@@ -205,16 +249,25 @@ const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({
           </Tag>
         </Descriptions.Item>
 
+        <Descriptions.Item label="缴费类型">
+          {getPaymentTypeTag(payment.paymentType)}
+        </Descriptions.Item>
+
         <Descriptions.Item label="缴费金额">
-          <Text
-            style={{
-              color: getPaymentTypeText(payment.paymentType) === '退费' ? '#cf1322' : '#3f8600',
-              fontSize: '16px',
-              fontWeight: 'bold'
-            }}
-          >
-            ¥{payment.amount.toLocaleString('zh-CN')}
-          </Text>
+          <Space>
+            <Tooltip title={getPaymentMethodText(payment.payType || '')}>
+              {getPayTypeIcon(payment.payType || '')}
+            </Tooltip>
+            <Text
+              style={{
+                color: getPaymentTypeText(payment.paymentType) === '退费' ? '#cf1322' : '#3f8600',
+                fontSize: '16px',
+                fontWeight: 'bold'
+              }}
+            >
+              ¥{payment.amount.toLocaleString('zh-CN')}
+            </Text>
+          </Space>
         </Descriptions.Item>
 
         <Descriptions.Item label="增减课时">
@@ -230,12 +283,17 @@ const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({
           ) : '-'}
         </Descriptions.Item>
 
-        <Descriptions.Item label="缴费类型">
-          {getPaymentTypeTag(payment.paymentType)}
-        </Descriptions.Item>
-
-        <Descriptions.Item label="支付类型">
-          {getPayTypeIconAndText(payment.payType || '')}
+        <Descriptions.Item label="赠课">
+          {payment.giftHours && payment.giftHours > 0 ? (
+            <span
+              style={{
+                color: '#722ed1',
+                fontWeight: 'bold'
+              }}
+            >
+              {payment.giftHours}课时
+            </span>
+          ) : '-'}
         </Descriptions.Item>
 
         <Descriptions.Item label="备注" span={2}>

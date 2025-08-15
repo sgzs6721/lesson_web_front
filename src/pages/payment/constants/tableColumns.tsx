@@ -111,8 +111,8 @@ export const getTableColumns = (
     dataIndex: 'studentName',
     key: 'studentName',
     render: (text, record) => {
-      // 如果API没有返回studentId，只显示姓名
-      return record.studentId ? `${text} (${record.studentId})` : text;
+      // 只显示学员姓名，不重复显示
+      return text || '-';
     },
     align: 'center',
   },
@@ -186,22 +186,30 @@ export const getTableColumns = (
     },
   },
   {
-    title: <span style={{ whiteSpace: 'nowrap' }}>增减课时</span>,
+    title: <span style={{ whiteSpace: 'nowrap' }}>正课</span>,
     dataIndex: 'lessonChange',
     key: 'lessonChange',
     align: 'center',
     render: (lessonChange) => {
-      if (!lessonChange) return '-';
+      if (!lessonChange) return '0';
       
-      // 更精确地判断是否是负数
-      const isNegative = lessonChange.includes('-') || 
-                        (lessonChange.startsWith('-')) ||
-                        (parseFloat(lessonChange.replace(/[^\d.-]/g, '')) < 0);
+      // 提取数字部分
+      const number = parseFloat(lessonChange.replace(/[^\d.-]/g, ''));
+      if (isNaN(number)) return '0';
       
       // 使用更柔和的颜色，并取消加粗
-      const color = isNegative ? '#cf1322' : '#3f8600';
+      const color = number < 0 ? '#cf1322' : '#3f8600';
       
-      return <span style={{ color, fontWeight: 400 }}>{lessonChange}</span>;
+      return <span style={{ color, fontWeight: 400 }}>{number}</span>;
+    },
+  },
+  {
+    title: <span style={{ whiteSpace: 'nowrap' }}>赠课</span>,
+    dataIndex: 'giftHours',
+    key: 'giftHours',
+    align: 'center',
+    render: (giftHours) => {
+      return <span style={{ color: '#722ed1', fontWeight: 400 }}>{giftHours || 0}</span>;
     },
   },
   {

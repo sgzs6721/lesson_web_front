@@ -458,11 +458,12 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
               <div style={{ padding: '12px', color: '#8c8c8c', border: '1px dashed #f0f0f0', borderRadius: 8 }}>加载中...</div>
             ) : paymentRecords.length > 0 ? (
               <div style={{ border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr 1fr 1fr', background: '#fafafa', padding: '8px 12px', fontWeight: 600, color: '#555', textAlign: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr 1fr 1fr 1fr', background: '#fafafa', padding: '8px 12px', fontWeight: 600, color: '#555', textAlign: 'center' }}>
                   <div>缴费类型</div>
                   <div>缴费方式</div>
                   <div>缴费金额</div>
-                  <div>增减课时</div>
+                  <div>正课</div>
+                  <div>赠课</div>
                   <div>缴费日期</div>
                 </div>
                 {paymentRecords.map((p: any, idx: number) => {
@@ -480,13 +481,15 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                   const payType = String(p.payType || p.paymentMethod || '-');
                   const payIcon = getPayTypeIcon(payType);
 
-                  // 增减课时颜色（不加粗、颜色更柔和）
-                  const lessonChange = p.lessonChange || p.hours ? `${p.hours}课时` : (p.lessonChange || '-');
-                  const isNegative = typeof lessonChange === 'string' && (lessonChange.includes('-') || lessonChange.trim().startsWith('-'));
-                  const lessonColor = isNegative ? '#cf1322' : '#3f8600';
+                  // 正课课时（提取数字部分）
+                  const lessonHours = p.hours || parseFloat(String(p.lessonChange || '').replace(/[^\d.-]/g, '')) || 0;
+                  const lessonColor = lessonHours < 0 ? '#cf1322' : '#3f8600';
+                  
+                  // 赠课课时
+                  const giftHours = p.giftHours || p.giftedHours || 0;
 
                   return (
-                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr 1fr 1fr', padding: '10px 12px', borderTop: '1px solid #f5f5f5', fontSize: 14, color: '#262626', alignItems: 'center', textAlign: 'center' }}>
+                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr 1fr 1fr 1fr', padding: '10px 12px', borderTop: '1px solid #f5f5f5', fontSize: 14, color: '#262626', alignItems: 'center', textAlign: 'center' }}>
                       <div>
                         {typeText !== '-' ? (
                           <Tag 
@@ -506,7 +509,10 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                         {p.amount ? `¥${Number(p.amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}` : '-'}
                       </div>
                       <div style={{ color: lessonColor, fontWeight: 400 }}>
-                        {lessonChange}
+                        {lessonHours}
+                      </div>
+                      <div style={{ color: '#722ed1', fontWeight: 400 }}>
+                        {giftHours}
                       </div>
                       <div>{p.date || p.paymentTime || p.createdTime || '-'}</div>
                     </div>

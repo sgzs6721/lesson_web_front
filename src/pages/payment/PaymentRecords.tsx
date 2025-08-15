@@ -137,7 +137,7 @@ const PaymentRecords: React.FC = () => {
       amount: record.amount,
       transactionDate: (record as any).date ? dayjs((record as any).date) : ((record as any).transactionDate ? dayjs((record as any).transactionDate) : undefined),
       courseHours: parsedHours > 0 ? parsedHours : 0,
-      giftHours: 0,
+      giftHours: record.giftHours || 0,
       validityPeriodId: undefined,
       giftItems: [],
       notes: (record as any).remark || ''
@@ -149,16 +149,16 @@ const PaymentRecords: React.FC = () => {
     try {
       const values = await editForm.validateFields();
       
-      // 使用studentId作为ID
-      const studentId = currentPayment?.studentId;
-      if (!studentId) {
-        message.error('无法获取学员ID，请刷新页面后重试');
+      // 使用id作为记录ID
+      const recordId = currentPayment?.id;
+      if (!recordId) {
+        message.error('无法获取记录ID，请刷新页面后重试');
         return;
       }
       
       // 构建API请求参数
       const payload: UpdatePaymentRecordRequest = {
-        id: parseInt(studentId),
+        id: parseInt(recordId),
         paymentType: values.paymentType,
         amount: values.amount,
         courseHours: values.courseHours,
@@ -176,15 +176,9 @@ const PaymentRecords: React.FC = () => {
       message.success('缴费记录修改成功');
       setEditVisible(false);
       
-      // 刷新数据
-      filterData({
-        searchText: '',
-        selectedCourse: [],
-        searchPaymentMethod: [],
-        dateRange: null,
-        searchStatus: '',
-        searchPaymentType: '',
-      });
+      // 刷新数据，保持当前筛选条件
+      // 通过重新设置当前页面来触发数据刷新
+      handlePageChange(currentPage, pageSize);
     } catch (error) {
       console.error('更新缴费记录失败:', error);
       message.error('缴费记录修改失败，请重试');

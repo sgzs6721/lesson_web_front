@@ -33,10 +33,10 @@ export const usePaymentData = () => {
   // 将API返回的记录转换为本地格式
   const transformApiRecord = (apiRecord: PaymentRecordItem, index: number): Payment => {
     return {
-      id: `payment-${apiRecord.date}-${index}`,
+      id: String(apiRecord.id), // 直接使用API返回的id字段
       date: apiRecord.date || '',
       studentName: apiRecord.student || '',
-      studentId: apiRecord.student || '', // 使用student作为studentId
+      studentId: apiRecord.studentId || '', // 使用API返回的studentId字段
       course: apiRecord.course || '',
       amount: parseFloat(apiRecord.amount || '0'),
       paymentType: apiRecord.paymentType || '',
@@ -47,6 +47,7 @@ export const usePaymentData = () => {
       lessonType: apiRecord.lessonType,
       lessonChange: apiRecord.hours ? `${apiRecord.hours}课时` : (apiRecord.lessonChange || '-'),
       payType: apiRecord.payType,
+      giftHours: apiRecord.giftedHours || 0, // 添加赠课课时字段
     };
   };
 
@@ -59,6 +60,8 @@ export const usePaymentData = () => {
       pageNum: currentPage,
       pageSize: pageSize,
       campusId,
+      sortField: 'createdTime', // 默认按缴费时间排序
+      sortOrder: 'desc', // 默认降序排列
     };
 
     // 构建统计查询参数

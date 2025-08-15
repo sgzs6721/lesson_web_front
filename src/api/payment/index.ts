@@ -45,12 +45,16 @@ export interface PaymentListRequest {
   endDate?: string;
   pageNum: number;
   pageSize: number;
+  sortField?: string; // 排序字段
+  sortOrder?: 'asc' | 'desc'; // 排序方向
 }
 
 // 缴费记录项
 export interface PaymentRecordItem {
+  id: number; // 记录ID，用于update操作
   date: string;
   student: string;
+  studentId: string; // 学员ID
   course: string;
   amount: string;
   hours?: number; // 课时数
@@ -58,6 +62,7 @@ export interface PaymentRecordItem {
   lessonChange: string;
   paymentType: string;
   payType: string;
+  giftedHours?: number; // 赠课课时
   [key: string]: any;
 }
 
@@ -159,6 +164,8 @@ export async function getPaymentList(params: PaymentListRequest): Promise<Paymen
     if (params.endDate) queryParams.set('endDate', params.endDate);
     if (typeof params.pageNum === 'number') queryParams.set('pageNum', String(params.pageNum));
     if (typeof params.pageSize === 'number') queryParams.set('pageSize', String(params.pageSize));
+    if (params.sortField) queryParams.set('sortField', params.sortField);
+    if (params.sortOrder) queryParams.set('sortOrder', params.sortOrder);
 
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
 
