@@ -175,11 +175,11 @@ export const getTableColumns = (
     title: <span style={{ whiteSpace: 'nowrap' }}>缴费金额</span>,
     dataIndex: 'amount',
     key: 'amount',
-    align: 'left',
+    align: 'center',
     render: (amount, record) => {
       const payTypeIcon = getPayTypeIcon(record.payType || '');
       return (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           {payTypeIcon}
           <span>¥{amount.toLocaleString('zh-CN')}</span>
         </span>

@@ -13,6 +13,7 @@ import { getCourseSimpleList } from '@/api/course';
 import type { SimpleCourse } from '@/api/course/types';
 import { constants } from '@/api/constants';
 import type { Constant } from '@/api/constants/types';
+import { updatePaymentRecord, UpdatePaymentRecordRequest } from '@/api/payment';
 import dayjs from 'dayjs';
 import './payment.css';
 import './PaymentRecords.css';
@@ -147,15 +148,47 @@ const PaymentRecords: React.FC = () => {
   const handleEditOk = async () => {
     try {
       const values = await editForm.validateFields();
-      const payload = {
-        ...values,
-        transactionDate: values.transactionDate ? dayjs(values.transactionDate).format('YYYY-MM-DD') : undefined,
+      
+      // 使用studentId作为ID
+      const studentId = currentPayment?.studentId;
+      if (!studentId) {
+        message.error('无法获取学员ID，请刷新页面后重试');
+        return;
+      }
+      
+      // 构建API请求参数
+      const payload: UpdatePaymentRecordRequest = {
+        id: parseInt(studentId),
+        paymentType: values.paymentType,
+        amount: values.amount,
+        courseHours: values.courseHours,
+        validityPeriodId: values.validityPeriodId,
+        paymentMethod: values.paymentMethod,
+        transactionDate: values.transactionDate ? dayjs(values.transactionDate).format('YYYY-MM-DD') : '',
+        giftedHours: values.giftHours || 0,
+        giftIds: values.giftItems || [],
+        remarks: values.notes || '',
       };
-      // TODO: 调用编辑接口，这里先本地提示
-      console.log('编辑提交数据: ', payload);
-      message.success('修改已保存');
+      
+      // 调用更新API
+      await updatePaymentRecord(payload);
+      
+      message.success('缴费记录修改成功');
       setEditVisible(false);
-    } catch {}
+      
+      // 刷新数据
+      filterData({
+        searchText: '',
+        selectedCourse: [],
+        searchPaymentMethod: [],
+        dateRange: null,
+        searchStatus: '',
+        searchPaymentType: '',
+      });
+    } catch (error) {
+      console.error('更新缴费记录失败:', error);
+      message.error('缴费记录修改失败，请重试');
+    }
   };
   
   // 处理删除确认

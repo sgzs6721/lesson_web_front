@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { message } from 'antd';
 import dayjs from 'dayjs';
 import { Payment, PaymentSearchParams, PaymentStatistics, PaymentFilterParams } from '../types/payment';
-import { getPaymentStatistics, getPaymentList, PaymentRecordItem } from '@/api/payment';
+import { getPaymentStatistics, getPaymentList, PaymentRecordItem, PaymentStatRequest } from '@/api/payment';
 
 export const usePaymentData = () => {
   const [data, setData] = useState<Payment[]>([]);
@@ -36,7 +36,7 @@ export const usePaymentData = () => {
       id: `payment-${apiRecord.date}-${index}`,
       date: apiRecord.date || '',
       studentName: apiRecord.student || '',
-      studentId: '', // API中没有返回，设为空
+      studentId: apiRecord.student || '', // 使用student作为studentId
       course: apiRecord.course || '',
       amount: parseFloat(apiRecord.amount || '0'),
       paymentType: apiRecord.paymentType || '',
@@ -54,46 +54,60 @@ export const usePaymentData = () => {
   const fetchData = useCallback(async () => {
     const campusId = Number(localStorage.getItem('currentCampusId')) || 1;
     
-    const params: PaymentFilterParams = {
+    // 构建列表查询参数
+    const listParams: PaymentFilterParams = {
       pageNum: currentPage,
       pageSize: pageSize,
       campusId,
     };
 
+    // 构建统计查询参数
+    const statParams: PaymentStatRequest = {
+      campusId,
+    };
+
     if (searchParams.searchText) {
-      params.keyword = searchParams.searchText;
+      listParams.keyword = searchParams.searchText;
+      statParams.keyword = searchParams.searchText;
     }
     if (searchParams.selectedCourse) {
       if (Array.isArray(searchParams.selectedCourse) && searchParams.selectedCourse.length > 0) {
-        params.courseIds = searchParams.selectedCourse.map(id => Number(id));
+        listParams.courseIds = searchParams.selectedCourse.map(id => Number(id));
+        statParams.courseIds = searchParams.selectedCourse.map(id => Number(id));
       } else if (typeof searchParams.selectedCourse === 'string' && searchParams.selectedCourse) {
-        params.courseId = Number(searchParams.selectedCourse);
+        listParams.courseId = Number(searchParams.selectedCourse);
+        statParams.courseId = Number(searchParams.selectedCourse);
       }
     }
     if (searchParams.searchPaymentType) {
-      params.lessonType = searchParams.searchPaymentType;
+      listParams.lessonType = searchParams.searchPaymentType;
+      statParams.lessonType = searchParams.searchPaymentType;
     }
     if (searchParams.searchPaymentMethod) {
       if (Array.isArray(searchParams.searchPaymentMethod) && searchParams.searchPaymentMethod.length > 0) {
-        params.paymentTypes = searchParams.searchPaymentMethod;
+        listParams.paymentTypes = searchParams.searchPaymentMethod;
+        statParams.paymentTypes = searchParams.searchPaymentMethod;
       } else if (typeof searchParams.searchPaymentMethod === 'string' && searchParams.searchPaymentMethod) {
-        params.paymentType = searchParams.searchPaymentMethod;
+        listParams.paymentType = searchParams.searchPaymentMethod;
+        statParams.paymentType = searchParams.searchPaymentMethod;
       }
     }
     if (searchParams.dateRange?.[0] && searchParams.dateRange?.[1]) {
-      params.startDate = searchParams.dateRange[0].format('YYYY-MM-DD');
-      params.endDate = searchParams.dateRange[1].format('YYYY-MM-DD');
+      listParams.startDate = searchParams.dateRange[0].format('YYYY-MM-DD');
+      listParams.endDate = searchParams.dateRange[1].format('YYYY-MM-DD');
+      statParams.startDate = searchParams.dateRange[0].format('YYYY-MM-DD');
+      statParams.endDate = searchParams.dateRange[1].format('YYYY-MM-DD');
     }
     
     // 生成参数的唯一标识，避免相同参数重复请求
-    const paramsKey = JSON.stringify(params);
+    const paramsKey = JSON.stringify({ listParams, statParams });
     if (lastFetchParams.current === paramsKey || isLoadingRef.current) {
       return;
     }
     lastFetchParams.current = paramsKey;
     isLoadingRef.current = true;
 
-    console.log('开始获取缴费数据，参数:', params);
+    console.log('开始获取缴费数据，列表参数:', listParams, '统计参数:', statParams);
 
     try {
       setLoading(true);
@@ -101,8 +115,8 @@ export const usePaymentData = () => {
 
       // 并行请求两个API
       const [listResponse, statResponse] = await Promise.all([
-        getPaymentList(params),
-        getPaymentStatistics(params)
+        getPaymentList(listParams),
+        getPaymentStatistics(statParams)
       ]);
 
       // 处理列表数据
