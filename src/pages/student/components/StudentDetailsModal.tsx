@@ -11,9 +11,12 @@ import {
   EnvironmentOutlined, 
   IdcardOutlined,
   CalendarOutlined,
-  AuditOutlined
+  AuditOutlined,
+  TransactionOutlined
 } from '@ant-design/icons';
 import { getStatusInfo } from '@/pages/student/utils/student';
+import { getPaymentList } from '@/api/payment';
+import { getPayTypeIcon } from '@/pages/payment/constants/tableColumns';
 
 const { Title, Text } = Typography;
 
@@ -72,6 +75,8 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
   onCancel
 }) => {
   const [processedCourses, setProcessedCourses] = useState<ListCourse[]>([]);
+  const [paymentRecords, setPaymentRecords] = useState<any[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState<boolean>(false);
 
   // 处理课程数据，解析fixedSchedule
   useEffect(() => {
@@ -120,6 +125,33 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
       setProcessedCourses([]);
     }
   }, [student]);
+
+  // 打开时拉取该学员的缴费记录
+  useEffect(() => {
+    const fetchPayments = async () => {
+      if (!visible || !student || !student.id) {
+        setPaymentRecords([]);
+        return;
+      }
+      try {
+        setLoadingPayments(true);
+        const campusId = Number(localStorage.getItem('currentCampusId')) || 1;
+        const res = await getPaymentList({
+          studentId: Number(student.id),
+          campusId,
+          pageNum: 1,
+          pageSize: 20,
+        } as any);
+        const list = Array.isArray(res.list) ? res.list : [];
+        setPaymentRecords(list);
+      } catch (e) {
+        setPaymentRecords([]);
+      } finally {
+        setLoadingPayments(false);
+      }
+    };
+    fetchPayments();
+  }, [visible, student]);
 
   // 处理不同数据源的状态值
   const getStatus = () => {
@@ -298,9 +330,14 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                       {gender === 'MALE' ? <span style={{ color: '#1890ff', marginRight: 6, fontSize: '14px' }}>♂</span> : <span style={{ color: '#eb2f96', marginRight: 6, fontSize: '14px' }}>♀</span>}
                       {ageText}
                     </Text>
-                    <Text style={{ fontSize: '13px', display: 'flex', alignItems: 'center', color: '#555' }}>
+                    <Text style={{ fontSize: '13px', display: 'flex', alignItems: 'center', color: '#555', marginRight: 16 }}>
                       <PhoneOutlined style={{ marginRight: 6 }} />
                       {getPhone()}
+                    </Text>
+                    {/* 顶部校区信息 */}
+                    <Text style={{ fontSize: '13px', display: 'flex', alignItems: 'center', color: '#555' }}>
+                      <EnvironmentOutlined style={{ marginRight: 6 }} />
+                      {student.campusName || '-'}
                     </Text>
                   </div>
                 </div>
@@ -326,35 +363,51 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                   所有课程
                 </div>
                 
+                <Row gutter={[16, 16]}>
                 {processedCourses.map((course, index) => (
-                  <Card 
-                    key={course.studentCourseId || course.courseId || index} 
-                    variant="borderless"
-                    style={{
-                      marginBottom: index !== processedCourses.length - 1 ? 16 : 0,
-                      borderRadius: '10px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                    }}
-                    styles={{ body: { padding: '20px 24px' } }}
-                  >
-                    <div style={{ marginBottom: 16 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <span 
-                            style={{ 
-                              fontSize: '16px', 
-                              fontWeight: '600',
-                              marginRight: 16,
-                              color: '#262626'
-                            }}
-                          >
-                            {('courseName' in course) ? course.courseName : `课程${course.courseId}`}
-                          </span>
+                  <Col span={12} key={course.studentCourseId || course.courseId || index}>
+                    <Card 
+                      variant="borderless"
+                      style={{
+                        borderRadius: '10px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                      }}
+                      styles={{ body: { padding: '20px 24px' } }}
+                    >
+                      <div style={{ marginBottom: 16 }}>
+                        {/* 第一行：课程名称 */}
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span 
+                              style={{ 
+                                fontSize: '16px', 
+                                fontWeight: '600',
+                                marginRight: 8,
+                                color: '#1d39c4'
+                              }}
+                            >
+                              {('courseName' in course) ? course.courseName : `课程${course.courseId}`}
+                            </span>
+                          </div>
+                          <div>
+                            {(() => {
+                              const info = getStatusInfo(course.status || 'STUDYING');
+                              return (
+                                <Tag color={info.color} style={{ height: 22, display: 'inline-flex', alignItems: 'center' }}>
+                                  {info.text}
+                                </Tag>
+                              );
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* 第二行：课程类型标签 + 教练 + 课时信息 */}
+                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
                           <Tag 
                             color='blue' 
                             style={{ 
                               fontSize: '13px', 
-                              marginRight: 10, 
+                              marginRight: 12, 
                               padding: '1px 10px', 
                               borderRadius: '4px',
                               fontWeight: '500'
@@ -362,260 +415,103 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                           >
                             {('courseTypeName' in course) ? course.courseTypeName : '标准课程'}
                           </Tag>
-                          
+
+                          {/* 教练信息紧跟在标签右侧（取消加粗） */}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', color: '#595959', marginRight: 16 }}>
+                            <AuditOutlined style={{ fontSize: '14px', color: '#8c8c8c', marginRight: 8 }} />
+                            <Text type="secondary" style={{ marginRight: 8 }}>教练:</Text>
+                            <Text style={{ color: '#1d39c4', fontWeight: 400 }}>{('coachName' in course) ? course.coachName : '-'}</Text>
+                          </span>
+
+                          {/* 课时信息（右对齐 + 新样式） */}
                           {('remainingHours' in course && course.remainingHours !== undefined) && (
                             <span style={{ 
-                              display: 'flex',
+                              display: 'inline-flex',
                               alignItems: 'center',
-                              color: '#595959',
-                              fontWeight: 'bold',
+                              marginLeft: 'auto',
+                              color: '#8c8c8c',
                               fontSize: '14px',
-                              marginRight: 10,
-                              backgroundColor: '#f0f0f0',
-                              padding: '2px 8px',
-                              borderRadius: '4px'
+                              fontWeight: 400
                             }}>
-                              <ClockCircleOutlined style={{ fontSize: '14px', color: '#8c8c8c', marginRight: 4 }} />
+                              <ClockCircleOutlined style={{ fontSize: '14px', color: '#bfbfbf', marginRight: 6 }} />
                               {course.remainingHours}/{('totalHours' in course) ? course.totalHours || 0 : 0}课时
                             </span>
                           )}
                         </div>
-                        
-                        <div>
-                          {(() => {
-                            // 处理状态展示
-                            const statusUpperCase = (course.status || '').toUpperCase();
-                            const statusColor = statusColorMap[statusUpperCase] || '#d9d9d9';
-                            const statusText = statusTextMap[statusUpperCase] || (course.status || '未知');
-                            
-                            // 根据不同状态设置不同样式
-                            switch (statusUpperCase) {
-                              case 'GRADUATED':
-                                return (
-                                  <Tag 
-                                    color="#1890ff" 
-                                    style={{ 
-                                      fontSize: '13px', 
-                                      padding: '1px 10px', 
-                                      borderRadius: '4px',
-                                      fontWeight: '500'
-                                    }}
-                                  >
-                                    {statusText}
-                                  </Tag>
-                                );
-                              case 'EXPIRED':
-                                return (
-                                  <Tag 
-                                    color="#ff4d4f" 
-                                    style={{ 
-                                      fontSize: '13px', 
-                                      padding: '1px 10px', 
-                                      borderRadius: '4px',
-                                      fontWeight: '500'
-                                    }}
-                                  >
-                                    {statusText}
-                                  </Tag>
-                                );
-                              case 'WAITING_PAYMENT':
-                                return (
-                                  <Tag 
-                                    color="#fa8c16" 
-                                    style={{ 
-                                      fontSize: '13px', 
-                                      padding: '1px 10px', 
-                                      borderRadius: '4px',
-                                      fontWeight: '500'
-                                    }}
-                                  >
-                                    {statusText}
-                                  </Tag>
-                                );
-                              case 'WAITING_CLASS':
-                                return (
-                                  <Tag 
-                                    color="#722ed1" 
-                                    style={{ 
-                                      fontSize: '13px', 
-                                      padding: '1px 10px', 
-                                      borderRadius: '4px',
-                                      fontWeight: '500'
-                                    }}
-                                  >
-                                    {statusText}
-                                  </Tag>
-                                );
-                              case 'WAITING_RENEWAL':
-                                return (
-                                  <Tag 
-                                    color="#13c2c2" 
-                                    style={{ 
-                                      fontSize: '13px', 
-                                      padding: '1px 10px', 
-                                      borderRadius: '4px',
-                                      fontWeight: '500'
-                                    }}
-                                  >
-                                    {statusText}
-                                  </Tag>
-                                );
-                              case 'REFUNDED':
-                              return (
-                                <Tag 
-                                    color="#f5222d" 
-                                  style={{ 
-                                    fontSize: '13px', 
-                                    padding: '1px 10px', 
-                                    borderRadius: '4px',
-                                    fontWeight: '500'
-                                  }}
-                                >
-                                  {statusText}
-                                </Tag>
-                              );
-                              default:
-                            return (
-                              <Tag 
-                                color={statusColor} 
-                                style={{ 
-                                  fontSize: '13px', 
-                                  padding: '1px 10px', 
-                                  borderRadius: '4px',
-                                  fontWeight: '500'
-                                }}
-                              >
-                                {statusText}
-                              </Tag>
-                            );
-                            }
-                          })()}
-                        </div>
                       </div>
                       
-                      <Row gutter={[24, 16]} style={{ fontSize: '14px' }}>
-                        <Col span={12}>
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <AuditOutlined style={{ fontSize: '14px', color: '#8c8c8c', marginRight: 8 }} />
-                            <Text type="secondary" style={{ marginRight: 8 }}>教练:</Text>
-                            <Text strong>{('coachName' in course) ? course.coachName : '-'}</Text>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <EnvironmentOutlined style={{ fontSize: '14px', color: '#8c8c8c', marginRight: 8 }} />
-                            <Text type="secondary" style={{ marginRight: 8 }}>校区:</Text>
-                            <Text strong>{student.campusName || '-'}</Text>
-                          </div>
-                        </Col>
-                      </Row>
-                    </div>
-                    
-                    {(course.fixedScheduleTimes && course.fixedScheduleTimes.length > 0) && (
-                      <div style={{ marginTop: 16 }}>
-                        <div 
-                          style={{ 
-                            borderTop: '1px solid #f0f0f0',
-                            paddingTop: 16,
-                            display: 'flex',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <Text style={{ fontSize: '12px', fontWeight: '500', color: '#262626', minWidth: '70px', marginRight: '10px' }}>
-                            固定排课:
-                          </Text>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ 
-                              display: 'flex', 
-                              flexWrap: 'wrap', 
-                              margin: '-5px',
-                              justifyContent: 'flex-start'
-                            }}>
-                             {course.fixedScheduleTimes?.map((time: ScheduleTimeItem, timeIndex: number) => {
-                               const weekdayStyle = weekdayColorMap[time.weekday] || {bg: '#f5f5f5', border: '#d9d9d9', text: '#595959'};
-                               return (
-                                 <div 
-                                   key={timeIndex} 
-                                   style={{ 
-                                     padding: '5px',
-                                     width: '48%',
-                                     minWidth: '220px',
-                                     boxSizing: 'border-box'
-                                   }}
-                                 >
-                                   <div style={{
-                                     display: 'flex',
-                                     alignItems: 'center',
-                                     width: '100%',
-                                     height: '28px',
-                                     backgroundColor: '#fff',
-                                     borderRadius: '4px',
-                                     border: `1px solid ${weekdayStyle.border}`,
-                                     padding: '0',
-                                     overflow: 'hidden',
-                                     boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
-                                   }}>
-                                     <div
-                                       style={{
-                                         color: weekdayStyle.text,
-                                         fontWeight: '500',
-                                         backgroundColor: weekdayStyle.bg,
-                                         padding: '0',
-                                         margin: '0',
-                                         height: '100%',
-                                         display: 'flex',
-                                         alignItems: 'center',
-                                         justifyContent: 'center',
-                                         fontSize: '12px',
-                                         borderRight: `1px solid ${weekdayStyle.border}`,
-                                         minWidth: '70px'
-                                       }}
-                                     >
-                                       星期{time.weekday}
-                                     </div>
-                                     <div style={{ 
-                                       display: 'flex', 
-                                       alignItems: 'center',
-                                       padding: '0 12px',
-                                       flex: 1
-                                     }}>
-                                       <ClockCircleOutlined style={{ fontSize: '12px', color: '#8c8c8c', marginRight: '6px' }} />
-                                       <span style={{ fontWeight: '500', color: '#555', fontSize: '12px' }}>{time.from} - {time.to}</span>
-                                     </div>
-                                   </div>
-                                 </div>
-                               );
-                             })}
-                           </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </Card>
+                    </Card>
+                  </Col>
                 ))}
+                </Row>
               </Col>
             </Row>
           )}
 
           {/* 缴费记录 */}
           <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>缴费记录</div>
-            {student && Array.isArray((student as any).payments) && (student as any).payments.length > 0 ? (
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <TransactionOutlined style={{ color: '#52c41a' }} />
+              缴费记录
+            </div>
+            {loadingPayments ? (
+              <div style={{ padding: '12px', color: '#8c8c8c', border: '1px dashed #f0f0f0', borderRadius: 8 }}>加载中...</div>
+            ) : paymentRecords.length > 0 ? (
               <div style={{ border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: '#fafafa', padding: '8px 12px', fontWeight: 600, color: '#555' }}>
-                  <div>类型</div>
-                  <div>方式</div>
-                  <div>金额</div>
-                  <div>时间</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr 1fr 1fr', background: '#fafafa', padding: '8px 12px', fontWeight: 600, color: '#555', textAlign: 'center' }}>
+                  <div>缴费类型</div>
+                  <div>缴费方式</div>
+                  <div>缴费金额</div>
+                  <div>增减课时</div>
+                  <div>缴费日期</div>
                 </div>
-                {(student as any).payments.map((p: any, idx: number) => (
-                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', padding: '10px 12px', borderTop: '1px solid #f5f5f5', fontSize: 14, color: '#262626' }}>
-                    <div>{p.paymentType || '-'}</div>
-                    <div>{p.paymentMethod || '-'}</div>
-                    <div>{typeof p.amount === 'number' ? `¥${p.amount}` : (p.amount || '-')}</div>
-                    <div>{p.paymentTime || p.createdTime || '-'}</div>
-                  </div>
-                ))}
+                {paymentRecords.map((p: any, idx: number) => {
+                  // 类型标签
+                  const paymentType = String(p.paymentType || '-');
+                  let typeColor = 'default';
+                  let typeText = paymentType;
+                  const upper = paymentType.toUpperCase();
+                  if (upper === 'NEW' || paymentType === '新增') { typeColor = 'green'; typeText = '新增'; }
+                  else if (upper === 'RENEWAL' || upper === 'RENEW' || paymentType === '续费') { typeColor = 'blue'; typeText = '续费'; }
+                  else if (upper === 'MAKEUP' || upper === 'SUPPLEMENT' || paymentType === '补费') { typeColor = 'orange'; typeText = '补费'; }
+                  else if (upper === 'REFUND' || paymentType === '退费') { typeColor = 'red'; typeText = '退费'; }
+
+                  // 支付方式图标（与列表页一致）
+                  const payType = String(p.payType || p.paymentMethod || '-');
+                  const payIcon = getPayTypeIcon(payType);
+
+                  // 增减课时颜色（不加粗、颜色更柔和）
+                  const lessonChange = p.lessonChange || p.hours ? `${p.hours}课时` : (p.lessonChange || '-');
+                  const isNegative = typeof lessonChange === 'string' && (lessonChange.includes('-') || lessonChange.trim().startsWith('-'));
+                  const lessonColor = isNegative ? '#cf1322' : '#3f8600';
+
+                  return (
+                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr 1fr 1fr', padding: '10px 12px', borderTop: '1px solid #f5f5f5', fontSize: 14, color: '#262626', alignItems: 'center', textAlign: 'center' }}>
+                      <div>
+                        {typeText !== '-' ? (
+                          <Tag 
+                            color={typeColor as any}
+                            style={{ minWidth: 80, textAlign: 'center', margin: 0 }}
+                          >
+                            {typeText}
+                          </Tag>
+                        ) : '-'}
+                      </div>
+                      <div>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                          {payIcon}
+                        </span>
+                      </div>
+                      <div>
+                        {p.amount ? `¥${Number(p.amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}` : '-'}
+                      </div>
+                      <div style={{ color: lessonColor, fontWeight: 400 }}>
+                        {lessonChange}
+                      </div>
+                      <div>{p.date || p.paymentTime || p.createdTime || '-'}</div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div style={{ padding: '12px', color: '#8c8c8c', border: '1px dashed #f0f0f0', borderRadius: 8 }}>暂无缴费记录</div>

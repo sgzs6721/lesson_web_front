@@ -12,6 +12,7 @@ interface PaymentTableProps {
   pageSize?: number;
   onViewReceipt: (record: Payment) => void;
   onDelete: (id: string) => void;
+  onEdit?: (record: Payment) => void;
   onPageChange?: (page: number, pageSize: number) => void;
 }
 
@@ -23,9 +24,10 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
   pageSize = 10,
   onViewReceipt,
   onDelete,
+  onEdit,
   onPageChange
 }) => {
-  const columns = getTableColumns(onViewReceipt, onDelete);
+  const columns = getTableColumns(onViewReceipt, onDelete, onEdit);
   
   return (
     <>

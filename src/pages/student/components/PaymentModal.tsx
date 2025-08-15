@@ -105,6 +105,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     return coursesList.find(course => String(course.id) === String(selectedCourse)) || null;
   }, [coursesList, selectedCourse]);
 
+  // 从学员的课程明细中获取当前选中课程的完整信息（包含 totalHours 等）
+  const selectedApiCourseInfo = useMemo(() => {
+    if (!student || !student.courses || student.courses.length === 0 || !selectedCourse) {
+      return null;
+    }
+    return student.courses.find(course => String(course.courseId) === String(selectedCourse)) || null;
+  }, [student, selectedCourse]);
+
   useEffect(() => {
     if (selectedCourseInfo && selectedCourseInfo.type) {
       form.setFieldValue('courseType', selectedCourseInfo.type);
@@ -424,7 +432,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                       getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
                     >
                       {paymentTypeOptions.map(option => (
-                        <Option key={option.value} value={option.value}>{option.label}</Option>
+                        <Option key={option.value} value={option.value} disabled={option.value === 'NEW' && Number((selectedApiCourseInfo && selectedApiCourseInfo.totalHours) || 0) !== 0}>{option.label}</Option>
                       ))}
                     </Select>
                   </Form.Item>

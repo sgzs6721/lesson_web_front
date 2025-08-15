@@ -150,6 +150,52 @@
   flex-wrap: nowrap !important;
 }
 
+/* single-line select to avoid multi-row height */
+.single-line-select .ant-select-selector {
+  min-height: 32px !important;
+  height: 32px !important;
+  padding: 0 11px !important;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative !important;
+}
+.single-line-select.ant-select-multiple .ant-select-selector {
+  min-height: 32px !important;
+  height: 32px !important;
+}
+.single-line-select .ant-select-selection-overflow {
+  flex-wrap: nowrap !important;
+}
+.single-line-select .ant-select-selection-search-input {
+  height: 30px !important;
+}
+.single-line-select .ant-select-selection-placeholder {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  transform: none !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  pointer-events: none;
+}
+.single-line-select .ant-select-selection-item {
+  max-width: 120px;
+  line-height: 22px !important;
+}
+.single-line-select .ant-select-selection-item-content {
+  line-height: 22px !important;
+}
+
+/* 调整编辑模态框底部空白，仅作用于该模态框 */
+.payment-edit-modal .ant-modal-body {
+  padding-bottom: 12px !important;
+}
+
 /* 响应式布局 */
 @media (max-width: 1200px) {
   .payment-search-bar .ant-row {

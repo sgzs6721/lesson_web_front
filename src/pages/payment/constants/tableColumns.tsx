@@ -7,7 +7,8 @@ import {
   WechatOutlined,
   AlipayOutlined,
   CreditCardOutlined,
-  DollarOutlined
+  DollarOutlined,
+  EditOutlined
 } from '@ant-design/icons';
 import { Payment } from '../types/payment';
 
@@ -49,8 +50,8 @@ const getPaymentTypeText = (paymentType: string): string => {
   }
 };
 
-// 获取支付类型图标
-const getPayTypeIcon = (payType: string): React.ReactNode => {
+// 获取支付类型图标（导出以便复用）
+export const getPayTypeIcon = (payType: string): React.ReactNode => {
   let icon: React.ReactNode;
   let color: string;
   let title: string;
@@ -97,7 +98,8 @@ const getPayTypeIcon = (payType: string): React.ReactNode => {
 
 export const getTableColumns = (
   handleReceipt: (record: Payment) => void,
-  showDeleteConfirm: (id: string) => void
+  showDeleteConfirm: (id: string) => void,
+  handleEdit?: (record: Payment) => void
 ): ColumnsType<Payment> => [
   {
     title: <span style={{ whiteSpace: 'nowrap' }}>日期</span>,
@@ -173,11 +175,11 @@ export const getTableColumns = (
     title: <span style={{ whiteSpace: 'nowrap' }}>缴费金额</span>,
     dataIndex: 'amount',
     key: 'amount',
-    align: 'center',
+    align: 'left',
     render: (amount, record) => {
       const payTypeIcon = getPayTypeIcon(record.payType || '');
       return (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px' }}>
           {payTypeIcon}
           <span>¥{amount.toLocaleString('zh-CN')}</span>
         </span>
@@ -197,9 +199,10 @@ export const getTableColumns = (
                         (lessonChange.startsWith('-')) ||
                         (parseFloat(lessonChange.replace(/[^\d.-]/g, '')) < 0);
       
-      const color = isNegative ? '#ff4d4f' : '#52c41a'; // 红色或绿色
+      // 使用更柔和的颜色，并取消加粗
+      const color = isNegative ? '#cf1322' : '#3f8600';
       
-      return <span style={{ color, fontWeight: 'bold' }}>{lessonChange}</span>;
+      return <span style={{ color, fontWeight: 400 }}>{lessonChange}</span>;
     },
   },
   {
@@ -262,7 +265,16 @@ export const getTableColumns = (
             onClick={() => handleReceipt(record)}
           />
         </Tooltip>
-        <Tooltip title="删除">
+        {handleEdit && (
+          <Tooltip title="编辑">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+            />
+          </Tooltip>
+        )}
+        <Tooltip title="删除记录">
           <Button
             type="text"
             danger
