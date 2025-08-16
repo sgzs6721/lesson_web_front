@@ -1,9 +1,8 @@
 import { Campus, CampusCreateParams, CampusQueryParams, CampusListResponse, CampusDetailResponse, CampusCreateResponse } from './types';
 import { PaginationParams, PaginatedResponse } from '../types';
-import { mockApiResponse, mockCampuses, mockPaginatedResponse } from './mock';
 
 // Import shared config
-import { request, USE_MOCK } from '../config';
+import { request } from '../config';
 
 // API Path Constants
 const CAMPUS_API_PATHS = {
@@ -20,33 +19,6 @@ const CAMPUS_API_PATHS = {
 export const campus = {
   // 获取校区列表
   getList: async (params?: CampusQueryParams): Promise<PaginatedResponse<Campus>> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const { pageNum = 1, pageSize = 10 } = params || {};
-      const start = (pageNum - 1) * pageSize;
-      const end = start + pageSize;
-
-      // 过滤数据
-      let filteredCampuses = [...mockCampuses];
-      if (params?.keyword) {
-        const keyword = params.keyword.toLowerCase();
-        filteredCampuses = filteredCampuses.filter(campus =>
-          campus.name.toLowerCase().includes(keyword) ||
-          campus.address.toLowerCase().includes(keyword) ||
-          (campus.phone ? campus.phone.includes(keyword) : false)
-        );
-      }
-
-      if (params?.status) {
-        filteredCampuses = filteredCampuses.filter(campus =>
-          campus.status === params.status
-        );
-      }
-
-      const list = filteredCampuses.slice(start, end);
-      const response = mockPaginatedResponse(list, pageNum, pageSize, filteredCampuses.length);
-      return response.data;
-    }
 
     // 构建查询参数
     const queryParams = new URLSearchParams();
@@ -61,14 +33,6 @@ export const campus = {
 
   // 获取校区详情
   getDetail: async (id: string): Promise<Campus> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const campus = mockCampuses.find(c => c.id === id);
-      if (!campus) {
-        throw new Error('校区不存在');
-      }
-      return campus;
-    }
     // 调用真实API获取校区详情
     console.log(`调用校区详情接口: ${CAMPUS_API_PATHS.DETAIL(id)}`);
     const response = await request(`${CAMPUS_API_PATHS.DETAIL(id)}`);
@@ -87,20 +51,6 @@ export const campus = {
 
   // 添加校区
   create: async (data: CampusCreateParams): Promise<string> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const newId = String(mockCampuses.length + 1);
-      const newCampus: Campus = {
-        ...data,
-        id: newId,
-        status: data.status || 'OPERATING',
-        studentCount: 0,
-        coachCount: 0,
-        courseCount: 0
-      };
-      mockCampuses.push(newCampus);
-      return newId;
-    }
 
     // 打印请求数据，用于调试
     console.log('API调用前的校区数据:', data);
@@ -121,15 +71,6 @@ export const campus = {
 
   // 更新校区
   update: async (id: string, data: Partial<Campus>): Promise<null> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const index = mockCampuses.findIndex(c => c.id === id);
-      if (index === -1) {
-        throw new Error('校区不存在');
-      }
-      mockCampuses[index] = { ...mockCampuses[index], ...data };
-      return null;
-    }
     // 将id包含在请求体中
     const updateData = {
       id,
@@ -143,15 +84,6 @@ export const campus = {
 
   // 删除校区
   delete: async (id: string): Promise<null> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 600));
-      const index = mockCampuses.findIndex(c => c.id === id);
-      if (index === -1) {
-        throw new Error('校区不存在');
-      }
-      mockCampuses.splice(index, 1);
-      return null;
-    }
     // 使用POST方法和查询参数
     return request(`${CAMPUS_API_PATHS.DELETE(id)}`, {
       method: 'POST'
@@ -160,15 +92,6 @@ export const campus = {
 
   // 更新校区状态
   updateStatus: async (id: string, status: 'OPERATING' | 'CLOSED'): Promise<null> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const index = mockCampuses.findIndex(c => c.id === id);
-      if (index === -1) {
-        throw new Error('校区不存在');
-      }
-      mockCampuses[index].status = status;
-      return null;
-    }
     // 使用查询参数而不是请求体
     return request(CAMPUS_API_PATHS.UPDATE_STATUS(id, status), {
       method: 'POST'
@@ -177,22 +100,6 @@ export const campus = {
 
   // 获取校区简单列表
   getSimpleList: async (): Promise<{id: number, name: string, address: string, status: string}[]> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      // 先按id排序，然后转换为简单列表格式
-      return mockCampuses
-        .sort((a, b) => {
-          const idA = typeof a.id === 'string' ? parseInt(a.id) : a.id;
-          const idB = typeof b.id === 'string' ? parseInt(b.id) : b.id;
-          return idA - idB;
-        })
-        .map(campus => ({
-          id: typeof campus.id === 'string' ? parseInt(campus.id) : campus.id,
-          name: campus.name,
-          address: campus.address,
-          status: campus.status
-        }));
-    }
 
     // 调用真实API获取校区简单列表
     console.log('调用校区简单列表接口:', CAMPUS_API_PATHS.SIMPLE_LIST);

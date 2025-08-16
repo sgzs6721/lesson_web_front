@@ -131,7 +131,7 @@ const ClassRecordModal: React.FC<ClassRecordModalProps> = ({
       onCancel={onCancel}
       footer={null} // 一般记录查看不需要确认按钮
       width={800} // 可能需要稍微加宽 Modal 以容纳新列
-      destroyOnClose
+      destroyOnHidden
       centered
       className="class-record-modal"
     >

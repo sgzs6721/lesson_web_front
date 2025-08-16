@@ -20,14 +20,8 @@ import {
 import { Student } from '@/pages/student/types/student';
 import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
 // 修改导入，确保使用正确类型
-import { mockApiResponse, mockClassRecords, mockPaymentRecords, mockPaginatedResponse } from './mock';
-// 使用单独的变量存储mock数据，避免类型不兼容
-import { mockStudents as mockUIStudents } from './mock';
-// 将mock数据强制类型转换
-const mockStudents = mockUIStudents as unknown as Student[];
-
 // Import shared config
-import { request, USE_MOCK, API_HOST } from '../config';
+import { request, API_HOST } from '../config';
 import { SimpleCourse } from '../course/types';
 import { message } from 'antd';
 
@@ -250,15 +244,6 @@ export const student = {
 
   // 获取学生列表
   getList: async (params?: StudentSearchParams): Promise<PaginatedResponse<Student>> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const { pageNum = 1, pageSize = 10 } = params || {};
-      const start = (pageNum - 1) * pageSize;
-      const end = start + pageSize;
-      const list = mockStudents.slice(start, end);
-      const response = mockPaginatedResponse(list, pageNum, pageSize, mockStudents.length);
-      return response.data;
-    }
 
     const queryString = params ? buildQueryString(params) : '';
     const response = await request(`${STUDENT_API_PATHS.LIST}${queryString}`);
@@ -288,12 +273,6 @@ export const student = {
 
   // 获取学生详情
   getDetail: async (id: string): Promise<Student> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const student = mockStudents.find(s => s.id === id);
-      if (!student) { throw new Error('学生不存在'); }
-      return student;
-    }
 
     try {
       console.log(`获取学生详情，学生ID: ${id}`);
@@ -318,12 +297,6 @@ export const student = {
 
   // 添加学生
   add: async (data: Omit<Student, 'id'>): Promise<Student> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const newStudent = { ...data, id: String(mockStudents.length + 1) } as Student;
-      mockStudents.push(newStudent);
-      return newStudent;
-    }
 
     const createRequest = convertStudentToCreateRequest(data);
     const response = await request(`${STUDENT_API_PATHS.ADD}`, {
@@ -534,14 +507,6 @@ export const student = {
 
   // 更新学生
   update: async (id: string, data: Partial<Student>): Promise<Student> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const index = mockStudents.findIndex(s => s.id === id);
-      if (index === -1) { throw new Error('学生不存在'); }
-      const updatedStudent = { ...mockStudents[index], ...data } as Student;
-      mockStudents[index] = updatedStudent;
-      return updatedStudent;
-    }
 
     const updateRequest = convertStudentToUpdateRequest(data);
     const response = await request(`${STUDENT_API_PATHS.UPDATE(id)}`, {
@@ -554,13 +519,6 @@ export const student = {
 
   // 删除学生
   delete: async (id: string): Promise<void> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 600));
-      const index = mockStudents.findIndex(s => s.id === id);
-      if (index === -1) { throw new Error('学生不存在'); }
-      mockStudents.splice(index, 1);
-      return;
-    }
 
     await request(`/lesson/api/student/delete?id=${id}`, {
       method: 'POST'
@@ -569,11 +527,6 @@ export const student = {
 
   // 获取学生课程记录
   getClassRecords: async (studentId: string): Promise<ClassRecord[]> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 700));
-      const records = mockClassRecords[studentId] || [];
-      return records;
-    }
 
     const response = await request(`${STUDENT_API_PATHS.CLASS_RECORDS(studentId)}`);
     return response.data;
@@ -581,11 +534,6 @@ export const student = {
 
   // 获取学生缴费记录
   getPaymentRecords: async (studentId: string): Promise<PaymentRecord[]> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 700));
-      const records = mockPaymentRecords[studentId] || [];
-      return records;
-    }
 
     const response = await request(`${STUDENT_API_PATHS.PAYMENT_RECORDS(studentId)}`);
     return response.data;
@@ -633,10 +581,6 @@ export const student = {
   getAttendanceList: async (params: AttendanceListParams): Promise<AttendanceListResponseData> => {
     const ATTENDANCE_LIST_PATH = '/lesson/api/student/attendance-list';
     // MOCK data can be added here if needed
-    if (USE_MOCK) {
-        console.warn('Mock data for getAttendanceList not implemented yet.');
-        return { list: [], total: 0, pageNum: 1, pageSize: 10, pages: 0 };
-    }
 
     // 从 localStorage 获取 campusId，如果 params 中没有提供
     const campusId = params.campusId || Number(localStorage.getItem('currentCampusId'));

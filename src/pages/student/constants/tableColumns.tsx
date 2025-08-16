@@ -46,33 +46,46 @@ const columnStyle: React.CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
-// 课程类型颜色映射
-const courseTypeColors: Record<string, string> = {
-  '一对一': '#4F46E5', // 深蓝色
-  '一对二': '#6366F1', // 靛蓝色
-  '大课': '#F97316',  // 橙色
-  '小班': '#06B6D4',  // 青色
-  '体育类': '#14B8A6', // 水鸭绿
-  '艺术类': '#A855F7', // 紫色
-  '学术类': '#3B82F6', // 蓝色
-};
-
 // 移除未使用的 colorMap
 
-// 定义课程类型标签的样式函数 - 统一样式
+// 定义课程类型标签的样式函数 - 纯动态分配
 const getCourseTypeTagStyle = (type: string) => {
-  const colors = {
-    '大课': { background: '#e6f7ff', color: '#1890ff', border: '#91d5ff' },
-    '一对一': { background: '#f6ffed', color: '#52c41a', border: '#b7eb8f' },
-    '试听课': { background: '#fff2e8', color: '#fa8c16', border: '#ffd591' },
-    '赠课': { background: '#f9f0ff', color: '#722ed1', border: '#d3adf7' },
-  };
+  // 动态颜色方案 - 深色系，避免绿色系
+  const dynamicColors = [
+    { background: '#e6f4ff', color: '#1d39c4', border: '#91caff' }, // 深蓝色系
+    { background: '#fff2e8', color: '#d46b08', border: '#ffd591' }, // 深橙色系
+    { background: '#f9f0ff', color: '#531dab', border: '#d3adf7' }, // 深紫色系
+    { background: '#fff1f0', color: '#cf1322', border: '#ffccc7' }, // 深红色系
+    { background: '#e6fffb', color: '#08979c', border: '#87e8de' }, // 深青色系
+    { background: '#fef7ff', color: '#c41d7f', border: '#fad1e8' }, // 深粉色系
+    { background: '#fffbe6', color: '#d48806', border: '#ffe58f' }, // 深黄色系
+    { background: '#f0f5ff', color: '#2f54eb', border: '#adc6ff' }, // 蓝色系
+    { background: '#fff7e6', color: '#fa8c16', border: '#ffd591' }, // 橙色系
+    { background: '#f9f0ff', color: '#722ed1', border: '#d3adf7' }, // 紫色系
+    { background: '#fff2f0', color: '#ff4d4f', border: '#ffccc7' }, // 红色系
+    { background: '#e6fffb', color: '#13c2c2', border: '#87e8de' }, // 青色系
+    { background: '#fef7ff', color: '#eb2f96', border: '#fad1e8' }, // 粉色系
+    { background: '#fffbe6', color: '#faad14', border: '#ffe58f' }, // 黄色系
+    { background: '#f0f9ff', color: '#0369a1', border: '#7dd3fc' }, // 深蓝色系
+    { background: '#fff7ed', color: '#ea580c', border: '#fed7aa' }, // 深橙色系
+    { background: '#faf5ff', color: '#7c3aed', border: '#c4b5fd' }, // 深紫色系
+  ];
   
-  const colorSet = colors[type as keyof typeof colors] || colors['大课'];
+  // 根据类型名称生成哈希值来选择颜色 - 改进算法避免冲突
+  let hash = 0;
+  for (let i = 0; i < type.length; i++) {
+    const char = type.charCodeAt(i);
+    hash = ((hash << 5) - hash + char) & 0xffffffff;
+  }
+  
+  // 使用更大的素数来减少冲突
+  const colorIndex = Math.abs(hash) % 31; // 使用31而不是16
+  const actualIndex = colorIndex % dynamicColors.length;
+  const colorSet = dynamicColors[actualIndex];
   
   return {
     display: 'inline-block',
-    padding: '2px 6px', // 合理的内边距
+    padding: '2px 6px',
     backgroundColor: colorSet.background,
     color: colorSet.color,
     border: `1px solid ${colorSet.border}`,
@@ -91,8 +104,16 @@ const renderCourseTypeIndicator = (courseTypeName?: string, status?: string): Re
   let color;
   if (statusUpperCase === 'EXPIRED') {
     color = '#ff4d4f'; // 过期课程显示红色
-  } else if (courseTypeName && courseTypeColors[courseTypeName]) {
-    color = courseTypeColors[courseTypeName];
+  } else if (courseTypeName) {
+    // 动态生成颜色
+    const colors = ['#4F46E5', '#6366F1', '#F97316', '#06B6D4', '#14B8A6', '#A855F7', '#3B82F6', '#1677FF'];
+    let hash = 0;
+    for (let i = 0; i < courseTypeName.length; i++) {
+      const char = courseTypeName.charCodeAt(i);
+      hash = ((hash << 5) - hash + char) & 0xffffffff;
+    }
+    const colorIndex = Math.abs(hash) % colors.length;
+    color = colors[colorIndex];
   } else {
     color = '#1677FF'; // 默认蓝色
   }
@@ -125,15 +146,40 @@ const renderCourseType = (text: string | undefined) => {
 };
 */
 
-// 教练名颜色映射（稳定且均匀）
-const coachPalette = ['#1677ff', '#fa541c', '#52c41a', '#722ed1', '#13c2c2', '#eb2f96', '#faad14', '#2f54eb', '#a0d911', '#73d13d'];
+// 教练名颜色映射（稳定且均匀）- 避免绿色系，使用蓝色、紫色、红色、橙色等
+const coachPalette = [
+  '#1d39c4', // 深蓝色
+  '#d4380d', // 深红色
+  '#531dab', // 深紫色
+  '#c41d7f', // 深粉色
+  '#d46b08', // 深橙色
+  '#642ab5', // 深紫罗兰色
+  '#722ed1', // 紫色
+  '#eb2f96', // 深粉色
+  '#fa8c16', // 深橙色
+  '#9254de', // 深紫罗兰色
+  '#f5222d', // 深红色
+  '#fa541c', // 深橙红色
+  '#2f54eb', // 深蓝色
+  '#1890ff', // 深蓝色
+  '#13c2c2', // 深青色
+  '#36cfc9', // 深青蓝色
+  '#08979c', // 深青色
+  '#595959', // 深灰色
+  '#434343', // 更深灰色
+  '#262626'  // 最深灰色
+];
 const getCoachColor = (name?: string) => {
   if (!name) return '#8c8c8c';
+  
+  // 改进的哈希算法，确保不同名字得到不同颜色
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
-    hash = (hash << 5) - hash + name.charCodeAt(i);
-    hash |= 0;
+    const char = name.charCodeAt(i);
+    hash = ((hash << 5) - hash + char) & 0xffffffff; // 确保32位整数
   }
+  
+  // 使用更精确的索引计算
   const idx = Math.abs(hash) % coachPalette.length;
   return coachPalette[idx];
 };
@@ -394,8 +440,16 @@ export const getStudentColumns = (
                     const statusUpperCase = (course.status || '').toUpperCase();
                     if (statusUpperCase === 'EXPIRED') {
                       return '#ff4d4f';
-                    } else if (course.courseTypeName && courseTypeColors[course.courseTypeName]) {
-                      return courseTypeColors[course.courseTypeName];
+                    } else if (course.courseTypeName) {
+                      // 动态生成颜色
+                      const colors = ['#4F46E5', '#6366F1', '#F97316', '#06B6D4', '#14B8A6', '#A855F7', '#3B82F6', '#1677FF'];
+                      let hash = 0;
+                      for (let i = 0; i < course.courseTypeName.length; i++) {
+                        const char = course.courseTypeName.charCodeAt(i);
+                        hash = ((hash << 5) - hash + char) & 0xffffffff;
+                      }
+                      const colorIndex = Math.abs(hash) % colors.length;
+                      return colors[colorIndex];
                     } else {
                       return '#1677FF';
                     }
@@ -503,12 +557,12 @@ export const getStudentColumns = (
                         borderRadius: '4px',
                         lineHeight: '1',
                         backgroundColor: statusUpperCase === 'EXPIRED' || statusUpperCase === 'GRADUATED' || statusUpperCase === 'REFUNDED' ? '#fff' :
-                                        (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#f6ffed' : '#f9f0ff'),
+                                        (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#f0f9f0' : '#f9f0ff'),
                         color: statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
-                              (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#52c41a' :
+                              (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#389e0d' :
                               (statusUpperCase === 'GRADUATED' ? '#1890ff' : '#722ed1')),
                         border: `1px solid ${statusUpperCase === 'EXPIRED' ? '#ff4d4f' :
-                                (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#52c41a' :
+                                (statusUpperCase === 'NORMAL' || statusUpperCase === 'STUDYING' ? '#389e0d' :
                                 (statusUpperCase === 'GRADUATED' ? '#1890ff' : '#722ed1'))}`,
                         opacity: isDisabled ? 0.7 : 1
                       }}

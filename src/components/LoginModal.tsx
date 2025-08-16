@@ -120,7 +120,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialPhone =
         } else if (errorMessage.includes('网络') || errorMessage.includes('连接')) {
           setError(`网络连接问题，请检查您的网络设置`);
         } else {
-          setError('');
+          setError(errorMessage);
         }
         setLoading(false);
       }

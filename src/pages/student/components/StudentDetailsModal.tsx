@@ -272,7 +272,7 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
       onCancel={onCancel}
       footer={null}
       width={800}
-      destroyOnClose
+      destroyOnHidden
       centered
       styles={{ 
         body: { padding: '24px 32px' },

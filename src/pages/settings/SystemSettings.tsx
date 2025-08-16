@@ -90,7 +90,16 @@ const SystemSettings: React.FC = () => {
     
     try {
       // 一次性获取所有常量
-      const allConstants = await API.constants.getList();
+      const allConstants = await API.constants.getListByTypes([
+        'COURSE_TYPE',
+        'PAYMENT_TYPE', 
+        'GIFT_ITEM',
+        'HANDLING_FEE_TYPE',
+        'VALIDITY_PERIOD',
+        'EXPEND',
+        'INCOME',
+        'STUDENT_SOURCE'
+      ]);
       
       // 按type分组数据
       const groupedConstants: Record<string, IOptionItem[]> = {
@@ -105,7 +114,7 @@ const SystemSettings: React.FC = () => {
       };
       
       // 将数据分组到对应的类型中
-      allConstants.forEach(constant => {
+      allConstants.forEach((constant: any) => {
         if (groupedConstants[constant.type]) {
           groupedConstants[constant.type].push(mapConstantToOptionItem(constant));
         }

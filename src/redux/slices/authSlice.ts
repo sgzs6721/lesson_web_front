@@ -157,7 +157,6 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   clearAuthCookies();
 
   message.success('已退出登录');
-  return null;
 });
 
 // 注册操作
@@ -165,22 +164,10 @@ export const register = createAsyncThunk(
   'auth/register',
   async (params: RegisterParams, { rejectWithValue }) => {
     try {
-      console.log('开始调用注册 API:', params);
-      // 调用实际的API接口
       const response = await API.auth.register(params);
-
-      console.log('注册 API 调用成功:', response);
-
-      // 检查响应状态码
-      if (response.code === 200) {
-        message.success(response.message || '注册成功');
-        return response.data;
-      } else {
-        message.error(response.message || '注册失败');
-        return rejectWithValue(response.message || '注册失败');
-      }
+      message.success('注册成功');
+      return response;
     } catch (error: any) {
-      console.error('注册 API 调用失败:', error);
       message.error(error.message || '注册失败');
       return rejectWithValue(error.message || '注册失败');
     }

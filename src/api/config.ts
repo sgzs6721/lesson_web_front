@@ -1,9 +1,7 @@
 import { ApiError } from './types'; // Import ApiError
 import { getTokenCookie } from '@/utils/cookies'; // 导入cookie工具
 
-// 是否启用 Mock 数据 - 暂时恢复硬编码以修复 'process is not defined' 错误
-// export const USE_MOCK = process.env.NODE_ENV === 'development';
-export const USE_MOCK = false; // 恢复为false
+// Mock数据已移除，不再使用
 
 // API 基础 URL 配置 - 暂时恢复硬编码
 // export const API_HOST = process.env.REACT_APP_API_HOST || 'http://localhost:8080';

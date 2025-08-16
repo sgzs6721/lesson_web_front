@@ -529,7 +529,7 @@ const CourseManagement: React.FC = () => {
         open={enrollDrawerVisible}
         width={520}
         onClose={() => setEnrollDrawerVisible(false)}
-        destroyOnClose
+        destroyOnHidden
         styles={{ body: { padding: 12 } }}
       >
         <div className="enroll-drawer-wrapper">

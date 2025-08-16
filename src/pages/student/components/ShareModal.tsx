@@ -20,7 +20,7 @@ const { Text } = Typography;
 const getCourseTypeTagStyle = (typeName?: string): React.CSSProperties => {
   const map: Record<string, { bg: string; color: string; border: string }> = {
     '大课': { bg: '#e6f7ff', color: '#1890ff', border: '#91d5ff' },
-    '一对一': { bg: '#f6ffed', color: '#52c41a', border: '#b7eb8f' },
+    '一对一': { bg: '#f0f5ff', color: '#2f54eb', border: '#adc6ff' },
     '试听课': { bg: '#fff2e8', color: '#fa8c16', border: '#ffd591' },
     '赠课': { bg: '#f9f0ff', color: '#722ed1', border: '#d3adf7' },
   };
@@ -101,7 +101,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       onCancel={onCancel}
       onOk={onOk}
       confirmLoading={loading}
-      destroyOnClose
+      destroyOnHidden
       style={{ zIndex: 1000 }}
     >
       <Form form={form} layout="vertical">

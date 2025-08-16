@@ -71,11 +71,6 @@ export default function useShareModal(courseList: SimpleCourse[] = []): UseShare
     }
   };
 
-  // 订阅表单中目标课程变化，自动带出教练
-  form?.setFields?.([
-    // 占位，避免类型提示错误
-  ] as any);
-
   return {
     visible,
     form,

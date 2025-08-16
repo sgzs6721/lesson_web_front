@@ -91,7 +91,7 @@ export const TransferCourseModal: React.FC<TransferCourseModalProps> = ({
         onOk={onOk}
         onCancel={onCancel}
         confirmLoading={loading}
-        destroyOnClose
+        destroyOnHidden
         width={800}
         okText="确认转课"
         cancelText="取消"

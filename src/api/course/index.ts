@@ -1,9 +1,8 @@
 import { Course, CourseSearchParams, CourseCreateRequest, CourseUpdateRequest, CourseType, CourseStatus, CourseListParams } from './types';
 import { ApiResponse, PaginationParams, PaginatedResponse } from '../types';
-import { mockApiResponse, mockCourses, mockPaginatedResponse } from './mock';
 
 // Import shared config
-import { request, USE_MOCK, API_HOST } from '../config';
+import { request, API_HOST } from '../config';
 import { SimpleCourse } from './types';
 
 // 课程列表缓存机制
@@ -38,90 +37,6 @@ const COURSE_API_PATHS = {
 export const course = {
   // 获取课程列表
   getList: async (params?: CourseListParams): Promise<PaginatedResponse<Course>> => {
-    if (USE_MOCK) {
-      // 模拟获取课程列表
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      let filteredCourses = [...mockCourses];
-
-      // 应用搜索条件
-      if (params?.searchText) {
-        const searchText = params.searchText.toLowerCase();
-        filteredCourses = filteredCourses.filter(course =>
-          course.name.toLowerCase().includes(searchText) ||
-          course.description?.toLowerCase().includes(searchText)
-        );
-      }
-
-      // 处理课程类型过滤（支持多选）
-      if (params?.typeIds && params.typeIds.length > 0) {
-        filteredCourses = filteredCourses.filter(course =>
-          params.typeIds?.includes(course.type as CourseType)
-        );
-      } else if (params?.selectedType && params.selectedType.length > 0) {
-        filteredCourses = filteredCourses.filter(course =>
-          params.selectedType?.includes(course.type as CourseType)
-        );
-      }
-
-      if (params?.selectedStatus !== undefined) {
-        filteredCourses = filteredCourses.filter(course =>
-          course.status === params.selectedStatus
-        );
-      }
-
-      // 按教练ID筛选（支持多选）
-      if (params?.coachIds && params.coachIds.length > 0) {
-        filteredCourses = filteredCourses.filter(course =>
-          course.coaches?.some(coach => params.coachIds?.includes(coach.id))
-        );
-      } else if (params?.selectedCoach && params.selectedCoach.length > 0) {
-        filteredCourses = filteredCourses.filter(course =>
-          course.coaches?.some(coach => params.selectedCoach?.includes(coach.id))
-        );
-      }
-
-      // 按校区ID筛选
-      if (params?.campusId) {
-        filteredCourses = filteredCourses.filter(course =>
-          course.campusId === params.campusId
-        );
-      }
-
-      // 应用排序
-      if (params?.sortOrder) {
-        switch (params.sortOrder) {
-          case 'priceAsc':
-            filteredCourses.sort((a, b) => a.price - b.price);
-            break;
-          case 'priceDesc':
-            filteredCourses.sort((a, b) => b.price - a.price);
-            break;
-          case 'nameAsc':
-            filteredCourses.sort((a, b) => a.name.localeCompare(b.name));
-            break;
-          case 'nameDesc':
-            filteredCourses.sort((a, b) => b.name.localeCompare(a.name));
-            break;
-          default:
-            // 默认按创建时间降序排列（最新的在前面）
-            filteredCourses.sort((a, b) => new Date(b.createdTime || 0).getTime() - new Date(a.createdTime || 0).getTime());
-            break;
-        }
-      } else {
-        // 如果没有指定排序，默认按创建时间降序排列
-        filteredCourses.sort((a, b) => new Date(b.createdTime || 0).getTime() - new Date(a.createdTime || 0).getTime());
-      }
-
-      // 应用分页
-      const { pageNum = 1, pageSize = 10 } = params || {};
-      const start = (pageNum - 1) * pageSize;
-      const end = start + pageSize;
-      const list = filteredCourses.slice(start, end);
-
-      const response = mockPaginatedResponse(list, pageNum, pageSize, filteredCourses.length);
-      return response.data;
-    }
 
     // Use imported config and path constants
     const queryParams = new URLSearchParams();
@@ -228,18 +143,6 @@ export const course = {
 
   // 获取课程详情
   getDetail: async (id: string): Promise<Course> => {
-    if (USE_MOCK) {
-      // 模拟获取课程详情
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const course = mockCourses.find(c => c.id === id);
-
-      if (!course) {
-        throw new Error('课程不存在');
-      }
-
-      return course;
-    }
 
     // Use imported config and path constants
     // 使用导入的 request 和 API 路径常量
@@ -251,29 +154,6 @@ export const course = {
     // 不再清除课程列表缓存
     // clearCourseListCache();
 
-    if (USE_MOCK) {
-      // 模拟添加课程
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const now = new Date().toISOString();
-      const newCourse: any = {
-        ...data,
-        id: String(mockCourses.length + 1),
-        type: CourseType.PRIVATE.toString(),
-        institutionId: 1,
-        consumedHours: 0,
-        coachFee: Number((data as any).coachFee ?? 0),
-        totalHours: data.unitHours, // 设置 totalHours 与 unitHours 相同
-        createdTime: now,
-        updateTime: now,
-        coaches: Array.isArray((data as any).coachIds)
-          ? (data as any).coachIds.map((id: any) => ({ id: Number(id), name: `教练${id}` }))
-          : []
-      };
-
-      mockCourses.push(newCourse);
-      return newCourse.id;
-    }
 
     // 使用导入的 request
     const res = await request(COURSE_API_PATHS.ADD, {
@@ -288,10 +168,6 @@ export const course = {
     // 不再清除课程列表缓存
     // clearCourseListCache();
 
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      return;
-    }
 
     await request(COURSE_API_PATHS.UPDATE, {
       method: 'PUT',
@@ -304,20 +180,12 @@ export const course = {
     // 不再清除课程列表缓存
     // clearCourseListCache();
 
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return;
-    }
 
     await request(COURSE_API_PATHS.DELETE(id), { method: 'DELETE' });
   },
 
   // 获取简化课程列表（用于下拉）
   getSimpleList: async (): Promise<SimpleCourse[]> => {
-    if (USE_MOCK) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return mockCourses.map(c => ({ id: c.id, name: c.name, typeName: c.type as any, status: c.status as any, coaches: c.coaches || [] }));
-    }
 
     // 附带 campusId 参数（从 localStorage 读取，默认 1）
     const campusId = (typeof window !== 'undefined' && localStorage.getItem('currentCampusId')) || '1';

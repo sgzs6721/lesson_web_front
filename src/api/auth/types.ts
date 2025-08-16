@@ -16,21 +16,17 @@ export interface LoginParams {
   password: string;
 }
 
-// 登录响应类型
-export interface LoginResponse {
-  code: number;
-  message: string;
-  data: {
-    token: string;
-    user?: User;
-    userId?: string | number;
-    phone?: string;
-    realName?: string;
-    roleId?: string | number;
-    roleName?: string;
-    institutionId?: string | number;
-    campusId?: string | number;
-  };
+// 登录响应数据类型（后端实际返回的数据结构）
+export interface LoginResponseData {
+  token: string;
+  userId: string | number;
+  phone: string;
+  realName: string;
+  roleId: string | number;
+  roleName: string;
+  institutionId: string | number;
+  campusId: string | number;
+  institutionName?: string;
 }
 
 // 注册参数类型

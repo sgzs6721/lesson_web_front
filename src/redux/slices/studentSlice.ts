@@ -41,66 +41,8 @@ export const fetchStudents = createAsyncThunk(
   'student/fetchStudents',
   async (_, { rejectWithValue }) => {
     try {
-      // In a real app, replace with actual API call
-      // Example: const response = await api.get('/students');
-      // For now, simulate a delay and return mock data
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return [
-        {
-          id: '1',
-          name: '张三',
-          gender: 'male',
-          birthDate: '2010-05-15',
-          phone: '13800138001',
-          emergencyContact: '张父',
-          emergencyPhone: '13900139001',
-          address: '北京市海淀区中关村大街1号',
-          campusId: '1',
-          campusName: '总校区',
-          enrollmentDate: '2022-01-15',
-          enrolledCourses: ['1', '2'],
-          status: 'active',
-          notes: '游泳能力较好，已掌握基本技能',
-          createdAt: '2022-01-15T08:30:00.000Z',
-          updatedAt: '2022-03-10T14:20:00.000Z',
-        },
-        {
-          id: '2',
-          name: '李四',
-          gender: 'female',
-          birthDate: '2011-08-22',
-          phone: '13800138002',
-          emergencyContact: '李母',
-          emergencyPhone: '13900139002',
-          address: '北京市朝阳区建国路5号',
-          campusId: '1',
-          campusName: '总校区',
-          enrollmentDate: '2022-02-01',
-          enrolledCourses: ['1'],
-          status: 'active',
-          notes: '初学者，需要特别关注',
-          createdAt: '2022-02-01T10:15:00.000Z',
-          updatedAt: '2022-02-01T10:15:00.000Z',
-        },
-        {
-          id: '3',
-          name: '王五',
-          gender: 'male',
-          birthDate: '2009-03-10',
-          phone: '13800138003',
-          emergencyContact: '王母',
-          emergencyPhone: '13900139003',
-          address: '北京市西城区西长安街10号',
-          campusId: '2',
-          campusName: '分校区A',
-          enrollmentDate: '2021-09-01',
-          enrolledCourses: ['2', '3'],
-          status: 'active',
-          notes: '有游泳比赛经验，表现优秀',
-          createdAt: '2021-09-01T09:00:00.000Z',
-          updatedAt: '2022-04-15T16:30:00.000Z',
-        },
-      ] as Student[];
+      // 返回空数据，因为实际使用的是直接API调用
+      return [];
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
