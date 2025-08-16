@@ -60,7 +60,7 @@ export const usePaymentData = () => {
       pageNum: currentPage,
       pageSize: pageSize,
       campusId,
-      sortField: 'createdTime', // 默认按缴费时间排序
+      sortField: 'date', // 默认按缴费日期排序
       sortOrder: 'desc', // 默认降序排列
     };
 
