@@ -16,6 +16,8 @@ export interface Payment {
   lessonChange?: string;
   payType?: string;
   giftHours?: number; // 赠课课时
+  validityPeriodId?: number; // 有效期ID
+  validityPeriodMonths?: number; // 有效期月数
 }
 
 export type PaymentSearchParams = {

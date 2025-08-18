@@ -48,6 +48,8 @@ export const usePaymentData = () => {
       lessonChange: apiRecord.hours ? `${apiRecord.hours}课时` : (apiRecord.lessonChange || '-'),
       payType: apiRecord.payType,
       giftHours: apiRecord.giftedHours || 0, // 添加赠课课时字段
+      validityPeriodId: apiRecord.validityPeriodId, // 添加有效期ID字段
+      validityPeriodMonths: apiRecord.validityPeriodMonths, // 添加有效期月数字段
     };
   };
 
@@ -209,6 +211,15 @@ export const usePaymentData = () => {
     }
   }, [currentPage, pageSize]);
   
+  // 添加更新单条记录的方法
+  const updatePaymentRecord = useCallback((recordId: string, updatedRecord: Partial<Payment>) => {
+    setData(prevData => 
+      prevData.map(item => 
+        item.id === recordId ? { ...item, ...updatedRecord } : item
+      )
+    );
+  }, []);
+
   return {
     data,
     loading,
@@ -221,6 +232,7 @@ export const usePaymentData = () => {
     filterData,
     resetData,
     handlePageChange,
+    updatePaymentRecord,
     paymentCount: statistics.paymentCount,
     paymentAmount: statistics.paymentTotal,
     refundCount: statistics.refundCount,

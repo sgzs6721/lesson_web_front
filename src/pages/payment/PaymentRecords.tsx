@@ -13,7 +13,7 @@ import { getCourseSimpleList } from '@/api/course';
 import type { SimpleCourse } from '@/api/course/types';
 import { constants } from '@/api/constants';
 import type { Constant } from '@/api/constants/types';
-import { updatePaymentRecord, UpdatePaymentRecordRequest } from '@/api/payment';
+import { updatePaymentRecord as updatePaymentRecordApi, UpdatePaymentRecordRequest } from '@/api/payment';
 import dayjs from 'dayjs';
 import './payment.css';
 import './PaymentRecords.css';
@@ -37,6 +37,7 @@ const PaymentRecords: React.FC = () => {
     deletePayment,
     filterData,
     handlePageChange,
+    updatePaymentRecord,
     paymentCount,
     paymentAmount,
     refundCount,
@@ -131,6 +132,13 @@ const PaymentRecords: React.FC = () => {
     const rawType = (record.paymentType || '').toUpperCase();
     const allowedTypes = paymentTypeOptions.map(o => o.value);
     const normalizedType = allowedTypes.includes(rawType) ? rawType : allowedTypes[0];
+    
+    // 从记录中获取validityPeriodId，优先使用validityPeriodId字段
+    const validityPeriodId = (record as any).validityPeriodId || undefined;
+    
+    // 确保validityPeriodId是数字类型
+    const normalizedValidityPeriodId = validityPeriodId ? Number(validityPeriodId) : undefined;
+    
     editForm.setFieldsValue({
       paymentType: normalizedType,
       paymentMethod: (record as any).payType || (record.paymentMethod || '').toUpperCase(),
@@ -138,7 +146,7 @@ const PaymentRecords: React.FC = () => {
       transactionDate: (record as any).date ? dayjs((record as any).date) : ((record as any).transactionDate ? dayjs((record as any).transactionDate) : undefined),
       courseHours: parsedHours > 0 ? parsedHours : 0,
       giftHours: record.giftHours || 0,
-      validityPeriodId: undefined,
+      validityPeriodId: normalizedValidityPeriodId,
       giftItems: [],
       notes: (record as any).remark || ''
     });
@@ -171,14 +179,27 @@ const PaymentRecords: React.FC = () => {
       };
       
       // 调用更新API
-      await updatePaymentRecord(payload);
+      await updatePaymentRecordApi(payload);
       
       message.success('缴费记录修改成功');
       setEditVisible(false);
       
-      // 刷新数据，保持当前筛选条件
-      // 通过重新设置当前页面来触发数据刷新
-      handlePageChange(currentPage, pageSize);
+      // 直接更新本地数据，不重新调用接口
+      if (currentPayment) {
+        const updatedRecord = {
+          // 更新红框中的信息
+          date: values.transactionDate ? dayjs(values.transactionDate).format('YYYY-MM-DD') : currentPayment.date,
+          amount: values.amount,
+          paymentType: values.paymentType,
+          paymentMethod: values.paymentMethod,
+          payType: values.paymentMethod,
+          lessonChange: `${values.courseHours}课时`,
+          giftHours: values.giftHours || 0,
+        };
+        
+        // 使用hook中的更新方法
+        updatePaymentRecord(recordId, updatedRecord);
+      }
     } catch (error) {
       console.error('更新缴费记录失败:', error);
       message.error('缴费记录修改失败，请重试');

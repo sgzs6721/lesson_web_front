@@ -3,6 +3,7 @@ import { Table, Empty, TablePaginationConfig } from 'antd';
 import { Student } from '@/pages/student/types/student';
 import { getStudentColumns } from '@/pages/student/constants/tableColumns';
 import StandardPagination from '@/components/common/StandardPagination';
+import { Constant } from '@/api/constants/types';
 import '../student.css';
 
 interface StudentTableProps {
@@ -27,10 +28,11 @@ interface StudentTableProps {
   onSortChange?: (field?: string, order?: 'ascend' | 'descend' | null) => void;
   // 新增：共享回调
   onShare?: (student: Student & { selectedCourseId?: string }) => void;
+  validityPeriodOptions: Constant[];
 }
 
 // 使用React.memo包装组件以避免不必要的重渲染
-const StudentTable: React.FC<StudentTableProps> = memo(({
+const StudentTable: React.FC<StudentTableProps> = React.memo(({
   data,
   loading,
   pagination,
@@ -45,6 +47,7 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
   onDetails,
   onSortChange,
   onShare,
+  validityPeriodOptions,
 }) => {
   // 创建各个回调函数的安全版本，避免undefined错误
   const safeOnPayment = onPayment || (() => {});
@@ -67,10 +70,11 @@ const StudentTable: React.FC<StudentTableProps> = memo(({
     safeOnAttendance,
     safeOnDetails,
     safeOnShare,
+    validityPeriodOptions,
   );
 
   // 监听表格的排序变化，仅记录状态，不触发请求
-  const handleTableChange = useCallback((_: any, __: any, sorter: any) => {
+  const handleTableChange = React.useCallback((_: any, __: any, sorter: any) => {
     const s = Array.isArray(sorter) ? sorter[0] : sorter;
     const fieldFromSorter: string | undefined = s?.columnKey || s?.field;
     const order: 'ascend' | 'descend' | null | undefined = s?.order ?? null;

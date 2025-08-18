@@ -4,6 +4,7 @@ import StudentSearchBar from './StudentSearchBar';
 import StudentTable from './StudentTable';
 import { Student as UiStudent } from '@/pages/student/types/student';
 import { SimpleCourse } from '@/api/course/types';
+import { Constant } from '@/api/constants/types';
 
 // 定义排序类型（已不再使用，但保留类型注释以避免破坏其他引用）
 // type SortOrderType =
@@ -54,6 +55,8 @@ interface StudentContentProps {
   onSortChange?: (field?: string, order?: 'ascend' | 'descend' | null) => void;
   // 新增：共享
   onShare?: (record: UiStudent & { selectedCourseId?: string }) => void;
+  // 新增：有效期选项
+  validityPeriodOptions: Constant[];
 }
 
 /**
@@ -86,7 +89,8 @@ const StudentContent: React.FC<StudentContentProps> = ({
   onAttendance,
   onDetails,
   onSortChange,
-  onShare
+  onShare,
+  validityPeriodOptions
 }) => {
   return (
     <>
@@ -125,6 +129,7 @@ const StudentContent: React.FC<StudentContentProps> = ({
         onDetails={onDetails}
         onSortChange={onSortChange}
         onShare={onShare}
+        validityPeriodOptions={validityPeriodOptions}
       />
     </>
   );

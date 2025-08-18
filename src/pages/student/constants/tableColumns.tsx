@@ -1,6 +1,6 @@
 import React from 'react';
+import { ColumnsType } from 'antd/es/table';
 import { Tag, Button, Dropdown, Space, Tooltip } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
 import {
   EditOutlined,
   FileTextOutlined,
@@ -17,6 +17,7 @@ import {
   WomanOutlined
 } from '@ant-design/icons';
 import { Student, CourseInfo } from '@/pages/student/types/student';
+import { Constant } from '@/api/constants/types';
 import dayjs from 'dayjs';
 // 不再需要 FixedWidthTag，使用统一的 Tag 样式
 // import FixedWidthTag from '../components/FixedWidthTag';
@@ -196,6 +197,7 @@ export const getStudentColumns = (
   onAttendance: (student: Student & { attendanceCourse?: { id: number | string; name: string } }) => void,
   onDetails?: (record: Student) => void, // 添加详情查看回调
   onShare?: (student: Student) => void, // 新增：共享回调
+  validityPeriodOptions?: Constant[], // 新增：有效期常量选项
 ): ColumnsType<Student> => [
   {
     title: '学员ID',
@@ -534,12 +536,15 @@ export const getStudentColumns = (
                   <Tooltip title={(() => {
                     const end = course.endDate;
                     if (end) {
-                      return `有效期至: ${dayjs(end).format('YYYY-MM-DD')}`;
+                      return `有效期至：${dayjs(end).format('YYYY-MM-DD')}`;
                     }
-                    const raw = (course as any).validityPeriod ?? (course as any).validity ?? (course as any).expireType ?? (course as any).validityMonths ?? (course as any).expireMonths ?? '';
-                    const months = Number(String(raw).toString().replace(/[^\d]/g, ''));
-                    if (!isNaN(months) && months > 0) {
-                      return `有效期：${months}个月`;
+                    // 如果endDate为null，使用validityPeriodId查找对应的常量值
+                    const validityPeriodId = (course as any).validityPeriodId;
+                    if (validityPeriodId && validityPeriodOptions && validityPeriodOptions.length > 0) {
+                      const validityOption = validityPeriodOptions.find(opt => opt.id === Number(validityPeriodId));
+                      if (validityOption) {
+                        return `有效期：${validityOption.constantValue}个月`;
+                      }
                     }
                     return '有效期：未设置';
                   })()}>

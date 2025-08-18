@@ -13,6 +13,8 @@ import { getCourseSimpleList } from '@/api/course';
 import { student } from '@/api/student';
 import { statisticsApi, StudentManagementSummary } from '@/api/statistics';
 import { CourseStatus } from '@/api/course/types';
+import { constants } from '@/api/constants';
+import type { Constant } from '@/api/constants/types';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import './student.css';
@@ -93,6 +95,9 @@ const StudentManagement: React.FC = () => {
   // 新增：记录当前表格排序（用于分页与过滤时透传）
   const [tableSortField, setTableSortField] = useState<string | undefined>('id');
   const [tableSortOrder, setTableSortOrder] = useState<'ascend' | 'descend' | null>('descend');
+
+  // 添加有效期常量状态
+  const [validityPeriodOptions, setValidityPeriodOptions] = useState<Constant[]>([]);
 
   // --- Pass student.createWithCourse as the API function ---
   // 使用类型断言解决类型不兼容问题
@@ -182,28 +187,30 @@ const StudentManagement: React.FC = () => {
     }
   };
 
-  // 获取课程列表和学生数据
+  // 初始化数据加载
   useEffect(() => {
     const fetchInitialData = async () => {
-      // 设置所有加载状态为true
-      setLoadingCourses(true);
-      setLoadingStats(true);
-      
       try {
-        // 同步获取数据，让两个请求一起发出
-        const [courseData, studentData] = await Promise.all([
+        setLoadingCourses(true);
+        setLoadingStats(true);
+        
+        // 并行获取课程列表和学员数据
+        const [courseData, studentData, validityData] = await Promise.all([
           getCourseSimpleList(), // 获取课程下拉（内部会带上 campusId）
           df.data.fetchStudents({
             pageNum: ui.pagination.currentPage,
             pageSize: ui.pagination.pageSize
-          })
+          }),
+          // 获取有效期常量
+          constants.getListByType('VALIDITY_PERIOD')
         ]);
         
         // 更新状态 - 使用所有课程数据
         setCourseList(courseData);
         setFilteredCourseList(courseData); // 筛选框显示所有课程
+        setValidityPeriodOptions(validityData || []); // 设置有效期常量
         
-        console.log("初始化数据加载完成: 课程数量=", courseData.length, "学员数量=", studentData?.length || 0);
+        console.log("初始化数据加载完成: 课程数量=", courseData.length, "学员数量=", studentData?.length || 0, "有效期常量数量=", validityData?.length || 0);
       } catch (error) {
         console.error('获取初始数据失败:', error);
         message.error('获取数据失败，请刷新页面重试');
@@ -400,6 +407,7 @@ const StudentManagement: React.FC = () => {
             onDetails={handleStudentDetails}
             onSortChange={handleTableSortChange}
             onShare={(record) => ui.share.handleShare(record as any)}
+            validityPeriodOptions={validityPeriodOptions}
           />
         </Card>
 
