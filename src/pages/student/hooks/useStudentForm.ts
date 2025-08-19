@@ -41,8 +41,6 @@ const mapStatusToApi = (status: string | undefined): string => {
       return 'GRADUATED';
     case 'WAITING_PAYMENT':
       return 'WAITING_PAYMENT';
-    case 'WAITING_CLASS':
-      return 'WAITING_CLASS';
     case 'WAITING_RENEWAL':
       return 'WAITING_RENEWAL';
     case 'REFUNDED':
@@ -72,8 +70,6 @@ const mapApiStatusToFrontend = (status: string | undefined): string => {
       return 'GRADUATED';
     case 'WAITING_PAYMENT':
       return 'WAITING_PAYMENT';
-    case 'WAITING_CLASS':
-      return 'WAITING_CLASS';
     case 'WAITING_RENEWAL':
       return 'WAITING_RENEWAL';
     case 'REFUNDED':

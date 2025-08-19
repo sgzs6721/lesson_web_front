@@ -227,21 +227,22 @@ export const useStudentData = () => {
 
     // 处理状态
     if (uiParams.selectedStatus) {
-      // 根据状态值进行映射
-      const statusMap: Record<string, 'normal' | 'expired' | 'graduated' | 'STUDYING'> = {
-        'active': 'normal',
-        'ACTIVE': 'normal',
-        'inactive': 'expired',
-        'INACTIVE': 'expired',
-        'pending': 'graduated',
-        'PENDING': 'graduated',
-        'STUDYING': 'STUDYING',
-        'normal': 'normal',
-        'expired': 'expired',
-        'graduated': 'graduated'
+      // 映射前端下拉到后端 StudentCourseStatus
+      const statusMap: Record<string, import('@/api/student/types').StudentCourseStatusCode> = {
+        STUDYING: 'STUDYING',
+        EXPIRED: 'EXPIRED',
+        GRADUATED: 'GRADUATED',
+        WAITING_PAYMENT: 'WAITING_PAYMENT',
+        WAITING_RENEWAL: 'WAITING_RENEWAL',
+        REFUNDED: 'REFUNDED',
+        // 兼容旧值
+        NORMAL: 'STUDYING',
+        studying: 'STUDYING',
+        expired: 'EXPIRED',
+        graduated: 'GRADUATED',
       };
 
-      apiParams.status = statusMap[uiParams.selectedStatus] || 'normal';
+      apiParams.status = statusMap[uiParams.selectedStatus] || undefined;
     }
 
     // 处理课程

@@ -234,10 +234,19 @@ export interface CourseGroup {
   scheduleTimes: ScheduleTime[];
 }
 
+// 新增：与后端 StudentCourseStatus 对齐的状态字面量类型
+export type StudentCourseStatusCode =
+  | 'STUDYING'
+  | 'EXPIRED'
+  | 'GRADUATED'
+  | 'WAITING_PAYMENT'
+  | 'WAITING_RENEWAL'
+  | 'REFUNDED';
+
 // 学员查询参数
 export interface StudentSearchParams {
   keyword?: string;
-  status?: 'normal' | 'expired' | 'graduated' | 'STUDYING';
+  status?: StudentCourseStatusCode;
   courseId?: string;
   coachId?: string;
   campusId?: number;

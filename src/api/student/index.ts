@@ -84,7 +84,18 @@ const convertDtoToStudent = (dto: StudentDTO): Student => {
     enrollDate: (dto.enrollmentDate || dto.enrollDate || ''),
     expireDate: dto.endDate || dto.expireDate || '',
     remainingClasses: dto.remainingHours?.toString() || dto.remainingClasses?.toString() || '0',
-    status: (dto.status || 'normal') as 'normal' | 'expired' | 'graduated' | 'STUDYING',
+    status: ((): 'normal' | 'expired' | 'graduated' | 'STUDYING' => {
+      const raw = String(dto.status || '').trim();
+      const upper = raw.toUpperCase();
+      // 统一到前端可识别的四种展示态（不影响查询枚举）
+      if (upper.includes('STUDYING') || upper === 'NORMAL' || raw === '学习中') return 'STUDYING';
+      if (upper.includes('EXPIRED') || raw === '过期') return 'expired';
+      if (upper.includes('GRADUATED') || raw === '结业') return 'graduated';
+      if (upper.includes('REFUND') || raw === '已退费') return 'expired';
+      if (upper.includes('WAITING_RENEWAL') || raw === '待续费') return 'expired';
+      if (upper.includes('WAITING_PAYMENT') || raw === '待缴费') return 'expired';
+      return 'STUDYING';
+    })(),
     campusId: (dto.campusId || 0),
     campusName: dto.campusName,
     sourceId: (dto as any).sourceId, // 学员来源ID（来自列表/详情接口）
@@ -103,10 +114,8 @@ const convertDtoToStudent = (dto: StudentDTO): Student => {
     scheduleTimes: scheduleTimes,
     // 新增：映射 courses 字段
     courses: dto.courses ? dto.courses.map(courseDto => ({
-      ...courseDto, // 直接复制 DTO 的所有字段
-      // 如果 CourseInfo 和 CourseInfoDTO 结构完全一致，这里不需要额外转换
-      // 如果有差异，需要在这里进行字段映射
-    })) : [] // 如果 dto.courses 不存在，则返回空数组
+      ...courseDto,
+    })) : []
   } as Student; // 使用类型断言解决类型兼容问题
 };
 

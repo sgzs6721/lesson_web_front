@@ -43,16 +43,23 @@ export const course = {
 
     if (params?.pageNum) queryParams.append('pageNum', params.pageNum.toString());
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
-    if (params?.searchText) queryParams.append('keyword', params.searchText);
+    if (params?.keyword) {
+      queryParams.append('keyword', String(params.keyword));
+    } else if (params?.searchText) {
+      queryParams.append('keyword', params.searchText);
+    }
 
-    // 按后端文档使用单值 typeId
-    if ((params as any).typeId) {
-      queryParams.append('typeId', String((params as any).typeId));
-    } else if (params?.selectedType && Array.isArray(params.selectedType) && params.selectedType.length > 0) {
-      queryParams.append('typeId', String(params.selectedType[0]));
+    // 课程类型参数处理 - 统一使用数组形式
+    if (params?.selectedType && Array.isArray(params.selectedType) && params.selectedType.length > 0) {
+      // 支持多个类型选择
+      params.selectedType.forEach(typeId => {
+        queryParams.append('typeIds', String(typeId));
+      });
     } else if (params?.typeIds && Array.isArray(params.typeIds) && params.typeIds.length > 0) {
-      // 兼容旧参数，退化为取第一个
-      queryParams.append('typeId', String(params.typeIds[0]));
+      // 直接支持typeIds数组参数
+      params.typeIds.forEach(typeId => {
+        queryParams.append('typeIds', String(typeId));
+      });
     }
 
     // 修复状态过滤参数，确保传递字符串枚举名称
@@ -67,14 +74,17 @@ export const course = {
       }
     }
 
-    // 按后端文档使用单值 coachId
-    if ((params as any).coachId) {
-      queryParams.append('coachId', String((params as any).coachId));
-    } else if (params?.selectedCoach && Array.isArray(params.selectedCoach) && params.selectedCoach.length > 0) {
-      queryParams.append('coachId', String(params.selectedCoach[0]));
+    // 教练参数处理 - 统一使用数组形式
+    if (params?.selectedCoach && Array.isArray(params.selectedCoach) && params.selectedCoach.length > 0) {
+      // 支持多个教练选择
+      params.selectedCoach.forEach(coachId => {
+        queryParams.append('coachIds', String(coachId));
+      });
     } else if (params?.coachIds && Array.isArray(params.coachIds) && params.coachIds.length > 0) {
-      // 兼容旧参数，退化为取第一个
-      queryParams.append('coachId', String(params.coachIds[0]));
+      // 直接支持coachIds数组参数
+      params.coachIds.forEach(coachId => {
+        queryParams.append('coachIds', String(coachId));
+      });
     }
 
     // 添加排序参数

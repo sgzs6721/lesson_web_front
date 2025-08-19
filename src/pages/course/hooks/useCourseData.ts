@@ -218,27 +218,21 @@ export const useCourseData = () => {
       const apiParams: any = {
         pageNum: page,
         pageSize,
+        // 同时传递searchText和keyword以兼容API层
+        searchText: params.searchText,
         keyword: params.searchText, // searchText -> keyword
-        status: params.selectedStatus, // selectedStatus -> status
+        selectedStatus: params.selectedStatus, // 使用selectedStatus键
         campusId: params.campusId
       };
 
-      // 课程类型
+      // 课程类型 - 始终使用数组形式
       if (params.selectedType && params.selectedType.length > 0) {
-        if (params.selectedType.length === 1) {
-          apiParams.typeId = params.selectedType[0];
-        } else {
-          apiParams.typeIds = params.selectedType;
-        }
+        apiParams.typeIds = params.selectedType;
       }
 
-      // 教练
+      // 教练 - 始终使用数组形式
       if (params.selectedCoach && params.selectedCoach.length > 0) {
-        if (params.selectedCoach.length === 1) {
-          apiParams.coachId = params.selectedCoach[0];
-        } else {
-          apiParams.coachIds = params.selectedCoach;
-        }
+        apiParams.coachIds = params.selectedCoach;
       }
 
       // 排序参数，始终传递

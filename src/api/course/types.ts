@@ -86,6 +86,7 @@ export type CourseListParams = PaginationParams & Partial<CourseSearchParams> & 
   typeIds?: CourseType[] | undefined;
   coachIds?: number[] | undefined;
   sortField?: string | undefined;
+  keyword?: string | undefined;
 };
 
 // 课程列表响应
