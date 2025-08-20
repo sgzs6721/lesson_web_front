@@ -14,7 +14,8 @@ import {
   Tag,
   Table,
   Spin,
-  message
+  message,
+  Tooltip
 } from 'antd';
 import {
   UserOutlined,
@@ -22,7 +23,8 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  CloseOutlined
+  CloseOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import { Student, CourseGroup, ScheduleTime } from '@/pages/student/types/student';
@@ -254,29 +256,44 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               title: '操作',
               width: 150,
               align: 'center',
-              render: (_, __, index) => (
-                <Space>
-                  <Button
-                    type="link"
-                    size="small"
-                    icon={<EditOutlined />}
-                    onClick={() => editCourseGroup(index)}
-                    disabled={isEditing} // 如果正在编辑，禁用按钮
-                  >
-                    编辑
-                  </Button>
-                  <Button
-                    type="link"
-                    size="small"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => removeCourseGroup(courseGroups[index].key)}
-                    disabled={isEditing} // 如果正在编辑，禁用按钮
-                  >
-                    删除
-                  </Button>
-                </Space>
-              )
+              render: (_, record: CourseGroup, index) => {
+                // 判断是否为满课时（没有消课）
+                let isFullCourse = false;
+                if (editingStudent && editingStudent.courses && record.studentCourseId) {
+                  const courseInfo = editingStudent.courses.find(c => c.studentCourseId === record.studentCourseId);
+                  if (courseInfo) {
+                    isFullCourse = (courseInfo.consumedHours === 0 || courseInfo.consumedHours === undefined);
+                  }
+                }
+
+                return (
+                  <Space>
+                    <Button
+                      type="link"
+                      size="small"
+                      icon={<EditOutlined />}
+                      onClick={() => editCourseGroup(index)}
+                      disabled={isEditing} // 如果正在编辑，禁用按钮
+                    >
+                      编辑
+                    </Button>
+                    <Tooltip 
+                      title={!isFullCourse ? "已消课的课程不能删除" : "删除课程"}
+                    >
+                      <Button
+                        type="link"
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => removeCourseGroup(record.key)}
+                        disabled={isEditing || !isFullCourse} // 如果正在编辑或不是满课时，禁用按钮
+                      >
+                        删除
+                      </Button>
+                    </Tooltip>
+                  </Space>
+                );
+              }
             }
           ]}
         />
@@ -300,6 +317,23 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
       })
       .filter((c, i, arr) => arr.findIndex(item => String(item.id) === String(c.id)) === i); // 去重
 
+    // 判断是否为满课时（没有消课）
+    // 通过studentCourseId从editingStudent.courses中查找对应的课程信息
+    let isFullCourse = false;
+    let courseStatusText = '';
+    if (editingStudent && editingStudent.courses && group.studentCourseId) {
+      const courseInfo = editingStudent.courses.find(c => c.studentCourseId === group.studentCourseId);
+      if (courseInfo) {
+        // 判断是否为满课时：consumedHours为0或undefined
+        isFullCourse = (courseInfo.consumedHours === 0 || courseInfo.consumedHours === undefined);
+        if (isFullCourse) {
+          courseStatusText = `满课时状态（${courseInfo.totalHours || 0}课时未消耗）`;
+        } else {
+          courseStatusText = `已消耗${courseInfo.consumedHours || 0}/${courseInfo.totalHours || 0}课时`;
+        }
+      }
+    }
+
     return (
       <div
         key={group.key}
@@ -313,7 +347,49 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', alignItems: 'center' }}>
           <Title level={5} style={{ margin: 0 }}>报名课程</Title>
+          {isFullCourse && (
+            <span style={{ 
+              color: '#52c41a', 
+              fontSize: '12px', 
+              background: '#f6ffed', 
+              padding: '2px 8px', 
+              borderRadius: '4px',
+              border: '1px solid #b7eb8f'
+            }}>
+              {courseStatusText}
+            </span>
+          )}
         </div>
+
+        {isFullCourse && (
+          <div style={{ 
+            marginBottom: '12px', 
+            padding: '8px 12px', 
+            background: '#fff7e6', 
+            border: '1px solid #ffd666', 
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#d46b08'
+          }}>
+            <InfoCircleOutlined style={{ marginRight: '6px' }} />
+            该课程为满课时状态，可以编辑课程和删除
+          </div>
+        )}
+
+        {!isFullCourse && editingStudent && (
+          <div style={{ 
+            marginBottom: '12px', 
+            padding: '8px 12px', 
+            background: '#fff2f0', 
+            border: '1px solid #ffccc7', 
+            borderRadius: '4px',
+            fontSize: '13px',
+            color: '#cf1322'
+          }}>
+            <InfoCircleOutlined style={{ marginRight: '6px' }} />
+            该课程已消课，不能编辑课程和删除，只能修改报名日期
+          </div>
+        )}
 
         <Row gutter={16}>
           <Col span={6}>
@@ -324,6 +400,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               <Select
                 placeholder={courseSearchValue ? undefined : "请选择课程"}
                 value={group.courses && group.courses.length > 0 ? group.courses[0] : undefined}
+                disabled={!isFullCourse} // 不满课时时禁用课程选择（只有满课时才能编辑）
                 onChange={(value) => {
                   console.log('选择课程，原始值:', value, '类型:', typeof value);
 
