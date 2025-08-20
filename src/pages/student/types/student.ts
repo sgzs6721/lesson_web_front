@@ -116,6 +116,7 @@ export interface CourseGroup {
   // 新增字段
   originalCourseName?: string; // 原始课程名称，用于API调用
   originalCoachName?: string;  // 原始教练名称，用于API调用
+  studentCourseId?: number;    // 学员课程关系ID，用于编辑时更新现有记录
 }
 
 // 新增课程信息接口 (基于API响应 - 根据截图更新)

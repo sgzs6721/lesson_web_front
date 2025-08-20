@@ -290,7 +290,8 @@ export const useStudentForm = (
           status: statusValue as 'normal' | 'expired' | 'graduated' | 'STUDYING' | '',
           enrollDate: course.enrollmentDate || '',
           expireDate: course.endDate || '',
-          scheduleTimes: scheduleTimes
+          scheduleTimes: scheduleTimes,
+          studentCourseId: course.studentCourseId  // 保存studentCourseId用于编辑时更新
         };
       });
       setCourseGroups(newCourseGroups);
@@ -384,14 +385,55 @@ export const useStudentForm = (
           // 可以抛出错误或返回一个默认值/跳过，这里选择记录错误并可能导致后端失败
         }
 
+        // 在编辑模式下，尝试从CourseGroup中获取studentCourseId，或从editingStudent.courses中查找
+        let studentCourseId: number | undefined;
+        if (editingStudent) {
+          console.log('编辑模式：查找courseId', courseIdNum, '对应的studentCourseId');
+          
+          // 优先使用CourseGroup中保存的studentCourseId
+          if (group.studentCourseId) {
+            studentCourseId = group.studentCourseId;
+            console.log('从CourseGroup中获取到studentCourseId:', studentCourseId);
+          } else if (editingStudent.courses) {
+            // 备选方案：从editingStudent.courses中查找
+            console.log('CourseGroup中无studentCourseId，从editingStudent.courses中查找');
+            console.log('可用的courses:', editingStudent.courses);
+            
+            const matchingCourse = editingStudent.courses.find(c => 
+              String(c.courseId) === String(courseIdNum)
+            );
+            if (matchingCourse) {
+              studentCourseId = matchingCourse.studentCourseId;
+              console.log('从editingStudent.courses中找到匹配的课程，studentCourseId:', studentCourseId);
+            } else {
+              console.warn('警告：未找到courseId', courseIdNum, '对应的studentCourseId，可能是新增的课程');
+            }
+          }
+        }
+
         // 严格按照文档构建 courseInfo 对象
-        return {
+        const courseInfo: any = {
           courseId: typeof courseIdNum === 'number' ? courseIdNum : 0, // 确保是数字
           enrollDate: group.enrollDate ? dayjs(group.enrollDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'), // 使用 enrollDate
           fixedScheduleTimes: scheduleData, // 使用 fixedScheduleTimes 字段，并传递数组
           status: mapStatusToApi(group.status) || 'NORMAL', // 确保有默认值 NORMAL
-          coachName: group.coach || '' // !! 为创建操作添加 coachName !!
         };
+
+        // 在编辑模式下添加studentCourseId，在创建模式下添加coachName
+        if (editingStudent) {
+          // 编辑模式：如果找到了studentCourseId就包含它
+          if (studentCourseId) {
+            courseInfo.studentCourseId = studentCourseId;
+            console.log('编辑模式：添加studentCourseId', studentCourseId, '到courseInfo');
+          } else {
+            console.log('编辑模式：未找到studentCourseId，让后端根据studentId+courseId查找');
+          }
+        } else {
+          // 创建模式：包含coachName
+          courseInfo.coachName = group.coach || '';
+        }
+
+        return courseInfo;
       });
 
       // 构建 studentInfo 对象，只包含文档要求的字段
@@ -414,16 +456,24 @@ export const useStudentForm = (
           return false; 
         }
         
-        // 构建更新的 payload (courseInfoList 不含 coachName)
+        // 构建更新的 payload (courseInfoList 保留 studentCourseId，不含 coachName)
         const payload = {
           studentId: Number(editingStudent.id), 
           studentInfo: finalStudentInfo,
-          courseInfoList: courseInfoList.map(ci => ({ // 重新映射，移除 coachName 等
-            courseId: ci.courseId,
-            enrollDate: ci.enrollDate,
-            fixedScheduleTimes: ci.fixedScheduleTimes,
-            // status: ci.status // 从这里移除 status
-          })) // 确保更新 payload 不含 coachName
+          courseInfoList: courseInfoList.map(ci => {
+            const updateCourseInfo: any = {
+              courseId: ci.courseId,
+              enrollDate: ci.enrollDate,
+              fixedScheduleTimes: ci.fixedScheduleTimes,
+            };
+            
+            // 在编辑模式下保留studentCourseId（如果存在）
+            if (ci.studentCourseId) {
+              updateCourseInfo.studentCourseId = ci.studentCourseId;
+            }
+            
+            return updateCourseInfo;
+          })
         };
         console.log('准备提交的最终 Payload (Update):', JSON.stringify(payload, null, 2));
         await onUpdateStudent(editingStudent.id, payload); 
