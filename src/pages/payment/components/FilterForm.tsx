@@ -88,67 +88,6 @@ const renderPaymentTypeTag = (props: CustomTagProps) => {
   );
 };
 
-const renderCustomTag = (props: CustomTagProps) => {
-  const { label, closable, onClose } = props;
-
-  // 提取纯课程名称，去除状态信息
-  let displayText = '';
-  let tagTitle = '';
-  
-  if (React.isValidElement(label) && (label.props as any)?.children) {
-    const children = (label.props as any).children;
-    if (Array.isArray(children) && children[0]?.props?.children) {
-      // 只显示课程名称部分，不显示状态
-      displayText = children[0].props.children;
-      tagTitle = displayText;
-    } else {
-      displayText = '标签'; // 回退值
-      tagTitle = displayText;
-    }
-  } else {
-    // 如果是纯文本，直接使用
-    displayText = String(label);
-    tagTitle = displayText;
-  }
-
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        backgroundColor: '#f0f0f0',
-        border: '1px solid #d9d9d9',
-        borderRadius: '4px',
-        padding: '0 6px',
-        margin: '0 2px',
-        fontSize: '12px',
-        maxWidth: displayText.length <= 3 ? '40px' : '200px',
-        minWidth: displayText.length <= 3 ? '30px' : '80px',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
-      }}
-      title={tagTitle}
-    >
-      <span style={{ 
-        whiteSpace: 'nowrap', 
-        marginRight: '4px',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        flex: 1,
-        minWidth: 0
-      }}>
-        {displayText}
-      </span>
-      {closable && (
-        <span onClick={onClose} style={{ cursor: 'pointer', fontSize: '10px', color: '#999', lineHeight: 1, flexShrink: 0 }}>
-          ×
-        </span>
-      )}
-    </span>
-  );
-};
-
 const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, courses }) => {
   const [form] = Form.useForm();
 
@@ -172,14 +111,7 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, co
 
   const courseOptions = courses.map(course => ({
     value: course.id.toString(),
-    label: (
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>{course.name}</span>
-        <span style={{ color: getCourseStatusColor(course.status), fontSize: '12px', marginLeft: '8px' }}>
-          {getCourseStatusText(course.status)}
-        </span>
-      </div>
-    ),
+    label: course.name, // 简化为只显示课程名称
   }));
 
   return (
@@ -199,9 +131,8 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, co
                 options={courseOptions}
                 allowClear
                 style={{ width: '100%' }}
-                maxTagCount={3}
+                maxTagCount="responsive"
                 maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
-                tagRender={renderCustomTag}
                 getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
               />
             </Form.Item>
@@ -216,7 +147,7 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, co
                   width: '100%',
                   minHeight: '32px'
                 }}
-                maxTagCount={3}
+                maxTagCount="responsive"
                 maxTagPlaceholder={(omittedValues) => `+${omittedValues.length}`}
                 tagRender={renderPaymentTypeTag}
                 getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
