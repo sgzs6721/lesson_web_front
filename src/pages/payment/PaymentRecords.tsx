@@ -14,7 +14,7 @@ import type { SimpleCourse } from '@/api/course/types';
 import { constants } from '@/api/constants';
 import type { Constant } from '@/api/constants/types';
 import { updatePaymentRecord as updatePaymentRecordApi, UpdatePaymentRecordRequest } from '@/api/payment';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import './payment.css';
 import './PaymentRecords.css';
 import { paymentTypeOptions } from '@/pages/student/constants/options';
@@ -100,7 +100,7 @@ const PaymentRecords: React.FC = () => {
       searchText: params.searchText || '',
       selectedCourse: params.courseIds || [],
       searchPaymentMethod: params.paymentTypes || [],
-      dateRange: null, // dateRange is not handled by usePaymentData based on quick check, will ignore for now.
+      dateRange: params.dateRange ? [dayjs(params.dateRange[0]), dayjs(params.dateRange[1])] as [Dayjs, Dayjs] : null, // 正确传递日期范围
       searchStatus: '', // not in new filter
       searchPaymentType: '', // not in new filter
     };

@@ -154,7 +154,7 @@ const FilterForm: React.FC<FilterFormProps> = ({ onFilter, onReset, onExport, co
               >
                 <Option value="NEW">新增</Option>
                 <Option value="REFUND">退费</Option>
-                <Option value="RENEWAL">续费</Option>
+                <Option value="RENEW">续费</Option>
               </Select>
             </Form.Item>
           </Col>
