@@ -4,6 +4,7 @@ import { Student } from '@/pages/student/types/student';
 import { getStudentColumns } from '@/pages/student/constants/tableColumns';
 import StandardPagination from '@/components/common/StandardPagination';
 import { Constant } from '@/api/constants/types';
+import { SimpleCourse } from '@/api/course/types';
 import '../student.css';
 
 interface StudentTableProps {
@@ -29,6 +30,8 @@ interface StudentTableProps {
   // 新增：共享回调
   onShare?: (student: Student & { selectedCourseId?: string }) => void;
   validityPeriodOptions: Constant[];
+  // 新增：课程列表
+  courseList: SimpleCourse[];
 }
 
 // 使用React.memo包装组件以避免不必要的重渲染
@@ -48,6 +51,7 @@ const StudentTable: React.FC<StudentTableProps> = React.memo(({
   onSortChange,
   onShare,
   validityPeriodOptions,
+  courseList,
 }) => {
   // 创建各个回调函数的安全版本，避免undefined错误
   const safeOnPayment = onPayment || (() => {});
@@ -71,6 +75,7 @@ const StudentTable: React.FC<StudentTableProps> = React.memo(({
     safeOnDetails,
     safeOnShare,
     validityPeriodOptions,
+    courseList,
   );
 
   // 监听表格的排序变化，仅记录状态，不触发请求

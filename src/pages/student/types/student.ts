@@ -119,6 +119,16 @@ export interface CourseGroup {
   studentCourseId?: number;    // 学员课程关系ID，用于编辑时更新现有记录
 }
 
+// 共享课程信息
+export interface SharingInfo {
+  sourceCourseId: number;
+  sourceCourseName: string;
+  targetCourseId: number;
+  targetCourseName: string;
+  coachId: number;
+  coachName: string;
+}
+
 // 新增课程信息接口 (基于API响应 - 根据截图更新)
 export interface CourseInfo {
   studentCourseId: number;
@@ -136,6 +146,7 @@ export interface CourseInfo {
   fixedSchedule?: string | null;
   lastClassTime?: string | null;
   remainingHours?: number;
+  sharingInfoList?: SharingInfo[]; // 共享课程信息列表
 }
 
 // 学员查询参数

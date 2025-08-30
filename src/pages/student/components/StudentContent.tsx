@@ -130,6 +130,7 @@ const StudentContent: React.FC<StudentContentProps> = ({
         onSortChange={onSortChange}
         onShare={onShare}
         validityPeriodOptions={validityPeriodOptions}
+        courseList={courseList}
       />
     </>
   );

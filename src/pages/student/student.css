@@ -280,48 +280,62 @@
   display: grid;
   grid-template-columns: 4px 80px 220px 85px 80px 1fr !important; /* 竖线 + 课程类型标签 + 课程名称|教练(固定) + 课时 + 状态 + 操作 */
   column-gap: 16px !important; /* 统一16px间距 */
-  align-items: center;
+  align-items: stretch !important; /* 改为拉伸对齐，让每个格子都填满高度 */
   width: 100% !important;
   min-width: 100% !important;
+  /* 移除固定的最小高度，让每个课程块根据内容自适应高度 */
   padding: 4px 8px !important;
   border-radius: 4px;
   box-sizing: border-box !important;
 }
 
-/* 课程标签列居中（现为第2列） */
-.course-info-grid > div:nth-child(2) {
-  text-align: center !important;
+/* 状态竖线列（第1列） */
+.course-info-grid > div:nth-child(1) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important; /* 确保在网格中垂直居中 */
 }
 
-/* 课程名称列左对齐样式（现为第3列），并保证至少6字空间 */
+/* 课程标签列居中（第2列） */
+.course-info-grid > div:nth-child(2) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+}
+
+/* 课程名称列左对齐样式（第3列），多行内容垂直居中 */
 .course-info-grid > div:nth-child(3) {
   text-align: left !important;
   padding-left: 8px !important; /* 与竖线保持合适距离 */
   min-width: 150px !important; /* 至少容纳6个汉字 */
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  /* 移除 overflow: hidden，让多行内容可以显示 */
+  align-self: center !important;
 }
 
-/* 课程类型列已前移为第2列，样式在上方设置 */
-
-/* 教练列居中 */
+/* 课时列居中（第4列） */
 .course-info-grid > div:nth-child(4) {
-  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
 }
 
-/* 课时列居中（现为第4列） */
-.course-info-grid > div:nth-child(4) {
-  text-align: center !important;
-}
-
-/* 状态列居中（现为第5列） */
+/* 状态列居中（第5列） */
 .course-info-grid > div:nth-child(5) {
-  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
 }
 
-/* 操作按钮列居中（现为第6列） */
+/* 操作按钮列居中（第6列） */
 .course-info-grid > div:nth-child(6) {
-  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
 }
 
 /* 操作列样式 */

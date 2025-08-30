@@ -18,6 +18,7 @@ import {
 } from '@ant-design/icons';
 import { Student, CourseInfo } from '@/pages/student/types/student';
 import { Constant } from '@/api/constants/types';
+import { SimpleCourse } from '@/api/course/types';
 import dayjs from 'dayjs';
 // 不再需要 FixedWidthTag，使用统一的 Tag 样式
 // import FixedWidthTag from '../components/FixedWidthTag';
@@ -198,6 +199,7 @@ export const getStudentColumns = (
   onDetails?: (record: Student) => void, // 添加详情查看回调
   onShare?: (student: Student) => void, // 新增：共享回调
   validityPeriodOptions?: Constant[], // 新增：有效期常量选项
+  courseList?: SimpleCourse[], // 新增：课程列表
 ): ColumnsType<Student> => [
   {
     title: '学员ID',
@@ -437,7 +439,8 @@ export const getStudentColumns = (
                 {/* 左侧的课程状态竖线 */}
                 <div style={{ 
                   width: '4px',
-                  height: '20px',
+                  // 动态设置高度：有共享课程时36px，没有时18px
+                  height: course.sharingInfoList && course.sharingInfoList.length > 0 ? '36px' : '18px',
                   backgroundColor: (() => {
                     const statusUpperCase = (course.status || '').toUpperCase();
                     if (statusUpperCase === 'EXPIRED') {
@@ -457,7 +460,8 @@ export const getStudentColumns = (
                     }
                   })(),
                   borderRadius: '2px',
-                  justifySelf: 'center'
+                  // 确保竖线在容器中垂直居中
+                  alignSelf: 'center'
                 }}></div>
                 
                 {/* 课程类型 - 先显示标签 */}
@@ -473,17 +477,28 @@ export const getStudentColumns = (
                   </Tag>
                 </div>
                 
-                {/* 课程名称 + 教练 - 合并显示 */}
+                {/* 课程名称 + 教练 - 原课程与共享课程分两行显示 */}
                 <div style={{ 
                   color: 'rgba(0, 0, 0, 0.85)',
                   fontWeight: 500,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  lineHeight: '22px',
-                  maxWidth: '100%'
-                }} title={`${course.courseName || '-'} | ${course.coachName || '-'}`}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, maxWidth: '100%' }}>
+                  lineHeight: '1.2',
+                  // 动态设置高度：有共享课程时44px，没有时22px
+                  minHeight: course.sharingInfoList && course.sharingInfoList.length > 0 ? '44px' : '22px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  maxWidth: '100%',
+                  position: 'relative'
+                }}>
+
+                  {/* 第一行：打卡按钮 + 原课程名称 + 教练 */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 6, 
+                    marginBottom: course.sharingInfoList && course.sharingInfoList.length > 0 ? 2 : 0,
+                    minHeight: '20px'
+                  }}>
                     <Tooltip title={isDisabled ? getAttendanceDisabledReason() : '打卡请假'}>
                       <Button 
                         type="link"
@@ -491,44 +506,146 @@ export const getStudentColumns = (
                         size="small"
                         onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
                         disabled={isDisabled}
-                        style={{ padding: 0, margin: 0 }}
+                        style={{ padding: 0, margin: 0, minWidth: 'auto', width: '16px' }}
                       />
                     </Tooltip>
                     <span style={{ 
-                      width: '84px', // 固定宽度为6个中文字符（每个中文字符约14px）
-                      display: 'inline-block',
-                      textAlign: 'left',
+                      fontSize: '14px',
+                      fontWeight: 500,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      width: '90px', // 固定宽度确保对齐
+                      display: 'inline-block'
                     }}>
-                      {(() => {
-                        const courseName = course.courseName || '-';
-                        if (courseName.length <= 6) {
-                          // 不足6个字符，用空格补齐
-                          return courseName + ' '.repeat(6 - courseName.length);
-                        } else {
-                          // 超过6个字符，显示前6个字符加省略号
-                          return courseName.substring(0, 6) + '…';
-                        }
-                      })()}
+                      {course.courseName || '-'}
                     </span>
-                    <span style={{ margin: '0 6px', color: '#d9d9d9' }}>|</span>
-                    <span style={{ color: getCoachColor(course.coachName) }}>
+                    <span style={{ margin: '0 2px', color: '#d9d9d9', width: '8px', textAlign: 'center' }}>|</span>
+                    <span style={{ 
+                      color: getCoachColor(course.coachName),
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      width: '60px', // 固定宽度确保对齐
+                      display: 'inline-block'
+                    }}>
                       {course.coachName || '-'}
                     </span>
-                  </span>
+                  </div>
+                  
+                  {/* 第二行：共享课程信息 - 如果存在 */}
+                  {course.sharingInfoList && course.sharingInfoList.length > 0 && (
+                    <div style={{ 
+                      minHeight: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6
+                    }}>
+                      {course.sharingInfoList.map((sharing, idx) => (
+                        <div key={idx} style={{ 
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          marginRight: idx < course.sharingInfoList!.length - 1 ? 8 : 0,
+                          width: '100%' // 确保占满宽度
+                        }}>
+                          {/* 共享课程的打卡按钮 */}
+                          <Tooltip title={isDisabled ? getAttendanceDisabledReason() : '打卡请假'}>
+                            <Button 
+                              type="link"
+                              icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
+                              size="small"
+                              onClick={() => {
+                                // 根据targetCourseId从课程列表中查找对应的课程名称
+                                const targetCourse = courseList?.find(course => course.id === sharing.targetCourseId);
+                                const targetCourseName = targetCourse?.name || sharing.targetCourseName || `课程${sharing.targetCourseId}`;
+                                
+                                onAttendance({ 
+                                  ...record, 
+                                  // 对于共享课程，传入目标课程的信息
+                                  courseId: sharing.targetCourseId, 
+                                  courseName: targetCourseName,
+                                  attendanceCourse: { 
+                                    id: sharing.targetCourseId, 
+                                    name: targetCourseName 
+                                  } 
+                                } as Student & { courseName?: string });
+                              }}
+                              disabled={isDisabled}
+                              style={{ padding: 0, margin: 0, minWidth: 'auto', width: '16px' }}
+                            />
+                          </Tooltip>
+                          
+                          {/* 共享课程名称和教练 - 与第一行完全相同的布局和宽度 */}
+                          <span style={{ 
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            width: '90px', // 与第一行相同的固定宽度
+                            display: 'inline-block'
+                          }}>
+                            {sharing.sourceCourseName || '-'}
+                          </span>
+                          <span style={{ margin: '0 2px', color: '#d9d9d9', width: '8px', textAlign: 'center' }}>|</span>
+                          <span style={{ 
+                            color: getCoachColor(sharing.coachName),
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            width: '60px', // 与第一行相同的固定宽度
+                            display: 'inline-block'
+                          }}>
+                            {sharing.coachName || '-'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 {/* 课时 - 居中对齐，通过CSS控制 */}
                 <div style={{
-                    color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
-                    textDecoration: isDisabled ? 'line-through' : 'none',
-                    fontWeight: remainingHours <= 5 ? 'bold' : 'normal',
-                    whiteSpace: 'nowrap',
-                    lineHeight: '22px',
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: course.sharingInfoList && course.sharingInfoList.length > 0 ? '44px' : '22px',
                 }}>
-                  {`${remainingHours ?? 0}/${course.totalHours ?? 0}课时`}
+                  {/* 如果有共享课程，左侧显示共享标签 */}
+                  {course.sharingInfoList && course.sharingInfoList.length > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      left: '-30px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: '#52c41a',
+                      color: '#fff',
+                      fontSize: '10px',
+                      padding: '2px 4px',
+                      borderRadius: '2px',
+                      fontWeight: 'bold',
+                      whiteSpace: 'nowrap',
+                      zIndex: 2,
+                    }}>
+                      共享
+                    </div>
+                  )}
+                  
+                  <div style={{
+                      color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
+                      textDecoration: isDisabled ? 'line-through' : 'none',
+                      fontWeight: remainingHours <= 5 ? 'bold' : 'normal',
+                      whiteSpace: 'nowrap',
+                      lineHeight: '22px',
+                  }}>
+                    {`${remainingHours ?? 0}/${course.totalHours ?? 0}课时`}
+                  </div>
                 </div>
                 
                 {/* 状态 - 居中对齐，通过CSS控制 */}

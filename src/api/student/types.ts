@@ -112,6 +112,16 @@ export interface StudentDTO {
   courses?: CourseInfoDTO[];
 }
 
+// 共享课程信息DTO
+export interface SharingInfoDTO {
+  sourceCourseId: number;
+  sourceCourseName: string;
+  targetCourseId: number;
+  targetCourseName: string;
+  coachId: number;
+  coachName: string;
+}
+
 // 新增课程信息DTO接口 (对应API响应中的课程结构 - 根据截图更新)
 export interface CourseInfoDTO {
   studentCourseId: number;
@@ -129,6 +139,7 @@ export interface CourseInfoDTO {
   fixedSchedule?: string | null;
   lastClassTime?: string | null;
   remainingHours?: number; // API似乎也提供了计算好的remainingHours
+  sharingInfoList?: SharingInfoDTO[]; // 共享课程信息列表
   // coaches?: { id: number; name: string; }[]; // 移除coaches数组，使用coachName
   // 移除之前错误定义的字段
   // id?: string;
