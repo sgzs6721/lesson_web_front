@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Form, message } from 'antd';
 import { Student } from '../types/student';
 import { SimpleCourse } from '@/api/course/types';
+import { API } from '@/api';
 
 export interface UseShareModalResult {
   visible: boolean;
@@ -45,22 +46,17 @@ export default function useShareModal(courseList: SimpleCourse[] = []): UseShare
     try {
       const values = await form.validateFields();
       setLoading(true);
-      // 这里暂未对接后端接口，仅做成功提示
+
+      // 调用后端共享接口
+      const studentId = Number((currentStudent as any)?.studentId || (currentStudent as any)?.id);
+      const sourceCourseId = Number(values.fromCourseId || (currentStudent as any)?.selectedCourseId);
+      const targetCourseId = Number(values.targetCourseId);
+
+      await API.student.shareCourse({ studentId, sourceCourseId, targetCourseId });
+
       message.success('共享成功');
 
-      // 提交后派发预览事件，供列表即时展示
-      try {
-        const studentId = (currentStudent as any)?.id || (currentStudent as any)?.studentId;
-        const fromCourseId = values.fromCourseId;
-        const targetCourseId = values.targetCourseId;
-        const target = courseList.find(c => String(c.id) === String(targetCourseId));
-        const toCourseName = target?.name || '';
-        window.dispatchEvent(new CustomEvent('student:share:preview', {
-          detail: { studentId, fromCourseId, toCourseName }
-        }));
-      } catch {}
-
-      // 刷新列表/摘要（如果后端已更新）
+      // 刷新列表/摘要
       try { window.dispatchEvent(new Event('student:list-summary:refresh')); } catch {}
 
       handleCancel();

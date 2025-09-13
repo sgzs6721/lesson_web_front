@@ -335,11 +335,22 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     if (student && visible) {
       console.log('打卡模态框初始化，学员数据:', student);
 
-      // 如果 student 对象中直接带入了 courseId 和 courseName
-      if (student.courseId && student.courseName) {
+      // 优先使用从表格点击处传入的 attendanceCourse（明确指定要打卡的课程）
+      const ac = (student as any)?.attendanceCourse as { id?: string | number; name?: string } | undefined;
+      if (ac && (ac.id !== undefined)) {
         const preSelectedCourse = {
-          id: String(student.courseId),
-          name: student.courseName,
+          id: String(ac.id),
+          name: ac.name || '',
+        };
+        setStudentCourses([preSelectedCourse]);
+        setSelectedCourseId(preSelectedCourse.id);
+        form.setFieldsValue({ course: preSelectedCourse.id });
+      }
+      // 如果 student 对象中直接带入了 courseId 和 courseName
+      else if (student.courseId && (student as any).courseName) {
+        const preSelectedCourse = {
+          id: String(student.courseId as any),
+          name: (student as any).courseName as any,
         };
         console.log('使用从表格传递的课程信息:', preSelectedCourse);
         // 将其设置为唯一的选项
@@ -348,15 +359,12 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
         setSelectedCourseId(preSelectedCourse.id);
         form.setFieldsValue({ course: preSelectedCourse.id });
       }
-      // 保留之前的逻辑作为后备 (理论上不应该执行了)
+      // 保留之前的逻辑作为后备
       else {
         const courses = getStudentAllCourses(student);
         if (courses.length > 0) {
-           // ... 原有的复杂课程选择逻辑 ... 
-           // 这部分可能可以简化或移除，但暂时保留以防万一
-           console.warn('未直接传递课程名称，使用旧逻辑查找课程');
-           setStudentCourses(courses);
-           // ... 设置默认选中 ...
+          console.warn('未直接传递课程名称，使用旧逻辑查找课程');
+          setStudentCourses(courses);
         }
       }
       

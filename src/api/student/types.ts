@@ -294,6 +294,9 @@ export interface AttendanceRecordDTO {
   courseName: string;
   notes: string;
   recordId: number;
+  // 新增：接口会返回本次消课小时数与剩余课时
+  hours?: number;
+  remainingHours?: number;
 }
 
 // 打卡记录列表响应数据

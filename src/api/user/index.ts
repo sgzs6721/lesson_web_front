@@ -49,10 +49,16 @@ export const user = {
     if (params?.role && params.role.length > 0) {
       // 对于多选参数，需要多次添加同名参数
       params.role.forEach(roleId => {
-        queryParams.append('role', String(roleId));
+        queryParams.append('roles', String(roleId));
+      });
+    } else if (params?.roleIds && params.roleIds.length > 0) {
+      // 兼容旧字段 roleIds
+      params.roleIds.forEach(roleId => {
+        queryParams.append('roles', String(roleId));
       });
     } else if (params?.roleId) {
-      queryParams.append('role', String(params.roleId));
+      // 兼容单个 roleId
+      queryParams.append('roles', String(params.roleId));
     }
 
     // 校区筛选 - 支持多选

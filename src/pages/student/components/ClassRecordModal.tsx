@@ -110,7 +110,9 @@ const ClassRecordModal: React.FC<ClassRecordModalProps> = ({
       width: 90,
       align: 'right',
       render: (hours?: number) => {
-        return '-';
+        if (hours === null || hours === undefined) return '-';
+        const fixed = Number.isFinite(hours) ? Number(hours).toFixed(1) : String(hours);
+        return <span title={`${fixed} 小时`}>{fixed}</span>;
       },
     },
     {

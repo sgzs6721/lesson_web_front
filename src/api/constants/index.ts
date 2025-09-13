@@ -8,7 +8,7 @@ const inflightRequests: Record<string, Promise<Constant[]> | undefined> = {};
 // API Path Constants
 const CONSTANTS_API_PATHS = {
   LIST: '/lesson/api/constants/list',
-  SAVE: '/lesson/api/constants/save',
+  SAVE: '/lesson/api/constants/create',
   UPDATE: '/lesson/api/constants/update',
   DELETE: '/lesson/api/constants/delete'
 };

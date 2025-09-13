@@ -619,5 +619,18 @@ export const student = {
       console.error('获取打卡记录列表失败:', response.message);
       throw new Error(response.message || '获取打卡记录列表失败');
     }
+  },
+
+  // 学员课程共享
+  shareCourse: async (data: { studentId: number; sourceCourseId: number; targetCourseId: number; campusId?: number }): Promise<any> => {
+    const SHARE_PATH = '/lesson/api/course/sharing/create';
+    // 补全 campusId
+    const campusId = data.campusId || Number(localStorage.getItem('currentCampusId')) || 1;
+    const payload = { ...data, campusId };
+    const response = await request(SHARE_PATH, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    return response;
   }
 };

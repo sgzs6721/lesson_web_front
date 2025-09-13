@@ -99,11 +99,22 @@ const CoachManagement: React.FC = () => {
 
   // 重置搜索
   const handleReset = () => {
+    // 先重置本地搜索参数状态
     resetSearchParams();
+    // 重置分页与排序
     setCurrentPage(1);
     setTableSortField('id');
     setTableSortOrder('ascend');
-    loadCoaches(1, pageSize);
+
+    // 立即使用清空后的参数发起请求，避免使用到未同步完成的旧状态
+    const clearedParams = {
+      searchText: '',
+      selectedStatus: undefined,
+      selectedJobTitle: undefined,
+      sortField: undefined
+    } as const;
+
+    fetchCoaches(1, pageSize, clearedParams as any, 'id', 'ascend');
   };
 
   // 处理表格排序

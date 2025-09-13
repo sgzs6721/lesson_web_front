@@ -67,7 +67,8 @@ const AttendanceManagement: React.FC = () => {
       checkTime: apiRecord.checkTime || '',
       classTime: apiRecord.classTime || '',
       coachName: apiRecord.coachName || '',
-      status: apiRecord.type || '',
+      // 使用接口返回的 status 字段；兼容旧字段 type
+      status: (apiRecord as any).status || (apiRecord as any).type || '',
       remarks: apiRecord.notes,
     };
   };
