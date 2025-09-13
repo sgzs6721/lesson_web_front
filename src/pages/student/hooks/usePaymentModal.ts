@@ -31,10 +31,48 @@ export const usePaymentModal = () => {
   }, [paymentForm]);
 
   // 显示缴费模态框
-  const showModal = (student: Student) => {
+  const showModal = (student: Student & { paymentCourse?: any }) => {
     setCurrentStudent(student);
     paymentForm.resetFields();
 
+    // 检查是否传入了特定的课程信息
+    const specificCourse = (student as any).paymentCourse;
+    
+    if (specificCourse) {
+      // 使用传入的特定课程信息
+      console.log('使用传入的特定课程信息:', specificCourse);
+      
+      const courseId = String(specificCourse.id || '');
+      const courseName = specificCourse.name || '';
+      const courseType = specificCourse.type || '';
+      const remainingHours = Number(specificCourse.remainingHours || 0);
+      
+      // 设置选中的课程
+      setSelectedPaymentCourse(courseId);
+      setSelectedPaymentCourseName(courseName);
+      
+      // 设置课时预览初始值
+      setCurrentClassHours(remainingHours);
+      setNewClassHours(0);
+      setTotalClassHours(remainingHours);
+      setNewValidUntil(dayjs().add(180, 'day').format('YYYY-MM-DD'));
+      
+      // 表单值设置
+      paymentForm.setFieldsValue({
+        courseType: courseType,
+        courseId: courseId,
+        student: student.id,
+        transactionDate: dayjs(),
+        validUntil: dayjs().add(180, 'day'),
+        regularClasses: 0,
+        bonusClasses: 0,
+      });
+      
+      setVisible(true);
+      return;
+    }
+
+    // 如果没有传入特定课程，使用原有逻辑
     // 获取学生所有课程
     const courses = getStudentAllCourses(student);
     console.log('获取到的学生课程列表:', courses);

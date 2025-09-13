@@ -717,7 +717,20 @@ export const getStudentColumns = (
                     type="link"
                     icon={<DollarOutlined style={{ color: '#fa8c16' }} />}
                     size="small"
-                    onClick={() => onPayment(record)}
+                    onClick={() => onPayment({ 
+                      ...record, 
+                      paymentCourse: { 
+                        id: course.courseId, 
+                        name: course.courseName,
+                        type: course.courseTypeName,
+                        coach: course.coachName,
+                        remainingHours: course.remainingHours,
+                        totalHours: course.totalHours,
+                        status: course.status,
+                        enrollDate: (course as any).enrollDate,
+                        expireDate: course.endDate
+                      }
+                    } as any)}
                     style={{ padding: '0', margin: '0' }}
                     title="缴费"
                   />

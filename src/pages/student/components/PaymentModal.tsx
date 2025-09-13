@@ -98,15 +98,47 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   }, [watchedAmount]);
 
   const selectedCourseInfo = useMemo(() => {
+    // 优先使用传入的特定课程信息
+    const specificCourse = (student as any)?.paymentCourse;
+    if (specificCourse) {
+      return {
+        id: specificCourse.id,
+        name: specificCourse.name,
+        type: specificCourse.type,
+        coach: specificCourse.coach,
+        status: specificCourse.status,
+        enrollDate: specificCourse.enrollDate,
+        expireDate: specificCourse.expireDate
+      };
+    }
+    
+    // 如果没有特定课程信息，使用原有逻辑
     if (!coursesList || coursesList.length === 0 || !selectedCourse) {
       return null;
     }
     
     return coursesList.find(course => String(course.id) === String(selectedCourse)) || null;
-  }, [coursesList, selectedCourse]);
+  }, [coursesList, selectedCourse, student]);
 
   // 从学员的课程明细中获取当前选中课程的完整信息（包含 totalHours 等）
   const selectedApiCourseInfo = useMemo(() => {
+    // 优先使用传入的特定课程信息
+    const specificCourse = (student as any)?.paymentCourse;
+    if (specificCourse) {
+      return {
+        courseId: specificCourse.id,
+        courseName: specificCourse.name,
+        courseTypeName: specificCourse.type,
+        coachName: specificCourse.coach,
+        remainingHours: specificCourse.remainingHours,
+        totalHours: specificCourse.totalHours,
+        status: specificCourse.status,
+        enrollDate: specificCourse.enrollDate,
+        endDate: specificCourse.expireDate
+      };
+    }
+    
+    // 如果没有特定课程信息，使用原有逻辑
     if (!student || !student.courses || student.courses.length === 0 || !selectedCourse) {
       return null;
     }
