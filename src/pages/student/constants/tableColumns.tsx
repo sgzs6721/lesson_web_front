@@ -466,15 +466,17 @@ export const getStudentColumns = (
                 
                 {/* 课程类型 - 先显示标签 */}
                 <div>
-                  <Tag
-                    style={{
-                      ...getCourseTypeTagStyle(course.courseTypeName || '未知'),
-                      height: '22px',
-                      lineHeight: '18px',
-                    }}
-                  >
-                    {course.courseTypeName || '未知'}
-                  </Tag>
+                  <Tooltip title={course.courseTypeName || '未知'}>
+                    <Tag
+                      style={{
+                        ...getCourseTypeTagStyle(course.courseTypeName || '未知'),
+                        height: '22px',
+                        lineHeight: '18px',
+                      }}
+                    >
+                      {course.courseTypeName || '未知'}
+                    </Tag>
+                  </Tooltip>
                 </div>
                 
                 {/* 课程名称 + 教练 - 原课程与共享课程分两行显示 */}
@@ -509,30 +511,34 @@ export const getStudentColumns = (
                         style={{ padding: 0, margin: 0, minWidth: 'auto', width: '16px' }}
                       />
                     </Tooltip>
-                    <span style={{ 
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      width: '90px', // 固定宽度确保对齐
-                      display: 'inline-block'
-                    }}>
-                      {course.courseName || '-'}
-                    </span>
+                    <Tooltip title={course.courseName || '-'}>
+                      <span style={{ 
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        width: '90px', // 固定宽度确保对齐
+                        display: 'inline-block'
+                      }}>
+                        {course.courseName || '-'}
+                      </span>
+                    </Tooltip>
                     <span style={{ margin: '0 2px', color: '#d9d9d9', width: '8px', textAlign: 'center' }}>|</span>
-                    <span style={{ 
-                      color: getCoachColor(course.coachName),
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      width: '60px', // 固定宽度确保对齐
-                      display: 'inline-block'
-                    }}>
-                      {course.coachName || '-'}
-                    </span>
+                    <Tooltip title={course.coachName || '-'}>
+                      <span style={{ 
+                        color: getCoachColor(course.coachName),
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        width: '60px', // 固定宽度确保对齐
+                        display: 'inline-block'
+                      }}>
+                        {course.coachName || '-'}
+                      </span>
+                    </Tooltip>
                   </div>
                   
                   {/* 第二行：共享课程信息 - 如果存在 */}
@@ -579,30 +585,34 @@ export const getStudentColumns = (
                           </Tooltip>
                           
                           {/* 共享课程名称和教练 - 与第一行完全相同的布局和宽度 */}
-                          <span style={{ 
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            width: '90px', // 与第一行相同的固定宽度
-                            display: 'inline-block'
-                          }}>
-                            {sharing.sourceCourseName || '-'}
-                          </span>
+                          <Tooltip title={sharing.sourceCourseName || '-'}>
+                            <span style={{ 
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '90px', // 与第一行相同的固定宽度
+                              display: 'inline-block'
+                            }}>
+                              {sharing.sourceCourseName || '-'}
+                            </span>
+                          </Tooltip>
                           <span style={{ margin: '0 2px', color: '#d9d9d9', width: '8px', textAlign: 'center' }}>|</span>
-                          <span style={{ 
-                            color: getCoachColor(sharing.coachName),
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            width: '60px', // 与第一行相同的固定宽度
-                            display: 'inline-block'
-                          }}>
-                            {sharing.coachName || '-'}
-                          </span>
+                          <Tooltip title={sharing.coachName || '-'}>
+                            <span style={{ 
+                              color: getCoachColor(sharing.coachName),
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '60px', // 与第一行相同的固定宽度
+                              display: 'inline-block'
+                            }}>
+                              {sharing.coachName || '-'}
+                            </span>
+                          </Tooltip>
                         </div>
                       ))}
                     </div>
