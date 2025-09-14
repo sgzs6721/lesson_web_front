@@ -397,7 +397,7 @@ const StudentManagement: React.FC = () => {
             onCourseChange={df.search.setSelectedCourse}
             onMonthChange={df.search.setEnrollMonth}
             onEdit={(record) => df.form.showEditModal(record as any)}
-            onClassRecord={(record) => ui.classRecord.showClassRecordModal(record as any)}
+            onClassRecord={(record, courseId) => ui.classRecord.showClassRecordModal(record as any, courseId)}
             onPayment={(record) => ui.payment.showPaymentModal(record as any)}
             onRefund={(record) => ui.refund.handleRefund(record as any)}
             onTransfer={(record) => ui.transfer.handleTransfer(record as any, record.selectedCourseId)}

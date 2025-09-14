@@ -284,6 +284,7 @@ export interface StudentUISearchParams {
 export interface AttendanceListParams extends PaginationParams {
   studentId: number;
   campusId: number;
+  courseId?: string;
 }
 
 // 单条打卡记录 (API 返回)

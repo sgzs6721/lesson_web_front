@@ -139,6 +139,8 @@ export const getStudentColumns = (
             size="small" 
             icon={<FileTextOutlined />} 
             onClick={() => onClassRecord(record)}
+            disabled={!record.courses || record.courses.length === 0}
+            title={(!record.courses || record.courses.length === 0) ? '该学员暂无课程' : '课程记录'}
           >
             课程记录
           </Button>

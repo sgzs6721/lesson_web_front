@@ -17,7 +17,7 @@ interface StudentTableProps {
     onChange: (page: number, pageSize: number) => void;
   };
   onEdit: (record: Student) => void;
-  onClassRecord: (student: Student) => void;
+  onClassRecord: (student: Student, courseId?: string) => void;
   onPayment?: (student: Student) => void;
   onRefund?: (student: Student) => void;
   onTransfer?: (student: Student & { selectedCourseId?: string }) => void;

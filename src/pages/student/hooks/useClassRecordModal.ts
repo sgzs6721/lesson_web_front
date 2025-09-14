@@ -30,7 +30,7 @@ export const useClassRecordModal = () => {
   const [courseSummaries, setCourseSummaries] = useState<{ courseName: string; count: number }[]>([]); // 新增：课程统计状态
 
   // 获取记录的函数
-  const fetchRecords = useCallback(async (studentId: number, page: number, pageSize: number) => {
+  const fetchRecords = useCallback(async (studentId: number, page: number, pageSize: number, courseId?: string, courseName?: string) => {
     setLoading(true);
     setCourseSummaries([]); // 重置统计
     try {
@@ -58,6 +58,14 @@ export const useClassRecordModal = () => {
           ...record,
           key: record.recordId || `${page}-${index}`
         }));
+
+        // 如果指定了课程名称，则过滤记录
+        if (courseName) {
+          console.log('按课程名称过滤记录:', courseName);
+          uiRecords = uiRecords.filter(record => 
+            record.courseName && record.courseName.includes(courseName)
+          );
+        }
 
         // 对记录进行排序：先按课程名称，再按上课日期（降序）
         uiRecords.sort((a, b) => {
@@ -102,18 +110,32 @@ export const useClassRecordModal = () => {
   }, []);
 
   // 显示模态框并获取第一页数据
-  const showModal = useCallback((student: Student) => {
+  const showModal = useCallback((student: Student, courseId?: string) => {
     // ★ 确保使用 studentId (number)
     const studentId = student.studentId ? Number(student.studentId) : Number(student.id);
     if (isNaN(studentId)) {
       message.error('无效的学员ID，无法查看记录');
       return;
     }
-    setCurrentStudent(student);
+    
+    // 根据课程ID找到课程名称
+    let courseName: string | undefined;
+    if (courseId && student.courses) {
+      const course = student.courses.find(c => String(c.courseId) === String(courseId));
+      courseName = course?.courseName;
+    }
+    
+    // 将课程信息存储到学生对象中，以便分页时使用
+    const studentWithCourseInfo = { 
+      ...student, 
+      selectedCourseId: courseId,
+      selectedCourseName: courseName
+    };
+    setCurrentStudent(studentWithCourseInfo);
     setVisible(true);
     // 重置分页到第一页并获取数据
     setPagination(prev => ({ current: 1, total: prev.total, pageSize: prev.pageSize }));
-    fetchRecords(studentId, 1, pagination.pageSize || 10);
+    fetchRecords(studentId, 1, pagination.pageSize || 10, courseId, courseName);
   }, [fetchRecords, pagination.pageSize]);
 
   // 关闭模态框
@@ -132,7 +154,10 @@ export const useClassRecordModal = () => {
        if (!isNaN(studentId)) {
          const page = newPagination.current || 1;
          const pageSize = newPagination.pageSize || 10;
-         fetchRecords(studentId, page, pageSize);
+         // 从当前学生信息中获取课程信息（如果有的话）
+         const courseId = (currentStudent as any).selectedCourseId;
+         const courseName = (currentStudent as any).selectedCourseName;
+         fetchRecords(studentId, page, pageSize, courseId, courseName);
        }
     }
   }, [currentStudent, fetchRecords]);

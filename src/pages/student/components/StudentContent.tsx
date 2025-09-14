@@ -43,7 +43,7 @@ interface StudentContentProps {
   
   // 操作函数
   onEdit: (record: UiStudent) => void;
-  onClassRecord: (record: UiStudent) => void;
+  onClassRecord: (record: UiStudent, courseId?: string) => void;
   onPayment: (record: UiStudent) => void;
   onRefund: (record: UiStudent) => void;
   onTransfer: (record: UiStudent & { selectedCourseId?: string }) => void;

@@ -189,7 +189,7 @@ const getCoachColor = (name?: string) => {
 // 生成学员表格列定义
 export const getStudentColumns = (
   onEdit: (record: Student) => void,
-  onClassRecord: (student: Student) => void,
+  onClassRecord: (student: Student, courseId?: string) => void,
   onPayment: (student: Student) => void,
   onRefund: (student: Student) => void,
   onTransfer: (student: Student) => void,
@@ -715,11 +715,12 @@ export const getStudentColumns = (
                   {/* 课程记录按钮 */}
                   <Button 
                     type="link"
-                    icon={<FileTextOutlined style={{ color: '#1890ff' }} />}
+                    icon={<FileTextOutlined style={{ color: (course.totalHours || 0) <= 0 ? '#bfbfbf' : '#1890ff' }} />}
                     size="small"
-                    onClick={() => onClassRecord(record)}
+                    onClick={() => onClassRecord(record, course.courseId?.toString())}
+                    disabled={(course.totalHours || 0) <= 0}
                     style={{ padding: '0', margin: '0' }}
-                    title="课程记录"
+                    title={(course.totalHours || 0) <= 0 ? '该课程总课时为0，无记录可查看' : '课程记录'}
                   />
 
                   {/* 缴费按钮 */}
