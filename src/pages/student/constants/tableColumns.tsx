@@ -191,9 +191,9 @@ export const getStudentColumns = (
   onEdit: (record: Student) => void,
   onClassRecord: (student: Student, courseId?: string) => void,
   onPayment: (student: Student) => void,
-  onRefund: (student: Student) => void,
-  onTransfer: (student: Student) => void,
-  onTransferClass: (student: Student) => void,
+  onRefund: (student: Student & { selectedCourseId?: string; selectedCourseName?: string }) => void,
+  onTransfer: (student: Student & { selectedCourseId?: string }) => void,
+  onTransferClass: (student: Student & { selectedCourseId?: string; selectedCourseName?: string }) => void,
   onDelete: (student: Student) => void,
   onAttendance: (student: Student & { attendanceCourse?: { id: number | string; name: string } }) => void,
   onDetails?: (record: Student) => void, // 添加详情查看回调
@@ -346,7 +346,25 @@ export const getStudentColumns = (
                 key: 'refund',
                 label: '退费',
                 icon: <RollbackOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#f5222d' }} />,
-                onClick: () => !isGraduated && remainingHours > 0 && onRefund(record),
+                onClick: () => {
+                  if (!isGraduated && remainingHours > 0) {
+                    // 调试信息，打印当前课程
+                    console.log(`点击退费按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${course.courseName}`);
+
+                    // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
+                    const courseInfoForRefund = {
+                      ...record,
+                      selectedCourseId: course.courseId ? String(course.courseId) : undefined,
+                      selectedCourseName: course.courseName // 添加课程名称
+                    };
+
+                    // 打印完整的传递信息
+                    console.log('退费 - 传递的完整信息:', courseInfoForRefund);
+
+                    // 调用退费方法
+                    onRefund(courseInfoForRefund as any);
+                  }
+                },
                 disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用退费
                 style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },

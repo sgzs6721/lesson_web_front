@@ -29,21 +29,75 @@ export default function useRefundModal(
   const [submitting, setSubmitting] = useState(false);
 
   // 处理展示退费模态框
-  const handleRefund = (student: Student) => {
-    console.log('处理退费操作，学生:', student.name);
-    
-    // 重置表单
-    form.resetFields();
+  const handleRefund = (student: Student & { selectedCourseId?: string; selectedCourseName?: string }) => {
+    console.log('处理退费操作，学生:', student.name, '课程ID:', student.selectedCourseId, '课程名称:', student.selectedCourseName);
+    console.log('学生完整数据:', student);
     
     // 设置当前学生
     setCurrentStudent(student);
     
     // 获取学生的所有课程
     const courses = getStudentAllCourses(student);
+    console.log('获取到的课程列表:', courses);
     setStudentCourses(courses);
     
     // 打开模态框
     setVisible(true);
+    
+    // 使用 setTimeout 确保模态框完全打开后再设置表单值
+    setTimeout(() => {
+      // 重置表单
+      form.resetFields();
+      
+      // 如果有指定的课程ID，设置表单的默认课程
+      if (student.selectedCourseId) {
+        console.log('查找课程ID:', student.selectedCourseId, '类型:', typeof student.selectedCourseId);
+        console.log('传递的课程名称:', student.selectedCourseName);
+        
+        // 优先使用传递的课程名称，这样更可靠
+        let courseName = student.selectedCourseName;
+        let refundHours = '0';
+        
+        // 尝试从课程列表中找到匹配的课程来获取退费课时
+        const selectedCourse = courses.find(course => {
+          console.log('比较课程:', {
+            courseId: course.id,
+            courseIdType: typeof course.id,
+            targetId: student.selectedCourseId,
+            targetIdType: typeof student.selectedCourseId,
+            match: String(course.id) === String(student.selectedCourseId)
+          });
+          return String(course.id) === String(student.selectedCourseId);
+        });
+        
+        if (selectedCourse) {
+          console.log('找到匹配的课程:', selectedCourse);
+          // 如果找到匹配的课程，使用课程列表中的信息
+          courseName = selectedCourse.name;
+          refundHours = selectedCourse.remainingClasses ? selectedCourse.remainingClasses.split('/')[0] : '0';
+        } else {
+          console.log('未找到匹配的课程，使用传递的课程名称');
+          // 如果没找到匹配的课程，尝试从原始课程数据中获取退费课时
+          if (student.courses && student.courses.length > 0) {
+            const originalCourse = student.courses.find(course => String(course.courseId) === String(student.selectedCourseId));
+            if (originalCourse) {
+              refundHours = originalCourse.remainingHours ? String(originalCourse.remainingHours) : '0';
+              console.log('从原始课程数据获取退费课时:', refundHours);
+            }
+          }
+        }
+        
+        const formValues = {
+          studentId: student.studentId || student.id, // 设置学员ID
+          studentName: student.name, // 设置学员姓名
+          _courseId: student.selectedCourseId,
+          fromCourseId: courseName || '未知课程',
+          refundClassHours: refundHours
+        };
+        console.log('最终设置的表单值:', formValues);
+        form.setFieldsValue(formValues);
+      }
+    }, 100); // 延迟100ms确保模态框完全打开
   };
 
   // 关闭模态框

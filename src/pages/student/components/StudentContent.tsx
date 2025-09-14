@@ -45,9 +45,9 @@ interface StudentContentProps {
   onEdit: (record: UiStudent) => void;
   onClassRecord: (record: UiStudent, courseId?: string) => void;
   onPayment: (record: UiStudent) => void;
-  onRefund: (record: UiStudent) => void;
+  onRefund: (record: UiStudent & { selectedCourseId?: string; selectedCourseName?: string }) => void;
   onTransfer: (record: UiStudent & { selectedCourseId?: string }) => void;
-  onTransferClass: (record: UiStudent) => void;
+  onTransferClass: (record: UiStudent & { selectedCourseId?: string; selectedCourseName?: string }) => void;
   onDelete: (record: UiStudent) => void;
   onAttendance: (record: UiStudent & { attendanceCourse?: { id: number | string; name: string } }) => void;
   onDetails: (record: UiStudent) => void;
