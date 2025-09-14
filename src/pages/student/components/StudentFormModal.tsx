@@ -253,6 +253,41 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                 : '无'
             },
             {
+              title: '共享课程',
+              dataIndex: 'sharingInfo',
+              align: 'center',
+              render: (_, record) => {
+                // 从editingStudent的courses中查找对应的共享课程信息
+                if (editingStudent && editingStudent.courses && record.studentCourseId) {
+                  const courseInfo = editingStudent.courses.find(c => c.studentCourseId === record.studentCourseId);
+                  if (courseInfo && courseInfo.sharingInfoList && courseInfo.sharingInfoList.length > 0) {
+                    return (
+                      <div>
+                        {courseInfo.sharingInfoList.map((sharing, index) => (
+                          <div key={index} style={{ 
+                            marginBottom: index < courseInfo.sharingInfoList!.length - 1 ? '4px' : 0,
+                            padding: '2px 6px',
+                            backgroundColor: '#f0f9ff',
+                            borderRadius: '4px',
+                            border: '1px solid #91d5ff',
+                            fontSize: '12px'
+                          }}>
+                            <div style={{ color: 'rgba(0, 0, 0, 0.85)', fontWeight: '500' }}>
+                              {sharing.sourceCourseName}
+                            </div>
+                            <div style={{ color: 'rgba(0, 0, 0, 0.85)', fontWeight: '500' }}>
+                              {sharing.coachName}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                }
+                return '无';
+              }
+            },
+            {
               title: '操作',
               width: 150,
               align: 'center',

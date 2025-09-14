@@ -737,8 +737,9 @@ export const getStudentColumns = (
                         remainingHours: course.remainingHours,
                         totalHours: course.totalHours,
                         status: course.status,
-                        enrollDate: (course as any).enrollDate,
-                        expireDate: course.endDate
+                        enrollDate: (course as any).enrollmentDate || (course as any).enrollDate,
+                        expireDate: (course as any).endDate || (course as any).expireDate,
+                        sharingInfoList: course.sharingInfoList || []
                       }
                     } as any)}
                     style={{ padding: '0', margin: '0' }}

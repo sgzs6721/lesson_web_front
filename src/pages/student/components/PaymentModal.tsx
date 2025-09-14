@@ -108,7 +108,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         coach: specificCourse.coach,
         status: specificCourse.status,
         enrollDate: specificCourse.enrollDate,
-        expireDate: specificCourse.expireDate
+        expireDate: specificCourse.expireDate,
+        sharingInfoList: specificCourse.sharingInfoList || []
       };
     }
     
@@ -751,27 +752,58 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     {currentClassHours} 课时
                   </span>
                 </div>
+
+                {/* 共享课程信息 */}
+                {selectedCourseInfo && (selectedCourseInfo as any).sharingInfoList && (selectedCourseInfo as any).sharingInfoList.length > 0 && (
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #d9d9d9' }}>
+                    <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold', color: 'rgba(0, 0, 0, 0.85)' }}>
+                      共享课程信息：
+                    </div>
+                    {(selectedCourseInfo as any).sharingInfoList.map((sharing: any, index: number) => (
+                      <div key={index} style={{ 
+                        marginBottom: '8px', 
+                        padding: '8px', 
+                        backgroundColor: '#f0f9ff', 
+                        borderRadius: '4px',
+                        border: '1px solid #91d5ff'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                          <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>共享课程：</span>
+                          <span style={{ color: 'rgba(0, 0, 0, 0.85)', fontWeight: '500' }}>
+                            {sharing.sourceCourseName || '-'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                          <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>教练：</span>
+                          <span style={{ color: 'rgba(0, 0, 0, 0.85)', fontWeight: '500' }}>
+                            {sharing.coachName || '-'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <Divider style={{ margin: '24px 0' }} />
 
               <Typography.Title level={5} style={{ marginBottom: 16, fontSize: '18px' }}>缴费详情</Typography.Title>
 
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>缴费课程：</div>
                 <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                   {selectedCourseInfo?.name || selectedCourseName || '-'}
                 </div>
               </div>
 
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次缴费金额：</div>
                 <div style={{ color: '#f5222d', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                   ¥{amountDisplay}
                 </div>
               </div>
 
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>缴费日期：</div>
                 <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>
                   {visible && form.getFieldValue('transactionDate') 
@@ -780,21 +812,21 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 </div>
               </div>
 
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次正课课时：</div>
                 <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>
                   {visible ? (form.getFieldValue('regularClasses') || 0) : 0} 课时
                 </div>
               </div>
 
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次赠送课时：</div>
                 <div style={{ color: 'rgba(0, 0, 0, 0.85)', flex: '0 0 55%', textAlign: 'right' }}>
                   {visible ? (form.getFieldValue('bonusClasses') || 0) : 0} 课时
                 </div>
               </div>
 
-              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)', flex: '0 0 45%' }}>本次新增课时：</div>
                 <div style={{ color: '#52c41a', flex: '0 0 55%', textAlign: 'right', fontWeight: 'bold' }}>
                   {calculatedNewClassHours} 课时
