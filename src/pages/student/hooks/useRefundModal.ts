@@ -143,8 +143,10 @@ export default function useRefundModal(
       try {
         // 调用退费API
         const response = await API.student.refund(refundData);
+        console.log('退费API响应:', response);
         
-        if (response && response.refundId) {
+        // 检查响应格式：标准API响应格式 { code, data, message }
+        if (response && response.code === 200) {
           message.success('退费申请提交成功');
           
           // 关闭模态框
@@ -155,7 +157,9 @@ export default function useRefundModal(
             onRefresh();
           }
         } else {
-          message.error('退费申请提交失败');
+          // 如果code不是200，显示后端返回的错误信息
+          const errorMessage = response?.message || '退费申请提交失败';
+          message.error(errorMessage);
         }
       } catch (error) {
         console.error('退费API调用失败:', error);

@@ -171,19 +171,52 @@ const coachPalette = [
   '#434343', // 更深灰色
   '#262626'  // 最深灰色
 ];
+// 教练名字到颜色的映射缓存
+const coachColorCache = new Map<string, string>();
+// 已使用的颜色索引
+const usedColorIndices = new Set<number>();
+
 const getCoachColor = (name?: string) => {
   if (!name) return '#8c8c8c';
   
-  // 改进的哈希算法，确保不同名字得到不同颜色
+  // 检查缓存
+  if (coachColorCache.has(name)) {
+    return coachColorCache.get(name)!;
+  }
+  
+  // 使用更复杂的哈希算法，结合字符位置和字符值
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     const char = name.charCodeAt(i);
-    hash = ((hash << 5) - hash + char) & 0xffffffff; // 确保32位整数
+    // 结合字符位置和字符值，增加随机性
+    hash = ((hash << 5) - hash + char + i * 31) & 0xffffffff;
   }
   
   // 使用更精确的索引计算
-  const idx = Math.abs(hash) % coachPalette.length;
-  return coachPalette[idx];
+  let idx = Math.abs(hash) % coachPalette.length;
+  
+  // 如果颜色已被使用，寻找下一个可用颜色
+  let attempts = 0;
+  while (usedColorIndices.has(idx) && attempts < coachPalette.length) {
+    idx = (idx + 1) % coachPalette.length;
+    attempts++;
+  }
+  
+  // 如果所有颜色都被使用，重置并重新分配
+  if (attempts >= coachPalette.length) {
+    usedColorIndices.clear();
+    idx = Math.abs(hash) % coachPalette.length;
+  }
+  
+  const color = coachPalette[idx];
+  
+  // 标记颜色为已使用
+  usedColorIndices.add(idx);
+  
+  // 缓存结果
+  coachColorCache.set(name, color);
+  
+  return color;
 };
 
 // 生成学员表格列定义

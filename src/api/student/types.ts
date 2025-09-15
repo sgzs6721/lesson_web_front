@@ -322,8 +322,8 @@ export interface RefundRequest {
   reason: string;
 }
 
-// 退费响应接口
-export interface RefundResponse {
+// 退费响应数据接口
+export interface RefundResponseData {
   refundId: number;
   studentId: number;
   studentName: string;
@@ -335,3 +335,6 @@ export interface RefundResponse {
   notes?: string;
   createdTime: string;
 }
+
+// 退费响应接口（标准API响应格式）
+export interface RefundResponse extends ApiResponse<RefundResponseData> {}
