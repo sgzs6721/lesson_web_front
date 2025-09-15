@@ -293,6 +293,11 @@ export const getStudentColumns = (
           {record.courses.map((course: CourseInfo & { courseTypeName?: string }, index: number) => {
             // 获取课时
             const remainingHours = course.remainingHours ?? 0;
+            
+            // 第一行：显示正课，使用courseName和coachName
+            const displayCourseName = course.courseName;
+            const displayCoachName = course.coachName;
+            console.log('显示正课信息:', { displayCourseName, displayCoachName });
 
             // 获取状态文本
             let statusText = '';
@@ -349,13 +354,28 @@ export const getStudentColumns = (
                 onClick: () => {
                   if (!isGraduated && remainingHours > 0) {
                     // 调试信息，打印当前课程
-                    console.log(`点击退费按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${course.courseName}`);
+                    console.log(`点击退费按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${displayCourseName}`);
+
+                    // 检查是否有共享课程，如果有，使用共享课程的targetCourseName
+                    let refundCourseName = displayCourseName;
+                    let refundCourseId = course.courseId;
+                    
+                    if (course.sharingInfoList && course.sharingInfoList.length > 0) {
+                      // 如果有共享课程，使用第一个共享课程的targetCourseName
+                      const sharingInfo = course.sharingInfoList[0];
+                      refundCourseName = sharingInfo.targetCourseName;
+                      refundCourseId = sharingInfo.targetCourseId;
+                      console.log('使用共享课程信息进行退费:', { 
+                        targetCourseName: sharingInfo.targetCourseName, 
+                        targetCourseId: sharingInfo.targetCourseId 
+                      });
+                    }
 
                     // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
                     const courseInfoForRefund = {
                       ...record,
-                      selectedCourseId: course.courseId ? String(course.courseId) : undefined,
-                      selectedCourseName: course.courseName // 添加课程名称
+                      selectedCourseId: refundCourseId ? String(refundCourseId) : undefined,
+                      selectedCourseName: refundCourseName // 使用正确的课程名称
                     };
 
                     // 打印完整的传递信息
@@ -375,13 +395,13 @@ export const getStudentColumns = (
                 onClick: () => {
                   if (!isGraduated && remainingHours > 0) {
                     // 调试信息，打印当前课程
-                    console.log(`点击转课按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${course.courseName}`);
+                    console.log(`点击转课按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${displayCourseName}`);
 
                     // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
                     const courseInfoForTransfer = {
                       ...record,
                       selectedCourseId: course.courseId ? String(course.courseId) : undefined,
-                      selectedCourseName: course.courseName // 添加课程名称
+                      selectedCourseName: displayCourseName // 使用显示课程名称
                     };
 
                     // 打印完整的传递信息
@@ -401,13 +421,13 @@ export const getStudentColumns = (
                 onClick: () => {
                   if (!isGraduated && remainingHours > 0) {
                     // 调试信息，打印当前课程
-                    console.log(`点击转班按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${course.courseName}`);
+                    console.log(`点击转班按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${displayCourseName}`);
 
                     // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
                     const courseInfoForTransfer = {
                       ...record,
                       selectedCourseId: course.courseId ? String(course.courseId) : undefined,
-                      selectedCourseName: course.courseName // 添加课程名称
+                      selectedCourseName: displayCourseName // 使用显示课程名称
                     };
 
                     // 打印完整的传递信息
@@ -429,7 +449,7 @@ export const getStudentColumns = (
                     const infoForShare = {
                       ...record,
                       selectedCourseId: course.courseId ? String(course.courseId) : undefined,
-                      selectedCourseName: course.courseName
+                      selectedCourseName: displayCourseName
                     } as any;
                     console.log('共享 - 传递的完整信息:', infoForShare);
                     onShare(infoForShare);
@@ -524,12 +544,12 @@ export const getStudentColumns = (
                         type="link"
                         icon={<CheckCircleOutlined style={{ color: isDisabled ? '#bfbfbf' : '#52c41a' }} />}
                         size="small"
-                        onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: course.courseName } })}
+                        onClick={() => onAttendance({ ...record, attendanceCourse: { id: course.courseId, name: displayCourseName } })}
                         disabled={isDisabled}
                         style={{ padding: 0, margin: 0, minWidth: 'auto', width: '16px' }}
                       />
                     </Tooltip>
-                    <Tooltip title={course.courseName || '-'}>
+                    <Tooltip title={displayCourseName || '-'}>
                       <span style={{ 
                         fontSize: '14px',
                         fontWeight: 500,
@@ -539,13 +559,13 @@ export const getStudentColumns = (
                         width: '90px', // 固定宽度确保对齐
                         display: 'inline-block'
                       }}>
-                        {course.courseName || '-'}
+                        {displayCourseName || '-'}
                       </span>
                     </Tooltip>
                     <span style={{ margin: '0 2px', color: '#d9d9d9', width: '8px', textAlign: 'center' }}>|</span>
-                    <Tooltip title={course.coachName || '-'}>
+                    <Tooltip title={displayCoachName || '-'}>
                       <span style={{ 
-                        color: getCoachColor(course.coachName),
+                        color: getCoachColor(displayCoachName),
                         fontSize: '14px',
                         fontWeight: 500,
                         overflow: 'hidden',
@@ -554,7 +574,7 @@ export const getStudentColumns = (
                         width: '60px', // 固定宽度确保对齐
                         display: 'inline-block'
                       }}>
-                        {course.coachName || '-'}
+                        {displayCoachName || '-'}
                       </span>
                     </Tooltip>
                   </div>
@@ -603,7 +623,7 @@ export const getStudentColumns = (
                           </Tooltip>
                           
                           {/* 共享课程名称和教练 - 与第一行完全相同的布局和宽度 */}
-                          <Tooltip title={sharing.sourceCourseName || '-'}>
+                          <Tooltip title={sharing.targetCourseName || '-'}>
                             <span style={{ 
                               fontSize: '14px',
                               fontWeight: 500,
@@ -613,7 +633,7 @@ export const getStudentColumns = (
                               width: '90px', // 与第一行相同的固定宽度
                               display: 'inline-block'
                             }}>
-                              {sharing.sourceCourseName || '-'}
+                              {sharing.targetCourseName || '-'}
                             </span>
                           </Tooltip>
                           <span style={{ margin: '0 2px', color: '#d9d9d9', width: '8px', textAlign: 'center' }}>|</span>
@@ -746,13 +766,13 @@ export const getStudentColumns = (
                     type="link"
                     icon={<DollarOutlined style={{ color: '#fa8c16' }} />}
                     size="small"
-                    onClick={() => onPayment({ 
+                        onClick={() => onPayment({ 
                       ...record, 
                       paymentCourse: { 
                         id: course.courseId, 
-                        name: course.courseName,
+                        name: displayCourseName,
                         type: course.courseTypeName,
-                        coach: course.coachName,
+                        coach: displayCoachName,
                         remainingHours: course.remainingHours,
                         totalHours: course.totalHours,
                         status: course.status,
