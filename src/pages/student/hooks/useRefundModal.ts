@@ -130,6 +130,7 @@ export default function useRefundModal(
       const refundData: RefundRequest = {
         studentId: Number(values.studentId),
         courseId: Number(values._courseId),
+        campusId: Number(currentStudent?.campusId) || 0,
         refundHours: Number(values.refundClassHours) || 0,
         refundAmount: Number(values.refundAmount) || 0,
         handlingFee: Number(values.serviceFee) || 0,

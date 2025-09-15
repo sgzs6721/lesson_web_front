@@ -313,6 +313,7 @@ export type RefundMethod = 'WECHAT' | 'ALIPAY' | 'CASH' | 'CARD' | 'BANK_TRANSFE
 export interface RefundRequest {
   studentId: number;
   courseId: number;
+  campusId: number;
   refundHours: number;
   refundAmount: number;
   handlingFee: number;
