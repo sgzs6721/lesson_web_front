@@ -310,11 +310,12 @@ export interface AttendanceListApiResponse extends ApiResponse<AttendanceListRes
 export interface RefundRequest {
   studentId: number;
   courseId: number;
+  refundHours: number;
   refundAmount: number;
-  refundReason: string;
-  refundDate: string;
-  notes?: string;
-  refundMethod?: string; // 退费方式：WECHAT, ALIPAY, CASH, CARD, BANK_TRANSFER
+  handlingFee: number;
+  deductionAmount: number;
+  refundMethod: string; // 退费方式：WECHAT, ALIPAY, CASH, CARD, BANK_TRANSFER
+  reason: string;
 }
 
 // 退费响应接口

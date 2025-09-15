@@ -144,7 +144,6 @@ const RefundModal: React.FC<RefundModalProps> = ({
         className: 'no-hover-button' 
       }}
     >
-      <Divider style={{ margin: '0 0 24px 0' }} />
       
       <Form
         form={form}

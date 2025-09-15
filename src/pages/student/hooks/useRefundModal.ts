@@ -130,11 +130,12 @@ export default function useRefundModal(
       const refundData: RefundRequest = {
         studentId: Number(values.studentId),
         courseId: Number(values._courseId),
-        refundAmount: values.actualRefund,
-        refundReason: values.reason,
-        refundDate: new Date().toISOString().split('T')[0], // 格式化为 YYYY-MM-DD
-        notes: `手续费类型ID: ${values.handlingFeeTypeId}, 手续费: ${values.serviceFee}, 其他费用: ${values.otherFee}, 退款课时: ${values.refundClassHours}`,
+        refundHours: Number(values.refundClassHours) || 0,
+        refundAmount: Number(values.refundAmount) || 0,
+        handlingFee: Number(values.serviceFee) || 0,
+        deductionAmount: Number(values.otherFee) || 0,
         refundMethod: String(values.refundMethod), // 将ID转为字符串
+        reason: values.reason,
       };
       
       // 调用API
