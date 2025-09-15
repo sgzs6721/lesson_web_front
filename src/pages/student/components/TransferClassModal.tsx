@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
   Form,
@@ -311,13 +311,49 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
     }
   }, [visible, student, studentCourses, form, validityPeriodOptions]);
 
+  // 过滤转入课程列表，排除当前课程和共享的课程
+  const filteredCourseList = useMemo(() => {
+    if (!student || !student.courses || !courseList) {
+      return courseList || [];
+    }
+
+    // 获取当前选中的课程ID
+    const currentCourseId = selectedCourseId;
+    
+    // 获取学员已有的课程ID列表
+    const existingCourseIds = student.courses.map(course => String(course.courseId));
+    
+    // 获取学员已共享的课程ID列表
+    const getSharedCourseIds = () => {
+      const sharedIds: string[] = [];
+      student.courses?.forEach(course => {
+        if (course.sharingInfoList && course.sharingInfoList.length > 0) {
+          course.sharingInfoList.forEach(sharing => {
+            sharedIds.push(String(sharing.targetCourseId));
+          });
+        }
+      });
+      return sharedIds;
+    };
+    
+    const sharedCourseIds = getSharedCourseIds();
+    
+    // 过滤掉当前课程、已有的课程和共享的课程
+    return courseList.filter(course => {
+      const courseId = String(course.id);
+      return courseId !== currentCourseId && 
+             !existingCourseIds.includes(courseId) && 
+             !sharedCourseIds.includes(courseId);
+    });
+  }, [courseList, student, selectedCourseId]);
+
   // 当表单初始化后，更新可选目标课程列表
   React.useEffect(() => {
-    if (visible && courseList && formInitialized) {
-      // 直接使用完整的课程列表，在渲染时禁用原课程
-      setAvailableCourses(courseList);
+    if (visible && filteredCourseList && formInitialized) {
+      // 使用过滤后的课程列表
+      setAvailableCourses(filteredCourseList);
     }
-  }, [visible, courseList, formInitialized]);
+  }, [visible, filteredCourseList, formInitialized]);
 
   return (
     <Modal
@@ -363,8 +399,6 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
       }}
     >
       <Spin spinning={!!loading}>
-        <Divider style={{ margin: '0 0 24px 0' }} />
-
         <Form
           form={form}
           layout="vertical"
@@ -417,6 +451,35 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
             </Col>
           </Row>
 
+          {/* 共享课程信息 */}
+          {student && student.courses && student.courses.length > 0 && (() => {
+            const currentCourseId = form.getFieldValue('_courseId');
+            const currentCourse = student.courses.find(c => String(c.courseId) === String(currentCourseId));
+            if (currentCourse && currentCourse.sharingInfoList && currentCourse.sharingInfoList.length > 0) {
+              return (
+                <div style={{ 
+                  marginBottom: '16px', 
+                  padding: '12px', 
+                  backgroundColor: '#f0f9ff', 
+                  borderRadius: '4px',
+                  border: '1px solid #91d5ff'
+                }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.85)' }}>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>共享课程：</span>
+                    <span style={{ fontWeight: '500', marginRight: '16px' }}>
+                      {currentCourse.sharingInfoList[0].targetCourseName || '-'}
+                    </span>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>教练：</span>
+                    <span style={{ fontWeight: '500' }}>
+                      {currentCourse.sharingInfoList[0].coachName || '-'}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           <Divider />
 
           <Row gutter={16}>
@@ -438,22 +501,11 @@ const TransferClassModal: React.FC<TransferClassModalProps> = ({
                   getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
                   listHeight={300}
                 >
-                  {availableCourses.map(course => {
-                    // 获取原课程ID
-                    const originalCourseId = form.getFieldValue('_courseId');
-                    // 检查当前课程是否与原课程相同
-                    const isSameAsCurrent = String(course.id) === String(originalCourseId);
-                    
-                    return (
-                      <Option 
-                        key={course.id} 
-                        value={course.id}
-                        disabled={isSameAsCurrent} // 如果是相同课程则禁用
-                      >
-                        {isSameAsCurrent ? `${course.name} (当前课程)` : course.name}
-                      </Option>
-                    );
-                  })}
+                  {availableCourses.map(course => (
+                    <Option key={course.id} value={course.id}>
+                      {course.name}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>

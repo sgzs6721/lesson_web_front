@@ -770,7 +770,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
                           <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>共享课程：</span>
                           <span style={{ color: 'rgba(0, 0, 0, 0.85)', fontWeight: '500' }}>
-                            {sharing.sourceCourseName || '-'}
+                            {sharing.targetCourseName || '-'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>

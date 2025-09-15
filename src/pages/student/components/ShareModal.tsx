@@ -61,12 +61,33 @@ const ShareModal: React.FC<ShareModalProps> = ({
     }
   }, [student]);
 
-  // 仅展示同类型课程，并排除源课程本身；若无法判定类型则展示全部但同样排除源课程
+  // 仅展示同类型课程，并排除源课程本身和已共享的课程；若无法判定类型则展示全部但同样排除源课程和已共享的课程
   const filteredCourseList = useMemo(() => {
     const excludeSelf = (c: SimpleCourse) => String(c.id) !== sourceCourseId;
-    if (!sourceTypeName) return courseList.filter(excludeSelf);
-    return courseList.filter(c => c.typeName === sourceTypeName && excludeSelf(c));
-  }, [courseList, sourceTypeName, sourceCourseId]);
+    
+    // 获取已共享的课程ID列表
+    const getSharedCourseIds = () => {
+      try {
+        const sid = (student as any)?.selectedCourseId;
+        const courses = (student as any)?.courses || [];
+        const matched = courses.find((c: any) => String(c.courseId) === String(sid));
+        if (matched && matched.sharingInfoList && matched.sharingInfoList.length > 0) {
+          return matched.sharingInfoList.map((sharing: any) => String(sharing.targetCourseId));
+        }
+        return [];
+      } catch {
+        return [];
+      }
+    };
+    
+    const sharedCourseIds = getSharedCourseIds();
+    const excludeShared = (c: SimpleCourse) => !sharedCourseIds.includes(String(c.id));
+    
+    if (!sourceTypeName) {
+      return courseList.filter(c => excludeSelf(c) && excludeShared(c));
+    }
+    return courseList.filter(c => c.typeName === sourceTypeName && excludeSelf(c) && excludeShared(c));
+  }, [courseList, sourceTypeName, sourceCourseId, student]);
 
   // 将弹层宽度与选择器对齐
   useEffect(() => {

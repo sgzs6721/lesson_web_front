@@ -206,6 +206,44 @@ const RefundModal: React.FC<RefundModalProps> = ({
           </Col>
         </Row>
 
+        {/* 共享课程信息 */}
+        {student && studentCourses && studentCourses.length > 0 && (() => {
+          // 获取当前选中的课程信息
+          const currentCourseId = form.getFieldValue('_courseId');
+          const currentCourse = studentCourses.find(course => String(course.id) === String(currentCourseId));
+          
+          if (!currentCourse) return null;
+          
+          // 从学生原始数据中获取完整的课程信息
+          const originalCourse = student.courses?.find(c => String(c.courseId) === String(currentCourse.id));
+          
+          // 如果有共享课程信息，显示在一行内
+          if (originalCourse && originalCourse.sharingInfoList && originalCourse.sharingInfoList.length > 0) {
+            return (
+              <div style={{ 
+                marginBottom: '16px', 
+                padding: '12px', 
+                backgroundColor: '#f0f9ff', 
+                borderRadius: '4px',
+                border: '1px solid #91d5ff'
+              }}>
+                <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.85)' }}>
+                  <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>共享课程：</span>
+                  <span style={{ fontWeight: '500', marginRight: '16px' }}>
+                    {originalCourse.sharingInfoList[0].targetCourseName || '-'}
+                  </span>
+                  <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>教练：</span>
+                  <span style={{ fontWeight: '500' }}>
+                    {originalCourse.sharingInfoList[0].coachName || '-'}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+          
+          return null;
+        })()}
+
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item

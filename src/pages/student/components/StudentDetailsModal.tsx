@@ -44,6 +44,14 @@ interface ListCourse {
   enrollmentDate?: string;
   studentCourseId?: number;
   courseTypeId?: number;
+  sharingInfoList?: Array<{
+    sourceCourseId: number;
+    sourceCourseName: string;
+    targetCourseId: number;
+    targetCourseName: string;
+    coachId: number;
+    coachName: string;
+  }>;
 }
 
 interface StudentListItem {
@@ -436,6 +444,28 @@ const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({
                             </span>
                           )}
                         </div>
+
+                        {/* 共享课程信息 */}
+                        {course.sharingInfoList && course.sharingInfoList.length > 0 && (
+                          <div style={{ 
+                            marginTop: '12px', 
+                            padding: '8px 12px', 
+                            backgroundColor: '#f0f9ff', 
+                            borderRadius: '6px',
+                            border: '1px solid #91d5ff'
+                          }}>
+                            <div style={{ fontSize: '13px', color: 'rgba(0, 0, 0, 0.85)' }}>
+                              <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>共享课程：</span>
+                              <span style={{ fontWeight: '500', marginRight: '12px' }}>
+                                {course.sharingInfoList[0].targetCourseName || '-'}
+                              </span>
+                              <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>教练：</span>
+                              <span style={{ fontWeight: '500' }}>
+                                {course.sharingInfoList[0].coachName || '-'}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       
                     </Card>

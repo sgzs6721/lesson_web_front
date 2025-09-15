@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Modal, 
   Form, 
@@ -121,6 +121,37 @@ const TransferModal: React.FC<TransferModalProps> = ({
 
     return Array.from(allStudentsMap.values());
   }, [transferStudentSearchResults, selectedTransferStudent, students, student]);
+
+  // 过滤转入课程列表，排除学员已有的课程和共享的课程
+  const filteredCourseList = useMemo(() => {
+    if (!student || !student.courses) {
+      return courseList;
+    }
+
+    // 获取学员已有的课程ID列表
+    const existingCourseIds = student.courses.map(course => String(course.courseId));
+    
+    // 获取学员已共享的课程ID列表
+    const getSharedCourseIds = () => {
+      const sharedIds: string[] = [];
+      student.courses?.forEach(course => {
+        if (course.sharingInfoList && course.sharingInfoList.length > 0) {
+          course.sharingInfoList.forEach(sharing => {
+            sharedIds.push(String(sharing.targetCourseId));
+          });
+        }
+      });
+      return sharedIds;
+    };
+    
+    const sharedCourseIds = getSharedCourseIds();
+    
+    // 过滤掉已有的课程和共享的课程
+    return courseList.filter(course => {
+      const courseId = String(course.id);
+      return !existingCourseIds.includes(courseId) && !sharedCourseIds.includes(courseId);
+    });
+  }, [courseList, student]);
 
   // 当模态框可见且学生信息存在时，确保表单中的学生姓名和ID被正确设置
   useEffect(() => {
@@ -249,8 +280,6 @@ const TransferModal: React.FC<TransferModalProps> = ({
       }}
     >
       <Spin spinning={!!loading}>
-        <Divider style={{ margin: '0 0 24px 0' }} />
-      
         <Form
           form={form}
           layout="vertical"
@@ -303,18 +332,40 @@ const TransferModal: React.FC<TransferModalProps> = ({
             <Col span={12}>
               <Form.Item
                 name="transferClassHours"
-                label="转课课时"
+                label={
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <span>转课课时</span>
+                    {maxTransferHours > 0 && (
+                      <div style={{
+                        color: '#999',
+                        fontSize: '12px',
+                        whiteSpace: 'nowrap',
+                        marginLeft: '16px'
+                      }}>
+                        转课课时不能超过剩余课时数 ({maxTransferHours}课时)
+                      </div>
+                    )}
+                  </div>
+                }
                 rules={[
-                  { required: true, message: '请输入转课课时' },
                   { 
                     validator: (_, value) => {
-                      if (value <= 0) {
-                        return Promise.reject('转课课时必须大于0');
+                      const errors = [];
+                      
+                      if (!value) {
+                        errors.push('请输入转课课时');
                       }
                       
-                      // 使用状态中的最大可转课时数
-                      if (maxTransferHours > 0 && value > maxTransferHours) {
-                        return Promise.reject(`转课课时不能超过剩余课时(${maxTransferHours}课时)`);
+                      if (value && value <= 0) {
+                        errors.push('转课课时必须大于0');
+                      }
+                      
+                      if (value && value > 0 && maxTransferHours > 0 && value > maxTransferHours) {
+                        errors.push(`转课课时不能超过剩余课时(${maxTransferHours}课时)`);
+                      }
+                      
+                      if (errors.length > 0) {
+                        return Promise.reject(errors.join('，'));
                       }
                       
                       return Promise.resolve();
@@ -347,11 +398,46 @@ const TransferModal: React.FC<TransferModalProps> = ({
                   <div className="input-unit">课时</div>
                 </div>
               </Form.Item>
-              <div style={{ fontSize: '12px', color: '#999', marginTop: '-12px' }}>
-                注意：转课课时不能超过剩余课时数（{maxTransferHours || 0}课时）
-              </div>
             </Col>
           </Row>
+
+          {/* 共享课程信息 */}
+          {student && studentCourses && studentCourses.length > 0 && (() => {
+            // 获取当前选中的课程信息
+            const currentCourseId = form.getFieldValue('_courseId');
+            const currentCourse = studentCourses.find(course => String(course.id) === String(currentCourseId));
+            
+            if (!currentCourse) return null;
+            
+            // 从学生原始数据中获取完整的课程信息
+            const originalCourse = student.courses?.find(c => String(c.courseId) === String(currentCourse.id));
+            
+            // 如果有共享课程信息，显示在一行内
+            if (originalCourse && originalCourse.sharingInfoList && originalCourse.sharingInfoList.length > 0) {
+              return (
+                <div style={{ 
+                  marginBottom: '16px', 
+                  padding: '12px', 
+                  backgroundColor: '#f0f9ff', 
+                  borderRadius: '4px',
+                  border: '1px solid #91d5ff'
+                }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(0, 0, 0, 0.85)' }}>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>共享课程：</span>
+                    <span style={{ fontWeight: '500', marginRight: '16px' }}>
+                      {originalCourse.sharingInfoList[0].targetCourseName || '-'}
+                    </span>
+                    <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>教练：</span>
+                    <span style={{ fontWeight: '500' }}>
+                      {originalCourse.sharingInfoList[0].coachName || '-'}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+            
+            return null;
+          })()}
           
           <Divider style={{ margin: '12px 0' }} />
           <Title level={5} style={{ marginBottom: 16 }}>转入学员信息</Title>
@@ -362,6 +448,7 @@ const TransferModal: React.FC<TransferModalProps> = ({
                 name="targetStudentId"
                 label="转入学员"
                 rules={[{ required: true, message: '请选择要转课给哪个学员' }]}
+                style={{ marginBottom: '8px' }}
               >
                 <Select
                   showSearch
@@ -402,8 +489,15 @@ const TransferModal: React.FC<TransferModalProps> = ({
                 </Select>
               </Form.Item>
               {/* 提示信息 */}
-              <div style={{ color: '#1890ff', fontSize: '12px', marginTop: '-22px', marginBottom: '12px' }}>
-                注意：如需转入新学员，请先在学员管理页面添加该学员后再进行转课。
+              <div style={{ 
+                color: '#999', 
+                fontSize: '12px', 
+                marginTop: '2px', 
+                marginBottom: '12px',
+                pointerEvents: 'none',
+                userSelect: 'none'
+              }}>
+                如需转入新学员，请先在学员管理页面添加该学员后再进行转课。
               </div>
             </Col>
             <Col span={12}>
@@ -411,6 +505,7 @@ const TransferModal: React.FC<TransferModalProps> = ({
                 name="toCourseId"
                 label="转入课程"
                 rules={[{ required: true, message: '请选择转课目标课程' }]}
+                style={{ marginBottom: '8px' }}
               >
                 <Select
                   placeholder="请选择转课目标课程"
@@ -423,7 +518,7 @@ const TransferModal: React.FC<TransferModalProps> = ({
                   dropdownStyle={{ zIndex: 1050 }}
                   getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
                 >
-                  {courseList.map(course => (
+                  {filteredCourseList.map(course => (
                     <Option key={course.id} value={course.id}>
                       {course.name}
                     </Option>
