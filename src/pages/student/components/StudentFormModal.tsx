@@ -273,7 +273,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
                             fontSize: '12px'
                           }}>
                             <div style={{ color: 'rgba(0, 0, 0, 0.85)', fontWeight: '500' }}>
-                              {sharing.sourceCourseName}
+                              {sharing.targetCourseName}
                             </div>
                             <div style={{ color: 'rgba(0, 0, 0, 0.85)', fontWeight: '500' }}>
                               {sharing.coachName}

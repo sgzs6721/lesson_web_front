@@ -657,34 +657,53 @@ export const getStudentColumns = (
                   )}
                 </div>
                 
-                {/* 课时 - 居中对齐，通过CSS控制 */}
+                {/* 课时 - 分两行显示：共享标签和课时信息 */}
                 <div style={{
                     position: 'relative',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     minHeight: course.sharingInfoList && course.sharingInfoList.length > 0 ? '44px' : '22px',
+                    gap: '4px',
                 }}>
-                  {/* 如果有共享课程，左侧显示共享标签 */}
+                  {/* 第一行：共享标签 */}
                   {course.sharingInfoList && course.sharingInfoList.length > 0 && (
-                    <div style={{
-                      position: 'absolute',
-                      left: '-30px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: '#52c41a',
-                      color: '#fff',
-                      fontSize: '10px',
-                      padding: '2px 4px',
-                      borderRadius: '2px',
-                      fontWeight: 'bold',
-                      whiteSpace: 'nowrap',
-                      zIndex: 2,
-                    }}>
+                    <div 
+                      style={{
+                        background: '#52c41a',
+                        color: '#fff',
+                        fontSize: '10px',
+                        padding: '2px 6px',
+                        borderRadius: '6px', // 适中的圆角
+                        fontWeight: 'bold',
+                        whiteSpace: 'nowrap',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // 触发共享管理模态框
+                        const event = new CustomEvent('openShareManagement', {
+                          detail: { student: record, course: course }
+                        });
+                        window.dispatchEvent(event);
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#73d13d';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#52c41a';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
                       共享
                     </div>
                   )}
                   
+                  {/* 第二行：课时信息 */}
                   <div style={{
                       color: isDisabled ? '#bfbfbf' : (remainingHours <= 5 ? '#f5222d' : 'rgba(0, 0, 0, 0.85)'),
                       textDecoration: isDisabled ? 'line-through' : 'none',

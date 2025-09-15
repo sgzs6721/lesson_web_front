@@ -265,6 +265,39 @@ const StudentManagement: React.FC = () => {
     };
   }, [ui.pagination.currentPage, ui.pagination.pageSize]);
 
+  // 添加共享管理事件监听器
+  useEffect(() => {
+    const handleOpenShareManagement = (event: any) => {
+      const { student } = event.detail || {};
+      if (student) {
+        setCurrentShareStudent(student);
+        setShareManagementVisible(true);
+      }
+    };
+
+    const handleCloseShareManagement = () => {
+      setShareManagementVisible(false);
+      setCurrentShareStudent(null);
+    };
+
+    const handleRemoveSharing = (event: any) => {
+      const { selectedSharingIds } = event.detail || {};
+      if (selectedSharingIds) {
+        handleRemoveSharing(selectedSharingIds);
+      }
+    };
+
+    window.addEventListener('openShareManagement', handleOpenShareManagement);
+    window.addEventListener('closeShareManagement', handleCloseShareManagement);
+    window.addEventListener('removeSharing', handleRemoveSharing);
+
+    return () => {
+      window.removeEventListener('openShareManagement', handleOpenShareManagement);
+      window.removeEventListener('closeShareManagement', handleCloseShareManagement);
+      window.removeEventListener('removeSharing', handleRemoveSharing);
+    };
+  }, []);
+
   // 监听表头排序变化，仅更新本地排序状态
   const handleTableSortChange = useCallback((field?: string, order?: 'ascend' | 'descend' | null) => {
     // 如果传入的是 name（已取消排序），忽略
@@ -346,6 +379,10 @@ const StudentManagement: React.FC = () => {
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [currentStudentId, setCurrentStudentId] = useState<string | null>(null);
   
+  // 共享管理模态框状态
+  const [shareManagementVisible, setShareManagementVisible] = useState(false);
+  const [currentShareStudent, setCurrentShareStudent] = useState<UiStudent | null>(null);
+  
   const handleStudentDetails = (student: UiStudent) => {
     console.log('查看学员详情:', student);
     setCurrentStudentId(student.id);
@@ -355,6 +392,32 @@ const StudentManagement: React.FC = () => {
   const handleDetailsModalClose = () => {
     setDetailsVisible(false);
     setCurrentStudentId(null);
+  };
+
+  // 共享管理模态框处理函数
+  const handleOpenShareManagement = (student: UiStudent) => {
+    setCurrentShareStudent(student);
+    setShareManagementVisible(true);
+  };
+
+  const handleCloseShareManagement = () => {
+    setShareManagementVisible(false);
+    setCurrentShareStudent(null);
+  };
+
+  const handleRemoveSharing = async (selectedSharingIds: number[]) => {
+    try {
+      // 这里需要调用API来移除共享关系
+      console.log('移除共享关系:', selectedSharingIds);
+      message.success('共享关系已移除');
+      setShareManagementVisible(false);
+      setCurrentShareStudent(null);
+      // 刷新学员列表
+      df.data.fetchStudents();
+    } catch (error) {
+      console.error('移除共享关系失败:', error);
+      message.error('移除共享关系失败');
+    }
   };
 
   return (
@@ -423,6 +486,8 @@ const StudentManagement: React.FC = () => {
           attendanceForm={attendanceForm}
           detailsVisible={detailsVisible}
           currentStudentId={currentStudentId}
+          shareManagementVisible={shareManagementVisible}
+          currentShareStudent={currentShareStudent}
           handleAttendanceOk={handleAttendanceOk}
           handleDetailsModalClose={handleDetailsModalClose}
           setAttendanceModalVisible={setAttendanceModalVisible}

@@ -12,6 +12,7 @@ import AttendanceModal from './AttendanceModal';
 import QuickAddStudentModal from './QuickAddStudentModal';
 import StudentDetailsModal from './StudentDetailsModal';
 import ShareModal from './ShareModal';
+import ShareManagementModal from './ShareManagementModal';
 import { SimpleCourse } from '@/api/course/types';
 import { Student as UiStudent } from '@/pages/student/types/student';
 import { getStudentAllCourses } from '../utils/student';
@@ -34,6 +35,9 @@ interface StudentModalsProps {
   // 详情相关
   detailsVisible: boolean;
   currentStudentId: string | null;
+  // 共享管理相关
+  shareManagementVisible: boolean;
+  currentShareStudent: UiStudent | null;
   // 处理函数
   handleAttendanceOk: (checkInData: { studentId: number; courseId: number; duration: number }) => void;
   handleDetailsModalClose: () => void;
@@ -56,7 +60,9 @@ const StudentModals: React.FC<StudentModalsProps> = ({
   currentStudentId,
   handleAttendanceOk,
   handleDetailsModalClose,
-  setAttendanceModalVisible
+  setAttendanceModalVisible,
+  shareManagementVisible,
+  currentShareStudent
 }) => {
   return (
     <>
@@ -220,6 +226,24 @@ const StudentModals: React.FC<StudentModalsProps> = ({
         visible={detailsVisible}
         student={df.data.students.find((s: UiStudent) => s.id === currentStudentId) || null}
         onCancel={handleDetailsModalClose}
+      />
+
+      {/* 共享管理模态框 */}
+      <ShareManagementModal
+        visible={shareManagementVisible}
+        student={currentShareStudent}
+        onCancel={() => {
+          // 这里需要从父组件传入关闭函数
+          const event = new CustomEvent('closeShareManagement');
+          window.dispatchEvent(event);
+        }}
+        onOk={(selectedSharingIds) => {
+          // 这里需要从父组件传入处理函数
+          const event = new CustomEvent('removeSharing', {
+            detail: { selectedSharingIds }
+          });
+          window.dispatchEvent(event);
+        }}
       />
     </>
   );
