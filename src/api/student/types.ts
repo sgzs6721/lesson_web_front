@@ -114,6 +114,7 @@ export interface StudentDTO {
 
 // 共享课程信息DTO
 export interface SharingInfoDTO {
+  id: number; // 共享记录ID
   sourceCourseId: number;
   sourceCourseName: string;
   targetCourseId: number;

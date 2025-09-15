@@ -121,6 +121,7 @@ export interface CourseGroup {
 
 // 共享课程信息
 export interface SharingInfo {
+  id: number; // 共享记录ID
   sourceCourseId: number;
   sourceCourseName: string;
   targetCourseId: number;

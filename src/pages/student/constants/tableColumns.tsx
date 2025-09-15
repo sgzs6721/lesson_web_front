@@ -375,17 +375,20 @@ export const getStudentColumns = (
               return '打卡';
             };
 
-            // 判断是否为已结业状态
+            // 判断是否为终止状态（结业、已退费、过期）
             const isGraduated = statusUpperCase === 'GRADUATED';
+            const isRefunded = statusUpperCase === 'REFUNDED';
+            const isExpired = statusUpperCase === 'EXPIRED';
+            const isTerminated = isGraduated || isRefunded || isExpired;
 
             // 定义剩余操作的菜单项（退费、转课、转班、共享）
             const remainingMenuItems = [
               {
                 key: 'refund',
                 label: '退费',
-                icon: <RollbackOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#f5222d' }} />,
+                icon: <RollbackOutlined style={{ color: isTerminated || remainingHours === 0 ? '#d9d9d9' : '#f5222d' }} />,
                 onClick: () => {
-                  if (!isGraduated && remainingHours > 0) {
+                  if (!isTerminated && remainingHours > 0) {
                     // 调试信息，打印当前课程
                     console.log(`点击退费按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${displayCourseName}`);
 
@@ -412,15 +415,15 @@ export const getStudentColumns = (
                     onRefund(courseInfoForRefund as any);
                   }
                 },
-                disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用退费
-                style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+                disabled: isTerminated || remainingHours === 0, // 终止状态或剩余课时为0时禁用退费
+                style: isTerminated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
               {
                 key: 'transfer',
                 label: '转课',
-                icon: <TransactionOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#1890ff' }} />,
+                icon: <TransactionOutlined style={{ color: isTerminated || remainingHours === 0 ? '#d9d9d9' : '#1890ff' }} />,
                 onClick: () => {
-                  if (!isGraduated && remainingHours > 0) {
+                  if (!isTerminated && remainingHours > 0) {
                     // 调试信息，打印当前课程
                     console.log(`点击转课按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${displayCourseName}`);
 
@@ -438,15 +441,15 @@ export const getStudentColumns = (
                     onTransfer(courseInfoForTransfer as any);
                   }
                 },
-                disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用转课
-                style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+                disabled: isTerminated || remainingHours === 0, // 终止状态或剩余课时为0时禁用转课
+                style: isTerminated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
               {
                 key: 'transferClass',
                 label: '转班',
-                icon: <SyncOutlined style={{ color: isGraduated || remainingHours === 0 ? '#d9d9d9' : '#52c41a' }} />,
+                icon: <SyncOutlined style={{ color: isTerminated || remainingHours === 0 ? '#d9d9d9' : '#52c41a' }} />,
                 onClick: () => {
-                  if (!isGraduated && remainingHours > 0) {
+                  if (!isTerminated && remainingHours > 0) {
                     // 调试信息，打印当前课程
                     console.log(`点击转班按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${displayCourseName}`);
 
@@ -464,15 +467,15 @@ export const getStudentColumns = (
                     onTransferClass(courseInfoForTransfer as any);
                   }
                 },
-                disabled: isGraduated || remainingHours === 0, // 已结业或剩余课时为0时禁用转班
-                style: isGraduated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
+                disabled: isTerminated || remainingHours === 0, // 终止状态或剩余课时为0时禁用转班
+                style: isTerminated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
               {
                 key: 'share',
                 label: '共享',
-                icon: <ShareAltOutlined style={{ color: '#13c2c2' }} />,
+                icon: <ShareAltOutlined style={{ color: isTerminated || remainingHours === 0 ? '#d9d9d9' : '#13c2c2' }} />,
                 onClick: () => {
-                  if (onShare) {
+                  if (!isTerminated && remainingHours > 0 && onShare) {
                     const infoForShare = {
                       ...record,
                       selectedCourseId: course.courseId ? String(course.courseId) : undefined,
@@ -482,7 +485,8 @@ export const getStudentColumns = (
                     onShare(infoForShare);
                   }
                 },
-                disabled: false,
+                disabled: isTerminated || remainingHours === 0, // 终止状态或剩余课时为0时禁用共享
+                style: isTerminated || remainingHours === 0 ? { color: '#d9d9d9', cursor: 'not-allowed' } : undefined
               },
             ];
 

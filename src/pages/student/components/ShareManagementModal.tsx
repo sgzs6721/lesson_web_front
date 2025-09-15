@@ -71,7 +71,7 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
       if (course.sharingInfoList && course.sharingInfoList.length > 0) {
         course.sharingInfoList.forEach(sharing => {
           allSharingInfo.push({
-            id: sharing.targetCourseId, // 使用targetCourseId作为唯一标识
+            id: sharing.id, // 使用共享记录ID
             targetCourseName: sharing.targetCourseName,
             coachName: sharing.coachName,
             courseTypeName: course.courseTypeName || '标准课程'
@@ -108,23 +108,32 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
       return;
     }
 
-    try {
-      console.log('开始取消共享课程，IDs:', selectedSharingIds);
-      
-      // 调用API删除共享课程
-      const response = await course.batchDeleteSharing(selectedSharingIds);
-      
-      if (response && response.code === 200) {
-        message.success('共享关系已成功移除');
-        onOk(selectedSharingIds); // 通知父组件刷新数据
-      } else {
-        const errorMessage = response?.message || '取消共享失败';
-        message.error(errorMessage);
+    // 显示确认对话框
+    Modal.confirm({
+      title: '确认取消共享',
+      content: `确定要取消选中的 ${selectedSharingIds.length} 个共享关系吗？此操作不可撤销。`,
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          console.log('开始取消共享课程，IDs:', selectedSharingIds);
+          
+          // 调用API删除共享课程
+          const response = await course.batchDeleteSharing(selectedSharingIds);
+          
+          if (response && response.code === 200) {
+            message.success('共享关系已成功移除');
+            onOk(selectedSharingIds); // 通知父组件刷新数据
+          } else {
+            const errorMessage = response?.message || '取消共享失败';
+            message.error(errorMessage);
+          }
+        } catch (error) {
+          console.error('取消共享课程失败:', error);
+          message.error('取消共享失败，请重试');
+        }
       }
-    } catch (error) {
-      console.error('取消共享课程失败:', error);
-      message.error('取消共享失败，请重试');
-    }
+    });
   };
 
   return (
