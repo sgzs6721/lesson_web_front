@@ -756,6 +756,11 @@ export const getStudentColumns = (
                 {/* 状态 - 居中对齐，通过CSS控制 */}
                 <div>
                   <Tooltip title={(() => {
+                    // 对于终止状态（结业、已退费、过期），不显示有效期tooltip
+                    if (isTerminated) {
+                      return null;
+                    }
+                    
                     const end = course.endDate;
                     if (end) {
                       return `有效期至：${dayjs(end).format('YYYY-MM-DD')}`;
