@@ -18,13 +18,15 @@ import useShareModal from './useShareModal';
  * @param deleteStudent 删除学生的回调函数
  * @param addStudent 添加学生的回调函数 (新增)
  * @param courseList 课程列表，从API获取的动态课程列表
+ * @param refreshStudents 刷新学员列表函数
  * @returns 整合的UI相关状态和函数
  */
 export const useStudentUI = (
   students: Student[], 
   deleteStudent: (id: string) => void,
   addStudent?: (student: Omit<Student, 'id'> & { remainingClasses?: string; lastClassDate?: string }) => Student, // 新增 addStudent 回调
-  courseList: SimpleCourse[] = [] // 添加courseList参数并设置默认值为空数组
+  courseList: SimpleCourse[] = [], // 添加courseList参数并设置默认值为空数组
+  refreshStudents?: () => void // 新增刷新学员列表函数
 ) => {
   // --- 分页处理 ---
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,8 +57,8 @@ export const useStudentUI = (
   const refundProps = useRefundModal(
     students,
     courseList, // 传递courseList参数
-    // 添加刷新回调函数，通过重新获取第一页数据刷新列表
-    () => handlePaginationChange(1, pageSize)
+    // 添加刷新回调函数，调用实际的刷新函数
+    refreshStudents || (() => handlePaginationChange(1, pageSize))
   );
   
   // 转课模态框功能

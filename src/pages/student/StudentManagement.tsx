@@ -150,7 +150,11 @@ const StudentManagement: React.FC = () => {
     df.data.students as UiStudent[], 
     df.data.deleteStudent, 
     dummyAddStudentForUI,
-    courseList // 传递courseList给useStudentUI钩子
+    courseList, // 传递courseList给useStudentUI钩子
+    () => df.data.fetchStudents({ // 传递刷新函数
+      pageNum: ui.pagination.currentPage,
+      pageSize: ui.pagination.pageSize
+    })
   );
 
   // 修改打卡相关状态

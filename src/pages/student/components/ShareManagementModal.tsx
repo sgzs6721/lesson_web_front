@@ -28,6 +28,31 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
     }
   }, [visible]);
 
+  // 获取源课程信息
+  const getSourceCourses = () => {
+    if (!student || !student.courses) {
+      return [];
+    }
+
+    const sourceCourses: Array<{
+      courseName: string;
+      courseTypeName: string;
+      sharingCount: number;
+    }> = [];
+
+    student.courses.forEach(course => {
+      if (course.sharingInfoList && course.sharingInfoList.length > 0) {
+        sourceCourses.push({
+          courseName: course.courseName,
+          courseTypeName: course.courseTypeName || '标准课程',
+          sharingCount: course.sharingInfoList.length
+        });
+      }
+    });
+
+    return sourceCourses;
+  };
+
   // 获取所有共享课程信息
   const getAllSharingInfo = () => {
     if (!student || !student.courses) {
@@ -36,7 +61,6 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
 
     const allSharingInfo: Array<{
       id: number;
-      sourceCourseName: string;
       targetCourseName: string;
       coachName: string;
       courseTypeName: string;
@@ -47,7 +71,6 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
         course.sharingInfoList.forEach(sharing => {
           allSharingInfo.push({
             id: sharing.targetCourseId, // 使用targetCourseId作为唯一标识
-            sourceCourseName: course.courseName,
             targetCourseName: sharing.targetCourseName,
             coachName: sharing.coachName,
             courseTypeName: course.courseTypeName || '标准课程'
@@ -59,6 +82,7 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
     return allSharingInfo;
   };
 
+  const sourceCourses = getSourceCourses();
   const sharingInfoList = getAllSharingInfo();
 
   const handleCheckboxChange = (sharingId: number, checked: boolean) => {
@@ -121,6 +145,38 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
             </div>
           ) : (
             <div>
+              {/* 源课程信息区域 */}
+              <div style={{ 
+                marginBottom: '20px', 
+                padding: '12px 16px', 
+                backgroundColor: '#f6ffed', 
+                borderRadius: '8px',
+                border: '1px solid #b7eb8f'
+              }}>
+                <Text strong style={{ fontSize: '14px', color: '#52c41a', marginBottom: '8px', display: 'block' }}>
+                  源课程信息：
+                </Text>
+                {sourceCourses.map((source, index) => (
+                  <div key={index} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    marginBottom: index < sourceCourses.length - 1 ? '4px' : '0'
+                  }}>
+                    <Tag color="green" style={{ borderRadius: '4px' }}>
+                      {source.courseTypeName}
+                    </Tag>
+                    <Text style={{ fontSize: '14px', color: '#52c41a' }}>
+                      {source.courseName}
+                    </Text>
+                    <Text style={{ fontSize: '12px', color: '#999' }}>
+                      (共享出 {source.sharingCount} 个课程)
+                    </Text>
+                  </div>
+                ))}
+              </div>
+
+              {/* 全选区域 */}
               <div style={{ 
                 marginBottom: '12px', 
                 padding: '8px 12px', 
@@ -137,10 +193,11 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
                 </Checkbox>
               </div>
 
+              {/* 共享课程列表 */}
               <List
                 dataSource={sharingInfoList}
                 renderItem={(item) => (
-                  <List.Item style={{ padding: '12px 0' }}>
+                  <List.Item style={{ padding: '8px 0' }}>
                     <Card
                       size="small"
                       style={{
@@ -157,21 +214,16 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
                           onChange={(e) => handleCheckboxChange(item.id, e.target.checked)}
                         />
                         
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <Tag color="blue" style={{ borderRadius: '12px' }}>
-                              {item.courseTypeName}
-                            </Tag>
-                            <Text style={{ fontSize: '14px', color: '#666' }}>
-                              共享课程：
-                            </Text>
-                            <Text strong style={{ fontSize: '14px', color: '#1890ff' }}>
-                              {item.targetCourseName}
-                            </Text>
-                          </div>
-                          <div style={{ color: '#666', fontSize: '12px' }}>
-                            教练：{item.coachName} | 来源：{item.sourceCourseName}
-                          </div>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Tag color="blue" style={{ borderRadius: '4px' }}>
+                            {item.courseTypeName}
+                          </Tag>
+                          <Text strong style={{ fontSize: '14px', color: '#1890ff' }}>
+                            {item.targetCourseName}
+                          </Text>
+                          <Text style={{ fontSize: '14px', color: '#666' }}>
+                            教练：{item.coachName}
+                          </Text>
                         </div>
                       </div>
                     </Card>

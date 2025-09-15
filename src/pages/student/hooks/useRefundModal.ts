@@ -91,7 +91,7 @@ export default function useRefundModal(
           studentId: student.studentId || student.id, // 设置学员ID
           studentName: student.name, // 设置学员姓名
           _courseId: student.selectedCourseId,
-          fromCourseId: courseName || '未知课程',
+          fromCourseId: student.selectedCourseName || courseName || '未知课程', // 优先使用传递的selectedCourseName
           refundClassHours: refundHours
         };
         console.log('最终设置的表单值:', formValues);

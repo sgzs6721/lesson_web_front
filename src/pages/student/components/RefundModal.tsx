@@ -261,9 +261,10 @@ const RefundModal: React.FC<RefundModalProps> = ({
                 onChange={() => {
                   setTimeout(() => {
                     const refundAmount = form.getFieldValue('refundAmount') || 0;
-                    const serviceFee = form.getFieldValue('serviceFee') || 0;
+                    const serviceFeeRate = form.getFieldValue('serviceFee') || 0;
                     const otherFee = form.getFieldValue('otherFee') || 0;
-                    const actualRefund = refundAmount - serviceFee - otherFee;
+                    // 新公式：退款金额 * (1 - 手续费率) - 其它费用扣除
+                    const actualRefund = refundAmount * (1 - serviceFeeRate / 100) - otherFee;
                     form.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
                   }, 0);
                 }}
@@ -273,7 +274,7 @@ const RefundModal: React.FC<RefundModalProps> = ({
           <Col span={12}>
             <Form.Item
               name="handlingFeeTypeId"
-              label="手续费"
+              label="手续费率"
               rules={[{ required: true, message: '请选择手续费类型' }]}
             >
               <Select 
@@ -304,9 +305,10 @@ const RefundModal: React.FC<RefundModalProps> = ({
 
                   setTimeout(() => {
                     const refundAmount = form.getFieldValue('refundAmount') || 0;
-                    const currentServiceFee = form.getFieldValue('serviceFee') || 0;
+                    const currentServiceFeeRate = form.getFieldValue('serviceFee') || 0;
                     const otherFee = form.getFieldValue('otherFee') || 0;
-                    const actualRefund = refundAmount - currentServiceFee - otherFee;
+                    // 新公式：退款金额 * (1 - 手续费率) - 其它费用扣除
+                    const actualRefund = refundAmount * (1 - currentServiceFeeRate / 100) - otherFee;
                     form.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
                   }, 0);
                 }}
@@ -344,9 +346,10 @@ const RefundModal: React.FC<RefundModalProps> = ({
                 onChange={() => {
                   setTimeout(() => {
                     const refundAmount = form.getFieldValue('refundAmount') || 0;
-                    const serviceFee = form.getFieldValue('serviceFee') || 0;
+                    const serviceFeeRate = form.getFieldValue('serviceFee') || 0;
                     const otherFee = form.getFieldValue('otherFee') || 0;
-                    const actualRefund = refundAmount - serviceFee - otherFee;
+                    // 新公式：退款金额 * (1 - 手续费率) - 其它费用扣除
+                    const actualRefund = refundAmount * (1 - serviceFeeRate / 100) - otherFee;
                     form.setFieldsValue({ actualRefund: Math.max(0, actualRefund) });
                   }, 0);
                 }}
@@ -381,7 +384,7 @@ const RefundModal: React.FC<RefundModalProps> = ({
               name="actualRefund"
               label="实际退费金额"
               initialValue={0}
-              tooltip="实际退费金额 = 退款金额 - 手续费 - 其它费用扣除"
+              tooltip="实际退费金额 = 退款金额 × (1 - 手续费率) - 其它费用扣除"
             >
               <InputNumber 
                 min={0}

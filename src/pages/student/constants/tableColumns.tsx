@@ -389,20 +389,14 @@ export const getStudentColumns = (
                     // 调试信息，打印当前课程
                     console.log(`点击退费按钮 - 课程ID: ${course.courseId}, 类型: ${typeof course.courseId}, 名称: ${displayCourseName}`);
 
-                    // 检查是否有共享课程，如果有，使用共享课程的targetCourseName
+                    // 退费始终使用主课程（源课程）的信息
                     let refundCourseName = displayCourseName;
                     let refundCourseId = course.courseId;
                     
-                    if (course.sharingInfoList && course.sharingInfoList.length > 0) {
-                      // 如果有共享课程，使用第一个共享课程的targetCourseName
-                      const sharingInfo = course.sharingInfoList[0];
-                      refundCourseName = sharingInfo.targetCourseName;
-                      refundCourseId = sharingInfo.targetCourseId;
-                      console.log('使用共享课程信息进行退费:', { 
-                        targetCourseName: sharingInfo.targetCourseName, 
-                        targetCourseId: sharingInfo.targetCourseId 
-                      });
-                    }
+                    console.log('退费使用主课程信息:', { 
+                      courseName: displayCourseName, 
+                      courseId: course.courseId 
+                    });
 
                     // 从课程完整信息中找到对应信息，避免ID类型不匹配问题
                     const courseInfoForRefund = {
@@ -700,20 +694,23 @@ export const getStudentColumns = (
                     minHeight: course.sharingInfoList && course.sharingInfoList.length > 0 ? '44px' : '22px',
                     gap: '4px',
                 }}>
-                  {/* 第一行：共享标签 */}
+                  {/* 第一行：共享课时标签 */}
                   {course.sharingInfoList && course.sharingInfoList.length > 0 && (
                     <div 
                       style={{
-                        background: '#52c41a',
-                        color: '#fff',
+                        background: 'rgba(82, 196, 26, 0.15)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(82, 196, 26, 0.3)',
+                        color: '#52c41a',
                         fontSize: '10px',
                         padding: '2px 6px',
-                        borderRadius: '6px', // 适中的圆角
+                        borderRadius: '4px',
                         fontWeight: 'bold',
                         whiteSpace: 'nowrap',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 2px 8px rgba(82, 196, 26, 0.15)',
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -724,15 +721,19 @@ export const getStudentColumns = (
                         window.dispatchEvent(event);
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#73d13d';
+                        e.currentTarget.style.background = 'rgba(82, 196, 26, 0.25)';
+                        e.currentTarget.style.border = '1px solid rgba(82, 196, 26, 0.5)';
                         e.currentTarget.style.transform = 'scale(1.05)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(82, 196, 26, 0.25)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#52c41a';
+                        e.currentTarget.style.background = 'rgba(82, 196, 26, 0.15)';
+                        e.currentTarget.style.border = '1px solid rgba(82, 196, 26, 0.3)';
                         e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(82, 196, 26, 0.15)';
                       }}
                     >
-                      共享
+                      共享课时
                     </div>
                   )}
                   
