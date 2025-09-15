@@ -583,7 +583,7 @@ export const student = {
     });
 
     console.log('退费API响应:', response);
-    return response.data;
+    return response; // 返回完整的响应对象，包含 code, data, message
   },
 
   // 新增：获取学员打卡记录列表
