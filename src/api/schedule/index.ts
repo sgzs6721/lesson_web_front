@@ -23,7 +23,8 @@ export const schedule = {
 
   // 获取教练简单列表
   getCoachSimpleList: async (campusId: number): Promise<CoachSimpleInfo[]> => {
-    const url = `${SCHEDULE_API_PATHS.COACH_SIMPLE_LIST}?campusId=${campusId}`;
+    // 只获取在职教练
+    const url = `${SCHEDULE_API_PATHS.COACH_SIMPLE_LIST}?campusId=${campusId}&status=ACTIVE`;
     const response: CoachSimpleListResponse = await request(url);
     return response.data;
   }
