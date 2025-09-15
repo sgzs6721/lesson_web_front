@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, List, Checkbox, Button, Typography, Card, Tag, message } from 'antd';
 import { Student, CourseInfo } from '../types/student';
+import { course } from '@/api/course';
 
 const { Text, Title } = Typography;
 
@@ -101,12 +102,29 @@ const ShareManagementModal: React.FC<ShareManagementModalProps> = ({
     }
   };
 
-  const handleRemoveSelected = () => {
+  const handleRemoveSelected = async () => {
     if (selectedSharingIds.length === 0) {
       message.warning('请先选择要取消共享的课程');
       return;
     }
-    onOk(selectedSharingIds);
+
+    try {
+      console.log('开始取消共享课程，IDs:', selectedSharingIds);
+      
+      // 调用API删除共享课程
+      const response = await course.batchDeleteSharing(selectedSharingIds);
+      
+      if (response && response.code === 200) {
+        message.success('共享关系已成功移除');
+        onOk(selectedSharingIds); // 通知父组件刷新数据
+      } else {
+        const errorMessage = response?.message || '取消共享失败';
+        message.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('取消共享课程失败:', error);
+      message.error('取消共享失败，请重试');
+    }
   };
 
   return (

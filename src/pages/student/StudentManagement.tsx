@@ -411,16 +411,16 @@ const StudentManagement: React.FC = () => {
 
   const handleRemoveSharing = async (selectedSharingIds: number[]) => {
     try {
-      // 这里需要调用API来移除共享关系
-      console.log('移除共享关系:', selectedSharingIds);
-      message.success('共享关系已移除');
+      console.log('共享关系移除成功，刷新学员列表:', selectedSharingIds);
       setShareManagementVisible(false);
       setCurrentShareStudent(null);
       // 刷新学员列表
-      df.data.fetchStudents();
+      df.data.fetchStudents({
+        pageNum: ui.pagination.currentPage,
+        pageSize: ui.pagination.pageSize
+      });
     } catch (error) {
-      console.error('移除共享关系失败:', error);
-      message.error('移除共享关系失败');
+      console.error('处理共享关系移除后刷新失败:', error);
     }
   };
 

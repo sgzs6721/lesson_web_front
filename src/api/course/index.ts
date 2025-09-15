@@ -30,7 +30,8 @@ const COURSE_API_PATHS = {
   ADD: '/lesson/api/courses/create',
   UPDATE: '/lesson/api/courses/update',
   DELETE: (id: string) => `/lesson/api/courses/delete?id=${id}`,
-  SIMPLE_LIST: '/lesson/api/courses/simple'
+  SIMPLE_LIST: '/lesson/api/courses/simple',
+  SHARING_BATCH_DELETE: '/lesson/api/course/sharing/batch-delete'
 };
 
 // 课程相关接口
@@ -202,6 +203,19 @@ export const course = {
     const url = `${COURSE_API_PATHS.SIMPLE_LIST}?campusId=${encodeURIComponent(campusId)}`;
     const res = await request(url);
     return res.data || [];
+  },
+
+  // 批量删除共享课程
+  batchDeleteSharing: async (ids: number[]): Promise<any> => {
+    console.log('批量删除共享课程，IDs:', ids);
+    
+    const response = await request(COURSE_API_PATHS.SHARING_BATCH_DELETE, {
+      method: 'POST',
+      body: JSON.stringify({ ids })
+    });
+    
+    console.log('批量删除共享课程响应:', response);
+    return response;
   }
 };
 
