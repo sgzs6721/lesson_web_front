@@ -4,7 +4,7 @@ import { Student, CourseSummary } from '../types/student';
 import { getStudentAllCourses } from '../utils/student';
 import { SimpleCourse } from '@/api/course/types';
 import { API } from '@/api';
-import { RefundRequest } from '@/api/student/types';
+import { RefundRequest, RefundMethod } from '@/api/student/types';
 
 /**
  * 退费模态框钩子
@@ -134,7 +134,7 @@ export default function useRefundModal(
         refundAmount: Number(values.refundAmount) || 0,
         handlingFee: Number(values.serviceFee) || 0,
         deductionAmount: Number(values.otherFee) || 0,
-        refundMethod: String(values.refundMethod), // 将ID转为字符串
+        refundMethod: values.refundMethod as RefundMethod, // 使用枚举值
         reason: values.reason,
       };
       

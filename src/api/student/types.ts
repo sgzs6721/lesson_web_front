@@ -306,6 +306,9 @@ export interface AttendanceListResponseData extends PaginatedResponse<Attendance
 // 打卡记录列表完整 API 响应
 export interface AttendanceListApiResponse extends ApiResponse<AttendanceListResponseData> {}
 
+// 退费方式枚举
+export type RefundMethod = 'WECHAT' | 'ALIPAY' | 'CASH' | 'CARD' | 'BANK_TRANSFER';
+
 // 退费请求接口
 export interface RefundRequest {
   studentId: number;
@@ -314,7 +317,7 @@ export interface RefundRequest {
   refundAmount: number;
   handlingFee: number;
   deductionAmount: number;
-  refundMethod: string; // 退费方式：WECHAT, ALIPAY, CASH, CARD, BANK_TRANSFER
+  refundMethod: RefundMethod; // 退费方式枚举
   reason: string;
 }
 

@@ -366,7 +366,7 @@ const RefundModal: React.FC<RefundModalProps> = ({
                 getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
               >
                 {paymentMethods.map(method => (
-                  <Option key={method.id} value={method.id}>
+                  <Option key={method.id} value={method.constantKey}>
                     {method.constantValue}
                   </Option>
                 ))}
