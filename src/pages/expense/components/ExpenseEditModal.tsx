@@ -2,7 +2,7 @@ import { Modal, Form, DatePicker, Input, Select, Button, Radio, Divider, InputNu
 import { useEffect } from 'react';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import { FormInstance } from 'antd/lib/form';
-import { TRANSACTION_TYPE_LABEL, EXPENSE_ITEM_OPTIONS } from '../constants/expenseTypes';
+import { TRANSACTION_TYPE_LABEL, EXPENSE_ITEM_OPTIONS, INCOME_ITEM_OPTIONS } from '../constants/expenseTypes';
 import { useExpenseCategories } from '../hooks/useExpenseCategories';
 
 const { Option } = Select;
@@ -151,7 +151,19 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
                   ))}
                 </Select>
               ) : (
-                <Input placeholder={`请输入${TRANSACTION_TYPE_LABEL[type]}项目`} />
+                <Select
+                  placeholder={`请选择${TRANSACTION_TYPE_LABEL[type]}项目`}
+                  showSearch={false}
+                  virtual={false}
+                  dropdownMatchSelectWidth={true}
+                  getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
+                >
+                  {INCOME_ITEM_OPTIONS.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
               )}
             </Form.Item>
           </Col>

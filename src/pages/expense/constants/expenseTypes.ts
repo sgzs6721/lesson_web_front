@@ -12,6 +12,13 @@ export const EXPENSE_ITEM_OPTIONS = [
   { value: 'OTHER_EXPENSE', label: '其他支出' }
 ];
 
+// 收入项目枚举（用于“收入项目”下拉）
+export const INCOME_ITEM_OPTIONS = [
+  { value: 'TUITION_INCOME', label: '学费收入' },
+  { value: 'RETAIL_INCOME', label: '商品收入' },
+  { value: 'OTHER_INCOME', label: '其他收入' }
+];
+
 // 收入类别
 export const INCOME_CATEGORY = {
   TUITION: '学费收入',

@@ -3,7 +3,7 @@ import { Form, message } from 'antd';
 import { Expense } from '../types/expense';
 import dayjs from 'dayjs';
 import { API } from '@/api';
-import { CreateFinanceRecordRequest } from '@/api/finance';
+import { CreateFinanceRecordRequest, UpdateFinanceRecordRequest } from '@/api/finance';
 import { TRANSACTION_TYPE } from '../constants/expenseTypes';
 
 export const useFinanceForm = (
@@ -43,7 +43,21 @@ export const useFinanceForm = (
       setLoading(true);
 
       if (editingId) {
-        // 编辑现有记录 - 暂时使用本地更新
+        // 编辑现有记录 - 调用更新接口
+        const currentCampusId = localStorage.getItem('currentCampusId') || '1';
+
+        const updateData: UpdateFinanceRecordRequest = {
+          id: editingId,
+          type: transactionType,
+          date: values.date.format('YYYY-MM-DD'),
+          item: values.item,
+          amount: Number(values.amount),
+          categoryId: Number(values.category),
+          notes: values.remark || '',
+          campusId: Number(currentCampusId)
+        };
+
+        await API.finance.updateRecord(updateData);
         onUpdateTransaction(editingId, values);
         message.success('记录更新成功');
       } else {

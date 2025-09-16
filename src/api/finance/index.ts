@@ -11,6 +11,18 @@ export interface CreateFinanceRecordRequest {
   campusId: number;
 }
 
+// 更新收支记录的请求参数类型
+export interface UpdateFinanceRecordRequest {
+  id: number | string;
+  type?: 'EXPEND' | 'INCOME';
+  date: string;
+  item: string;
+  amount: number;
+  categoryId: number;
+  notes?: string;
+  campusId: number;
+}
+
 // 查询财务记录列表的请求参数类型
 export interface FinanceListRequest {
   transactionType?: 'INCOME' | 'EXPEND';
@@ -54,6 +66,15 @@ export async function createFinanceRecord(data: CreateFinanceRecordRequest) {
   });
 }
 
+// 更新收支记录
+export async function updateFinanceRecord(data: UpdateFinanceRecordRequest) {
+  // 按后端文档使用POST提交更新
+  return request('/lesson/api/finance/update', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
 // 查询财务记录列表
 export async function getFinanceList(data: FinanceListRequest): Promise<{
   code: number;
@@ -69,5 +90,6 @@ export async function getFinanceList(data: FinanceListRequest): Promise<{
 // 导出所有API
 export const financeAPI = {
   createRecord: createFinanceRecord,
-  getList: getFinanceList
+  getList: getFinanceList,
+  updateRecord: updateFinanceRecord
 }; 

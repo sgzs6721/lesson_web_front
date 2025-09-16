@@ -143,7 +143,7 @@ const FinanceStatistics: React.FC<FinanceStatisticsProps> = ({
     },
     {
       icon: <ShoppingOutlined />,
-      title: '培训收入',
+      title: '商品收入',
       value: trainingIncome,
       growth: 6.7,
       color: '#13c2c2',

@@ -1,7 +1,13 @@
 import { Dayjs } from 'dayjs';
 
 // 支出项目枚举类型
-export type ExpenseItemType = 'FIXED_COST' | 'SALARY_EXPENSE' | 'OTHER_EXPENSE';
+export type ExpenseItemType =
+  | 'FIXED_COST'
+  | 'SALARY_EXPENSE'
+  | 'OTHER_EXPENSE'
+  | 'TUITION_INCOME'
+  | 'RETAIL_INCOME'
+  | 'OTHER_INCOME';
 
 export interface Expense {
   id: string;
