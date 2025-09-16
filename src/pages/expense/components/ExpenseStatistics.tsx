@@ -53,6 +53,14 @@ const StatisticCard: React.FC<{
             value={value}
             precision={2}
             prefix={prefix}
+            formatter={(value) => {
+              // 移除前导零，保持两位小数
+              const num = Number(value);
+              return num.toLocaleString('zh-CN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              });
+            }}
             valueStyle={{
               color: '#333',
               fontSize: '16px',

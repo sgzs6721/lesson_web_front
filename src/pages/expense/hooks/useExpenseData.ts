@@ -147,7 +147,7 @@ export const useFinanceData = () => {
       { ...item, ...values, date: values.date.format('YYYY-MM-DD') } :
       item
     ));
-    message.success('记录更新成功');
+    // 移除这里的提示信息，避免与useExpenseForm中的提示重复
   };
   
   const deleteTransaction = (id: string) => {

@@ -29,7 +29,8 @@ export const useFinanceForm = (
   const handleEdit = (record: Expense) => {
     form.setFieldsValue({
       ...record,
-      date: dayjs(record.date)
+      date: dayjs(record.date),
+      amount: Number(record.amount) // 确保金额是数字类型
     });
     setEditingId(record.id);
     setTransactionType(record.type);
@@ -52,7 +53,7 @@ export const useFinanceForm = (
         const apiData: CreateFinanceRecordRequest = {
           type: transactionType,
           date: values.date.format('YYYY-MM-DD'),
-          item: values.item,
+          item: values.item, // 这里会传递枚举值（如 'FIXED_COST'）或字符串
           amount: values.amount,
           categoryId: values.category,
           notes: values.remark || '',

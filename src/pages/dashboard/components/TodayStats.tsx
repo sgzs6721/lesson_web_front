@@ -1,14 +1,23 @@
 import React from 'react';
+import { Button } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import { StatsItem, ClassCardInfo } from '../types/dashboard';
 
 interface TodayStatsProps {
   statsBarItems: StatsItem[];
   classCards: ClassCardInfo[];
+  onRefresh?: () => void;
+  loading?: boolean;
 }
 
-const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards }) => {
+const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRefresh, loading }) => {
   // 优化学员列表布局 - 保证每行两列，学员均匀分布
   const getBalancedStudents = (card: ClassCardInfo) => {
+    // 确保 card.students 存在且为数组
+    if (!card || !card.students || !Array.isArray(card.students)) {
+      return [];
+    }
+    
     const students = [...card.students];
     
     // 确保所有卡片都有足够的学员位置以保持布局一致
@@ -29,7 +38,9 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards }) =>
               <>
                 <span>{students[i].name} ({students[i].time})</span>
                 <span style={{ 
-                  color: students[i].status === '已完成' ? '#27ae60' : students[i].status === '请假' ? '#e74c3c' : 'transparent', 
+                  color: students[i].status === '已完成' ? '#27ae60' : 
+                         students[i].status === '请假' ? '#e74c3c' : 
+                         students[i].status === '未打卡' ? '#f39c12' : 'transparent', 
                   fontSize: '12px', 
                   fontWeight: 500,
                   visibility: students[i].status !== 'empty' ? 'visible' : 'hidden'
@@ -46,7 +57,9 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards }) =>
               <>
                 <span>{students[i+1].name} ({students[i+1].time})</span>
                 <span style={{ 
-                  color: students[i+1].status === '已完成' ? '#27ae60' : students[i+1].status === '请假' ? '#e74c3c' : 'transparent', 
+                  color: students[i+1].status === '已完成' ? '#27ae60' : 
+                         students[i+1].status === '请假' ? '#e74c3c' : 
+                         students[i+1].status === '未打卡' ? '#f39c12' : 'transparent', 
                   fontSize: '12px', 
                   fontWeight: 500,
                   visibility: students[i+1].status !== 'empty' ? 'visible' : 'hidden'
@@ -65,8 +78,13 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards }) =>
 
   // 将教练课程分为两行显示
   const renderCoachCardsInRows = () => {
-    const rows = [];
+    const rows: React.ReactNode[] = [];
     const cardsPerRow = 2;
+    
+    // 确保 classCards 存在且为数组
+    if (!classCards || !Array.isArray(classCards)) {
+      return rows;
+    }
     
     for (let i = 0; i < classCards.length; i += cardsPerRow) {
       const rowCards = classCards.slice(i, i + cardsPerRow);
@@ -121,11 +139,21 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards }) =>
     <div className="dashboard-card" id="today-overview-card" style={{ marginBottom: '0' }}>
       <div className="card-header">
         <div className="card-title" style={{ fontSize: '18px' }}>今日数据</div>
+        {onRefresh && (
+          <Button 
+            type="text" 
+            icon={<ReloadOutlined />} 
+            onClick={onRefresh}
+            loading={loading}
+            style={{ color: '#1890ff' }}
+            title="刷新今日数据"
+          />
+        )}
       </div>
       <div className="card-body">
         {/* 统计条 */}
         <div className="stats-bar">
-          {statsBarItems.map((item, index) => (
+          {(statsBarItems || []).map((item, index) => (
             <div className="stat-item" key={index}>
               <div className="stat-content">
                 <div className="stat-number">

@@ -1,85 +1,96 @@
 import React from 'react';
+import { Button } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import { PeriodType } from '../types/dashboard';
+import { DashboardOverviewVO } from '@/api/dashboard';
 
 interface DataOverviewProps {
   activePeriod: PeriodType;
   onTogglePeriod: (period: PeriodType) => void;
+  overviewData?: DashboardOverviewVO | null;
+  loading?: boolean;
+  onRefresh?: () => void;
 }
 
 const DataOverview: React.FC<DataOverviewProps> = ({
   activePeriod,
-  onTogglePeriod
+  onTogglePeriod,
+  overviewData,
+  loading = false,
+  onRefresh
 }) => {
-  // 基于activePeriod渲染不同的数据
+  // 基于API数据渲染
   const getData = () => {
-    // 根据时间段返回不同的数据
-    if (activePeriod === 'week') {
+    console.log('DataOverview - overviewData:', overviewData);
+    if (!overviewData) {
+      // 默认数据
       return {
-        totalRevenue: '¥128,645',
-        revenueChange: '+5.2%',
-        totalProfit: '¥62,290',
-        profitChange: '+4.1%',
-        totalStudents: '102',
-        studentsChange: '+8%',
+        totalRevenue: '¥0',
+        revenueChange: '+0%',
+        totalProfit: '¥0',
+        profitChange: '+0%',
+        totalStudents: '0',
+        studentsChange: '+0%',
         coaches: {
-          total: '8',
-          partTime: '3',
-          fullTime: '5'
+          total: '0',
+          partTime: '0',
+          fullTime: '0'
         },
         lessons: {
-          completed: '18',
-          total: '35',
-          amount: '¥12,800'
+          completed: '0',
+          total: '0',
+          amount: '¥0'
         },
         weeklyPayingStudents: {
-          total: '7',
-          new: '3',
-          renew: '4'
+          total: '0',
+          new: '0',
+          renew: '0'
         },
         weeklyPaymentAmount: {
-          total: '¥28,760',
-          new: '¥15,200',
-          renew: '¥13,560'
+          total: '¥0',
+          new: '¥0',
+          renew: '¥0'
         },
         attendanceRate: {
-          value: '94.2%',
-          change: '+1.7%'
-        }
-      };
-    } else {
-      return {
-        totalRevenue: '¥358,645',
-        revenueChange: '+8.5%',
-        totalProfit: '¥176,290',
-        profitChange: '+6.2%',
-        totalStudents: '147',
-        studentsChange: '+12%',
-        coaches: {
-          total: '8',
-          partTime: '3',
-          fullTime: '5'
-        },
-        lessons: {
-          completed: '45',
-          total: '89',
-          amount: '¥32,400'
-        },
-        weeklyPayingStudents: {
-          total: '24',
-          new: '9',
-          renew: '15'
-        },
-        weeklyPaymentAmount: {
-          total: '¥88,760',
-          new: '¥45,200',
-          renew: '¥43,560'
-        },
-        attendanceRate: {
-          value: '92.5%',
-          change: '+0.8%'
+          value: '0%',
+          change: '+0%'
         }
       };
     }
+
+    // 使用API数据
+    return {
+      totalRevenue: `¥${overviewData.totalRevenue.toLocaleString()}`,
+      revenueChange: `${overviewData.totalRevenueChangePercent >= 0 ? '+' : ''}${overviewData.totalRevenueChangePercent}%`,
+      totalProfit: `¥${overviewData.totalProfit.toLocaleString()}`,
+      profitChange: `${overviewData.totalProfitChangePercent >= 0 ? '+' : ''}${overviewData.totalProfitChangePercent}%`,
+      totalStudents: overviewData.totalStudents.toString(),
+      studentsChange: `${overviewData.totalStudentsChangePercent >= 0 ? '+' : ''}${overviewData.totalStudentsChangePercent}%`,
+      coaches: {
+        total: overviewData.totalCoaches.toString(),
+        partTime: overviewData.partTimeCoaches.toString(),
+        fullTime: overviewData.fullTimeCoaches.toString()
+      },
+      lessons: {
+        completed: overviewData.currentWeekClassHoursRatio.split('/')[0],
+        total: overviewData.currentWeekClassHoursRatio.split('/')[1],
+        amount: `¥${overviewData.currentWeekSalesAmount.toLocaleString()}`
+      },
+      weeklyPayingStudents: {
+        total: overviewData.currentWeekPayingStudents.toString(),
+        new: overviewData.currentWeekNewPayingStudents.toString(),
+        renew: overviewData.currentWeekRenewalPayingStudents.toString()
+      },
+      weeklyPaymentAmount: {
+        total: `¥${overviewData.currentWeekPaymentAmount.toLocaleString()}`,
+        new: `¥${overviewData.currentWeekNewStudentPaymentAmount.toLocaleString()}`,
+        renew: `¥${overviewData.currentWeekRenewalPaymentAmount.toLocaleString()}`
+      },
+      attendanceRate: {
+        value: `${overviewData.currentWeekAttendanceRate}%`,
+        change: `${overviewData.currentWeekAttendanceRateChangePercent >= 0 ? '+' : ''}${overviewData.currentWeekAttendanceRateChangePercent}%`
+      }
+    };
   };
 
   const data = getData();
@@ -99,6 +110,16 @@ const DataOverview: React.FC<DataOverviewProps> = ({
               onClick={() => onTogglePeriod('month')}
             >本月</button>
           </div>
+          {onRefresh && (
+            <Button
+              type="text"
+              icon={<ReloadOutlined />}
+              onClick={onRefresh}
+              loading={loading}
+              style={{ color: '#1890ff' }}
+              title="刷新数据总览"
+            />
+          )}
         </div>
       </div>
       <div className="card-body">

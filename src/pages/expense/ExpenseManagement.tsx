@@ -100,8 +100,8 @@ const FinanceManagement: React.FC = () => {
           className="expense-header"
           style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Title level={4} className="page-title" style={{ margin: 0 }}>收支管理</Title>
+          <Title level={4} className="page-title" style={{ margin: 0 }}>收支管理</Title>
+          <div className="expense-actions">
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -110,9 +110,6 @@ const FinanceManagement: React.FC = () => {
             >
               添加收支记录
             </Button>
-          </div>
-          <div className="expense-actions">
-            {/* 右侧可以放其他操作按钮 */}
           </div>
         </div>
 

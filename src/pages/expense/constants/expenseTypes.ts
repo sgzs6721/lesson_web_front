@@ -5,6 +5,13 @@ export const EXPENSE_CATEGORY = {
   OTHER: '其他支出',
 };
 
+// 支出项目枚举
+export const EXPENSE_ITEM_OPTIONS = [
+  { value: 'FIXED_COST', label: '固定成本' },
+  { value: 'SALARY_EXPENSE', label: '工资支出' },
+  { value: 'OTHER_EXPENSE', label: '其他支出' }
+];
+
 // 收入类别
 export const INCOME_CATEGORY = {
   TUITION: '学费收入',

@@ -2,7 +2,7 @@ import { ColumnsType } from 'antd/es/table';
 import { Tag, Button, Tooltip, Space } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Expense } from '../types/expense';
-import { TRANSACTION_TYPE_LABEL } from './expenseTypes';
+import { TRANSACTION_TYPE_LABEL, EXPENSE_ITEM_OPTIONS } from './expenseTypes';
 
 export const getTableColumns = (
   handleEdit: (record: Expense) => void,
@@ -29,6 +29,17 @@ export const getTableColumns = (
     dataIndex: 'item',
     key: 'item',
     align: 'center',
+    render: (item, record) => {
+      // 如果是支出类型且item是枚举值，则显示对应的标签
+      if (record.type === 'EXPEND') {
+        const expenseOption = EXPENSE_ITEM_OPTIONS.find(option => option.value === item);
+        if (expenseOption) {
+          return expenseOption.label;
+        }
+      }
+      // 否则直接显示原始值
+      return item;
+    },
   },
   {
     title: '金额 (¥)',

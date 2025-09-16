@@ -2,7 +2,7 @@ import { Modal, Form, DatePicker, Input, Select, Button, Radio, Divider, InputNu
 import { useEffect } from 'react';
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import { FormInstance } from 'antd/lib/form';
-import { TRANSACTION_TYPE_LABEL } from '../constants/expenseTypes';
+import { TRANSACTION_TYPE_LABEL, EXPENSE_ITEM_OPTIONS } from '../constants/expenseTypes';
 import { useExpenseCategories } from '../hooks/useExpenseCategories';
 
 const { Option } = Select;
@@ -31,10 +31,11 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
   // 只在模态框可见时获取类别选项，避免不必要的API调用
   const { categories, loading: categoriesLoading } = useExpenseCategories(visible ? type : undefined);
 
-  // 监听类型变化，重置类别选择
+  // 监听类型变化，重置类别选择和支出项目选择
   useEffect(() => {
     if (visible && !editingId) {
       form.setFieldValue('category', undefined);
+      form.setFieldValue('item', undefined);
     }
   }, [form, type, visible, editingId]);
 
@@ -133,9 +134,25 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
             <Form.Item
               label={TRANSACTION_TYPE_LABEL[type] + '项目'}
               name="item"
-              rules={[{ required: true, message: `请输入${TRANSACTION_TYPE_LABEL[type]}项目` }]}
+              rules={[{ required: true, message: `请选择${TRANSACTION_TYPE_LABEL[type]}项目` }]}
             >
-              <Input placeholder={`请输入${TRANSACTION_TYPE_LABEL[type]}项目`} />
+              {type === 'EXPEND' ? (
+                <Select
+                  placeholder={`请选择${TRANSACTION_TYPE_LABEL[type]}项目`}
+                  showSearch={false}
+                  virtual={false}
+                  dropdownMatchSelectWidth={true}
+                  getPopupContainer={triggerNode => triggerNode.parentNode as HTMLElement}
+                >
+                  {EXPENSE_ITEM_OPTIONS.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              ) : (
+                <Input placeholder={`请输入${TRANSACTION_TYPE_LABEL[type]}项目`} />
+              )}
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -144,10 +161,30 @@ const FinanceEditModal: React.FC<FinanceEditModalProps> = ({
               name="amount"
               rules={[
                 { required: true, message: '请输入金额' },
-                { type: 'number', min: 0, message: '金额必须大于等于0' }
+                { 
+                  validator: (_, value) => {
+                    if (value === null || value === undefined || value === '') {
+                      return Promise.reject(new Error('请输入金额'));
+                    }
+                    const numValue = Number(value);
+                    if (isNaN(numValue)) {
+                      return Promise.reject(new Error('请输入有效的金额'));
+                    }
+                    if (numValue < 0) {
+                      return Promise.reject(new Error('金额必须大于等于0'));
+                    }
+                    return Promise.resolve();
+                  }
+                }
               ]}
             >
-              <InputNumber style={{ width: '100%' }} prefix="¥" placeholder="请输入金额" />
+              <InputNumber 
+                style={{ width: '100%' }} 
+                prefix="¥" 
+                placeholder="请输入金额"
+                min={0}
+                precision={2}
+              />
             </Form.Item>
           </Col>
         </Row>

@@ -22,7 +22,10 @@ const Dashboard: React.FC = () => {
     calculateTotals,
     handleBatchPunch,
     toggleAttendanceSelection,
-    toggleSelectAll
+    toggleSelectAll,
+    fetchTodayData,
+    separateOverviewData,
+    fetchOverviewData
   } = useDashboardData();
 
   // 跟踪批量打卡后的记录更新
@@ -80,6 +83,9 @@ const Dashboard: React.FC = () => {
   // 计算教练统计总数
   const totals = calculateTotals(coachStatsView);
 
+  // 调试信息
+  console.log('Dashboard - separateOverviewData:', separateOverviewData);
+
   if (loading) {
     return (
       <div className="dashboard-loading">
@@ -93,7 +99,9 @@ const Dashboard: React.FC = () => {
       {/* 今日数据 */}
       <TodayStats 
         statsBarItems={getStatsBarItems()} 
-        classCards={classCards} 
+        classCards={classCards}
+        onRefresh={fetchTodayData}
+        loading={loading}
       />
       
       {/* 今日上课学员 */}
@@ -116,6 +124,9 @@ const Dashboard: React.FC = () => {
       <DataOverview 
         activePeriod={activePeriod}
         onTogglePeriod={toggleDataOverviewPeriod}
+        overviewData={separateOverviewData}
+        loading={loading}
+        onRefresh={fetchOverviewData}
       />
     </>
   );
