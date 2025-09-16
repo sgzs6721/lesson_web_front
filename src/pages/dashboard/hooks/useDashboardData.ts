@@ -12,7 +12,7 @@ import {
 // API import removed as we're using the shared getCampusList function
 import { Campus } from '@/api/campus/types';
 import { getCampusList } from '@/components/CampusSelector';
-import { dashboardApi, TodayDataResponse, DashboardOverviewVO, CourseDetailVO, OverviewDataResponse, CoursesDataResponse } from '@/api/dashboard';
+import { dashboardApi, TodayDataResponse, DashboardOverviewVO, CourseDetailVO, OverviewDataResponse } from '@/api/dashboard';
 
 export const useDashboardData = () => {
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ export const useDashboardData = () => {
   const [overviewData, setOverviewData] = useState<DashboardOverviewVO | null>(null);
   const [courseDetailsData, setCourseDetailsData] = useState<CourseDetailVO[]>([]);
   const [separateOverviewData, setSeparateOverviewData] = useState<DashboardOverviewVO | null>(null);
-  const [separateCoursesData, setSeparateCoursesData] = useState<CourseDetailVO[]>([]);
+  
 
   // 转换课程详情为课程卡片格式
   const convertCourseDetailsToClassCards = (courseDetails: CourseDetailVO[]): ClassCardInfo[] => {
@@ -44,7 +44,9 @@ export const useDashboardData = () => {
       students: course.studentAttendances.map(attendance => ({
         name: attendance.studentName,
         time: attendance.timeSlot,
-        status: attendance.status as '已完成' | '请假' | '未打卡' | 'empty'
+        status: attendance.status as '已完成' | '请假' | '未打卡' | 'empty',
+        remainingHours: attendance.remainingHours,
+        totalHours: attendance.totalHours
       }))
     }));
   };
@@ -66,7 +68,7 @@ export const useDashboardData = () => {
   };
 
   // 获取今日数据
-  const fetchTodayData = async () => {
+  const fetchTodayData = async (showToast?: boolean) => {
     try {
       console.log('开始获取今日数据...');
       const response: TodayDataResponse = await dashboardApi.getTodayData();
@@ -89,7 +91,9 @@ export const useDashboardData = () => {
         console.log('总览数据:', overview);
         console.log('课程详情数据:', courseDetails);
         console.log('转换后的课程卡片:', convertedClassCards);
-        message.success('今日数据已刷新');
+        if (showToast) {
+          message.success('今日数据已刷新');
+        }
       } else {
         console.error('获取今日数据失败:', response.message);
         message.error(`获取今日数据失败: ${response.message}`);
@@ -158,25 +162,7 @@ export const useDashboardData = () => {
     }
   };
 
-  // 获取课程详情
-  const fetchCoursesData = async () => {
-    try {
-      console.log('开始获取课程详情...');
-      const response: CoursesDataResponse = await dashboardApi.getCoursesData();
-      console.log('课程详情API响应:', response);
-
-      if (response.code === 0 || response.code === 200) {
-        setSeparateCoursesData(response.data);
-        console.log('课程详情更新成功');
-      } else {
-        console.error('获取课程详情失败:', response.message);
-        message.error(`获取课程详情失败: ${response.message}`);
-      }
-    } catch (error) {
-      console.error('获取课程详情异常:', error);
-      message.error('获取课程详情失败，请稍后重试');
-    }
-  };
+  // 课程详情接口已不再使用
 
   // 异步加载初始数据，不阻塞页面渲染
   useEffect(() => {
@@ -192,7 +178,7 @@ export const useDashboardData = () => {
           fetchCampusList().catch(err => console.error('获取校区列表失败:', err)),
           fetchTodayData().catch(err => console.error('获取今日数据失败:', err)),
           fetchOverviewData().catch(err => console.error('获取数据总览失败:', err)),
-          fetchCoursesData().catch(err => console.error('获取课程详情失败:', err))
+          // fetchCoursesData().catch(err => console.error('获取课程详情失败:', err))
         ]);
 
         // 完成加载
@@ -323,76 +309,7 @@ export const useDashboardData = () => {
 
   // 课程卡片数据现在从API获取，不再使用硬编码数据
 
-  // 初始化出勤记录数据
-  useEffect(() => {
-    setAttendanceRecords([
-      {
-        id: '1',
-        studentName: '张小明',
-        time: '14:00-16:00',
-        coach: '李教练',
-        remainingLessons: '12/24',
-        courseType: '未打卡',
-        salesAmount: '¥2,400',
-        remainingAmount: '¥2,400',
-        status: '未打卡',
-        isChecked: false,
-        isDisabled: false
-      },
-      {
-        id: '2',
-        studentName: '李华',
-        time: '10:00-11:00',
-        coach: '王教练',
-        remainingLessons: '15/30',
-        courseType: '已打卡',
-        salesAmount: '¥180',
-        remainingAmount: '¥2,700',
-        status: '已打卡',
-        isChecked: false,
-        isDisabled: true
-      },
-      {
-        id: '3',
-        studentName: '王芳',
-        time: '16:00-17:00',
-        coach: '张教练',
-        remainingLessons: '8/20',
-        courseType: '已请假',
-        salesAmount: '¥1,600',
-        remainingAmount: '¥1,600',
-        status: '已请假',
-        isChecked: false,
-        isDisabled: true
-      },
-      {
-        id: '4',
-        studentName: '刘强',
-        time: '09:00-10:00',
-        coach: '李教练',
-        remainingLessons: '5/20',
-        courseType: '未打卡',
-        salesAmount: '¥1,800',
-        remainingAmount: '¥1,800',
-        status: '未打卡',
-        isChecked: false,
-        isDisabled: false
-      },
-      {
-        id: '5',
-        studentName: '周丽',
-        time: '11:00-12:00',
-        coach: '王教练',
-        remainingLessons: '3/12',
-        courseType: '未打卡',
-        salesAmount: '¥1,200',
-        remainingAmount: '¥1,200',
-        status: '未打卡',
-        isChecked: false,
-        isDisabled: false
-      }
-    ]);
-  }, []);
+  // 今日上课学员模块已下线，保留状态但不再初始化示例数据
 
   // 切换期间视图
   const togglePeriodView = (view: CoachStatsViewType) => {
@@ -477,7 +394,7 @@ export const useDashboardData = () => {
     overviewData,
     courseDetailsData,
     separateOverviewData,
-    separateCoursesData,
+    
     getStatCards,
     getStatsBarItems,
     togglePeriodView,
@@ -489,6 +406,6 @@ export const useDashboardData = () => {
     fetchCampusList,
     fetchTodayData,
     fetchOverviewData,
-    fetchCoursesData
+    
   };
 };

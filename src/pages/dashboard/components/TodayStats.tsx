@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Button, Modal } from 'antd';
+import { ReloadOutlined, EllipsisOutlined } from '@ant-design/icons';
 import { StatsItem, ClassCardInfo } from '../types/dashboard';
 
 interface TodayStatsProps {
@@ -11,6 +11,92 @@ interface TodayStatsProps {
 }
 
 const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRefresh, loading }) => {
+  // 本地状态以便在不改动上层时更新学员状态展示
+  const [cards, setCards] = useState<ClassCardInfo[]>(classCards || []);
+  useEffect(() => {
+    setCards(classCards || []);
+  }, [classCards]);
+
+  // 多选：每个卡片是否开启与已选索引
+  const [multiSelect, setMultiSelect] = useState<Record<string, { enabled: boolean; selected: Record<number, boolean> }>>({});
+  const ensureCardMulti = (cardId: string) => {
+    setMultiSelect(prev => (prev[cardId] ? prev : { ...prev, [cardId]: { enabled: false, selected: {} } }));
+  };
+  const toggleMulti = (cardId: string) => {
+    ensureCardMulti(cardId);
+    setMultiSelect(prev => ({ ...prev, [cardId]: { enabled: !(prev[cardId]?.enabled ?? false), selected: {} } }));
+  };
+  const toggleStudentChecked = (cardId: string, idx: number, checked: boolean) => {
+    setMultiSelect(prev => ({
+      ...prev,
+      [cardId]: { enabled: prev[cardId]?.enabled ?? false, selected: { ...(prev[cardId]?.selected ?? {}), [idx]: checked } }
+    }));
+  };
+  const getCheckedCount = (cardId: string) => Object.values(multiSelect[cardId]?.selected || {}).filter(Boolean).length;
+  const isAllChecked = (cardId: string, total: number) => {
+    const map = multiSelect[cardId]?.selected || {};
+    let cnt = 0;
+    for (let i = 0; i < total; i++) if (map[i]) cnt++;
+    return total > 0 && cnt === total;
+  };
+  const toggleSelectAll = (cardId: string, total: number, checked: boolean) => {
+    setMultiSelect(prev => {
+      const selected: Record<number, boolean> = {};
+      if (checked) {
+        for (let i = 0; i < total; i++) selected[i] = true;
+      }
+      return { ...prev, [cardId]: { enabled: prev[cardId]?.enabled ?? false, selected } };
+    });
+  };
+  const batchPunch = (cardIndex: number, cardId: string) => {
+    const selectedMap = multiSelect[cardId]?.selected || {};
+    const indices = Object.keys(selectedMap).map(n => parseInt(n)).filter(i => selectedMap[i]);
+    if (indices.length === 0) return;
+    Modal.confirm({
+      title: `确认批量打卡选中的 ${indices.length} 名学员？`,
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        setCards(prev => {
+          const next = [...prev];
+          const card = next[cardIndex];
+          next[cardIndex] = { ...card, students: card.students.map((s, idx) => (indices.includes(idx) ? { ...s, status: '已完成' } : s)) };
+          return next;
+        });
+        setMultiSelect(prev => ({ ...prev, [cardId]: { enabled: true, selected: {} } }));
+      }
+    });
+  };
+
+  const confirmChange = (
+    cardIndex: number,
+    studentIndex: number,
+    action: 'checkin' | 'leave' | 'absent'
+  ) => {
+    const actionText = action === 'checkin' ? '打卡' : action === 'leave' ? '请假' : '缺勤';
+    Modal.confirm({
+      title: `确认${actionText}？`,
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        setCards(prev => {
+          const next = [...prev];
+          const status = action === 'checkin' ? '已完成' : action === 'leave' ? '请假' : '未打卡';
+          if (next[cardIndex] && next[cardIndex].students[studentIndex]) {
+            next[cardIndex] = {
+              ...next[cardIndex],
+              students: next[cardIndex].students.map((s, idx) =>
+                idx === studentIndex ? { ...s, status } : s
+              )
+            };
+          }
+          return next;
+        });
+      }
+    });
+  };
+
+  // 已移除三点菜单
   // 优化学员列表布局 - 保证每行两列，学员均匀分布
   const getBalancedStudents = (card: ClassCardInfo) => {
     // 确保 card.students 存在且为数组
@@ -35,38 +121,78 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRe
           {/* 左侧学员 */}
           <div className="student-item">
             {students[i].name && (
-              <>
-                <span>{students[i].name} ({students[i].time})</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
+                <span style={{ flex: '0 1 auto' }}>
+                  {students[i].name} ({students[i].time})
+                </span>
+                {students[i].remainingHours !== undefined && students[i].totalHours !== undefined && (
+                  <span
+                    style={{
+                      padding: '0 6px',
+                      background: 'rgba(0,0,0,0.04)',
+                      borderRadius: 4,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      lineHeight: '18px'
+                    }}
+                    title={`剩余课时/总课时：${students[i].remainingHours}/${students[i].totalHours}`}
+                  >
+                    <span style={{ color: '#27ae60' }}>{students[i].remainingHours}</span>
+                    <span style={{ color: '#bfbfbf' }}>/</span>
+                    <span style={{ color: '#8c8c8c' }}>{students[i].totalHours}</span>
+                  </span>
+                )}
                 <span style={{ 
                   color: students[i].status === '已完成' ? '#27ae60' : 
                          students[i].status === '请假' ? '#e74c3c' : 
                          students[i].status === '未打卡' ? '#f39c12' : 'transparent', 
                   fontSize: '12px', 
                   fontWeight: 500,
-                  visibility: students[i].status !== 'empty' ? 'visible' : 'hidden'
+                  visibility: students[i].status !== 'empty' ? 'visible' : 'hidden',
+                  marginLeft: 'auto'
                 }}>
                   {students[i].status !== 'empty' ? students[i].status : '占位'}
                 </span>
-              </>
+              </div>
             )}
           </div>
           
           {/* 右侧学员 */}
           <div className="student-item">
             {students[i+1] && students[i+1].name && (
-              <>
-                <span>{students[i+1].name} ({students[i+1].time})</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
+                <span style={{ flex: '0 1 auto' }}>
+                  {students[i+1].name} ({students[i+1].time})
+                </span>
+                {students[i+1].remainingHours !== undefined && students[i+1].totalHours !== undefined && (
+                  <span
+                    style={{
+                      padding: '0 6px',
+                      background: 'rgba(0,0,0,0.04)',
+                      borderRadius: 4,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      lineHeight: '18px'
+                    }}
+                    title={`剩余课时/总课时：${students[i+1].remainingHours}/${students[i+1].totalHours}`}
+                  >
+                    <span style={{ color: '#27ae60' }}>{students[i+1].remainingHours}</span>
+                    <span style={{ color: '#bfbfbf' }}>/</span>
+                    <span style={{ color: '#8c8c8c' }}>{students[i+1].totalHours}</span>
+                  </span>
+                )}
                 <span style={{ 
                   color: students[i+1].status === '已完成' ? '#27ae60' : 
                          students[i+1].status === '请假' ? '#e74c3c' : 
                          students[i+1].status === '未打卡' ? '#f39c12' : 'transparent', 
                   fontSize: '12px', 
                   fontWeight: 500,
-                  visibility: students[i+1].status !== 'empty' ? 'visible' : 'hidden'
+                  visibility: students[i+1].status !== 'empty' ? 'visible' : 'hidden',
+                  marginLeft: 'auto'
                 }}>
                   {students[i+1].status !== 'empty' ? students[i+1].status : '占位'}
                 </span>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -79,16 +205,16 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRe
   // 将教练课程分为两行显示
   const renderCoachCardsInRows = () => {
     const rows: React.ReactNode[] = [];
-    const cardsPerRow = 2;
+    const cardsPerRow = 3;
     
     // 确保 classCards 存在且为数组
-    if (!classCards || !Array.isArray(classCards)) {
+    if (!cards || !Array.isArray(cards)) {
       return rows;
     }
     
-    for (let i = 0; i < classCards.length; i += cardsPerRow) {
-      const rowCards = classCards.slice(i, i + cardsPerRow);
-      const isLastRow = i + cardsPerRow >= classCards.length;
+    for (let i = 0; i < cards.length; i += cardsPerRow) {
+      const rowCards = cards.slice(i, i + cardsPerRow);
+      const isLastRow = i + cardsPerRow >= cards.length;
       
       rows.push(
         <div key={i} style={{ 
@@ -97,35 +223,150 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRe
           gap: '10px', 
           marginBottom: isLastRow ? '0' : '15px' 
         }}>
-          {rowCards.map(card => (
-            <div key={card.id} className="coach-card" style={{ borderTop: `3px solid ${card.borderColor}` }}>
+          {rowCards.map((card, cardIdx) => (
+            <div
+              key={card.id}
+              className="coach-card"
+              style={{
+                borderTop: `3px solid ${card.borderColor}`,
+                flex: '0 0 calc((100% - 20px) / 3)'
+              }}
+            >
               <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                marginBottom: '10px', 
-                borderBottom: '1px solid rgba(0,0,0,0.05)', 
-                paddingBottom: '8px', 
-                paddingTop: '8px', 
-                backgroundColor: card.backgroundColor, 
-                borderRadius: '6px', 
-                position: 'relative' 
+                marginBottom: '10px',
+                borderBottom: '1px solid rgba(0,0,0,0.05)',
+                padding: '6px 10px',
+                backgroundColor: card.backgroundColor,
+                borderRadius: '6px',
+                position: 'relative',
+                textAlign: 'center'
               }}>
-                <div style={{ fontSize: '20px', fontWeight: 600, color: '#34495e', textAlign: 'center', width: '100%', padding: '6px 0' }}>
-                  {card.title}
+                {/* 左上角多选入口（仅未开启时显示） */}
+                {!multiSelect[card.id]?.enabled && (
+                  <div style={{ position: 'absolute', left: 10, top: 6 }}>
+                    <Button size="small" onClick={() => toggleMulti(card.id)}>多选</Button>
+                  </div>
+                )}
+                <span style={{ position: 'absolute', right: 10, top: 8, fontSize: '12px', color: '#777', fontWeight: 500 }}>{card.coachName}</span>
+                <div style={{ fontSize: '18px', fontWeight: 600, color: '#34495e' }}>{card.title}</div>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#666',
+                  marginTop: 4,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px 12px',
+                  lineHeight: '18px'
+                }}>
+                  <span>课时：<b>{card.lessonCount}</b></span>
+                  <span>|</span>
+                  <span>课酬：<b>¥{card.coachSalary}</b></span>
+                  <span>|</span>
+                  <span>销课金额：<b style={{ color: card.borderColor }}>¥{card.salesAmount.toLocaleString()}</b></span>
                 </div>
-                <span style={{ fontSize: '13px', color: '#777', fontWeight: 500, position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)' }}>
-                  1对1-{card.coachName}
-                </span>
               </div>
               
-              <div style={{ display: 'flex', justifyContent: 'center', fontSize: '14px', marginBottom: '8px', padding: '0 5px', textAlign: 'center' }}>
-                <span>课时：<b>{card.lessonCount}</b> | 课酬：<b>¥{card.coachSalary}</b> | 销课金额：<b style={{ color: card.borderColor }}>¥{card.salesAmount.toLocaleString()}</b></span>
-              </div>
+              {/* 去重：下方重复的概要信息已移除 */}
               
+              {/* 多选操作条 - 位于标题与列表之间 */}
+              {multiSelect[card.id]?.enabled && (
+                <div
+                  style={{
+                    margin: '6px 0 8px',
+                    padding: '6px 10px',
+                    background: '#f7f9fc',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    borderRadius: 6,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Button
+                      size="small"
+                      onClick={() => toggleSelectAll(card.id, card.students?.length || 0, !isAllChecked(card.id, card.students?.length || 0))}
+                      style={{ borderRadius: 4, padding: '1px 8px', background: '#f6ffed', color: '#389e0d', borderColor: '#b7eb8f', display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isAllChecked(card.id, card.students?.length || 0)}
+                        readOnly
+                        style={{ width: 12, height: 12, cursor: 'pointer' }}
+                      />
+                      全选
+                    </Button>
+                    <Button
+                      size="small"
+                      onClick={() => toggleMulti(card.id)}
+                      style={{ borderRadius: 4, padding: '1px 8px', background: '#fff1f0', color: '#cf1322', borderColor: '#ffa39e' }}
+                    >
+                      取消
+                    </Button>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#666' }}>已选 {getCheckedCount(card.id)} 人</div>
+                  <div>
+                    <Button size="small" type="primary" onClick={() => batchPunch(i, card.id)} style={{ borderRadius: 4, padding: '1px 10px' }}>批量打卡</Button>
+                  </div>
+                </div>
+              )}
+
               <div className="student-list">
-                {getBalancedStudents(card)}
+                {(() => {
+                  const sList = card.students ?? [];
+                  return sList.map((stu, si) => (
+                    <div className="student-row" key={si}>
+                      <div className="student-item" style={{ width: '100%' }}>
+                        {stu && stu.name && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', width: '100%' }}>
+                            {multiSelect[card.id]?.enabled && (
+                              <input
+                                type="checkbox"
+                                checked={!!multiSelect[card.id]?.selected?.[si]}
+                                onChange={e => toggleStudentChecked(card.id, si, e.target.checked)}
+                                style={{ cursor: 'pointer' }}
+                              />
+                            )}
+                            <span style={{ flex: '0 1 auto' }}>{stu.name}</span>
+                            <span style={{ color: '#666', marginLeft: 10 }}>{stu.time}</span>
+                            {stu.remainingHours !== undefined && stu.totalHours !== undefined && (
+                              <span
+                                style={{
+                                  padding: '0 6px',
+                                  background: 'rgba(0,0,0,0.04)',
+                                  borderRadius: 4,
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  lineHeight: '18px'
+                                }}
+                                title={`剩余课时/总课时：${stu.remainingHours}/${stu.totalHours}`}
+                              >
+                                <span style={{ color: '#27ae60' }}>{stu.remainingHours}</span>
+                                <span style={{ color: '#bfbfbf' }}>/</span>
+                                <span style={{ color: '#8c8c8c' }}>{stu.totalHours}</span>
+                              </span>
+                            )}
+                            <span style={{ 
+                              color: stu.status === '已完成' ? '#27ae60' : 
+                                     stu.status === '请假' ? '#e74c3c' : 
+                                     stu.status === '未打卡' ? '#f39c12' : 'transparent', 
+                              fontSize: '12px', 
+                              fontWeight: 500,
+                              visibility: stu.status !== 'empty' ? 'visible' : 'hidden'
+                            }}>
+                              {stu.status !== 'empty' ? stu.status : '占位'}
+                            </span>
+                            {/* 已移除三点菜单 */}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
+
+              {/* 底部批量按钮已移到上方操作条 */}
             </div>
           ))}
         </div>

@@ -5,6 +5,9 @@ export interface StudentAttendanceVO {
   studentName: string;    // 学员姓名
   timeSlot: string;       // 时间段
   status: '已完成' | '请假' | '未打卡';  // 状态
+  // 可选的课时进度，用于在今日课程卡片中展示 12/30 形式
+  remainingHours?: number; // 剩余课时
+  totalHours?: number;     // 总课时
 }
 
 // 课程详情对象

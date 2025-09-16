@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import TodayStats from './components/TodayStats';
-import AttendanceRecordTable from './components/AttendanceRecordTable';
 import CoachStatistics from './components/CoachStatistics';
 import DataOverview from './components/DataOverview';
 import { useDashboardData } from './hooks/useDashboardData';
@@ -14,71 +13,15 @@ const Dashboard: React.FC = () => {
     coachStats,
     coachStatsView,
     classCards,
-    attendanceRecords,
     getStatCards,
     getStatsBarItems,
     togglePeriodView,
     toggleDataOverviewPeriod,
     calculateTotals,
-    handleBatchPunch,
-    toggleAttendanceSelection,
-    toggleSelectAll,
     fetchTodayData,
     separateOverviewData,
     fetchOverviewData
   } = useDashboardData();
-
-  // 跟踪批量打卡后的记录更新
-  const [records, setRecords] = useState(attendanceRecords);
-
-  // 当attendanceRecords变化时更新本地状态
-  useEffect(() => {
-    setRecords(attendanceRecords);
-  }, [attendanceRecords]);
-
-  // 处理单条记录选择状态变更
-  const handleRecordSelection = (id: string, isChecked: boolean) => {
-    // 先更新全局状态
-    toggleAttendanceSelection(id, isChecked);
-    
-    // 再更新本地状态
-    setRecords(prev => prev.map(record => 
-      record.id === id ? { ...record, isChecked } : record
-    ));
-  };
-
-  // 处理全选状态变更
-  const handleSelectAll = (isChecked: boolean) => {
-    // 先更新全局状态
-    toggleSelectAll(isChecked);
-    
-    // 再更新本地状态
-    setRecords(prev => prev.map(record => 
-      !record.isDisabled ? { ...record, isChecked } : record
-    ));
-  };
-
-  // 执行批量打卡并处理结果
-  const handleBatchPunchWithUI = () => {
-    // 检查是否有选中的未打卡学员
-    const hasSelectedUncheckedStudents = records.some(
-      record => record.isChecked && !record.isDisabled && record.status === '未打卡'
-    );
-
-    if (!hasSelectedUncheckedStudents) {
-      alert('请先选择要打卡的学员');
-      return;
-    }
-    
-    // 执行打卡操作
-    const punchedCount = handleBatchPunch();
-    
-    if (punchedCount > 0) {
-      alert(`批量打卡成功！共为 ${punchedCount} 名学员完成打卡。`);
-      // 更新本地记录以反映打卡变化
-      setRecords([...attendanceRecords]);
-    }
-  };
 
   // 计算教练统计总数
   const totals = calculateTotals(coachStatsView);
@@ -100,16 +43,17 @@ const Dashboard: React.FC = () => {
       <TodayStats 
         statsBarItems={getStatsBarItems()} 
         classCards={classCards}
-        onRefresh={fetchTodayData}
+        onRefresh={() => fetchTodayData(true)}
         loading={loading}
       />
-      
-      {/* 今日上课学员 */}
-      <AttendanceRecordTable 
-        records={records} 
-        onSelectAll={handleSelectAll}
-        onSelectRecord={handleRecordSelection}
-        onBatchPunch={handleBatchPunchWithUI}
+
+      {/* 数据总览 */}
+      <DataOverview 
+        activePeriod={activePeriod}
+        onTogglePeriod={toggleDataOverviewPeriod}
+        overviewData={separateOverviewData}
+        loading={loading}
+        onRefresh={fetchOverviewData}
       />
 
       {/* 教练员课时统计 */}
@@ -118,15 +62,6 @@ const Dashboard: React.FC = () => {
         coachStatsView={coachStatsView}
         totals={totals}
         onToggleView={togglePeriodView}
-      />
-      
-      {/* 数据总览 */}
-      <DataOverview 
-        activePeriod={activePeriod}
-        onTogglePeriod={toggleDataOverviewPeriod}
-        overviewData={separateOverviewData}
-        loading={loading}
-        onRefresh={fetchOverviewData}
       />
     </>
   );

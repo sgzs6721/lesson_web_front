@@ -96,7 +96,7 @@ const DataOverview: React.FC<DataOverviewProps> = ({
   const data = getData();
 
   return (
-    <div className="dashboard-card" style={{ marginBottom: '20px' }}>
+    <div className="dashboard-card" style={{ marginBottom: '20px', marginTop: '16px' }}>
       <div className="card-header">
         <div className="card-title" style={{ fontSize: '18px' }}>数据总览</div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -123,7 +123,7 @@ const DataOverview: React.FC<DataOverviewProps> = ({
         </div>
       </div>
       <div className="card-body">
-        <div className="stats-grid">
+        <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
           {/* 总流水 */}
           <div className="stat-box">
             <div className="stat-box-title">总流水</div>
@@ -133,32 +133,9 @@ const DataOverview: React.FC<DataOverviewProps> = ({
             </div>
           </div>
           
-          {/* 总利润 */}
-          <div className="stat-box">
-            <div className="stat-box-title">总利润</div>
-            <div className="stat-box-value">{data.totalProfit}</div>
-            <div className="stat-box-subtitle">
-              较上{activePeriod === 'week' ? '周' : '月'} <span className="stat-highlight">{data.profitChange}</span>
-            </div>
-          </div>
+          {/* 移除：总利润 */}
           
-          {/* 总学员数 */}
-          <div className="stat-box">
-            <div className="stat-box-title">总学员数</div>
-            <div className="stat-box-value">{data.totalStudents}</div>
-            <div className="stat-box-subtitle">
-              较上{activePeriod === 'week' ? '周' : '月'} <span className="stat-highlight">{data.studentsChange}</span>
-            </div>
-          </div>
-          
-          {/* 教练数量 */}
-          <div className="stat-box">
-            <div className="stat-box-title">教练数量</div>
-            <div className="stat-box-value">{data.coaches.total}</div>
-            <div className="stat-box-subtitle">
-              兼职 <span className="stat-highlight-alt">{data.coaches.partTime}</span> | 全职 <span className="stat-highlight-primary">{data.coaches.fullTime}</span>
-            </div>
-          </div>
+          {/* 移除：总学员数、教练数量 */}
           
           {/* 课时 */}
           <div className="stat-box">

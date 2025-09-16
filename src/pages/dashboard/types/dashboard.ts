@@ -51,6 +51,9 @@ export interface ClassCardInfo {
     name: string;
     time: string;
     status: '已完成' | '请假' | '未打卡' | 'empty';
+    // 可选课时进度，用于展示 12/30
+    remainingHours?: number;
+    totalHours?: number;
   }[];
 }
 

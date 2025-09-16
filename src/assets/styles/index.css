@@ -983,13 +983,7 @@ body {
 
 .coach-card .student-list > div {
   column-count: 1;
-  column-gap: 15px;
-}
-
-/* Apply two-column layout for coach cards with more than 5 student items */
-.coach-card:nth-child(1) .student-list > div,
-.coach-card:nth-child(3) .student-list > div {
-  column-count: 2;
+  column-gap: 0;
 }
 
 .coach-card .student-list .student-item {
