@@ -244,7 +244,7 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRe
                 {/* 左上角多选入口（仅未开启时显示） */}
                 {!multiSelect[card.id]?.enabled && (
                   <div style={{ position: 'absolute', left: 10, top: 6 }}>
-                    <Button size="small" onClick={() => toggleMulti(card.id)}>多选</Button>
+                    <Button size="small" className="multi-select-trigger" onClick={() => toggleMulti(card.id)}>多选</Button>
                   </div>
                 )}
                 <span style={{ position: 'absolute', right: 10, top: 8, fontSize: '12px', color: '#777', fontWeight: 500 }}>{card.coachName}</span>
@@ -269,20 +269,79 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRe
               
               {/* 去重：下方重复的概要信息已移除 */}
               
-              {/* 多选操作条 - 位于标题与列表之间 */}
+              <div className="student-list">
+                {(() => {
+                  const sList = card.students ?? [];
+                  return sList.map((stu, si) => {
+                    const isMulti = !!multiSelect[card.id]?.enabled;
+                    return (
+                      <div className="student-row" key={si}>
+                        <div
+                          className="student-item student-grid"
+                          style={{
+                            width: '100%',
+                            display: 'grid',
+                            gridTemplateColumns: isMulti ? '24px repeat(4, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
+                            columnGap: 12
+                          }}
+                        >
+                          {stu && stu.name && (
+                            <>
+                              {/* 勾选列：仅在多选开启时渲染 */}
+                              {isMulti && (
+                                <div className="col checkbox-col">
+                                  <input
+                                    type="checkbox"
+                                    checked={!!multiSelect[card.id]?.selected?.[si]}
+                                    onChange={e => toggleStudentChecked(card.id, si, e.target.checked)}
+                                    style={{ cursor: 'pointer' }}
+                                  />
+                                </div>
+                              )}
+
+                              {/* 姓名 */}
+                              <div className="col name-col">{stu.name}</div>
+
+                              {/* 时间 */}
+                              <div className="col time-col">{stu.time}</div>
+
+                              {/* 课时徽标 */}
+                              <div className="col hours-col">
+                                {stu.remainingHours !== undefined && stu.totalHours !== undefined && (
+                                  <span
+                                    className="hours-badge"
+                                    title={`剩余课时/总课时：${stu.remainingHours}/${stu.totalHours}`}
+                                  >
+                                    <span className="hours-remain">{stu.remainingHours}</span>
+                                    <span className="hours-sep">/</span>
+                                    <span className="hours-total">{stu.totalHours}</span>
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* 状态 */}
+                              <div className="col status-col" style={{
+                                color: stu.status === '已完成' ? '#27ae60' :
+                                       stu.status === '请假' ? '#e74c3c' :
+                                       stu.status === '未打卡' ? '#f39c12' : 'transparent',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                visibility: stu.status !== 'empty' ? 'visible' : 'hidden'
+                              }}>
+                                {stu.status !== 'empty' ? stu.status : '占位'}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+
+              {/* 多选操作条 - 移动到列表下方显示 */}
               {multiSelect[card.id]?.enabled && (
-                <div
-                  style={{
-                    margin: '6px 0 8px',
-                    padding: '6px 10px',
-                    background: '#f7f9fc',
-                    border: '1px solid rgba(0,0,0,0.05)',
-                    borderRadius: 6,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
+                <div className="multi-actions">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Button
                       size="small"
@@ -307,64 +366,12 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRe
                   </div>
                   <div style={{ fontSize: 12, color: '#666' }}>已选 {getCheckedCount(card.id)} 人</div>
                   <div>
-                    <Button size="small" type="primary" onClick={() => batchPunch(i, card.id)} style={{ borderRadius: 4, padding: '1px 10px' }}>批量打卡</Button>
+                    {(() => { const realIndex = i + cardIdx; return (
+                      <Button size="small" type="primary" onClick={() => batchPunch(realIndex, card.id)} style={{ borderRadius: 4, padding: '1px 10px' }}>批量打卡</Button>
+                    ); })()}
                   </div>
                 </div>
               )}
-
-              <div className="student-list">
-                {(() => {
-                  const sList = card.students ?? [];
-                  return sList.map((stu, si) => (
-                    <div className="student-row" key={si}>
-                      <div className="student-item" style={{ width: '100%' }}>
-                        {stu && stu.name && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', width: '100%' }}>
-                            {multiSelect[card.id]?.enabled && (
-                              <input
-                                type="checkbox"
-                                checked={!!multiSelect[card.id]?.selected?.[si]}
-                                onChange={e => toggleStudentChecked(card.id, si, e.target.checked)}
-                                style={{ cursor: 'pointer' }}
-                              />
-                            )}
-                            <span style={{ flex: '0 1 auto' }}>{stu.name}</span>
-                            <span style={{ color: '#666', marginLeft: 10 }}>{stu.time}</span>
-                            {stu.remainingHours !== undefined && stu.totalHours !== undefined && (
-                              <span
-                                style={{
-                                  padding: '0 6px',
-                                  background: 'rgba(0,0,0,0.04)',
-                                  borderRadius: 4,
-                                  fontSize: '12px',
-                                  fontWeight: 600,
-                                  lineHeight: '18px'
-                                }}
-                                title={`剩余课时/总课时：${stu.remainingHours}/${stu.totalHours}`}
-                              >
-                                <span style={{ color: '#27ae60' }}>{stu.remainingHours}</span>
-                                <span style={{ color: '#bfbfbf' }}>/</span>
-                                <span style={{ color: '#8c8c8c' }}>{stu.totalHours}</span>
-                              </span>
-                            )}
-                            <span style={{ 
-                              color: stu.status === '已完成' ? '#27ae60' : 
-                                     stu.status === '请假' ? '#e74c3c' : 
-                                     stu.status === '未打卡' ? '#f39c12' : 'transparent', 
-                              fontSize: '12px', 
-                              fontWeight: 500,
-                              visibility: stu.status !== 'empty' ? 'visible' : 'hidden'
-                            }}>
-                              {stu.status !== 'empty' ? stu.status : '占位'}
-                            </span>
-                            {/* 已移除三点菜单 */}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ));
-                })()}
-              </div>
 
               {/* 底部批量按钮已移到上方操作条 */}
             </div>

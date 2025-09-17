@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, message, Spin, Typography } from 'antd';
 import ScheduleGrid from './components/ScheduleGrid';
 import ScheduleLegend from './components/ScheduleLegend';
-import { FixedScheduleData, CoachSimpleInfo } from '@/api/schedule/types';
+import { FixedScheduleData, CoachSimpleInfo, ScheduleCourseInfo } from '@/api/schedule/types';
 import { API } from '@/api';
 import './schedule.css';
 
@@ -18,6 +18,49 @@ const ScheduleView: React.FC = () => {
     fetchData();
   }, []);
 
+  const filterScheduleByActiveStudents = (data: FixedScheduleData, activeStudentNames: Set<string>): FixedScheduleData => {
+    const filteredSchedule: FixedScheduleData['schedule'] = {};
+
+    for (const timeSlot of data.timeSlots) {
+      const dayMap = data.schedule[timeSlot] || {};
+      const newDayMap: Record<string, ScheduleCourseInfo[]> = {};
+
+      for (const day of data.days) {
+        const coursesForDay = dayMap[day] || [];
+        const filteredCourses = coursesForDay
+          .map((course) => {
+            const students = (course.studentName || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0);
+
+            const keptStudents = students.filter((name) => activeStudentNames.has(name));
+
+            if (keptStudents.length === 0) {
+              return null; // 该课程下无符合条件学员，移除此课程块
+            }
+
+            return {
+              ...course,
+              studentName: keptStudents.join(', '),
+            } as ScheduleCourseInfo;
+          })
+          .filter((c): c is ScheduleCourseInfo => c !== null);
+
+        if (filteredCourses.length > 0) {
+          newDayMap[day] = filteredCourses;
+        }
+      }
+
+      filteredSchedule[timeSlot] = newDayMap;
+    }
+
+    return {
+      ...data,
+      schedule: filteredSchedule,
+    };
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -28,13 +71,25 @@ const ScheduleView: React.FC = () => {
         return;
       }
 
-      // 并行调用两个API
-      const [scheduleResponse, coachResponse] = await Promise.all([
+      // 并行调用三个API：课表、教练、学员（仅学习中）
+      const [scheduleResponse, coachResponse, activeStudentsResponse] = await Promise.all([
         API.schedule.getFixedSchedule(Number(currentCampusId)),
-        API.schedule.getCoachSimpleList(Number(currentCampusId))
+        API.schedule.getCoachSimpleList(Number(currentCampusId)),
+        API.student.getList({
+          campusId: Number(currentCampusId),
+          status: 'STUDYING',
+          pageNum: 1,
+          pageSize: 1000,
+        }),
       ]);
 
-      setScheduleData(scheduleResponse);
+      // 构建“学习中”的学员姓名集合
+      const activeStudentNames = new Set<string>((activeStudentsResponse.list || []).map((s) => s.name).filter(Boolean));
+
+      // 基于学员状态过滤课表中的学员显示
+      const filteredSchedule = filterScheduleByActiveStudents(scheduleResponse, activeStudentNames);
+
+      setScheduleData(filteredSchedule);
       setCoachList(coachResponse);
     } catch (error) {
       console.error('获取课表数据失败:', error);

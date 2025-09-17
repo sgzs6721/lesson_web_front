@@ -94,7 +94,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   padding: 12px;
-  height: 330px;
+  height: auto; /* 自适应内容高度 */
   display: flex;
   flex-direction: column;
   position: relative;
@@ -103,10 +103,24 @@
 }
 
 .student-list {
-  flex: 1;
-  overflow-y: auto;
+  /* 让卡片随内容增长，不占据额外空间 */
+  overflow: visible;
   display: flex;
   flex-direction: column;
+}
+
+/* 多选操作条固定在学员列表下边缘，覆盖列表余白而不再推高卡片 */
+.multi-actions {
+  position: sticky;
+  bottom: 0;
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  background: #f7f9fc;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .student-row {
@@ -126,24 +140,75 @@
   align-items: center;
 }
 
-.student-item span {
-  white-space: nowrap;
+/* 统一列对齐的网格布局（每个学员一行） */
+.student-grid {
+  display: grid;
+  /* 统一为四等分列（除勾选列外），并允许内容收缩 */
+  grid-template-columns: 24px repeat(4, minmax(0, 1fr)); /* 勾选 | 姓名 | 时间 | 课时 | 状态 */
+  column-gap: 12px;
+}
+
+.student-grid .col {
+  display: flex;
+  align-items: center;
+}
+
+.name-col { justify-content: flex-start; }
+.time-col { justify-content: center; }
+.hours-col { justify-content: flex-end; }
+.status-col { justify-content: flex-end; }
+
+.checkbox-col {
+  justify-content: center;
+}
+
+.checkbox-placeholder {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid transparent; /* 占位以对齐 */
+}
+
+.name-col {
+  color: #333;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.student-item span:first-child {
-  max-width: 70%;
-  color: #333;
-  flex: 1;
+.time-col {
+  color: #666;
+  overflow: visible;
+  text-overflow: initial;
 }
 
-.student-item span:last-child {
-  padding: 2px 5px;
+.hours-badge {
+  padding: 0;
+  background: transparent;
+  border-radius: 4px;
   font-size: 12px;
-  min-width: 45px;
-  text-align: right;
+  font-weight: 600;
+  line-height: 18px;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
 }
+
+.hours-remain { color: #27ae60; }
+.hours-sep { color: #bfbfbf; }
+.hours-total { color: #8c8c8c; }
+
+.student-item span {
+  white-space: nowrap;
+}
+.status-col {
+  overflow: visible;
+  text-overflow: initial;
+}
+
+/* 旧的span对齐规则在网格模式下不再需要，重置为无宽度限制 */
+.student-item span:first-child { max-width: none; flex: 0; }
+.student-item span:last-child { min-width: auto; text-align: left; padding: 0; font-size: inherit; }
 
 .student-item:last-child {
   border-bottom: none;
@@ -359,6 +424,31 @@
   background-color: #3498db;
   color: white;
   font-weight: 500;
+}
+
+/* 首页教练卡片左上角“多选”触发按钮优化 */
+.multi-select-trigger {
+  border-radius: 5px !important;
+  padding: 0 8px !important;
+  height: 20px !important;
+  line-height: 18px !important;
+  font-size: 12px !important;
+  border: 1px solid #91caff !important;
+  background: #f0f5ff !important; /* 淡主色背景 */
+  color: #1677ff !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+}
+
+.multi-select-trigger:hover,
+.multi-select-trigger:focus {
+  border-color: #69b1ff !important;
+  background: #e6f4ff !important;
+  color: #0958d9 !important;
+  box-shadow: 0 2px 6px rgba(22, 119, 255, 0.15) !important;
+}
+
+.multi-select-trigger:active {
+  transform: translateY(1px);
 }
 
 /* 响应式布局 */
