@@ -397,10 +397,10 @@ const TodayStats: React.FC<TodayStatsProps> = ({ statsBarItems, classCards, onRe
           {(statsBarItems || []).map((item, index) => (
             <div className="stat-item" key={index}>
               <div className="stat-content">
-                <div className="stat-number">
-                  {item.number.toLocaleString()}
-                  <span className="stat-unit">{item.unit}</span>
-                </div>
+                  <div className="stat-number">
+                    {item.number?.toLocaleString() || '0'}
+                    <span className="stat-unit">{item.unit}</span>
+                  </div>
                 <div className="stat-label">{item.label}</div>
               </div>
               {index < statsBarItems.length - 1 && <div className="stat-divider"></div>}
